@@ -1,0 +1,485 @@
+/* ============================================================
+   ApplicationsPage.css — Estilos da página de inscrições
+   ============================================================ */
+
+.pagina-inscricoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+  font-family: var(--fonte-principal);
+}
+
+/* ================================================================
+   Grade de cartões de resumo
+   ================================================================ */
+.pagina-inscricoes__grade-resumos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--espaco-3);
+}
+
+@media (min-width: 768px) {
+  .pagina-inscricoes__grade-resumos {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--espaco-4);
+  }
+}
+
+/* Cartão resumo */
+.resumo-inscricao {
+  padding: var(--espaco-4);
+  border-radius: var(--raio-grande);
+  border: 1px solid;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transicao-normal);
+  min-width: 0;
+}
+
+.resumo-inscricao--inativo {
+  background-color: var(--cor-superficie);
+  border-color: var(--cor-borda-clara);
+}
+
+.resumo-inscricao--inativo:hover {
+  border-color: var(--cor-borda);
+  box-shadow: var(--sombra-pequena);
+}
+
+.resumo-inscricao--ativo {
+  background-color: var(--cor-primaria-clara);
+  border-color: var(--cor-primaria);
+  box-shadow: 0 4px 16px rgba(31, 122, 90, 0.12);
+}
+
+.resumo-inscricao__valor {
+  font-size: 1.5rem;
+  font-weight: var(--peso-negrito);
+  margin-bottom: var(--espaco-1);
+  line-height: 1.2;
+}
+
+.resumo-inscricao__valor--ativo   { color: var(--cor-primaria-texto); }
+.resumo-inscricao__valor--inativo { color: var(--cor-texto); }
+
+.resumo-inscricao__rotulo {
+  font-size: var(--tamanho-pequeno);
+  line-height: 1.3;
+}
+
+.resumo-inscricao__rotulo--ativo   { color: var(--cor-primaria); }
+.resumo-inscricao__rotulo--inativo { color: var(--cor-texto-fraco); }
+
+/* ================================================================
+   Abas de filtro
+   ================================================================ */
+.pagina-inscricoes__abas {
+  display: flex;
+  gap: var(--espaco-1);
+  background-color: var(--cor-fundo-leve);
+  padding: 0.3rem;
+  border-radius: var(--raio-grande);
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.pagina-inscricoes__abas::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .pagina-inscricoes__abas {
+    width: fit-content;
+    gap: var(--espaco-2);
+    padding: 0.375rem;
+  }
+}
+
+.pagina-inscricoes__aba {
+  flex-shrink: 0;
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--raio-medio);
+  border: none;
+  cursor: pointer;
+  font-size: var(--tamanho-base);
+  white-space: nowrap;
+  transition: var(--transicao-normal);
+  font-family: var(--fonte-principal);
+}
+
+@media (min-width: 640px) {
+  .pagina-inscricoes__aba {
+    padding: var(--espaco-2) var(--espaco-4);
+  }
+}
+
+.pagina-inscricoes__aba--inativa {
+  background: none;
+  color: var(--cor-texto-fraco);
+  font-weight: var(--peso-normal);
+}
+
+.pagina-inscricoes__aba--inativa:hover {
+  color: var(--cor-texto-secundario);
+}
+
+.pagina-inscricoes__aba--ativa {
+  background-color: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-weight: var(--peso-semi);
+  box-shadow: var(--sombra-pequena);
+}
+
+/* ================================================================
+   Estado vazio
+   ================================================================ */
+.pagina-inscricoes__estado-vazio {
+  text-align: center;
+  padding: 4rem var(--espaco-4);
+  background-color: var(--cor-superficie);
+  border-radius: var(--raio-grande);
+  border: 1px solid var(--cor-borda-clara);
+}
+
+.pagina-inscricoes__icone-vazio {
+  width: 4rem;
+  height: 4rem;
+  background-color: var(--cor-fundo-leve);
+  border-radius: var(--raio-grande);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--espaco-4);
+}
+
+.pagina-inscricoes__titulo-vazio {
+  font-weight: var(--peso-semi);
+  font-size: var(--tamanho-grande);
+  color: var(--cor-texto-secundario);
+  margin-bottom: var(--espaco-2);
+}
+
+.pagina-inscricoes__descricao-vazio {
+  font-size: var(--tamanho-medio);
+  color: var(--cor-texto-mudo);
+  margin-bottom: var(--espaco-6);
+  max-width: 28rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pagina-inscricoes__botao-explorar {
+  padding: var(--espaco-3) var(--espaco-6);
+  background-color: var(--cor-primaria);
+  color: var(--cor-branco);
+  border-radius: var(--raio-medio);
+  border: none;
+  cursor: pointer;
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-semi);
+  font-family: var(--fonte-principal);
+  transition: var(--transicao-normal);
+}
+
+.pagina-inscricoes__botao-explorar:hover {
+  background-color: var(--cor-primaria-escura);
+}
+
+/* ================================================================
+   Lista de inscrições
+   ================================================================ */
+.pagina-inscricoes__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+/* ================================================================
+   Cartão de inscrição
+   ================================================================ */
+.inscricao-card {
+  background-color: var(--cor-superficie);
+  border-radius: var(--raio-grande);
+  border: 1px solid var(--cor-borda-clara);
+  overflow: hidden;
+  transition: box-shadow var(--transicao-normal);
+}
+
+.inscricao-card:hover {
+  box-shadow: var(--sombra-pequena);
+}
+
+.inscricao-card__cabecalho {
+  padding: var(--espaco-4);
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .inscricao-card__cabecalho {
+    padding: var(--espaco-5);
+  }
+}
+
+.inscricao-card__cabecalho--botao {
+  display: block;
+  width: 100%;
+  margin: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+}
+
+.inscricao-card__linha-principal {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+}
+
+/* Ícone de status */
+.inscricao-card__icone-status {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--raio-grande);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .inscricao-card__icone-status {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+.inscricao-card__icone-status--aprovado  { background-color: var(--cor-sucesso-clara); }
+.inscricao-card__icone-status--pendente  { background-color: var(--cor-atencao-clara); }
+.inscricao-card__icone-status--rejeitado { background-color: var(--cor-erro-clara); }
+
+/* Informações */
+.inscricao-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.inscricao-card__linha-titulo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  margin-bottom: var(--espaco-1);
+  flex-wrap: wrap;
+}
+
+.inscricao-card__titulo-projeto {
+  font-weight: var(--peso-semi);
+  font-size: 0.85rem;
+  color: var(--cor-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: calc(100% - 80px);
+}
+
+@media (min-width: 640px) {
+  .inscricao-card__titulo-projeto {
+    font-size: 0.9rem;
+    max-width: none;
+    white-space: nowrap;
+  }
+}
+
+.inscricao-card__etiqueta-status {
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--raio-pequeno);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+@media (min-width: 640px) {
+  .inscricao-card__etiqueta-status {
+    padding: var(--espaco-1) 0.625rem;
+  }
+}
+
+.inscricao-card__etiqueta-status--aprovado  { background-color: var(--cor-sucesso-clara); color: var(--cor-sucesso-escura); }
+.inscricao-card__etiqueta-status--pendente  { background-color: var(--cor-atencao-clara); color: var(--cor-atencao-escura); }
+.inscricao-card__etiqueta-status--rejeitado { background-color: var(--cor-erro-clara);    color: var(--cor-erro-escura);   }
+
+.inscricao-card__orientador {
+  font-size: var(--tamanho-base);
+  color: var(--cor-texto-fraco);
+  margin-bottom: var(--espaco-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inscricao-card__metadados {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-mudo);
+}
+
+@media (min-width: 640px) {
+  .inscricao-card__metadados {
+    gap: var(--espaco-4);
+  }
+}
+
+.inscricao-card__metadado {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-1);
+}
+
+/* Ícone expansão */
+.inscricao-card__icone-expansao {
+  color: var(--cor-borda-media);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  margin-top: 2px;
+}
+
+.inscricao-card__icone-expansao--expandido {
+  transform: rotate(90deg);
+}
+
+/* Conteúdo expandido */
+.inscricao-card__conteudo-expandido {
+  padding: var(--espaco-4);
+  border-top: 1px solid;
+}
+
+@media (min-width: 640px) {
+  .inscricao-card__conteudo-expandido {
+    padding: var(--espaco-4) var(--espaco-5) var(--espaco-5);
+  }
+}
+
+.inscricao-card__conteudo-expandido--aprovado  { border-color: var(--cor-sucesso-borda); }
+.inscricao-card__conteudo-expandido--pendente  { border-color: var(--cor-atencao-leve); }
+.inscricao-card__conteudo-expandido--rejeitado { border-color: var(--cor-erro-borda); }
+
+.inscricao-card__secao-expandida {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.inscricao-card__rotulo-secao {
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+  color: var(--cor-texto-secundario);
+  margin-bottom: var(--espaco-2);
+}
+
+.inscricao-card__texto-motivacao {
+  font-size: 0.85rem;
+  color: var(--cor-texto-medio);
+  line-height: 1.6;
+  padding: var(--espaco-4);
+  border-radius: var(--raio-medio);
+}
+
+.inscricao-card__texto-motivacao--aprovado  { background-color: var(--cor-sucesso-clara); }
+.inscricao-card__texto-motivacao--pendente  { background-color: var(--cor-atencao-clara); }
+.inscricao-card__texto-motivacao--rejeitado { background-color: var(--cor-erro-clara); }
+
+.inscricao-card__feedback {
+  font-size: 0.85rem;
+  color: var(--cor-texto-medio);
+  line-height: 1.6;
+  padding: var(--espaco-4);
+  background-color: var(--cor-fundo);
+  border-radius: var(--raio-medio);
+}
+
+/* ================================================================
+   Botões de ação
+   ================================================================ */
+.inscricao-card__botoes-acao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+@media (min-width: 480px) {
+  .inscricao-card__botoes-acao {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+.inscricao-card__botao {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--raio-medio);
+  border: 1px solid;
+  cursor: pointer;
+  font-size: var(--tamanho-base);
+  font-family: var(--fonte-principal);
+  transition: var(--transicao-normal);
+}
+
+@media (min-width: 480px) {
+  .inscricao-card__botao {
+    width: auto;
+    flex: 1;
+  }
+}
+
+.inscricao-card__botao--neutro {
+  background-color: var(--cor-fundo);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto-medio);
+}
+
+.inscricao-card__botao--neutro:hover {
+  background-color: var(--cor-fundo-leve);
+}
+
+.inscricao-card__botao--mensagem {
+  background-color: var(--cor-primaria-clara);
+  border-color: var(--cor-primaria-borda);
+  color: var(--cor-primaria);
+}
+
+.inscricao-card__botao--mensagem:hover {
+  background-color: var(--cor-primaria-leve);
+}
+
+.inscricao-card__botao--progresso {
+  background-color: var(--cor-sucesso-clara);
+  border-color: var(--cor-sucesso-borda);
+  color: var(--cor-sucesso);
+}
+
+.inscricao-card__botao--progresso:hover {
+  background-color: var(--cor-sucesso-leve);
+}
+
+.inscricao-card__botao--cancelar {
+  background-color: var(--cor-erro-clara);
+  border-color: var(--cor-erro-borda);
+  color: var(--cor-erro-escura);
+}
+
+.inscricao-card__botao--cancelar:hover {
+  background-color: rgba(239, 68, 68, 0.14);
+}

@@ -1,0 +1,53 @@
+/* ============================================================
+   DashboardLayout.css — Estilos do layout principal do app
+   ============================================================ */
+
+.pagina-app {
+  min-height: 100vh;
+  background-color: var(--cor-fundo);
+  display: flex;
+  overflow-x: hidden;
+}
+
+/* ---- Área principal (ao lado da sidebar) ---- */
+.pagina-app__principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: var(--transicao-lenta);
+}
+
+@media (min-width: 1024px) {
+  .pagina-app__principal {
+    margin-left: var(--largura-sidebar);
+  }
+
+  .pagina-app__principal--recolhida {
+    margin-left: var(--largura-sidebar-recolhida);
+  }
+}
+
+/* ---- Área de conteúdo ---- */
+.pagina-app__conteudo {
+  flex: 1;
+  padding: var(--espaco-4);
+  overflow: visible;
+  overflow-x: clip;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .pagina-app__conteudo {
+    padding: var(--espaco-6);
+  }
+}
+
+/* ---- Wrapper da página (motion.div) ---- */
+.pagina-app__pagina {
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  min-width: 0;
+  overflow-x: hidden;
+}

@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: tcc-backend
+    env: docker
+    rootDir: tcc-backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeploy: true
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSL_MODE
+        value: require
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRATION_MS
+        value: "2592000000"
+      - key: CORS_ALLOWED_ORIGIN_PATTERNS
+        value: http://localhost:*,http://127.0.0.1:*,https://front-end-tcc-ten.vercel.app,https://*.vercel.app
+      - key: JPA_DDL_AUTO
+        value: update
+      - key: JPA_SHOW_SQL
+        value: "false"

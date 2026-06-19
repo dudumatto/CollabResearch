@@ -1,0 +1,228 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Documentacao da API - TCC Backend</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 32px; color: #1f2937; }
+    h1, h2, h3 { color: #0f172a; }
+    h1 { border-bottom: 3px solid #0ea5e9; padding-bottom: 8px; }
+    h2 { margin-top: 32px; border-left: 6px solid #0ea5e9; padding-left: 10px; }
+    h3 { margin-top: 24px; }
+    p, li { line-height: 1.45; }
+    .meta { color: #475569; margin-bottom: 24px; }
+    .box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; margin: 12px 0 18px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 24px 0; font-size: 12px; }
+    th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #e0f2fe; }
+    code { background: #f1f5f9; padding: 2px 4px; border-radius: 4px; }
+    .small { font-size: 11px; color: #64748b; }
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+  <h1>Documentacao da API - TCC Backend</h1>
+  <p class="meta">Projeto: <code>tcc-backend</code><br/>Data da geracao: 06/04/2026<br/>Base URL padrao: <code>http://localhost:8080</code></p>
+
+  <div class="box">
+    <strong>Resumo de autenticacao</strong>
+    <ul>
+      <li>Rotas publicas: <code>POST /api/auth/register</code>, <code>POST /api/auth/login</code>, Swagger/OpenAPI.</li>
+      <li>Demais rotas: exigem <code>Authorization: Bearer &lt;jwt&gt;</code>.</li>
+      <li>O endpoint <code>POST /api/auth/logout</code> limpa o contexto atual, mas nao revoga o token JWT emitido.</li>
+    </ul>
+  </div>
+
+  <h2>1. AuthService</h2>
+  <p>Responsavel pelo cadastro publico de aluno, autenticacao via JWT e logout da sessao atual.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Metodo do Service</th><th>Funcao</th><th>Autenticacao</th></tr>
+    <tr><td><code>POST /api/auth/register</code></td><td><code>register(RegisterRequest)</code></td><td>Cria um usuario do tipo ALUNO, cria o registro de aluno vinculado e devolve um JWT.</td><td>Publico</td></tr>
+    <tr><td><code>POST /api/auth/login</code></td><td><code>login(LoginRequest)</code></td><td>Autentica email e senha e devolve um JWT valido para as rotas protegidas.</td><td>Publico</td></tr>
+    <tr><td><code>POST /api/auth/logout</code></td><td><code>logout()</code></td><td>Limpa o contexto de seguranca da requisicao atual e retorna mensagem textual.</td><td>JWT</td></tr>
+  </table>
+  <h3>Metodos publicos</h3>
+  <table>
+    <tr><th>Metodo</th><th>Funcao</th></tr>
+    <tr><td><code>register</code></td><td>Normaliza nome, email e RA; valida duplicidade de email; persiste usuario e aluno em transacao; gera token.</td></tr>
+    <tr><td><code>login</code></td><td>Delegaa autenticacao ao <code>AuthenticationManager</code>, busca o usuario e gera token JWT.</td></tr>
+    <tr><td><code>logout</code></td><td>Limpa <code>SecurityContextHolder</code> e devolve confirmacao de logout.</td></tr>
+  </table>
+
+  <h2>2. UsuarioService</h2>
+  <p>Gerencia leitura, atualizacao, desativacao de usuario e consultas relacionadas a projetos, inscricoes e documentos do usuario.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Metodo do Service</th><th>Funcao</th><th>Autenticacao</th></tr>
+    <tr><td><code>GET /api/usuarios</code></td><td><code>findAll()</code></td><td>Lista usuarios. Disponivel apenas para orientadores.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/usuarios/{id}</code></td><td><code>findById(id)</code></td><td>Retorna um usuario especifico respeitando regras de acesso.</td><td>JWT</td></tr>
+    <tr><td><code>PUT /api/usuarios/{id}</code></td><td><code>update(id, dto)</code></td><td>Atualiza nome e email do proprio usuario.</td><td>JWT</td></tr>
+    <tr><td><code>DELETE /api/usuarios/{id}</code></td><td><code>delete(id)</code></td><td>Desativa logicamente o proprio usuario.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/usuarios/{id}/projetos</code></td><td><code>findProjetosByUsuario(id)</code></td><td>Lista projetos em que o usuario e orientador ou aluno criador.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/usuarios/{id}/inscricoes</code></td><td><code>findInscricoesByUsuario(id)</code></td><td>Lista inscricoes do aluno ou inscricoes dos projetos do orientador, conforme o tipo do usuario consultado.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/usuarios/minhas-inscricoes</code></td><td><code>findMinhasInscricoes()</code></td><td>Lista as inscricoes do aluno autenticado.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/usuarios/{id}/documentos</code></td><td><code>DocumentoService.listarPorUsuario(id)</code></td><td>Lista os documentos enviados pelo proprio usuario.</td><td>JWT</td></tr>
+  </table>
+  <h3>Metodos publicos</h3>
+  <table>
+    <tr><th>Metodo</th><th>Funcao</th></tr>
+    <tr><td><code>findAll</code></td><td>Lista todos os usuarios apenas para orientadores autenticados.</td></tr>
+    <tr><td><code>findById</code></td><td>Busca usuario por id, validando permissao de acesso.</td></tr>
+    <tr><td><code>update</code></td><td>Permite que o proprio usuario atualize dados basicos sem alterar senha, tipo ou status.</td></tr>
+    <tr><td><code>delete</code></td><td>Desativa o proprio usuario definindo <code>ativo=false</code>.</td></tr>
+    <tr><td><code>findProjetosByUsuario</code></td><td>Consulta projetos relacionados ao usuario.</td></tr>
+    <tr><td><code>findInscricoesByUsuario</code></td><td>Consulta inscricoes relacionadas ao usuario, respeitando o tipo de usuario.</td></tr>
+    <tr><td><code>findMinhasInscricoes</code></td><td>Consulta inscricoes do aluno autenticado.</td></tr>
+  </table>
+
+  <h2>3. ProjetoService</h2>
+  <p>Gerencia busca, criacao, atualizacao e exclusao de projetos, alem do recrutamento e gestao de colaboradores.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Metodo do Service</th><th>Funcao</th><th>Autenticacao</th></tr>
+    <tr><td><code>GET /api/projetos</code></td><td><code>findAll / findByStatus / findByArea / findByAreaNome / findByCursoNome / findByBusca</code></td><td>Lista projetos, com filtros opcionais por status, area, curso e texto de busca.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/projetos/{id}</code></td><td><code>findById(id)</code></td><td>Retorna um projeto especifico.</td><td>JWT</td></tr>
+    <tr><td><code>POST /api/projetos</code></td><td><code>create(dto)</code></td><td>Cria projeto para orientador ou aluno autenticado.</td><td>JWT</td></tr>
+    <tr><td><code>PUT /api/projetos/{id}</code></td><td><code>update(id, dto)</code></td><td>Atualiza projeto se o usuario for o orientador do projeto ou o aluno criador.</td><td>JWT</td></tr>
+    <tr><td><code>DELETE /api/projetos/{id}</code></td><td><code>delete(id)</code></td><td>Exclui projeto se o usuario for dono do projeto.</td><td>JWT</td></tr>
+    <tr><td><code>POST /api/projetos/{id}/recrutar</code></td><td><code>recrutar(projetoId, usuarioId)</code></td><td>Aprova ou cria inscricao de um aluno como colaborador do projeto.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/projetos/{id}/colaboradores</code></td><td><code>listarColaboradores(projetoId)</code></td><td>Lista orientador, aluno criador e alunos aprovados no projeto.</td><td>JWT</td></tr>
+    <tr><td><code>DELETE /api/projetos/{id}/colaboradores/{usuarioId}</code></td><td><code>removerColaborador(projetoId, usuarioId)</code></td><td>Remove colaborador aprovado do projeto, exceto o aluno criador.</td><td>JWT</td></tr>
+  </table>
+  <h3>Metodos publicos</h3>
+  <table>
+    <tr><th>Metodo</th><th>Funcao</th></tr>
+    <tr><td><code>findAll</code></td><td>Lista todos os projetos.</td></tr>
+    <tr><td><code>findById</code></td><td>Busca projeto por id.</td></tr>
+    <tr><td><code>findByStatus</code></td><td>Filtra projetos por status.</td></tr>
+    <tr><td><code>findByArea</code></td><td>Filtra projetos pelo id da area de pesquisa.</td></tr>
+    <tr><td><code>findByAreaNome</code></td><td>Filtra projetos pelo nome da area.</td></tr>
+    <tr><td><code>findByCursoNome</code></td><td>Filtra projetos pelo nome do curso vinculado a area.</td></tr>
+    <tr><td><code>findByBusca</code></td><td>Filtra projetos por texto contido no titulo.</td></tr>
+    <tr><td><code>create</code></td><td>Cria projeto; se o criador for aluno, cria tambem a inscricao inicial aprovada desse aluno no proprio projeto.</td></tr>
+    <tr><td><code>update</code></td><td>Atualiza os dados de um projeto existente, mantendo autoria e status originais.</td></tr>
+    <tr><td><code>delete</code></td><td>Exclui um projeto se o usuario autenticado for seu dono.</td></tr>
+    <tr><td><code>recrutar</code></td><td>Adiciona ou aprova um aluno como colaborador e gera notificacao.</td></tr>
+    <tr><td><code>listarColaboradores</code></td><td>Monta lista unica de usuarios ligados ao projeto.</td></tr>
+    <tr><td><code>removerColaborador</code></td><td>Remove colaborador aprovado do projeto.</td></tr>
+  </table>
+
+  <h2>4. InscricaoService</h2>
+  <p>Controla as inscricoes de alunos em projetos, incluindo aprovacao, rejeicao, cancelamento e atualizacao.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Metodo do Service</th><th>Funcao</th><th>Autenticacao</th></tr>
+    <tr><td><code>GET /api/inscricoes</code></td><td><code>findAll()</code></td><td>Lista todas as inscricoes.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/inscricoes/{id}</code></td><td><code>findById(id)</code></td><td>Retorna inscricao especifica.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/inscricoes/projeto/{projetoId}</code></td><td><code>findByProjeto(projetoId)</code></td><td>Lista inscricoes de um projeto.</td><td>JWT</td></tr>
+    <tr><td><code>POST /api/inscricoes</code></td><td><code>create(dto)</code></td><td>Cria inscricao do aluno autenticado em projeto aberto.</td><td>JWT</td></tr>
+    <tr><td><code>PUT /api/inscricoes/{id}/aprovar</code></td><td><code>aprovar(id)</code></td><td>Aprova inscricao e notifica o aluno.</td><td>JWT</td></tr>
+    <tr><td><code>PUT /api/inscricoes/{id}/rejeitar</code></td><td><code>rejeitar(id)</code></td><td>Rejeita inscricao e notifica o aluno.</td><td>JWT</td></tr>
+    <tr><td><code>DELETE /api/inscricoes/{id}</code></td><td><code>cancel(id)</code></td><td>Cancela inscricao do proprio aluno.</td><td>JWT</td></tr>
+    <tr><td><code>PUT /api/inscricoes/{id}</code></td><td><code>update(id, dto)</code></td><td>Permite ao proprio aluno trocar o projeto associado a inscricao.</td><td>JWT</td></tr>
+  </table>
+  <h3>Metodos publicos</h3>
+  <table>
+    <tr><th>Metodo</th><th>Funcao</th></tr>
+    <tr><td><code>findAll</code></td><td>Lista todas as inscricoes.</td></tr>
+    <tr><td><code>findById</code></td><td>Busca inscricao por id.</td></tr>
+    <tr><td><code>findByProjeto</code></td><td>Busca inscricoes por projeto.</td></tr>
+    <tr><td><code>create</code></td><td>Cria inscricao para aluno autenticado, valida duplicidade, status do projeto e notifica o orientador.</td></tr>
+    <tr><td><code>aprovar</code></td><td>Aprova inscricao se o orientador autenticado for responsavel pelo projeto.</td></tr>
+    <tr><td><code>rejeitar</code></td><td>Rejeita inscricao com a mesma regra de permissao da aprovacao.</td></tr>
+    <tr><td><code>cancel</code></td><td>Permite ao proprio aluno cancelar sua inscricao.</td></tr>
+    <tr><td><code>update</code></td><td>Atualiza a inscricao do proprio aluno mantendo os demais campos relevantes.</td></tr>
+  </table>
+
+  <h2>5. DocumentoService</h2>
+  <p>Gerencia upload, listagem e remocao de documentos academicos do usuario autenticado.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Metodo do Service</th><th>Funcao</th><th>Autenticacao</th></tr>
+    <tr><td><code>POST /api/documentos/upload</code></td><td><code>upload(tipo, arquivo)</code></td><td>Valida e salva arquivo permitido no disco local e cria o registro no banco.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/usuarios/{id}/documentos</code></td><td><code>listarPorUsuario(usuarioId)</code></td><td>Lista documentos do proprio usuario.</td><td>JWT</td></tr>
+    <tr><td><code>DELETE /api/documentos/{id}</code></td><td><code>remover(id)</code></td><td>Remove documento do proprio usuario e apaga o arquivo fisico.</td><td>JWT</td></tr>
+  </table>
+  <h3>Metodos publicos</h3>
+  <table>
+    <tr><th>Metodo</th><th>Funcao</th></tr>
+    <tr><td><code>upload</code></td><td>Valida tipo do documento, tamanho logico do request, extensao permitida e grava no armazenamento local.</td></tr>
+    <tr><td><code>listarPorUsuario</code></td><td>Lista documentos do proprio usuario autenticado.</td></tr>
+    <tr><td><code>remover</code></td><td>Exclui o documento se ele pertencer ao usuario autenticado.</td></tr>
+  </table>
+
+  <h2>6. FeedbackService</h2>
+  <p>Gerencia o registro e a consulta de feedback associado a projetos.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Metodo do Service</th><th>Funcao</th><th>Autenticacao</th></tr>
+    <tr><td><code>POST /api/feedback</code></td><td><code>criar(dto)</code></td><td>Cria feedback para um projeto quando o aluno autenticado foi aprovado nele.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/feedback/projeto/{id}</code></td><td><code>listarPorProjeto(id)</code></td><td>Lista feedbacks de um projeto.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/feedback/usuario/{id}</code></td><td><code>listarPorUsuario(id)</code></td><td>Lista feedbacks relacionados aos projetos de um usuario.</td><td>JWT</td></tr>
+  </table>
+  <h3>Metodos publicos</h3>
+  <table>
+    <tr><th>Metodo</th><th>Funcao</th></tr>
+    <tr><td><code>criar</code></td><td>Valida se o usuario e aluno, se nao e dono do projeto, se participa com inscricao aprovada e se ainda nao avaliou aquele projeto.</td></tr>
+    <tr><td><code>listarPorProjeto</code></td><td>Retorna feedbacks por projeto.</td></tr>
+    <tr><td><code>listarPorUsuario</code></td><td>Retorna feedbacks ligados a projetos em que o usuario e orientador ou aluno criador.</td></tr>
+  </table>
+
+  <h2>7. ProgressoService</h2>
+  <p>Registra e gerencia atualizacoes de progresso nos projetos.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Metodo do Service</th><th>Funcao</th><th>Autenticacao</th></tr>
+    <tr><td><code>POST /api/projetos/{id}/progresso</code></td><td><code>criar(projetoId, dto)</code></td><td>Registra uma nova atualizacao de progresso para um projeto em que o usuario participa.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/projetos/{id}/progresso</code></td><td><code>listarPorProjeto(projetoId)</code></td><td>Lista o progresso de um projeto para participantes autorizados.</td><td>JWT</td></tr>
+    <tr><td><code>PUT /api/progresso/{id}</code></td><td><code>atualizar(id, dto)</code></td><td>Atualiza uma entrada de progresso se o usuario for autor ou dono do projeto.</td><td>JWT</td></tr>
+    <tr><td><code>DELETE /api/progresso/{id}</code></td><td><code>remover(id)</code></td><td>Remove uma entrada de progresso se o usuario for autor ou dono do projeto.</td><td>JWT</td></tr>
+  </table>
+  <h3>Metodos publicos</h3>
+  <table>
+    <tr><th>Metodo</th><th>Funcao</th></tr>
+    <tr><td><code>criar</code></td><td>Cria progresso com autor autenticado e notifica o orientador quando aplicavel.</td></tr>
+    <tr><td><code>listarPorProjeto</code></td><td>Lista o progresso do projeto, limitado a participantes autorizados.</td></tr>
+    <tr><td><code>atualizar</code></td><td>Atualiza a descricao de um progresso existente com controle de permissao.</td></tr>
+    <tr><td><code>remover</code></td><td>Remove progresso existente com controle de permissao.</td></tr>
+  </table>
+
+  <h2>8. NotificacaoService</h2>
+  <p>Consulta e atualiza notificacoes do usuario autenticado. Tambem fornece criacao interna de notificacoes para outros services.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Metodo do Service</th><th>Funcao</th><th>Autenticacao</th></tr>
+    <tr><td><code>GET /api/notificacoes</code></td><td><code>minhasNotificacoes()</code></td><td>Lista notificacoes do usuario autenticado por data decrescente.</td><td>JWT</td></tr>
+    <tr><td><code>PUT /api/notificacoes/{id}/ler</code></td><td><code>marcarComoLida(id)</code></td><td>Marca uma notificacao especifica como lida.</td><td>JWT</td></tr>
+    <tr><td><code>PUT /api/notificacoes/ler-todas</code></td><td><code>marcarTodasComoLidas()</code></td><td>Marca todas as notificacoes do usuario autenticado como lidas.</td><td>JWT</td></tr>
+  </table>
+  <h3>Metodos publicos</h3>
+  <table>
+    <tr><th>Metodo</th><th>Funcao</th></tr>
+    <tr><td><code>minhasNotificacoes</code></td><td>Retorna notificacoes do usuario autenticado.</td></tr>
+    <tr><td><code>marcarComoLida</code></td><td>Marca notificacao especifica como lida, validando propriedade.</td></tr>
+    <tr><td><code>marcarTodasComoLidas</code></td><td>Marca todas as notificacoes do usuario como lidas.</td></tr>
+    <tr><td><code>criarNotificacao</code></td><td>Metodo interno sem endpoint direto, usado por outros services para gerar notificacoes.</td></tr>
+  </table>
+
+  <h2>9. ConversaService</h2>
+  <p>Gerencia conversas de projeto e troca de mensagens entre participantes.</p>
+  <table>
+    <tr><th>Endpoint</th><th>Metodo do Service</th><th>Funcao</th><th>Autenticacao</th></tr>
+    <tr><td><code>POST /api/conversas</code></td><td><code>criar(projetoId)</code></td><td>Cria conversa associada a um projeto para usuarios participantes.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/conversas/{usuarioId}</code></td><td><code>listarConversasDoUsuario(usuarioId)</code></td><td>Lista conversas do proprio usuario, considerando projetos em que participa.</td><td>JWT</td></tr>
+    <tr><td><code>GET /api/conversas/{id}/mensagens</code></td><td><code>listarMensagens(conversaId)</code></td><td>Lista mensagens de uma conversa se o usuario participa do projeto correspondente.</td><td>JWT</td></tr>
+    <tr><td><code>POST /api/conversas/{id}/mensagem</code></td><td><code>enviarMensagem(conversaId, conteudo)</code></td><td>Envia mensagem em uma conversa existente e notifica outros participantes relevantes.</td><td>JWT</td></tr>
+  </table>
+  <h3>Metodos publicos</h3>
+  <table>
+    <tr><th>Metodo</th><th>Funcao</th></tr>
+    <tr><td><code>criar</code></td><td>Cria conversa vinculada ao projeto, se o usuario autenticado tiver participacao autorizada.</td></tr>
+    <tr><td><code>listarConversasDoUsuario</code></td><td>Busca conversas do proprio usuario a partir de projetos diretos e inscricoes aprovadas.</td></tr>
+    <tr><td><code>listarMensagens</code></td><td>Lista mensagens de conversa com validacao de participacao.</td></tr>
+    <tr><td><code>enviarMensagem</code></td><td>Persiste mensagem do remetente autenticado e dispara notificacoes para orientador e aluno criador quando nao forem o proprio remetente.</td></tr>
+  </table>
+
+  <h2>Observacoes finais</h2>
+  <ul>
+    <li>Esta documentacao foi gerada a partir do codigo-fonte atual dos controllers e services do projeto.</li>
+    <li>Alguns services de infraestrutura, como <code>JwtService</code> e <code>CustomUserDetailsService</code>, nao possuem endpoints HTTP proprios e por isso nao aparecem como secoes principais.</li>
+    <li>Os endpoints do Swagger/OpenAPI nao foram listados aqui por nao fazerem parte do dominio da aplicacao.</li>
+  </ul>
+
+  <p class="small">Arquivo gerado automaticamente para uso academico e apoio de manutencao.</p>
+</body>
+</html>

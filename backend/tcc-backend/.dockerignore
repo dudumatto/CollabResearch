@@ -1,0 +1,14 @@
+target/
+.git/
+.idea/
+.vscode/
+node_modules/
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+.env
+.env.*
+!.env.example
+docs/chrome-profile/

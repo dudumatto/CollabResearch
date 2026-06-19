@@ -1,0 +1,347 @@
+/* ============================================================
+   CreateProjectPage.css — Estilos do formulario de criacao de projeto
+   ============================================================ */
+
+.pagina-criar-projeto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+  font-family: var(--fonte-principal);
+  max-width: 720px;
+}
+
+/* ================================================================
+   Cabeçalho
+   ================================================================ */
+.pagina-criar-projeto__cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.pagina-criar-projeto__botao-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding: var(--espaco-2) var(--espaco-3);
+  background: none;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-grande);
+  color: var(--cor-texto-medio);
+  font-size: var(--tamanho-base);
+  cursor: pointer;
+  transition: var(--transicao-normal);
+  width: fit-content;
+}
+
+.pagina-criar-projeto__botao-voltar:hover {
+  background-color: var(--cor-fundo);
+  border-color: var(--cor-borda-media);
+  color: var(--cor-texto);
+}
+
+.pagina-criar-projeto__titulo {
+  font-weight: var(--peso-negrito);
+  font-size: var(--tamanho-titulo);
+  color: var(--cor-texto);
+}
+
+.pagina-criar-projeto__subtitulo {
+  font-size: var(--tamanho-base);
+  color: var(--cor-texto-mudo);
+  margin-top: 0.125rem;
+}
+
+/* ================================================================
+   Conteudo / Card do formulario
+   ================================================================ */
+.pagina-criar-projeto__conteudo {
+  background-color: var(--cor-branco);
+  border-radius: var(--raio-grande);
+  border: 1px solid var(--cor-borda-clara);
+  padding: var(--espaco-6);
+  box-shadow: var(--sombra-minima);
+}
+
+/* ================================================================
+   Formulario
+   ================================================================ */
+.formulario-projeto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+/* Alertas */
+.formulario-projeto__alerta {
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--raio-grande);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-medio);
+  border: 1px solid;
+}
+
+.formulario-projeto__alerta--erro {
+  background-color: var(--cor-erro-clara);
+  color: var(--cor-erro-escura);
+  border-color: var(--cor-erro-borda, #fca5a5);
+}
+
+.formulario-projeto__alerta--sucesso {
+  background-color: var(--cor-sucesso-clara);
+  color: var(--cor-sucesso-escura);
+  border-color: var(--cor-sucesso-borda);
+}
+
+/* Campo generico */
+.formulario-projeto__campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.formulario-projeto__rotulo {
+  font-size: 0.82rem;
+  font-weight: var(--peso-semi);
+  color: var(--cor-texto-secundario);
+}
+
+.formulario-projeto__obrigatorio {
+  color: var(--cor-erro, #ef4444);
+  margin-left: 2px;
+}
+
+.formulario-projeto__dica {
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-mudo);
+  margin-top: -0.25rem;
+}
+
+/* Inputs */
+.formulario-projeto__input,
+.formulario-projeto__select {
+  width: 100%;
+  padding: 0.7rem var(--espaco-4);
+  background-color: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-grande);
+  font-size: 0.9rem;
+  color: var(--cor-texto);
+  font-family: var(--fonte-principal);
+  outline: none;
+  transition: var(--transicao-normal);
+}
+
+.formulario-projeto__input:focus,
+.formulario-projeto__select:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--cor-primaria);
+  background-color: var(--cor-branco);
+}
+
+.formulario-projeto__input:disabled,
+.formulario-projeto__select:disabled,
+.formulario-projeto__textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.formulario-projeto__lista-input {
+  display: grid;
+  grid-template-columns: 1fr 2.75rem;
+  gap: var(--espaco-2);
+  align-items: center;
+}
+
+.formulario-projeto__botao-adicionar {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-grande);
+  background-color: var(--cor-branco);
+  color: var(--cor-primaria);
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.formulario-projeto__botao-adicionar:hover:not(:disabled) {
+  border-color: var(--cor-primaria);
+  background-color: var(--cor-fundo);
+}
+
+.formulario-projeto__botao-adicionar:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.formulario-projeto__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.formulario-projeto__chip {
+  min-height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding: 0.35rem 0.45rem 0.35rem 0.75rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-grande);
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-medio);
+}
+
+.formulario-projeto__chip button {
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background-color: transparent;
+  color: var(--cor-texto-mudo);
+  cursor: pointer;
+}
+
+.formulario-projeto__chip button:hover:not(:disabled) {
+  background-color: var(--cor-borda-clara);
+  color: var(--cor-texto);
+}
+
+/* Textarea */
+.formulario-projeto__textarea {
+  width: 100%;
+  padding: 0.7rem var(--espaco-4);
+  background-color: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-grande);
+  font-size: 0.9rem;
+  color: var(--cor-texto);
+  font-family: var(--fonte-principal);
+  outline: none;
+  resize: vertical;
+  min-height: 8rem;
+  transition: var(--transicao-normal);
+  line-height: 1.6;
+}
+
+.formulario-projeto__textarea:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--cor-primaria);
+  background-color: var(--cor-branco);
+}
+
+/* Grade 2 colunas */
+.formulario-projeto__grade-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espaco-5);
+}
+
+@media (min-width: 640px) {
+  .formulario-projeto__grade-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Grade 3 colunas */
+.formulario-projeto__grade-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espaco-5);
+}
+
+@media (min-width: 640px) {
+  .formulario-projeto__grade-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* Area vazia */
+.formulario-projeto__area-vazia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  font-size: var(--tamanho-base);
+  color: var(--cor-texto-mudo);
+}
+
+/* Acoes */
+.formulario-projeto__acoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding-top: var(--espaco-2);
+}
+
+@media (min-width: 480px) {
+  .formulario-projeto__acoes {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+.formulario-projeto__botao-cancelar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem var(--espaco-5);
+  background-color: var(--cor-branco);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-grande);
+  color: var(--cor-texto-medio);
+  font-size: var(--tamanho-base);
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.formulario-projeto__botao-cancelar:hover:not(:disabled) {
+  background-color: var(--cor-fundo);
+  border-color: var(--cor-borda-media);
+}
+
+.formulario-projeto__botao-cancelar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.formulario-projeto__botao-criar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  padding: 0.7rem var(--espaco-6);
+  background-color: var(--cor-primaria);
+  color: var(--cor-branco);
+  border: none;
+  border-radius: var(--raio-grande);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.formulario-projeto__botao-criar:hover:not(:disabled) {
+  background-color: var(--cor-primaria-escura);
+}
+
+.formulario-projeto__botao-criar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.formulario-projeto__spinner {
+  animation: girar-btn 0.7s linear infinite;
+}
+
+@keyframes girar-btn {
+  to { transform: rotate(360deg); }
+}

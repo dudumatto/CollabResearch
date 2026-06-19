@@ -1,0 +1,12 @@
+[33mc07ba06[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: reset: moving to HEAD~3
+[33m881288b[m HEAD@{1}: commit (merge): fix: Sincronizar Contador e Título das Notificações
+[33m8d344df[m HEAD@{2}: commit: fix: Sincronizar Contador e Ajustar Título das Notificações
+[33m02d34ff[m HEAD@{3}: commit: fix: Ajustar Horario de Mensagens
+[33mc07ba06[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{4}: pull: Fast-forward
+[33mc960369[m HEAD@{5}: pull: Fast-forward
+[33m71f76c2[m HEAD@{6}: commit: feat: Incluir Conversas Individuais e Edição/Exclusão de Mensagens
+[33m1aec0b8[m HEAD@{7}: commit: feat: Implementar Interface de Chat com Exibição de Mensagens
+[33m0c9a423[m HEAD@{8}: pull: Fast-forward
+[33m018397c[m HEAD@{9}: pull: Fast-forward
+[33mb6d1bf2[m HEAD@{10}: commit: fix: Corrigir Comportamento da Sidebar (Ícones e Botão Recolher)
+[33mf3d423a[m HEAD@{11}: clone: from https://github.com/0nomar/Front-end-tcc.git

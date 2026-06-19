@@ -1,0 +1,323 @@
+/* ============================================================
+   Sidebar.css — Estilos da barra lateral de navegação
+   ============================================================ */
+
+.barra-lateral__conteudo-interno {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ---- Barra lateral (desktop) ---- */
+.barra-lateral {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: var(--cor-superficie);
+  border-right: 1px solid var(--cor-separador-suave);
+  z-index: 30;
+  width: var(--largura-sidebar);
+  transition: var(--transicao-lenta);
+  overflow: visible;
+}
+
+.barra-lateral--recolhida {
+  width: var(--largura-sidebar-recolhida);
+}
+
+@media (min-width: 1024px) {
+  .barra-lateral {
+    display: flex;
+  }
+}
+
+/* ---- Botão de recolher ---- */
+.barra-lateral__botao-recolher {
+  position: absolute;
+  right: -0.75rem;
+  top: 3.7rem;
+  width: 2rem;
+  height: 2rem;
+  background-color: var(--cor-superficie-3);
+  border: 1px solid var(--cor-input-borda);
+  border-radius: var(--raio-completo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--sombra-pequena);
+  cursor: pointer;
+  z-index: 10;
+  transition: var(--transicao-normal);
+}
+
+.barra-lateral__botao-recolher:hover {
+  box-shadow: var(--sombra-media);
+}
+
+.barra-lateral__icone-recolher {
+  color: var(--cor-texto-fraco);
+  transition: transform 0.3s ease;
+}
+
+.barra-lateral__icone-recolher--invertido {
+  transform: rotate(180deg);
+}
+
+/* ---- Cabeçalho / Logo ---- */
+.barra-lateral__cabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: var(--espaco-5) var(--espaco-4);
+  border-bottom: 1px solid var(--cor-separador-suave);
+}
+
+.barra-lateral__cabecalho--centralizado {
+  justify-content: center;
+}
+
+.barra-lateral__logo {
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--gradiente-primario);
+  border-radius: var(--raio-medio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(31, 122, 90, 0.25);
+}
+
+.barra-lateral__logo-icone {
+  color: var(--cor-branco);
+}
+
+.barra-lateral__nome-app {
+  font-family: var(--fonte-titulo);
+  font-weight: var(--peso-negrito);
+  font-size: var(--tamanho-normal);
+  color: var(--cor-texto);
+  line-height: 1.2;
+}
+
+.barra-lateral__subtitulo-app {
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  color: var(--cor-texto-mudo);
+}
+
+/* ---- Área de pesquisa ---- */
+.barra-lateral__pesquisa {
+  padding: var(--espaco-3) var(--espaco-3);
+  border-bottom: 1px solid var(--cor-separador-suave);
+}
+
+.barra-lateral__botao-pesquisa {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  width: 100%;
+  padding: 0.5rem var(--espaco-3);
+  background-color: var(--cor-fundo-leve);
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-medio);
+  cursor: pointer;
+  transition: var(--transicao-normal);
+  color: var(--cor-texto-mudo);
+  font-family: var(--fonte-principal);
+  text-align: left;
+}
+
+.barra-lateral__botao-pesquisa:hover {
+  background-color: var(--cor-primaria-clara);
+  border-color: var(--cor-primaria-leve);
+  color: var(--cor-texto);
+}
+
+.barra-lateral__botao-pesquisa--recolhido {
+  justify-content: center;
+  padding: 0.5rem;
+  width: 2.25rem;
+  margin: 0 auto;
+}
+
+.barra-lateral__pesquisa-icone {
+  flex-shrink: 0;
+  color: var(--cor-texto-mudo);
+}
+
+.barra-lateral__pesquisa-placeholder {
+  flex: 1;
+  font-size: var(--tamanho-base);
+  color: var(--cor-texto-mudo);
+}
+
+.barra-lateral__pesquisa-atalho {
+  font-size: var(--tamanho-xs);
+  color: var(--cor-texto-mudo);
+  background-color: var(--cor-superficie);
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-pequeno);
+  padding: 1px 5px;
+  flex-shrink: 0;
+}
+
+/* ---- Navegação ---- */
+.barra-lateral__navegacao {
+  flex: 1;
+  padding: var(--espaco-4) var(--espaco-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  overflow: hidden;
+}
+
+.barra-lateral__item-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espaco-3);
+  padding: 0.625rem var(--espaco-2);
+  border-radius: var(--raio-medio);
+  transition: var(--transicao-rapida);
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-normal);
+  text-decoration: none;
+  position: relative;
+  min-width: max-content;
+}
+
+.barra-lateral__item-nav:hover {
+  background-color: var(--cor-superficie-brand);
+  color: var(--cor-texto);
+}
+
+.barra-lateral__item-nav--ativo {
+  background-color: var(--cor-primaria-clara);
+  color: var(--cor-primaria);
+}
+
+.barra-lateral__item-nav--centralizado {
+  justify-content: center;
+}
+
+.barra-lateral__indicador-ativo {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.25rem;
+  height: 1.5rem;
+  background-color: var(--cor-primaria);
+  border-radius: 0 var(--raio-pequeno) var(--raio-pequeno) 0;
+}
+
+.barra-lateral__icone-nav {
+  width: 18px;
+  height: 21px;
+  flex-shrink: 0;
+  color: var(--cor-texto-mudo);
+}
+
+.barra-lateral__icone-nav--ativo {
+  color: var(--cor-primaria);
+}
+
+.barra-lateral__rotulo-nav {
+  font-size: var(--tamanho-medio);
+}
+
+.barra-lateral__rotulo-nav--ativo {
+  font-weight: var(--peso-semi);
+}
+
+.barra-lateral__contador {
+  margin-left: auto;
+  background-color: var(--cor-primaria);
+  color: var(--cor-branco);
+  border-radius: var(--raio-completo);
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-negrito);
+}
+
+/* ---- Rodapé ---- */
+.barra-lateral__rodape {
+  padding: var(--espaco-3);
+  border-top: 1px solid var(--cor-separador-suave);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.barra-lateral__item-configuracoes {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: 0.625rem var(--espaco-2);
+  border-radius: var(--raio-medio);
+  color: var(--cor-texto-mudo);
+  text-decoration: none;
+  transition: var(--transicao-rapida);
+  font-size: var(--tamanho-medio);
+  position: relative;
+}
+
+.barra-lateral__item-configuracoes:hover {
+  background-color: var(--cor-superficie-brand);
+  color: var(--cor-texto);
+}
+
+/* ---- Overlay mobile ---- */
+.sobreposicao-mobile {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  backdrop-filter: blur(4px);
+}
+
+/* ---- Barra lateral mobile ---- */
+.barra-lateral-mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: var(--cor-superficie);
+  border-right: 1px solid var(--cor-separador-suave);
+  z-index: 50;
+  width: 16rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sombra-extra);
+}
+
+@media (min-width: 1024px) {
+  .sobreposicao-mobile,
+  .barra-lateral-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .barra-lateral__pesquisa {
+    display: none;
+  }
+}
+
+.barra-lateral__navegacao {
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.barra-lateral__navegacao::-webkit-scrollbar {
+  display: none;
+}

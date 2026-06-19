@@ -1,0 +1,412 @@
+/* ============================================================
+   LoginPage.css — Estilos da página de login
+   ============================================================ */
+
+.pagina-login {
+  min-height: 100vh;
+  background-color: var(--cor-fundo);
+  display: flex;
+  font-family: var(--fonte-principal);
+}
+
+/* ================================================================
+   Painel esquerdo (decorativo)
+   ================================================================ */
+.pagina-login__painel-esquerdo {
+  display: none;
+  position: relative;
+  overflow: hidden;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--espaco-12);
+  background: linear-gradient(to bottom right, var(--cor-primaria), #5b21b6);
+}
+
+@media (min-width: 1024px) {
+  .pagina-login__painel-esquerdo {
+    display: flex;
+    width: 50%;
+  }
+}
+
+.pagina-login__decoracao-esquerda {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+}
+
+.pagina-login__decoracao-circulo-topo {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 24rem;
+  height: 24rem;
+  background-color: var(--cor-branco);
+  border-radius: var(--raio-completo);
+  filter: blur(3rem);
+}
+
+.pagina-login__decoracao-circulo-base {
+  position: absolute;
+  bottom: 25%;
+  right: 25%;
+  width: 16rem;
+  height: 16rem;
+  background-color: var(--cor-branco);
+  border-radius: var(--raio-completo);
+  filter: blur(3rem);
+}
+
+.pagina-login__logo-esquerda {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  position: relative;
+  z-index: 10;
+  text-decoration: none;
+}
+
+.pagina-login__logo-icone-area {
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: var(--raio-medio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.pagina-login__logo-nome {
+  color: var(--cor-branco);
+  font-weight: var(--peso-negrito);
+  font-size: var(--tamanho-subtitulo);
+  font-family: var(--fonte-titulo);
+}
+
+.pagina-login__conteudo-esquerdo {
+  position: relative;
+  z-index: 10;
+}
+
+.pagina-login__titulo-esquerdo {
+  color: var(--cor-branco);
+  font-size: 2.2rem;
+  font-weight: var(--peso-negrito);
+  line-height: 1.2;
+  font-family: var(--fonte-titulo);
+  margin-bottom: var(--espaco-4);
+}
+
+.pagina-login__descricao-esquerda {
+  color: rgba(219, 234, 254, 0.9);
+  font-size: var(--tamanho-grande);
+  line-height: 1.7;
+}
+
+.pagina-login__lista-beneficios {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.pagina-login__item-beneficio {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  color: rgba(219, 234, 254, 0.9);
+}
+
+.pagina-login__icone-beneficio {
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: var(--raio-completo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pagina-login__texto-beneficio {
+  font-size: 0.9rem;
+}
+
+.pagina-login__rodape-esquerdo {
+  color: rgba(191, 219, 254, 0.8);
+  font-size: var(--tamanho-base);
+  position: relative;
+  z-index: 10;
+}
+
+/* ================================================================
+   Painel direito (formulário)
+   ================================================================ */
+.pagina-login__painel-direito {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espaco-4) var(--espaco-8) var(--espaco-12);
+}
+
+@media (min-width: 640px) {
+  .pagina-login__painel-direito {
+    padding: var(--espaco-12) var(--espaco-8);
+  }
+}
+
+.pagina-login__formulario-area {
+  width: 100%;
+  max-width: 22rem;
+}
+
+.pagina-login__logo-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-bottom: 2.5rem;
+  text-decoration: none;
+}
+
+@media (min-width: 1024px) {
+  .pagina-login__logo-mobile {
+    display: none;
+  }
+}
+
+.pagina-login__logo-icone-mobile {
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--gradiente-primario);
+  border-radius: var(--raio-medio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagina-login__logo-nome-mobile {
+  font-weight: var(--peso-negrito);
+  font-size: var(--tamanho-subtitulo);
+  font-family: var(--fonte-titulo);
+  color: var(--cor-texto);
+}
+
+/* Cabeçalho do form */
+.pagina-login__cabecalho {
+  margin-bottom: var(--espaco-8);
+}
+
+.pagina-login__titulo {
+  color: var(--cor-texto);
+  font-weight: var(--peso-negrito);
+  font-size: var(--tamanho-heroi);
+  margin-bottom: var(--espaco-2);
+}
+
+.pagina-login__subtitulo {
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-medio);
+}
+
+/* Formulário */
+.pagina-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.campo-formulario__rotulo {
+  display: block;
+  color: var(--cor-texto-secundario);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-medio);
+  margin-bottom: var(--espaco-2);
+}
+
+.campo-formulario__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--espaco-2);
+}
+
+.campo-formulario__link-esqueceu {
+  color: var(--cor-primaria);
+  font-size: var(--tamanho-base);
+  text-decoration: none;
+}
+
+.campo-formulario__link-esqueceu:hover {
+  color: var(--cor-primaria-escura);
+}
+
+.campo-formulario__area-input {
+  position: relative;
+}
+
+.campo-formulario__icone-esquerda {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cor-texto-mudo);
+}
+
+.campo-formulario__input {
+  width: 100%;
+  padding: var(--espaco-3) var(--espaco-4) var(--espaco-3) 2.5rem;
+  background-color: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-medio);
+  font-size: var(--tamanho-medio);
+  color: var(--cor-texto);
+  transition: var(--transicao-normal);
+  outline: none;
+}
+
+.campo-formulario__input:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--cor-primaria);
+}
+
+.campo-formulario__input--com-icone-direita {
+  padding-right: 3rem;
+}
+
+.campo-formulario__botao-visibilidade {
+  position: absolute;
+  right: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cor-texto-mudo);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: var(--transicao-normal);
+  padding: 0;
+}
+
+.campo-formulario__botao-visibilidade:hover {
+  color: var(--cor-texto-medio);
+}
+
+/* Checkbox lembrar */
+.campo-formulario__linha-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.campo-formulario__checkbox {
+  width: 1rem;
+  height: 1rem;
+  border-radius: var(--raio-pequeno);
+  accent-color: var(--cor-primaria);
+}
+
+.campo-formulario__rotulo-checkbox {
+  color: var(--cor-texto-medio);
+  font-size: var(--tamanho-medio);
+}
+
+/* Botão de submit */
+.pagina-login__botao-entrar {
+  width: 100%;
+  padding: 0.875rem;
+  background-color: var(--cor-primaria);
+  color: var(--cor-branco);
+  border-radius: var(--raio-medio);
+  border: none;
+  cursor: pointer;
+  font-weight: var(--peso-semi);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  box-shadow: var(--sombra-primaria);
+  transition: var(--transicao-normal);
+}
+
+.pagina-login__botao-entrar:hover {
+  background-color: var(--cor-primaria-escura);
+}
+
+.pagina-login__botao-entrar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pagina-login__spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--cor-branco);
+  border-radius: var(--raio-completo);
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+/* Divisor */
+.pagina-login__divisor {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin: var(--espaco-6) 0;
+}
+
+.pagina-login__divisor-linha {
+  flex: 1;
+  height: 1px;
+  background-color: var(--cor-borda);
+}
+
+.pagina-login__divisor-texto {
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-base);
+}
+
+/* Botão demo */
+.pagina-login__botao-demo {
+  width: 100%;
+  padding: var(--espaco-3);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-medio);
+  color: var(--cor-texto-medio);
+  background: none;
+  cursor: pointer;
+  font-size: var(--tamanho-medio);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  transition: var(--transicao-normal);
+}
+
+.pagina-login__botao-demo:hover {
+  background-color: var(--cor-fundo);
+}
+
+/* Link de cadastro */
+.pagina-login__link-cadastro {
+  text-align: center;
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-medio);
+  margin-top: var(--espaco-6);
+}
+
+.pagina-login__link-cadastro-link {
+  color: var(--cor-primaria);
+  font-weight: var(--peso-semi);
+  text-decoration: none;
+}
+
+.pagina-login__link-cadastro-link:hover {
+  color: var(--cor-primaria-escura);
+}
