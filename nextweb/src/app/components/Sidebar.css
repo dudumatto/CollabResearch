@@ -16,11 +16,12 @@
   top: 0;
   left: 0;
   height: 100%;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   z-index: 30;
   width: var(--largura-sidebar);
   transition: var(--transicao-lenta);
   overflow: visible;
+  border-right: 1px solid var(--cor-borda-clay);
 }
 
 .barra-lateral--recolhida {
@@ -70,7 +71,9 @@
   display: flex;
   align-items: center;
   gap: var(--espaco-4);
-  padding: var(--espaco-6) var(--espaco-4) var(--espaco-4);
+  padding: var(--espaco-6) var(--espaco-4) var(--espaco-5);
+  border-bottom: 1px solid var(--cor-borda-clay);
+  margin-bottom: var(--espaco-2);
 }
 
 .barra-lateral__cabecalho--centralizado {
@@ -115,7 +118,7 @@
 
 /* ---- Ãrea de pesquisa ---- */
 .barra-lateral__pesquisa {
-  padding: var(--espaco-3) var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-3);
 }
 
 .barra-lateral__botao-pesquisa {
@@ -123,7 +126,7 @@
   align-items: center;
   gap: var(--espaco-2);
   width: 100%;
-  padding: 0.58rem var(--espaco-3);
+  padding: 0.45rem var(--espaco-3);
   background-color: var(--cor-superficie-clay);
   border: 1px solid transparent;
   border-radius: var(--raio-medio);
@@ -172,20 +175,19 @@
 /* ---- NavegaÃ§Ã£o ---- */
 .barra-lateral__navegacao {
   flex: 1;
-  padding: var(--espaco-3);
+  padding: var(--espaco-2);
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-1);
+  gap: 0.125rem;
   overflow: hidden;
 }
 
 .barra-lateral__item-nav {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: var(--espaco-3);
-  padding: 0.58rem var(--espaco-3);
-  border-radius: var(--raio-pequeno);
+  padding: 0.5rem var(--espaco-3);
+  border-radius: var(--raio-medio);
   transition: var(--transicao-rapida);
   color: var(--cor-texto-mudo);
   font-size: var(--tamanho-medio);
@@ -205,6 +207,7 @@
 .barra-lateral__item-nav--ativo {
   background: var(--cor-primaria-clara);
   color: var(--cor-primaria);
+  font-weight: var(--peso-semi);
 }
 
 .barra-lateral button:focus-visible,
@@ -275,14 +278,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-1);
+  border-top: 1px solid var(--cor-borda-clay);
+  margin-top: var(--espaco-2);
 }
 
 .barra-lateral__item-configuracoes {
   display: flex;
   align-items: center;
   gap: var(--espaco-3);
-  padding: 0.58rem var(--espaco-3);
-  border-radius: var(--raio-pequeno);
+  padding: 0.5rem var(--espaco-3);
+  border-radius: var(--raio-medio);
   color: var(--cor-texto-mudo);
   text-decoration: none;
   transition: var(--transicao-rapida);

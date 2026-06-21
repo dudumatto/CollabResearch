@@ -4,7 +4,7 @@
 
 .barra-topo {
   height: var(--altura-topbar);
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.92);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -14,6 +14,7 @@
   z-index: 20;
   overflow: visible;
   backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--cor-borda-clay);
 }
 
 @media (min-width: 768px) {
