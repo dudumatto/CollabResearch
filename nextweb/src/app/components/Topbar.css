@@ -216,7 +216,7 @@
 
 @media (min-width: 640px) {
   .barra-topo__info-perfil {
-    display: block;
+    display: flex;
   }
 }
 
