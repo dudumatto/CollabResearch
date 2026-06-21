@@ -1,62 +1,54 @@
 # Claude Agents - CollabResearch
 
-Este diretorio espelha a configuracao local de `.codex` em formato que o Claude Code consegue consumir: agentes em Markdown com frontmatter YAML, skills em `skills/<nome>/SKILL.md` e regras em `rules`.
+Este diretorio referencia agentes, skills e regras centralizados no monorepo.
 
-## Estrutura
+## Estrutura Centralizada
 
-- `.claude/agents`: subagentes Claude em arquivos `.md`.
-- `.claude/skills`: skills locais copiadas de `.codex/skills`.
-- `.claude/rules`: regras locais copiadas de `.codex/rules`.
+- .agents/agents/: agentes especializados por area do projeto (formato MD).
+- .agents/skills/: skills de design, image-generation e UI (originais).
+- .skills/: skills de engenharia (playwright, electron, vercel-react, supabase, etc.).
+- .rules/: regras globais de seguranca e qualidade.
 
 ## Agentes
 
-Use o agente mais especifico para a tarefa. Quando a tarefa cruzar contratos entre projetos, comece pelo `planner`.
+Use o agente mais especifico para a tarefa. Quando a tarefa cruzar contratos entre projetos, comece pelo planner.
 
-- `planner`: planejamento somente leitura para funcionalidades, bugs e mudancas cross-project.
-- `web_engineer`: implementacao na pasta `web` com React, Vite e Tailwind.
-- `next_engineer`: implementacao em projetos Next.js, especialmente `nextweb`.
-- `desktop_engineer`: implementacao na pasta `desktop` com Electron e React.
-- `flutter_engineer`: implementacao na pasta `mobile` com Flutter/Dart.
-- `backend_engineer`: implementacao na pasta `backend` com Java, Spring Boot, REST, JPA e PostgreSQL.
-- `qa_reviewer`: revisao somente leitura para bugs, regressoes, riscos e testes ausentes.
-- `visual-designer`: direcao visual antes de implementar UI relevante.
-- `ui-reviewer`: revisao visual depois de implementar UI.
+- planner: planejamento somente leitura para funcionalidades, bugs e mudancas cross-project.
+- web_engineer: implementacao na pasta web com React, Vite e Tailwind.
+- next_engineer: implementacao em projetos Next.js, especialmente nextweb.
+- desktop_engineer: implementacao na pasta desktop com Electron e React.
+- flutter_engineer: implementacao na pasta mobile com Flutter/Dart.
+- backend_engineer: implementacao na pasta backend com Java, Spring Boot, REST, JPA e PostgreSQL.
+- qa_reviewer: revisao somente leitura para bugs, regressoes, riscos e testes ausentes.
+- playwright_e2e: especialista em testes E2E de interface com Playwright.
+- visual-designer: direcao visual antes de implementar UI relevante.
+- ui-reviewer: revisao visual depois de implementar UI.
 
 ## Roteamento Recomendado
 
 - Mudanca simples em uma area: use o agente da area.
-- Mudanca que afeta API, banco ou mais de um cliente: `planner` primeiro, depois o agente executor.
-- Mudanca visual relevante: `planner` ou agente da area -> `visual-designer` -> implementacao -> `ui-reviewer` -> `qa_reviewer`.
-- Bug ou falha de teste: agente da area + skill `systematic-debugging`; depois `verification-before-completion`.
-- Revisao antes de entregar: `qa_reviewer` e, se houver UI, `ui-reviewer`.
+- Mudanca que afeta API, banco ou mais de um cliente: planner primeiro, depois o agente executor.
+- Mudanca visual relevante: planner ou agente da area, visual-designer, implementacao, ui-reviewer, qa_reviewer.
+- Bug ou falha de teste: agente da area + systematic-debugging; depois verification-before-completion.
+- Revisao antes de entregar: qa_reviewer e, se houver UI, ui-reviewer.
 
-## Skills Locais
+## Skills
 
 Carregue skills por necessidade, nao por habito. Use o menor conjunto que cobre a tarefa.
 
-- `visual-designer`: cria direcao visual antes da implementacao quando houver nova tela, redesenho, UX, layout, tokens, responsividade ou design system.
-- `ui-reviewer`: revisa UI implementada e bloqueia entregas visuais fracas, genericas, desalinhadas, inacessiveis ou inconsistentes.
-- `frontend-design`: guia para decisoes visuais distintas e intencionais ao criar ou remodelar interfaces.
-- `vercel-react-best-practices`: boas praticas de performance para React/Next.js.
-- `electron-best-practices`: boas praticas de Electron com React, seguranca, contextBridge, IPC, empacotamento e testes.
-- `playwright-best-practices`: boas praticas para testes Playwright E2E, componentes, API, acessibilidade, visual regression, mobile, Electron e CI.
-- `systematic-debugging`: use antes de corrigir bugs ou falhas; exige investigacao de causa raiz antes de aplicar patch.
-- `verification-before-completion`: use antes de afirmar que algo esta pronto; exige evidencia por lint, testes, build ou validacao equivalente.
-- `writing-plans`: use para escrever plano de implementacao em tarefas multi-etapa antes de tocar codigo.
-- `executing-plans`: use quando ja existe um plano escrito e a tarefa e executa-lo com checkpoints.
-- `supabase-postgres-best-practices`: use ao escrever, revisar ou otimizar SQL, schemas, indices, queries ou comportamento PostgreSQL.
+De .agents/skills/: brandkit, design-taste-frontend, gpt-taste, high-end-visual-design, image-to-code, imagegen-frontend-mobile, imagegen-frontend-web, industrial-brutalist-ui, minimalist-ui, playwright-e2e, playwright-performance, redesign-existing-projects, stitch-design-taste.
 
-Observacao: `.claude/skills/.agents` e uma copia de origem/importacao das skills baixadas. Prefira as skills de primeiro nivel em `.claude/skills/<nome>`.
+De .skills/: electron-best-practices, executing-plans, frontend-design, playwright-best-practices, supabase-postgres-best-practices, systematic-debugging, ui-reviewer, vercel-react-best-practices, verification-before-completion, visual-designer, writing-plans.
 
-## Rules Locais
+## Rules
 
-- `anti-ai-ui.md`: regra obrigatoria para tarefas de frontend com impacto visual.
-- `safety.rules`: regras de confirmacao para comandos perigosos ou irreversiveis, especialmente `git push`, `git reset --hard`, `git clean` e exclusao forcada de branch.
+- anti-ai-ui.md: regra obrigatoria para tarefas de frontend com impacto visual.
+- safety.rules: regras de confirmacao para comandos perigosos ou irreversiveis.
 
 ## Diretrizes De Trabalho
 
 - Leia o codigo existente antes de editar.
-- Preserve padroes locais de arquitetura, nomes, componentes, services, hooks, rotas, DTOs e entidades.
+- Preserve padroes locais de arquitetura, nomes, componentes, servicos, hooks, rotas, DTOs e entidades.
 - Nao faca reescritas grandes quando uma alteracao localizada resolver.
 - Nao adicione dependencias sem necessidade clara e justificativa.
 - Nao altere contratos entre frontend, desktop, mobile, backend e banco sem mapear impacto.
@@ -68,13 +60,11 @@ Observacao: `.claude/skills/.agents` e uma copia de origem/importacao das skills
 Para qualquer tarefa com impacto visual:
 
 1. Entenda o fluxo real e o publico da tela.
-2. Use `visual-designer` antes de implementar quando houver criacao ou redesenho relevante.
-3. Aplique `anti-ai-ui.md`.
+2. Use visual-designer antes de implementar quando houver criacao ou redesenho relevante.
+3. Aplique anti-ai-ui.md.
 4. Reutilize tokens, componentes, icones e padroes existentes.
 5. Garanta estados reais: loading, empty, error, disabled, hover, focus e success quando aplicavel.
-6. Revise com `ui-reviewer` antes de concluir.
-
-Evite cards dentro de cards, gradientes genericos como identidade principal, espacamento gigante sem funcao, hero/landing page para telas operacionais, copy vaga e efeitos pesados sem necessidade do produto.
+6. Revise com ui-reviewer antes de concluir.
 
 ## Checklist Antes Da Entrega
 
