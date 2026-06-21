@@ -1,7 +1,7 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { isSupabaseConfigured, supabase } from "../supabase";
 
-const BUCKET_NAME = "documents";
+const BUCKET_NAME = import.meta.env.VITE_SUPABASE_BUCKET || "documents";
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
@@ -27,11 +27,11 @@ function validateFile(file) {
   const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
 
   if (!ALLOWED_TYPES.includes(file.type) || !ALLOWED_EXTENSIONS.includes(extension)) {
-    throw new Error("Tipo de arquivo não suportado. Use PDF, JPG ou PNG.");
+    throw new Error("Tipo de arquivo nÃ£o suportado. Use PDF, JPG ou PNG.");
   }
 
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    throw new Error("Arquivo muito grande. O limite é 5 MB.");
+    throw new Error("Arquivo muito grande. O limite Ã© 5 MB.");
   }
 }
 
@@ -48,7 +48,7 @@ export function useUploadDocumento() {
 
     try {
       if (!isSupabaseConfigured || !supabase) {
-        throw new Error("Supabase não configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
+        throw new Error("Supabase nÃ£o configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
       }
 
       validateFile(file);
@@ -80,7 +80,7 @@ export function useUploadDocumento() {
         .getPublicUrl(filePath);
 
       if (!publicUrlData?.publicUrl) {
-        throw new Error("Não foi possível gerar a URL pública do documento.");
+        throw new Error("NÃ£o foi possÃ­vel gerar a URL pÃºblica do documento.");
       }
 
       setProgresso(100);
@@ -89,7 +89,7 @@ export function useUploadDocumento() {
         publicUrl: publicUrlData.publicUrl,
       };
     } catch (err) {
-      setErro(err.message || "Não foi possível enviar o documento.");
+      setErro(err.message || "NÃ£o foi possÃ­vel enviar o documento.");
       setProgresso(0);
       return null;
     } finally {
@@ -100,3 +100,4 @@ export function useUploadDocumento() {
 
   return { upload, uploading, erro, progresso };
 }
+

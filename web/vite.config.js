@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from 'vite'
+﻿import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
@@ -8,7 +8,7 @@ const normalizeBackendUrl = (value) => {
   return value.replace(/\/api\/?$/, '').replace(/\/$/, '')
 }
 
-const renderAllowedOrigin = 'https://front-end-tcc-ten.vercel.app'
+const renderAllowedOrigin = 'https://collab-research.vercel.app'
 
 const useRenderAllowedOrigin = (proxy) => {
   proxy.on('proxyReq', (proxyReq) => {
@@ -67,3 +67,4 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
