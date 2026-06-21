@@ -69,8 +69,8 @@
 .barra-lateral__cabecalho {
   display: flex;
   align-items: center;
-  gap: var(--espaco-3);
-  padding: var(--espaco-5) var(--espaco-4) var(--espaco-4);
+  gap: var(--espaco-4);
+  padding: var(--espaco-6) var(--espaco-4) var(--espaco-4);
 }
 
 .barra-lateral__cabecalho--centralizado {
@@ -80,12 +80,12 @@
 .barra-lateral__info-app {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-1);
+  gap: var(--espaco-2);
 }
 
 .barra-lateral__logo {
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 2.25rem;
+  height: 2.25rem;
   background: var(--gradiente-acao);
   border-radius: var(--raio-medio);
   display: flex;
@@ -102,7 +102,7 @@
 .barra-lateral__nome-app {
   font-family: var(--fonte-titulo);
   font-weight: var(--peso-negrito);
-  font-size: var(--tamanho-normal);
+  font-size: var(--tamanho-grande);
   color: var(--cor-texto);
   line-height: 1.3;
 }

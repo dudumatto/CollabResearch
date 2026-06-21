@@ -177,7 +177,7 @@
   gap: var(--espaco-4);
   min-height: 2.45rem;
   padding: 0.25rem var(--espaco-3);
-  border-radius: var(--raio-pequeno);
+  border-radius: var(--raio-medio);
   background: none;
   border: none;
   cursor: pointer;
@@ -190,27 +190,27 @@
 }
 
 .barra-topo__avatar {
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: var(--raio-completo);
   background: var(--gradiente-acao);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 8px 18px rgba(31, 122, 90, 0.18);
+  box-shadow: var(--sombra-primaria-leve);
 }
 
 .barra-topo__iniciais-avatar {
   color: var(--cor-branco);
-  font-size: var(--tamanho-xs);
+  font-size: var(--tamanho-base);
   font-weight: var(--peso-negrito);
 }
 
 .barra-topo__info-perfil {
   display: none;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: var(--espaco-1);
   text-align: left;
 }
 
@@ -224,11 +224,13 @@
   color: var(--cor-texto-forte);
   font-size: var(--tamanho-medio);
   font-weight: var(--peso-semi);
+  line-height: 1.3;
 }
 
 .barra-topo__tipo-perfil {
   color: var(--cor-texto-mudo);
   font-size: var(--tamanho-xs);
+  line-height: 1.3;
 }
 
 .barra-topo__icone-dropdown {
