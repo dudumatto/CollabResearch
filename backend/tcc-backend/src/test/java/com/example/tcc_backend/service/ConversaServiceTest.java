@@ -39,6 +39,8 @@ class ConversaServiceTest {
     private AuthHelper authHelper;
     @Mock
     private NotificacaoService notificacaoService;
+    @Mock
+    private com.example.tcc_backend.service.ChatRealtimeService chatRealtimeService;
 
     @InjectMocks
     private ConversaService conversaService;
@@ -142,5 +144,155 @@ class ConversaServiceTest {
                 "/conversas/5?mensagemId=8",
                 "Projeto 10"
         );
+    }
+
+    @Test
+    void enviarMensagemDeveNegarNaoParticipante() {
+        Usuario outsider = TestDataFactory.usuarioAluno(9);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, TestDataFactory.usuarioAluno(1)));
+        Conversa conversa = TestDataFactory.conversa(5, projeto);
+
+        when(authHelper.getCurrentUser()).thenReturn(outsider);
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+        when(inscricaoRepository.findByProjetoIdAndAlunoUsuarioId(10, 9)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> conversaService.enviarMensagem(5, "Ola"))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void listarMensagensDevePermitirParticipante() {
+        Usuario participante = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, participante));
+        Conversa conversa = TestDataFactory.conversa(3, projeto);
+        Mensagem mensagem = TestDataFactory.mensagem(4, conversa, participante);
+
+        when(authHelper.getCurrentUser()).thenReturn(participante);
+        when(conversaRepository.findById(3)).thenReturn(Optional.of(conversa));
+        when(mensagemRepository.findByConversaIdOrderByDataEnvioAsc(3)).thenReturn(List.of(mensagem));
+
+        List<Mensagem> mensagens = conversaService.listarMensagens(3);
+
+        assertThat(mensagens).hasSize(1);
+        assertThat(mensagens.get(0).getId()).isEqualTo(4);
+    }
+
+    @Test
+    void editarMensagemDevePermitirParticipanteRemetente() {
+        Usuario remetente = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, remetente));
+        Conversa conversa = TestDataFactory.conversa(5, projeto);
+        Mensagem mensagem = TestDataFactory.mensagem(8, conversa, remetente);
+        mensagem.setConteudo("Original");
+
+        when(authHelper.getCurrentUser()).thenReturn(remetente);
+        when(mensagemRepository.findById(8)).thenReturn(Optional.of(mensagem));
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+        when(mensagemRepository.save(any(Mensagem.class))).thenReturn(mensagem);
+
+        com.example.tcc_backend.dto.response.MensagemResponse response =
+                conversaService.editarMensagem(8, "Editado");
+
+        assertThat(response.getConteudo()).isEqualTo("Editado");
+    }
+
+    @Test
+    void editarMensagemDeveNegarNaoParticipante() {
+        Usuario outsider = TestDataFactory.usuarioAluno(9);
+        Usuario remetente = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, remetente));
+        Conversa conversa = TestDataFactory.conversa(5, projeto);
+        Mensagem mensagem = TestDataFactory.mensagem(8, conversa, remetente);
+
+        when(authHelper.getCurrentUser()).thenReturn(outsider);
+        when(mensagemRepository.findById(8)).thenReturn(Optional.of(mensagem));
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+        when(inscricaoRepository.findByProjetoIdAndAlunoUsuarioId(10, 9)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> conversaService.editarMensagem(8, "Hackeado"))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void excluirMensagemDevePermitirParticipanteRemetente() {
+        Usuario remetente = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, remetente));
+        Conversa conversa = TestDataFactory.conversa(5, projeto);
+        Mensagem mensagem = TestDataFactory.mensagem(8, conversa, remetente);
+
+        when(authHelper.getCurrentUser()).thenReturn(remetente);
+        when(mensagemRepository.findById(8)).thenReturn(Optional.of(mensagem));
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+
+        conversaService.excluirMensagem(8);
+
+        verify(mensagemRepository).delete(mensagem);
+    }
+
+    @Test
+    void excluirMensagemDeveNegarNaoParticipante() {
+        Usuario outsider = TestDataFactory.usuarioAluno(9);
+        Usuario remetente = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, remetente));
+        Conversa conversa = TestDataFactory.conversa(5, projeto);
+        Mensagem mensagem = TestDataFactory.mensagem(8, conversa, remetente);
+
+        when(authHelper.getCurrentUser()).thenReturn(outsider);
+        when(mensagemRepository.findById(8)).thenReturn(Optional.of(mensagem));
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+        when(inscricaoRepository.findByProjetoIdAndAlunoUsuarioId(10, 9)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> conversaService.excluirMensagem(8))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void validarParticipacaoDeveLancar404ParaConversaInexistente() {
+        Usuario usuario = TestDataFactory.usuarioAluno(1);
+
+        when(conversaRepository.findById(999)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> conversaService.validarParticipacao(999, 1))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void validarParticipacaoDeveNegarNaoParticipanteConversaPrivada() {
+        Usuario outsider = TestDataFactory.usuarioAluno(9);
+        Usuario participante1 = TestDataFactory.usuarioAluno(1);
+        Usuario participante2 = TestDataFactory.usuarioAluno(2);
+        Conversa conversa = Conversa.builder()
+                .id(5)
+                .tipo(TipoConversa.PRIVADA)
+                .participantes(new java.util.ArrayList<>(List.of(participante1, participante2)))
+                .build();
+
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+
+        assertThatThrownBy(() -> conversaService.validarParticipacao(5, 9))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void listarMensagensDeveNegarConversaInexistente() {
+        Usuario usuario = TestDataFactory.usuarioAluno(1);
+
+        when(authHelper.getCurrentUser()).thenReturn(usuario);
+        when(conversaRepository.findById(999)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> conversaService.listarMensagens(999))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
     }
 }

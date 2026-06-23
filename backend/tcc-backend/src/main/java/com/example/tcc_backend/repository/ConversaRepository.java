@@ -41,4 +41,14 @@ public interface ConversaRepository extends JpaRepository<Conversa, Integer> {
           AND p.id = :usuarioId
     """)
     List<Conversa> findPrivadasDoUsuario(@Param("usuarioId") Integer usuarioId);
+
+    @Query("""
+        SELECT c FROM Conversa c
+        LEFT JOIN c.projeto p
+        LEFT JOIN p.orientador o
+        LEFT JOIN p.alunoCriador ac
+        LEFT JOIN Inscricao i ON i.projeto = p AND i.aluno.usuario.id = :usuarioId AND i.status = 'APROVADO'
+        WHERE (o.usuario.id = :usuarioId OR ac.usuario.id = :usuarioId OR i IS NOT NULL)
+    """)
+    Page<Conversa> findByParticipacaoDoUsuario(@Param("usuarioId") Integer usuarioId, Pageable pageable);
 }

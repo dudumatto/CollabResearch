@@ -21,8 +21,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -185,5 +188,96 @@ class ConversaControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void listarMensagensDeveNegarNaoParticipante() throws Exception {
+        when(conversaService.listarMensagens(3))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.FORBIDDEN, "Usuario nao participa desta conversa"));
+
+        mockMvc.perform(get("/api/conversas/3/mensagens"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void listarMensagensDeveRetornar404ParaConversaInexistente() throws Exception {
+        when(conversaService.listarMensagens(999))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Conversa nao encontrada"));
+
+        mockMvc.perform(get("/api/conversas/999/mensagens"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void enviarMensagemDeveNegarNaoParticipante() throws Exception {
+        MensagemRequest request = new MensagemRequest();
+        request.setConteudo("Ola");
+
+        when(conversaService.enviarMensagem(3, "Ola"))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.FORBIDDEN, "Usuario nao participa desta conversa"));
+
+        mockMvc.perform(post("/api/conversas/3/mensagem")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void editarMensagemDeveNegarNaoParticipante() throws Exception {
+        MensagemRequest request = new MensagemRequest();
+        request.setConteudo("Editado");
+
+        when(conversaService.editarMensagem(8, "Editado"))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.FORBIDDEN, "Usuario nao participa desta conversa"));
+
+        mockMvc.perform(put("/api/conversas/mensagem/8")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void excluirMensagemDeveNegarNaoParticipante() throws Exception {
+        doThrow(new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN, "Usuario nao participa desta conversa"))
+                .when(conversaService).excluirMensagem(8);
+
+        mockMvc.perform(delete("/api/conversas/mensagem/8"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void enviarMensagemConversaInexistenteDeveRetornar404() throws Exception {
+        MensagemRequest request = new MensagemRequest();
+        request.setConteudo("Ola");
+
+        when(conversaService.enviarMensagem(999, "Ola"))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Conversa nao encontrada"));
+
+        mockMvc.perform(post("/api/conversas/999/mensagem")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void listarMinhasConversasDeveRetornarLista() throws Exception {
+        when(authHelper.getCurrentUser()).thenReturn(TestDataFactory.usuarioAluno(1));
+        Conversa conversa = TestDataFactory.conversa(
+                2,
+                TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, TestDataFactory.usuarioAluno(1)))
+        );
+
+        when(conversaService.listarTodasConversasDoUsuario(1)).thenReturn(List.of(conversa));
+
+        mockMvc.perform(get("/api/conversas"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(2))
+                .andExpect(jsonPath("$[0].projetoId").value(10));
     }
 }
