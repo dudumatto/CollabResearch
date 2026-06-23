@@ -1,0 +1,233 @@
+/* ============================================================
+   ProjectApplicationsPage — gerenciamento de inscrições (orientador)
+   ============================================================ */
+
+.pagina-inscricoes-projeto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+  font-family: var(--fonte-principal);
+}
+
+.pagina-inscricoes-projeto__cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+@media (min-width: 640px) {
+  .pagina-inscricoes-projeto__cabecalho {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.pagina-inscricoes-projeto__titulo {
+  font-size: var(--tamanho-subtitulo);
+  font-weight: var(--peso-negrito);
+  color: var(--cor-texto);
+}
+
+.pagina-inscricoes-projeto__subtitulo {
+  font-size: var(--tamanho-medio);
+  color: var(--cor-texto-fraco);
+  margin-top: var(--espaco-1);
+}
+
+.pagina-inscricoes-projeto__botao-voltar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3) var(--espaco-5);
+  border-radius: var(--raio-grande);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-branco);
+  color: var(--cor-texto-medio);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+  transition: var(--transicao-normal);
+  font-family: var(--fonte-principal);
+}
+
+.pagina-inscricoes-projeto__botao-voltar:hover {
+  background: var(--cor-fundo-leve);
+}
+
+.pagina-inscricoes-projeto__botao-voltar--link {
+  text-decoration: none;
+}
+
+.pagina-inscricoes-projeto__grade-resumos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--espaco-3);
+}
+
+@media (min-width: 768px) {
+  .pagina-inscricoes-projeto__grade-resumos {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.pagina-inscricoes-projeto__resumo {
+  padding: var(--espaco-4);
+  border-radius: var(--raio-grande);
+  border: 1px solid var(--cor-borda-clara);
+  background: var(--cor-branco);
+}
+
+.pagina-inscricoes-projeto__resumo-valor {
+  font-size: 1.35rem;
+  font-weight: var(--peso-negrito);
+  color: var(--cor-texto);
+}
+
+.pagina-inscricoes-projeto__resumo-rotulo {
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-mudo);
+  margin-top: var(--espaco-1);
+}
+
+.pagina-inscricoes-projeto__vazio {
+  text-align: center;
+  padding: 4rem var(--espaco-4);
+  background: var(--cor-branco);
+  border-radius: var(--raio-grande);
+  border: 1px solid var(--cor-borda-clara);
+}
+
+.pagina-inscricoes-projeto__vazio-icone {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto var(--espaco-4);
+  border-radius: var(--raio-grande);
+  background: var(--cor-fundo-leve);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagina-inscricoes-projeto__vazio-titulo {
+  font-weight: var(--peso-semi);
+  font-size: var(--tamanho-grande);
+  color: var(--cor-texto-secundario);
+  margin-bottom: var(--espaco-2);
+}
+
+.pagina-inscricoes-projeto__vazio-texto {
+  color: var(--cor-texto-mudo);
+  margin-bottom: var(--espaco-6);
+  max-width: 28rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pagina-inscricoes-projeto__card .inscricao-card__cabecalho {
+  cursor: default;
+}
+
+.pagina-inscricoes-projeto__nome-aluno {
+  white-space: normal;
+}
+
+.pagina-inscricoes-projeto__corpo-card {
+  padding: 0 var(--espaco-5) var(--espaco-5);
+  border-top: 1px solid var(--cor-borda-clara);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.pagina-inscricoes-projeto__motivacao-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+  color: var(--cor-primaria);
+  font-family: var(--fonte-principal);
+}
+
+.pagina-inscricoes-projeto__motivacao-texto {
+  margin-top: var(--espaco-3);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--cor-texto-medio);
+  padding: var(--espaco-4);
+  background: var(--cor-fundo);
+  border-radius: var(--raio-medio);
+}
+
+.pagina-inscricoes-projeto__ver-perfil {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: fit-content;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-grande);
+  background: var(--cor-branco);
+  color: var(--cor-texto-medio);
+  font: inherit;
+  cursor: pointer;
+}
+
+.pagina-inscricoes-projeto__ver-perfil:hover {
+  background: var(--cor-fundo-leve);
+  color: var(--cor-texto);
+}
+
+.pagina-inscricoes-projeto__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.inscricao-card__botao--aprovar {
+  background-color: var(--cor-sucesso-clara);
+  border-color: var(--cor-sucesso-borda);
+  color: var(--cor-sucesso-escura);
+}
+
+.inscricao-card__botao--aprovar:hover:not(:disabled) {
+  background-color: var(--cor-sucesso-leve);
+}
+
+.inscricao-card__botao--rejeitar {
+  background-color: var(--cor-erro-clara);
+  border-color: var(--cor-erro-borda);
+  color: var(--cor-erro-escura);
+}
+
+.inscricao-card__botao--rejeitar:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.12);
+}
+
+.inscricao-card__botao--aprovar:disabled,
+.inscricao-card__botao--rejeitar:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pagina-inscricoes-projeto__parecer {
+  padding-top: var(--espaco-2);
+}
+
+.pagina-inscricoes-projeto__modal {
+  padding: var(--espaco-6);
+}
+
+.pagina-inscricoes-projeto__modal-confirmar--rejeitar {
+  background-color: var(--cor-erro);
+}
+
+.pagina-inscricoes-projeto__modal-confirmar--rejeitar:hover:not(:disabled) {
+  filter: brightness(0.95);
+}

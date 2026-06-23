@@ -1,0 +1,22 @@
+﻿.pagina-login .auth-shell__card.ui-card {
+  transform: translateY(0);
+}
+
+.login-form {
+  gap: 0.78rem;
+}
+
+.login-form .ui-button--primary {
+  margin-top: 0.08rem;
+}
+
+.login-form .ui-text-field__input {
+  min-height: 2.72rem;
+}
+
+@media (min-width: 1081px) {
+  .pagina-login .auth-shell__visual {
+    height: min(570px, calc(100dvh - 2.7rem));
+    max-height: 570px;
+  }
+}

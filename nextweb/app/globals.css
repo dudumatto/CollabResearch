@@ -1,0 +1,20 @@
+﻿@import '../src/styles/fonts.css';
+@import '../src/styles/tailwind.css';
+@import '../src/styles/theme.css';
+@import '../src/styles/animations.css';
+@import '../src/styles/components.css';
+@import '../src/styles/variaveis.css';
+@import '../src/app/components/AuthShell.css';
+@import '../src/app/components/ProjectCardSkeleton.css';
+@import '../src/app/components/progress/progress-components.css';
+@import '../src/app/pages/LandingPage.css';
+@import '../src/app/pages/LoginPage.css';
+@import '../src/app/pages/RegisterPage.css';
+@import '../src/app/pages/DashboardPage.css';
+@import '../src/app/layouts/DashboardLayout.css';
+@import '../src/app/components/SearchModal.css';
+@import '../src/app/components/Sidebar.css';
+@import '../src/app/components/Topbar.css';
+
+
+
