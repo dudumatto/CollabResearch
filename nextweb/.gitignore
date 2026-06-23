@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+*.png
+*.log
+.env
+.env.*
+!.env.example
+.mimocode/
+
+# Playwright
+playwright/.auth/
+playwright-report/
+test-results/
