@@ -114,8 +114,7 @@ public class ConversaService {
         if (!usuarioLogado.getId().equals(usuarioId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para listar conversas de outro usuario");
         }
-        return conversaRepository.findByProjetoOrientadorUsuarioIdOrProjetoAlunoCriadorUsuarioId(
-                usuarioId, usuarioId, pageable);
+        return conversaRepository.findByParticipacaoDoUsuario(usuarioId, pageable);
     }
 
     public List<Conversa> listarTodasConversasDoUsuario(Integer usuarioId) {
@@ -235,11 +234,21 @@ public class ConversaService {
         }
     }
 
+    public void validarParticipacao(Integer conversaId, Integer usuarioId) {
+        Conversa conversa = conversaRepository.findById(conversaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversa nao encontrada"));
+        validarParticipacao(conversa, usuarioId);
+    }
+
     public MensagemResponse editarMensagem(Integer mensagemId, String novoConteudo) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
 
         Mensagem mensagem = mensagemRepository.findById(mensagemId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mensagem nao encontrada"));
+
+        if (mensagem.getConversa() != null) {
+            validarParticipacao(mensagem.getConversa().getId(), usuarioLogado.getId());
+        }
 
         if (!mensagem.getRemetente().getId().equals(usuarioLogado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode editar a mensagem de outro usuario");
@@ -263,6 +272,10 @@ public class ConversaService {
 
         Mensagem mensagem = mensagemRepository.findById(mensagemId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mensagem nao encontrada"));
+
+        if (mensagem.getConversa() != null) {
+            validarParticipacao(mensagem.getConversa().getId(), usuarioLogado.getId());
+        }
 
         if (!mensagem.getRemetente().getId().equals(usuarioLogado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode excluir a mensagem de outro usuario");
