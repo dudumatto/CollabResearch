@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.util.List;
@@ -57,6 +58,7 @@ public class DocumentoController {
     })
     @GetMapping("/{id}/download")
     public ResponseEntity<Void> download(@PathVariable Integer id) {
+        validarId(id);
         String url = documentoService.obterUrlDocumento(id);
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(url))
@@ -70,6 +72,7 @@ public class DocumentoController {
     })
     @GetMapping("/{id}/preview")
     public ResponseEntity<Void> preview(@PathVariable Integer id) {
+        validarId(id);
         String url = documentoService.obterUrlDocumento(id);
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(url))
@@ -82,6 +85,9 @@ public class DocumentoController {
     })
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<List<DocumentoResponse>> listarDoUsuario(@PathVariable Integer usuarioId) {
+        if (usuarioId == null || usuarioId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "usuarioId invalido");
+        }
         return ResponseEntity.ok(
                 documentoService.listarPorUsuario(usuarioId)
                         .stream()
@@ -97,6 +103,7 @@ public class DocumentoController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        validarId(id);
         documentoService.remover(id);
         return ResponseEntity.noContent().build();
     }
@@ -104,5 +111,11 @@ public class DocumentoController {
     @ExceptionHandler({MaxUploadSizeExceededException.class, MultipartException.class})
     public ResponseEntity<String> handleUploadTooLarge(Exception ex) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("Arquivo muito grande");
+    }
+
+    private void validarId(Integer id) {
+        if (id == null || id <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID invalido");
+        }
     }
 }
