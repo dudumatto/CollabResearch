@@ -11,6 +11,8 @@
     "build": "node ./node_modules/vite/bin/vite.js build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
+    "test:security": "playwright test --config=e2e/security/playwright.config.ts",
+    "test:security:smoke": "playwright test --config=e2e/security/playwright.config.ts smoke/",
     "lint": "eslint . --ext js,jsx"
   },
   "dependencies": {

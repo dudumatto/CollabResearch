@@ -96,6 +96,20 @@ public class DocumentoController {
         );
     }
 
+    @Operation(summary = "Buscar documento por ID", description = "Retorna os dados de um documento.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Documento encontrado"),
+            @ApiResponse(responseCode = "400", description = "ID invalido"),
+            @ApiResponse(responseCode = "404", description = "Documento nao encontrado")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<DocumentoResponse> buscarPorId(@PathVariable Integer id) {
+        validarId(id);
+        return ResponseEntity.ok(
+                DocumentoResponse.fromEntity(documentoService.obterDocumento(id))
+        );
+    }
+
     @Operation(summary = "Remover documento", description = "Remove um documento do sistema.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Documento removido com sucesso"),

@@ -6,7 +6,10 @@ import {
   type TestUser,
 } from "./test-data.helper";
 
-export const API_URL = process.env.VITE_API_URL ?? "http://127.0.0.1:8080";
+export const API_URL =
+  process.env.E2E_API_URL ??
+  process.env.VITE_API_URL ??
+  "http://127.0.0.1:8080";
 
 type CatalogItem = {
   id: number;
