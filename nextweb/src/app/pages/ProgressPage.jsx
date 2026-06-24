@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -51,48 +51,49 @@ function ProgressSkeleton() {
     <div className="progress-page">
       <header className="progress-page__hero">
         <div className="progress-page__hero-copy">
-          <Sk w={190} h={28} r={999} style={{ maxWidth: "55%" }} />
-          <Sk w={340} h={38} r={12} style={{ maxWidth: "80%", marginTop: 14 }} />
-          <Sk w="100%" h={14} r={999} style={{ maxWidth: 620, marginTop: 16 }} />
-          <Sk w="72%" h={14} r={999} style={{ maxWidth: 460, marginTop: 8 }} />
+          <Sk w={180} h={22} r={999} style={{ maxWidth: "50%", opacity: 0.6 }} />
+          <Sk w="65%" h={32} r={10} style={{ maxWidth: 380, marginTop: 12 }} />
+          <Sk w="90%" h={12} r={999} style={{ maxWidth: 500, marginTop: 14 }} />
+          <Sk w="60%" h={12} r={999} style={{ maxWidth: 360, marginTop: 8 }} />
         </div>
         <div className="progress-page__project-picker">
-          <Sk w={72} h={13} />
-          <Sk w="100%" h={48} r={16} />
+          <Sk w={56} h={11} />
+          <Sk w="100%" h={42} r={14} />
         </div>
       </header>
 
       <section className="progress-page__overview">
         <div className="progress-page__panel progress-page__panel--summary">
-          <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <Sk w={180} h={180} r="50%" style={{ marginBottom: 18 }} />
-            <Sk w="58%" h={16} style={{ maxWidth: 150, marginBottom: 10 }} />
-            <Sk w="42%" h={12} style={{ maxWidth: 120 }} />
+          <div className="progress-page__skeleton-donut">
+            <Sk w={170} h={170} r="50%" style={{ background: "transparent", border: "10px solid var(--progress-border-soft)" }} />
+            <Sk w={60} h={28} r={8} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />
           </div>
+          <Sk w="55%" h={14} style={{ maxWidth: 130, marginTop: 14 }} />
+          <Sk w="40%" h={11} style={{ maxWidth: 110, marginTop: 6 }} />
         </div>
 
         <div className="progress-page__panel progress-page__panel--stats">
           <div className="progress-page__panel-title-row">
             <div style={{ flex: 1 }}>
-              <Sk w="45%" h={22} style={{ maxWidth: 260 }} />
-              <Sk w="34%" h={13} style={{ maxWidth: 190, marginTop: 10 }} />
+              <Sk w="48%" h={18} style={{ maxWidth: 200 }} />
+              <Sk w="30%" h={11} style={{ maxWidth: 150, marginTop: 8 }} />
             </div>
-            <Sk w={92} h={30} r={999} />
+            <Sk w={76} h={24} r={999} />
           </div>
 
           <div className="progress-page__stats-grid">
             {[1, 2, 3, 4].map((item) => (
               <div key={item} className="progress-stat">
-                <Sk w={18} h={18} r={999} />
-                <Sk w="70%" h={14} />
-                <Sk w="45%" h={18} />
+                <Sk w={16} h={16} r={4} />
+                <Sk w="60%" h={11} />
+                <Sk w="40%" h={16} />
               </div>
             ))}
           </div>
 
           <div className="progress-page__summary-line">
-            <Sk w={120} h={14} />
-            <Sk w={150} h={15} />
+            <Sk w={100} h={12} />
+            <Sk w={120} h={12} />
           </div>
         </div>
       </section>
@@ -101,22 +102,22 @@ function ProgressSkeleton() {
         <div className="progress-page__panel">
           <div className="progress-page__panel-header">
             <div style={{ flex: 1 }}>
-              <Sk w={96} h={20} />
-              <Sk w="70%" h={13} style={{ maxWidth: 380, marginTop: 10 }} />
+              <Sk w={72} h={18} />
+              <Sk w="65%" h={11} style={{ maxWidth: 300, marginTop: 8 }} />
             </div>
-            <Sk w={126} h={30} r={999} />
+            <Sk w={100} h={24} r={999} />
           </div>
 
-          <div style={{ display: "grid", gap: 14, marginTop: 20 }}>
+          <div className="stepper-vertical">
             {[1, 2, 3].map((item) => (
               <div key={item} className="step-card">
-                <Sk w={42} h={42} r="50%" />
-                <div>
-                  <Sk w="45%" h={16} style={{ maxWidth: 220 }} />
-                  <Sk w="85%" h={12} style={{ maxWidth: 420, marginTop: 10 }} />
-                  <Sk w="58%" h={12} style={{ maxWidth: 300, marginTop: 8 }} />
+                <Sk w={38} h={38} r="50%" />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <Sk w="50%" h={14} style={{ maxWidth: 200 }} />
+                  <Sk w="80%" h={11} style={{ maxWidth: 350, marginTop: 8 }} />
+                  <Sk w="55%" h={11} style={{ maxWidth: 240, marginTop: 6 }} />
                 </div>
-                <Sk w={88} h={32} r={999} />
+                <Sk w={78} h={28} r={14} />
               </div>
             ))}
           </div>
@@ -125,14 +126,14 @@ function ProgressSkeleton() {
         <div className="progress-page__panel">
           <div className="progress-page__panel-header">
             <div style={{ flex: 1 }}>
-              <Sk w={155} h={20} />
-              <Sk w="78%" h={13} style={{ maxWidth: 360, marginTop: 10 }} />
+              <Sk w={130} h={18} />
+              <Sk w="70%" h={11} style={{ maxWidth: 300, marginTop: 8 }} />
             </div>
-            <Sk w={156} h={40} r={14} />
+            <Sk w={140} h={34} r={14} />
           </div>
 
           <div className="progress-page__collapsed-form">
-            <Sk w="80%" h={14} style={{ maxWidth: 480 }} />
+            <Sk w="70%" h={11} style={{ maxWidth: 380 }} />
           </div>
         </div>
       </section>
@@ -140,23 +141,29 @@ function ProgressSkeleton() {
       <section className="progress-page__panel progress-page__panel--feed">
         <div className="progress-page__panel-header">
           <div style={{ flex: 1 }}>
-            <Sk w={190} h={20} />
-            <Sk w="68%" h={13} style={{ maxWidth: 460, marginTop: 10 }} />
+            <Sk w={160} h={18} />
+            <Sk w="60%" h={11} style={{ maxWidth: 380, marginTop: 8 }} />
           </div>
         </div>
 
-        <div style={{ display: "grid", gap: 12, marginTop: 18 }}>
-          {[1, 2, 3].map((item) => (
+        <div className="update-feed">
+          {[1, 2].map((item) => (
             <div key={item} className="update-feed__item">
               <div className="update-feed__header">
-                <div style={{ flex: 1 }}>
-                  <Sk w="52%" h={16} style={{ maxWidth: 260 }} />
-                  <Sk w="38%" h={12} style={{ maxWidth: 190, marginTop: 9 }} />
+                <Sk w={34} h={34} r="50%" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Sk w="45%" h={14} style={{ maxWidth: 200 }} />
+                  <Sk w="30%" h={10} style={{ maxWidth: 140, marginTop: 6 }} />
                 </div>
-                <Sk w={86} h={26} r={999} />
+                <Sk w={72} h={22} r={999} />
               </div>
-              <Sk w="90%" h={13} style={{ maxWidth: 720, marginTop: 14 }} />
-              <Sk w="62%" h={13} style={{ maxWidth: 520, marginTop: 8 }} />
+              <Sk w="85%" h={11} style={{ maxWidth: 560, marginTop: 12 }} />
+              <Sk w="55%" h={11} style={{ maxWidth: 380, marginTop: 6 }} />
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <Sk w={140} h={20} r={999} />
+                <Sk w={120} h={20} r={999} />
+                <Sk w={160} h={20} r={999} />
+              </div>
             </div>
           ))}
         </div>

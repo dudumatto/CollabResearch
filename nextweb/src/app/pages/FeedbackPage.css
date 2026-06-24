@@ -14,8 +14,14 @@
    ================================================================ */
 .pagina-feedback__grade-resumos {
   display: grid;
-  grid-template-columns: repeat(1, 3fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--espaco-4);
+}
+
+@media (max-width: 768px) {
+  .pagina-feedback__grade-resumos {
+    grid-template-columns: 1fr;
+  }
 }
 
 .resumo-feedback {
@@ -478,4 +484,56 @@
   .feedback-card--skeleton .feedback-card__estrelas {
     display: none;
   }
+}
+
+/* --- Skeleton dark mode --- */
+.pagina-feedback .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--cor-borda-clara) 25%,
+    var(--cor-fundo-leve) 50%,
+    var(--cor-borda-clara) 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 0.5rem;
+}
+
+/* --- Dark mode overrides --- */
+
+.dark .resumo-feedback {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda-clara);
+}
+
+.dark .feedback-card {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda-clara);
+}
+
+.dark .feedback-card__comentario {
+  background-color: var(--cor-fundo-leve);
+}
+
+.dark .avaliacao-orientador {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda-clara);
+}
+
+.dark .formulario-avaliacao__select,
+.dark .formulario-avaliacao__textarea {
+  background-color: var(--cor-fundo-leve);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.dark .formulario-avaliacao__botao-cancelar {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto-medio);
+}
+
+.dark .feedback-card--vazio {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda-clara);
 }

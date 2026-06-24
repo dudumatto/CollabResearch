@@ -436,3 +436,58 @@
     display: none;
   }
 }
+
+/* --- Dark mode --- */
+
+.dark .barra-lateral,
+.dark .barra-lateral-mobile {
+  background:
+    linear-gradient(180deg, rgba(23, 37, 29, 0.92), rgba(15, 26, 20, 0.98)),
+    var(--color-surface-1);
+  border-color: rgba(196, 208, 190, 0.12);
+}
+
+.dark .barra-lateral {
+  box-shadow: 10px 0 30px rgba(2, 6, 23, 0.18);
+}
+
+.dark .barra-lateral__botao-recolher.ui-icon-button {
+  background: var(--color-surface-1);
+  border-color: var(--color-border-subtle);
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.2);
+}
+
+.dark .barra-lateral__botao-pesquisa {
+  background: rgba(23, 37, 29, 0.78);
+  border-color: rgba(196, 208, 190, 0.16);
+}
+
+.dark .barra-lateral__botao-pesquisa:hover {
+  background: rgba(126, 160, 106, 0.1);
+  border-color: rgba(196, 208, 190, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(196, 208, 190, 0.12);
+}
+
+.dark .barra-lateral__item-nav:hover,
+.dark .barra-lateral__item-configuracoes:hover {
+  background: rgba(126, 160, 106, 0.1);
+  border-color: rgba(196, 208, 190, 0.18);
+}
+
+.dark .barra-lateral__item-nav--ativo {
+  background: rgba(126, 160, 106, 0.16);
+  border-color: rgba(126, 160, 106, 0.22);
+}
+
+.dark .barra-lateral-mobile {
+  border-right-color: rgba(196, 208, 190, 0.12);
+}
+
+.dark .barra-lateral__rodape {
+  border-top-color: rgba(196, 208, 190, 0.12);
+}
+
+.dark .barra-lateral__perfil-resumo {
+  border-color: rgba(196, 208, 190, 0.14);
+  background: rgba(23, 37, 29, 0.62);
+}

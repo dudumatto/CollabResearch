@@ -481,3 +481,71 @@
   background-color: var(--cor-erro-clara);
   color: var(--cor-erro-escura);
 }
+
+/* --- Dark mode overrides --- */
+
+.dark .cartao-perfil {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda-clara);
+}
+
+.dark .cartao-perfil__avatar {
+  border-color: var(--cor-branco);
+}
+
+.dark .secao-perfil {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda-clara);
+}
+
+.dark .secao-perfil__botao-cancelar {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto-medio);
+}
+
+.dark .secao-perfil__botao-cancelar:hover {
+  background-color: var(--cor-fundo-leve);
+}
+
+.dark .campo-perfil__input--editando {
+  background-color: var(--cor-fundo-leve);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.dark .campo-perfil__input--leitura {
+  color: var(--cor-texto-secundario);
+}
+
+.dark .campo-perfil__bio--editando {
+  background-color: var(--cor-fundo-leve);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.dark .campo-perfil__bio--leitura {
+  color: var(--cor-texto-medio);
+}
+
+.dark .historico-item {
+  background-color: var(--cor-fundo-leve);
+}
+
+.dark .cartao-perfil__stat {
+  background-color: var(--cor-fundo-leve);
+}
+
+/* --- Skeleton overrides for profile page --- */
+
+.pagina-perfil .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--cor-borda-clara) 25%,
+    var(--cor-fundo-leve) 50%,
+    var(--cor-borda-clara) 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 0.5rem;
+}

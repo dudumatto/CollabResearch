@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { createContext, useContext, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Sidebar } from "../components/Sidebar";
 import { Topbar } from "../components/Topbar";
 import { useAuth } from "../hooks/useAuth";
+import { useTheme } from "../providers/ThemeProvider";
 
 export const SidebarContext = createContext({ collapsed: false });
 export const useSidebarContext = () => useContext(SidebarContext);
@@ -28,6 +29,7 @@ export function DashboardLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { user } = useAuth();
+  const { isDark } = useTheme();
 
   const baseInfo = pageTitles[pathname] || { title: "Iniciação Científica", subtitle: "" };
   const pageInfo = {
@@ -40,7 +42,7 @@ export function DashboardLayout({ children }) {
 
   return (
     <SidebarContext.Provider value={{ collapsed }}>
-      <div className="pagina-app tema-fixo-claro">
+      <div className={`pagina-app${isDark ? "" : " tema-fixo-claro"}`}>
         <Sidebar
           collapsed={collapsed}
           setCollapsed={setCollapsed}

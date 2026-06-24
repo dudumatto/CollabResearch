@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # CollabResearch
 
@@ -246,6 +246,57 @@ Desktop:
 cd desktop
 npm run build
 ```
+
+## Testes E2E (Playwright)
+
+Os testes end-to-end do web usam Playwright e estao em `web/e2e/`.
+
+### Estrutura dos testes
+
+```text
+web/e2e/
+|-- tests/                  # Testes funcionais (login, cadastro, projetos, etc.)
+|-- security/               # Testes de seguranca (access-control, headers, JWT, XSS, etc.)
+|-- tests-mocked/           # Testes com mocks (API error states, pages, auth)
+|-- pages/                  # Page Objects para reutilizacao
+|-- factories/              # Dados de teste (project, profile, document, auth)
+|-- fixtures/               # Fixtures customizados do Playwright
+`-- helpers/                # Helpers de API, auth, assertions, mock, etc.
+```
+
+### Como rodar
+
+Prerequisito: instalar as dependencias do web antes (`cd web && npm install`).
+
+Rodar todos os testes E2E funcionais:
+
+```bash
+cd web
+npm run test:e2e
+```
+
+Rodar os testes de seguranca:
+
+```bash
+cd web
+npm run test:security
+```
+
+Rodar apenas o smoke test de seguranca:
+
+```bash
+cd web
+npm run test:security:smoke
+```
+
+### Variaveis de ambiente
+
+| Variavel | Padrao | Uso |
+| --- | --- | --- |
+| `E2E_PORT` | `5173` | Porta do dev server para os testes funcionais. |
+| `E2E_BASE_URL` | `http://127.0.0.1:<E2E_PORT>` | URL base do app nos testes. |
+| `VITE_API_URL` | `http://127.0.0.1:8080` | URL da API usada nos testes. |
+| `E2E_API_URL` | `http://127.0.0.1:8081` | URL da API para os testes de seguranca. |
 
 ## Estrutura do Projeto
 

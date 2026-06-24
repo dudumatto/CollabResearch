@@ -68,6 +68,8 @@
 /* --- Step Card --- */
 
 .step-card {
+  box-sizing: border-box;
+  width: 100%;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.9rem;
@@ -179,6 +181,7 @@
 
 .step-card__action {
   align-self: center;
+  justify-self: end;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -213,6 +216,8 @@
 }
 
 .update-feed__item {
+  box-sizing: border-box;
+  width: 100%;
   padding: 1rem 1.05rem;
   border-radius: 22px;
   border: 1px solid var(--progress-border-soft);
@@ -371,6 +376,7 @@
 .update-form__field input,
 .update-form__field select,
 .update-form__field textarea {
+  box-sizing: border-box;
   width: 100%;
   border: 1px solid var(--progress-border-input);
   border-radius: 16px;
@@ -436,6 +442,7 @@
 
   .step-card {
     grid-template-columns: auto minmax(0, 1fr);
+    padding: 0.9rem;
   }
 
   .step-card__action {
@@ -494,5 +501,18 @@
   .update-form__actions,
   .update-form__submit {
     width: 100%;
+  }
+}
+
+
+@media (max-width: 900px) {
+  .step-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .step-card__action {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 0.15rem;
   }
 }

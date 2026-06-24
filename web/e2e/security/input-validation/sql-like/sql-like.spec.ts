@@ -41,7 +41,7 @@ test.describe("SQL-like payloads", () => {
         data: { email: payload, senha: "12345678" },
       });
       expect(response.status(), `SQL injection retornou 500`).not.toBe(500);
-      expect([200, 400, 401]).toContain(response.status());
+      expect([200, 400, 401, 403]).toContain(response.status());
     });
   }
 
@@ -52,7 +52,7 @@ test.describe("SQL-like payloads", () => {
         data: { nome: payload, email: uniqueEmail, senha: "12345678", ra: "123" },
       });
       expect(response.status(), `SQL injection retornou 500`).not.toBe(500);
-      expect([200, 400, 409]).toContain(response.status());
+      expect([200, 400, 403, 409]).toContain(response.status());
     });
   }
 

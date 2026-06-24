@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useUploadDocumento } from "../hooks/useUploadDocumento";
+import { useTheme } from "../providers/ThemeProvider";
 import { courseService } from "../services/courseService";
 import { userService } from "../services/userService";
 import { applicationService } from "../services/applicationService";
@@ -72,6 +73,7 @@ function ProfileSkeleton() {
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
+  const { setTheme } = useTheme();
   const { data, loading, error, reload } = useAsyncData(async () => {
     if (!user?.id) return { profile: user, courses: [], applications: [], documents: [] };
     const [profile, courses, applications, documents] = await Promise.all([
@@ -108,6 +110,13 @@ export default function ProfilePage() {
   useEffect(() => {
     if (data?.profile) {
       setForm(buildFormFromProfile(data.profile));
+      const savedTema = data.profile.tema;
+      if (savedTema === "escuro" || savedTema === "claro") {
+        setTheme(savedTema);
+      } else if (savedTema === "sistema") {
+        const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+        setTheme(prefersDark ? "dark" : "light");
+      }
     }
   }, [data]);
 
@@ -304,7 +313,16 @@ export default function ProfilePage() {
                       <select
                         value={form.tema}
                         disabled={!editing}
-                        onChange={(e) => setForm((prev) => ({ ...prev, tema: e.target.value }))}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setForm((prev) => ({ ...prev, tema: value }));
+                          if (value === "escuro" || value === "claro") {
+                            setTheme(value);
+                          } else {
+                            const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+                            setTheme(prefersDark ? "dark" : "light");
+                          }
+                        }}
                         className={`campo-perfil__input ${editing ? "campo-perfil__input--editando" : "campo-perfil__input--leitura"}`}
                       >
                         <option value="sistema">Sistema</option>
