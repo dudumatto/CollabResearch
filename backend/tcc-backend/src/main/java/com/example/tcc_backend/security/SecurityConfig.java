@@ -48,6 +48,7 @@ public class SecurityConfig {
                                 "/api/health/**",
                                 "/api/auth/login",
                                 "/api/auth/register",
+                                "/api/test/**",
                                 "/ws",
                                 "/ws/**",
                                 "/favicon.ico",

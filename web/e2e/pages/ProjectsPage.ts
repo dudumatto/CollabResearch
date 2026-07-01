@@ -8,7 +8,7 @@ export class ProjectsPage {
   }
 
   async searchProject(title: string): Promise<void> {
-    await this.page.getByPlaceholder("Buscar projetos por titulo, area ou tecnologia...").fill(title);
+    await this.page.getByPlaceholder("Buscar projetos por título, área ou tecnologia...").fill(title);
   }
 
   async expectProjectVisible(title: string): Promise<void> {

@@ -1,10 +1,13 @@
 import { expect, type APIRequestContext } from "@playwright/test";
+import { runGuardOnce } from "./environment-guard";
 import {
   buildProjectDraft,
   buildTestUser,
   type ProjectDraft,
   type TestUser,
 } from "./test-data.helper";
+
+runGuardOnce();
 
 export const API_URL =
   process.env.E2E_API_URL ??

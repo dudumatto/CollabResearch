@@ -12,12 +12,17 @@
 .pagina-perfil__grade {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--espaco-6);
+  align-items: start;
+  gap: var(--espaco-5);
+}
+
+.pagina-perfil__grade > * {
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {
   .pagina-perfil__grade {
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
   }
 }
 
@@ -25,6 +30,7 @@
    Card de perfil (coluna esquerda)
    ================================================================ */
 .cartao-perfil {
+  align-self: start;
   background-color: var(--cor-branco);
   border-radius: var(--raio-grande);
   border: 1px solid var(--cor-borda-clara);
@@ -32,18 +38,18 @@
 }
 
 .cartao-perfil__capa {
-  height: 6rem;
+  height: 5.4rem;
   background: var(--gradiente-primario);
   position: relative;
 }
 
 .cartao-perfil__corpo {
-  padding: 0 var(--espaco-4) var(--espaco-6);
+  padding: 0 var(--espaco-4) var(--espaco-5);
 }
 
 @media (min-width: 768px) {
   .cartao-perfil__corpo {
-    padding: 0 var(--espaco-6) var(--espaco-6);
+    padding: 0 var(--espaco-5) var(--espaco-5);
   }
 }
 
@@ -176,16 +182,19 @@
    Coluna principal (conteúdo editável)
    ================================================================ */
 .pagina-perfil__conteudo-principal {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--espaco-5);
 }
 
 .secao-perfil {
+  box-sizing: border-box;
+  width: 100%;
   background-color: var(--cor-branco);
   border-radius: var(--raio-grande);
   border: 1px solid var(--cor-borda-clara);
-  padding: var(--espaco-5);
+  padding: var(--espaco-4);
 }
 
 .secao-perfil__cabecalho {
@@ -194,7 +203,7 @@
   align-items: flex-start;
   gap: var(--espaco-3);
   justify-content: space-between;
-  margin-bottom: var(--espaco-5);
+  margin-bottom: var(--espaco-4);
 }
 
 @media (min-width: 640px) {
@@ -316,7 +325,11 @@
 .secao-perfil__grade-campos {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--espaco-4);
+  gap: var(--espaco-3);
+}
+
+.secao-perfil__grade-campos > div {
+  min-width: 0;
 }
 
 @media (min-width: 640px) {
@@ -346,6 +359,7 @@
 }
 
 .campo-perfil__input {
+  box-sizing: border-box;
   width: 100%;
   padding: 0.625rem var(--espaco-3) 0.625rem 2.25rem;
   border-radius: var(--raio-grande);
@@ -373,6 +387,7 @@
 }
 
 .campo-perfil__bio {
+  box-sizing: border-box;
   width: 100%;
   padding: var(--espaco-3) var(--espaco-4);
   border-radius: var(--raio-grande);
@@ -480,4 +495,72 @@
 .historico-item__etiqueta--rejeitado {
   background-color: var(--cor-erro-clara);
   color: var(--cor-erro-escura);
+}
+
+/* --- Dark mode overrides --- */
+
+.dark .cartao-perfil {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda-clara);
+}
+
+.dark .cartao-perfil__avatar {
+  border-color: var(--cor-branco);
+}
+
+.dark .secao-perfil {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda-clara);
+}
+
+.dark .secao-perfil__botao-cancelar {
+  background-color: var(--cor-branco);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto-medio);
+}
+
+.dark .secao-perfil__botao-cancelar:hover {
+  background-color: var(--cor-fundo-leve);
+}
+
+.dark .campo-perfil__input--editando {
+  background-color: var(--cor-fundo-leve);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.dark .campo-perfil__input--leitura {
+  color: var(--cor-texto-secundario);
+}
+
+.dark .campo-perfil__bio--editando {
+  background-color: var(--cor-fundo-leve);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.dark .campo-perfil__bio--leitura {
+  color: var(--cor-texto-medio);
+}
+
+.dark .historico-item {
+  background-color: var(--cor-fundo-leve);
+}
+
+.dark .cartao-perfil__stat {
+  background-color: var(--cor-fundo-leve);
+}
+
+/* --- Skeleton overrides for profile page --- */
+
+.pagina-perfil .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--cor-borda-clara) 25%,
+    var(--cor-fundo-leve) 50%,
+    var(--cor-borda-clara) 75%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 0.5rem;
 }

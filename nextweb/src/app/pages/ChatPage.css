@@ -8,6 +8,7 @@
   border-radius: 12px;
   border: 1px solid var(--cor-separador-suave);
   overflow: hidden;
+  overflow-x: clip;
   box-shadow: var(--sombra-pequena);
   position: relative;
 }
@@ -73,6 +74,7 @@
 .pagina-chat__rolagem-conversas {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
 }
 
@@ -195,6 +197,16 @@
   color: #185e46;
 }
 
+.dark .conversa-item__badge--privada {
+  background: rgba(85, 124, 85, 0.25);
+  color: #b8d3a7;
+}
+
+.dark .conversa-item__badge--grupo {
+  background: rgba(31, 122, 90, 0.2);
+  color: #86efac;
+}
+
 /* =========================
    Área da conversa
    ========================= */
@@ -234,7 +246,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: linear-gradient(180deg, var(--cor-superficie-2) 0%, var(--cor-fundo) 100%);
+  background: var(--cor-superficie-2);
   min-height: 0;
 }
 
@@ -545,6 +557,16 @@
 
 .conversa-item--skeleton {
   pointer-events: none;
+}
+
+.dark .chat-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--cor-borda-clara, #24382b) 0%,
+    var(--cor-fundo-leve, #17251d) 45%,
+    var(--cor-borda-clara, #24382b) 100%
+  );
+  background-size: 220% 100%;
 }
 
 /* =========================

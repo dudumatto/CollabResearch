@@ -8,6 +8,6 @@ export class ApplicationsPage {
   }
 
   async expectVisible(): Promise<void> {
-    await expect(this.page.getByRole("heading", { name: "Minhas Inscrições", exact: true })).toBeVisible();
+    await expect(this.page.getByText("Total de inscrições")).toBeVisible();
   }
 }

@@ -8,12 +8,28 @@ import {
 } from "./applications.robot";
 import { assertForbidden, assertOk, registerAndLogin } from "../../helpers/security.helper";
 import { API_URL } from "../../../helpers/api.helper";
+import { cleanupTestData } from "../../../helpers/database-cleanup.helper";
+import { verifyTestProfile, setupAdmin } from "../../../helpers/journey.helper";
 
 test.describe("access control inscrições", () => {
   let scenario: Awaited<ReturnType<typeof prepareApplicationScenario>>;
+  let adminToken = "";
 
   test.beforeAll(async ({ request }) => {
+    await verifyTestProfile(request);
+    const admin = await setupAdmin(request);
+    const res = await request.post(`${API_URL}/api/auth/login`, {
+      data: { email: admin.email, senha: admin.senha },
+    });
+    if (res.ok()) {
+      const body = await res.json();
+      adminToken = body.token;
+    }
     scenario = await prepareApplicationScenario(request);
+  });
+
+  test.afterEach(async ({ request }) => {
+    if (adminToken) await cleanupTestData(request, adminToken);
   });
 
   test("dono do projeto aprova inscrição", async ({ request }) => {

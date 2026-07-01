@@ -9,7 +9,7 @@ export class LandingPage {
 
   async expectVisible(): Promise<void> {
     await expect(this.page).toHaveTitle("CollabResearch — Plataforma de Iniciação Científica");
-    await expect(this.page.getByText("Sua pesquisa comeca aqui.")).toBeVisible();
+    await expect(this.page.getByText("Sua pesquisa começa aqui.")).toBeVisible();
   }
 
   async expectProtectedRouteRedirects(): Promise<void> {

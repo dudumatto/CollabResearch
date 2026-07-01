@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    progress-components.css Ã¢â‚¬â€ Estilos dos componentes de progresso
    ExtraÃƒÂ­do de ProgressPage.css para migraÃƒÂ§ÃƒÂ£o isolada.
    As variÃƒÂ¡veis CSS sÃƒÂ£o definidas em .progress-page (migrado depois).
@@ -68,6 +68,8 @@
 /* --- Step Card --- */
 
 .step-card {
+  box-sizing: border-box;
+  width: 100%;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.9rem;
@@ -179,20 +181,29 @@
 
 .step-card__action {
   align-self: center;
+  justify-self: end;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   border: 0;
   border-radius: 14px;
   padding: 0.8rem 1rem;
-  background: var(--progress-dark-action-bg);
-  color: var(--progress-dark-action-text);
+  background: var(--progress-action-bg);
+  color: #fff;
   font-weight: 700;
+  box-shadow: var(--progress-action-shadow);
+  cursor: pointer;
+  transition: transform var(--motion-duration-fast) var(--motion-ease-standard), filter var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 .step-card__action:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.step-card__action:not(:disabled):hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
 }
 
 /* --- Update Feed --- */
@@ -213,6 +224,8 @@
 }
 
 .update-feed__item {
+  box-sizing: border-box;
+  width: 100%;
   padding: 1rem 1.05rem;
   border-radius: 22px;
   border: 1px solid var(--progress-border-soft);
@@ -371,6 +384,7 @@
 .update-form__field input,
 .update-form__field select,
 .update-form__field textarea {
+  box-sizing: border-box;
   width: 100%;
   border: 1px solid var(--progress-border-input);
   border-radius: 16px;
@@ -436,6 +450,7 @@
 
   .step-card {
     grid-template-columns: auto minmax(0, 1fr);
+    padding: 0.9rem;
   }
 
   .step-card__action {
@@ -494,5 +509,18 @@
   .update-form__actions,
   .update-form__submit {
     width: 100%;
+  }
+}
+
+
+@media (max-width: 900px) {
+  .step-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .step-card__action {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 0.15rem;
   }
 }

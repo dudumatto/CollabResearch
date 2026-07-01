@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Topbar.css - Barra superior do app autenticado
    ============================================================ */
 
@@ -354,4 +354,41 @@
     right: 0;
     width: min(12rem, calc(100vw - 1.5rem));
   }
+}
+
+/* --- Dark mode --- */
+
+.dark .barra-topo {
+  background: rgba(15, 26, 20, 0.94);
+  border-bottom-color: rgba(196, 208, 190, 0.12);
+}
+
+.dark .barra-topo__busca {
+  background: rgba(23, 37, 29, 0.78);
+  border-color: rgba(196, 208, 190, 0.16);
+  color: var(--color-ink-500);
+}
+
+.dark .barra-topo__busca:hover,
+.dark .barra-topo__botao-notificacoes.ui-icon-button:hover,
+.dark .barra-topo__botao-perfil:hover {
+  color: var(--color-ink-900);
+  background: rgba(126, 160, 106, 0.1);
+  border-color: rgba(196, 208, 190, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(196, 208, 190, 0.12);
+}
+
+.dark .barra-topo__botao-menu.ui-icon-button:hover {
+  background: rgba(126, 160, 106, 0.1);
+  border-color: rgba(196, 208, 190, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(196, 208, 190, 0.1);
+}
+
+.dark .barra-topo__menu-dropdown {
+  background: rgba(23, 37, 29, 0.96);
+  border-color: rgba(196, 208, 190, 0.16);
+}
+
+.dark .barra-topo__item-menu:hover {
+  background: rgba(126, 160, 106, 0.12);
 }

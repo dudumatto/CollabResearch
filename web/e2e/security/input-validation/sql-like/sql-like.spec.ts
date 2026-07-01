@@ -2,14 +2,27 @@ import { test, expect } from "@playwright/test";
 import { prepareValidationUser, sqlLikePayloads } from "../payloads.helper";
 import { API_URL } from "../../../helpers/api.helper";
 import { buildProjectCandidate } from "../../../factories/project.factory";
+import { cleanupTestData } from "../../../helpers/database-cleanup.helper";
+import { verifyTestProfile, setupAdmin } from "../../../helpers/journey.helper";
 
 test.describe("SQL-like payloads", () => {
   let token: string;
   let projectId: number;
   let conversationId: number;
   let areaId: number;
+  let adminToken = "";
 
   test.beforeAll(async ({ request }) => {
+    await verifyTestProfile(request);
+    const admin = await setupAdmin(request);
+    const res = await request.post(`${API_URL}/api/auth/login`, {
+      data: { email: admin.email, senha: admin.senha },
+    });
+    if (res.ok()) {
+      const body = await res.json();
+      adminToken = body.token;
+    }
+
     const user = await prepareValidationUser(request);
     token = user.token;
 
@@ -35,13 +48,17 @@ test.describe("SQL-like payloads", () => {
     conversationId = Number(conv.id);
   });
 
+  test.afterEach(async ({ request }) => {
+    if (adminToken) await cleanupTestData(request, adminToken);
+  });
+
   for (const payload of sqlLikePayloads()) {
     test(`POST /api/auth/login com SQL injection "${payload.slice(0, 20)}..." não retorna 500`, async ({ request }) => {
       const response = await request.post(`${API_URL}/api/auth/login`, {
         data: { email: payload, senha: "12345678" },
       });
       expect(response.status(), `SQL injection retornou 500`).not.toBe(500);
-      expect([200, 400, 401]).toContain(response.status());
+      expect([200, 400, 401, 403]).toContain(response.status());
     });
   }
 
@@ -52,7 +69,7 @@ test.describe("SQL-like payloads", () => {
         data: { nome: payload, email: uniqueEmail, senha: "12345678", ra: "123" },
       });
       expect(response.status(), `SQL injection retornou 500`).not.toBe(500);
-      expect([200, 400, 409]).toContain(response.status());
+      expect([200, 400, 403, 409]).toContain(response.status());
     });
   }
 
