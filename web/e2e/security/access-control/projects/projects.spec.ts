@@ -8,12 +8,28 @@ import {
 } from "./projects.robot";
 import { assertForbidden, assertOk, registerAndLoginOrientador } from "../../helpers/security.helper";
 import { API_URL } from "../../../helpers/api.helper";
+import { cleanupTestData } from "../../../helpers/database-cleanup.helper";
+import { verifyTestProfile, setupAdmin } from "../../../helpers/journey.helper";
 
 test.describe("access control projetos", () => {
   let scenario: Awaited<ReturnType<typeof prepareProjectScenario>>;
+  let adminToken = "";
 
   test.beforeAll(async ({ request }) => {
+    await verifyTestProfile(request);
+    const admin = await setupAdmin(request);
+    const res = await request.post(`${API_URL}/api/auth/login`, {
+      data: { email: admin.email, senha: admin.senha },
+    });
+    if (res.ok()) {
+      const body = await res.json();
+      adminToken = body.token;
+    }
     scenario = await prepareProjectScenario(request);
+  });
+
+  test.afterEach(async ({ request }) => {
+    if (adminToken) await cleanupTestData(request, adminToken);
   });
 
   test("dono visualiza projeto", async ({ request }) => {

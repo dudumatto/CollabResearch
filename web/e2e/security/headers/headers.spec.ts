@@ -9,6 +9,10 @@ import {
   HEADER_CHECKS,
   type HeaderResult,
 } from "./headers.robot";
+import { cleanupTestData } from "../../helpers/database-cleanup.helper";
+import { verifyTestProfile, setupAdmin } from "../../helpers/journey.helper";
+
+const API_URL = process.env.E2E_API_URL ?? process.env.VITE_API_URL ?? "http://127.0.0.1:8080";
 
 type EndpointConfig = {
   path: string;
@@ -26,10 +30,24 @@ const BACKEND_ENDPOINTS: EndpointConfig[] = [
 
 test.describe("security headers", () => {
   let token: string;
+  let adminToken = "";
 
   test.beforeAll(async ({ request }) => {
+    await verifyTestProfile(request);
+    const admin = await setupAdmin(request);
+    const res = await request.post(`${API_URL}/api/auth/login`, {
+      data: { email: admin.email, senha: admin.senha },
+    });
+    if (res.ok()) {
+      const body = await res.json();
+      adminToken = body.token;
+    }
     const user = await prepareHeadersUser(request);
     token = user.token;
+  });
+
+  test.afterEach(async ({ request }) => {
+    if (adminToken) await cleanupTestData(request, adminToken);
   });
 
   for (const endpoint of BACKEND_ENDPOINTS) {
@@ -85,8 +103,18 @@ test.describe("security headers", () => {
 test.describe("security headers report", () => {
   let token: string;
   let allResults: Array<{ endpoint: string; results: HeaderResult[] }> = [];
+  let adminToken = "";
 
   test.beforeAll(async ({ request }) => {
+    await verifyTestProfile(request);
+    const admin = await setupAdmin(request);
+    const res = await request.post(`${API_URL}/api/auth/login`, {
+      data: { email: admin.email, senha: admin.senha },
+    });
+    if (res.ok()) {
+      const body = await res.json();
+      adminToken = body.token;
+    }
     const user = await prepareHeadersUser(request);
     token = user.token;
 
@@ -113,6 +141,10 @@ test.describe("security headers report", () => {
 
       allResults.push({ endpoint: endpoint.name, results });
     }
+  });
+
+  test.afterEach(async ({ request }) => {
+    if (adminToken) await cleanupTestData(request, adminToken);
   });
 
   test("gera relatório de headers para todos os endpoints", async () => {

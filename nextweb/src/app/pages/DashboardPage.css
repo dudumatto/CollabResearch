@@ -404,6 +404,7 @@
 .inscricao-item,
 .notificacao-resumo,
 .projeto-sugerido {
+  box-sizing: border-box;
   width: 100%;
   border: 1px solid transparent;
   border-radius: var(--raio-medio);
@@ -474,6 +475,8 @@
 
 .inscricao-item .ui-badge {
   justify-self: end;
+  margin-inline-start: var(--espaco-2);
+  margin-inline-end: var(--espaco-1);
   overflow-wrap: anywhere;
 }
 

@@ -765,3 +765,49 @@
   font-family: var(--fonte-principal);
   padding: 8px;
 }
+
+/* -- Dark mode panel fixes -- */
+.dark .cfg-panel {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(31, 122, 90, 0.16), transparent 26rem),
+    radial-gradient(circle at 92% 0%, rgba(126, 160, 106, 0.12), transparent 24rem),
+    linear-gradient(180deg, #0a120e 0%, #0f1a14 42%, #0d1610 100%);
+  color: var(--cor-texto);
+}
+
+.dark .cfg-panel__body {
+  background: transparent;
+}
+
+.dark .cfg-panel__header {
+  background-color: rgba(23, 37, 29, 0.94);
+  border-color: var(--cor-separador-suave);
+}
+
+.dark .cfg-section-group,
+.dark .cfg-profile-card,
+.dark .cfg-empty-state,
+.dark .cfg-password-hint,
+.dark .cfg-session-card,
+.dark .cfg-radio-item,
+.dark .cfg-chip {
+  background-color: var(--cor-superficie);
+  border-color: var(--cor-separador-suave);
+}
+
+.dark .cfg-input,
+.dark .cfg-select {
+  background-color: var(--cor-input);
+  border-color: var(--cor-input-borda);
+  color: var(--cor-texto);
+}
+
+.dark .cfg-input::placeholder {
+  color: var(--cor-texto-mudo);
+}
+
+.dark .cfg-toggle-row,
+.dark .cfg-help-item,
+.dark .cfg-nav-item {
+  border-color: var(--cor-separador-suave);
+}

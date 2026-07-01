@@ -249,6 +249,9 @@ npm run build
 
 ## Testes E2E (Playwright)
 
+> **⚠️ Testes E2E só podem ser executados contra backend e banco locais.**
+> A suíte bloqueia automaticamente URLs remotas para evitar poluir produção.
+
 Os testes end-to-end do web usam Playwright e estao em `web/e2e/`.
 
 ### Estrutura dos testes

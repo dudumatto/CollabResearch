@@ -576,3 +576,200 @@ body {
    --focus-ring: 0 0 0 3px rgba(31, 122, 90, 0.18);
    --focus-ring-strong: 0 0 0 3px rgba(31, 122, 90, 0.24);
 }
+
+/* ============================================================
+   User appearance preferences
+   Applied by ThemeProvider through data attributes on <html>.
+   ============================================================ */
+html[data-accent-color="azul"],
+html[data-accent-color="azul"] .tema-fixo-claro {
+   --cor-primaria: #2563eb;
+   --cor-primaria-escura: #1d4ed8;
+   --cor-primaria-clara: color-mix(in srgb, #2563eb 12%, transparent);
+   --cor-primaria-leve: color-mix(in srgb, #2563eb 18%, transparent);
+   --cor-primaria-borda: color-mix(in srgb, #2563eb 32%, transparent);
+   --cor-primaria-texto: #93c5fd;
+   --cor-secundaria: #0ea5e9;
+   --cor-secundaria-media: #38bdf8;
+   --color-brand-50: color-mix(in srgb, #2563eb 10%, var(--color-surface-1));
+   --color-brand-100: color-mix(in srgb, #2563eb 18%, var(--color-surface-1));
+   --color-brand-600: #2563eb;
+   --color-brand-700: #60a5fa;
+   --color-brand-800: #bfdbfe;
+   --gradiente-acao: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+   --gradiente-acao-hover: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+   --gradiente-primario: linear-gradient(to right, #2563eb, #38bdf8);
+   --gradiente-primario-br: linear-gradient(to bottom right, #2563eb, #0ea5e9);
+   --gradiente-avatar: linear-gradient(to bottom right, #2563eb, #38bdf8);
+   --foco-verde: 0 0 0 3px color-mix(in srgb, #2563eb 18%, transparent);
+   --foco-verde-forte: 0 0 0 3px color-mix(in srgb, #2563eb 28%, transparent);
+   --focus-ring: 0 0 0 3px color-mix(in srgb, #2563eb 18%, transparent);
+   --focus-ring-strong: 0 0 0 3px color-mix(in srgb, #2563eb 28%, transparent);
+}
+
+html[data-accent-color="verde"],
+html[data-accent-color="verde"] .tema-fixo-claro {
+   --cor-primaria: #1f7a5a;
+   --cor-primaria-escura: #185e46;
+   --cor-primaria-clara: color-mix(in srgb, #1f7a5a 12%, transparent);
+   --cor-primaria-leve: color-mix(in srgb, #1f7a5a 18%, transparent);
+   --cor-primaria-borda: color-mix(in srgb, #1f7a5a 32%, transparent);
+   --cor-primaria-texto: #b8d3a7;
+   --cor-secundaria: #557c55;
+   --cor-secundaria-media: #7ea06a;
+   --color-brand-50: color-mix(in srgb, #1f7a5a 10%, var(--color-surface-1));
+   --color-brand-100: color-mix(in srgb, #1f7a5a 18%, var(--color-surface-1));
+   --color-brand-600: #1f7a5a;
+   --color-brand-700: #7ea06a;
+   --color-brand-800: #b8d3a7;
+   --gradiente-acao: linear-gradient(135deg, #1f7a5a 0%, #557c55 100%);
+   --gradiente-acao-hover: linear-gradient(135deg, #185e46 0%, #1f7a5a 100%);
+   --gradiente-primario: linear-gradient(to right, #1f7a5a, #7ea06a);
+   --gradiente-primario-br: linear-gradient(to bottom right, #1f7a5a, #557c55);
+   --gradiente-avatar: linear-gradient(to bottom right, #1f7a5a, #7ea06a);
+   --foco-verde: 0 0 0 3px color-mix(in srgb, #1f7a5a 18%, transparent);
+   --foco-verde-forte: 0 0 0 3px color-mix(in srgb, #1f7a5a 28%, transparent);
+   --focus-ring: 0 0 0 3px color-mix(in srgb, #1f7a5a 18%, transparent);
+   --focus-ring-strong: 0 0 0 3px color-mix(in srgb, #1f7a5a 28%, transparent);
+}
+
+html[data-accent-color="roxo"],
+html[data-accent-color="roxo"] .tema-fixo-claro {
+   --cor-primaria: #7c3aed;
+   --cor-primaria-escura: #6d28d9;
+   --cor-primaria-clara: color-mix(in srgb, #7c3aed 12%, transparent);
+   --cor-primaria-leve: color-mix(in srgb, #7c3aed 18%, transparent);
+   --cor-primaria-borda: color-mix(in srgb, #7c3aed 32%, transparent);
+   --cor-primaria-texto: #c4b5fd;
+   --cor-secundaria: #a855f7;
+   --cor-secundaria-media: #c084fc;
+   --color-brand-50: color-mix(in srgb, #7c3aed 10%, var(--color-surface-1));
+   --color-brand-100: color-mix(in srgb, #7c3aed 18%, var(--color-surface-1));
+   --color-brand-600: #7c3aed;
+   --color-brand-700: #a78bfa;
+   --color-brand-800: #ddd6fe;
+   --gradiente-acao: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+   --gradiente-acao-hover: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%);
+   --gradiente-primario: linear-gradient(to right, #7c3aed, #c084fc);
+   --gradiente-primario-br: linear-gradient(to bottom right, #7c3aed, #a855f7);
+   --gradiente-avatar: linear-gradient(to bottom right, #7c3aed, #c084fc);
+   --foco-verde: 0 0 0 3px color-mix(in srgb, #7c3aed 18%, transparent);
+   --foco-verde-forte: 0 0 0 3px color-mix(in srgb, #7c3aed 28%, transparent);
+   --focus-ring: 0 0 0 3px color-mix(in srgb, #7c3aed 18%, transparent);
+   --focus-ring-strong: 0 0 0 3px color-mix(in srgb, #7c3aed 28%, transparent);
+}
+
+html[data-accent-color="laranja"],
+html[data-accent-color="laranja"] .tema-fixo-claro {
+   --cor-primaria: #ea580c;
+   --cor-primaria-escura: #c2410c;
+   --cor-primaria-clara: color-mix(in srgb, #ea580c 12%, transparent);
+   --cor-primaria-leve: color-mix(in srgb, #ea580c 18%, transparent);
+   --cor-primaria-borda: color-mix(in srgb, #ea580c 32%, transparent);
+   --cor-primaria-texto: #fdba74;
+   --cor-secundaria: #f59e0b;
+   --cor-secundaria-media: #fb923c;
+   --color-brand-50: color-mix(in srgb, #ea580c 10%, var(--color-surface-1));
+   --color-brand-100: color-mix(in srgb, #ea580c 18%, var(--color-surface-1));
+   --color-brand-600: #ea580c;
+   --color-brand-700: #fb923c;
+   --color-brand-800: #fed7aa;
+   --gradiente-acao: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+   --gradiente-acao-hover: linear-gradient(135deg, #c2410c 0%, #ea580c 100%);
+   --gradiente-primario: linear-gradient(to right, #ea580c, #fb923c);
+   --gradiente-primario-br: linear-gradient(to bottom right, #ea580c, #f59e0b);
+   --gradiente-avatar: linear-gradient(to bottom right, #ea580c, #fb923c);
+   --foco-verde: 0 0 0 3px color-mix(in srgb, #ea580c 18%, transparent);
+   --foco-verde-forte: 0 0 0 3px color-mix(in srgb, #ea580c 28%, transparent);
+   --focus-ring: 0 0 0 3px color-mix(in srgb, #ea580c 18%, transparent);
+   --focus-ring-strong: 0 0 0 3px color-mix(in srgb, #ea580c 28%, transparent);
+}
+
+html[data-accent-color="rosa"],
+html[data-accent-color="rosa"] .tema-fixo-claro {
+   --cor-primaria: #db2777;
+   --cor-primaria-escura: #be185d;
+   --cor-primaria-clara: color-mix(in srgb, #db2777 12%, transparent);
+   --cor-primaria-leve: color-mix(in srgb, #db2777 18%, transparent);
+   --cor-primaria-borda: color-mix(in srgb, #db2777 32%, transparent);
+   --cor-primaria-texto: #f9a8d4;
+   --cor-secundaria: #e11d48;
+   --cor-secundaria-media: #f472b6;
+   --color-brand-50: color-mix(in srgb, #db2777 10%, var(--color-surface-1));
+   --color-brand-100: color-mix(in srgb, #db2777 18%, var(--color-surface-1));
+   --color-brand-600: #db2777;
+   --color-brand-700: #f472b6;
+   --color-brand-800: #fbcfe8;
+   --gradiente-acao: linear-gradient(135deg, #db2777 0%, #e11d48 100%);
+   --gradiente-acao-hover: linear-gradient(135deg, #be185d 0%, #db2777 100%);
+   --gradiente-primario: linear-gradient(to right, #db2777, #f472b6);
+   --gradiente-primario-br: linear-gradient(to bottom right, #db2777, #e11d48);
+   --gradiente-avatar: linear-gradient(to bottom right, #db2777, #f472b6);
+   --foco-verde: 0 0 0 3px color-mix(in srgb, #db2777 18%, transparent);
+   --foco-verde-forte: 0 0 0 3px color-mix(in srgb, #db2777 28%, transparent);
+   --focus-ring: 0 0 0 3px color-mix(in srgb, #db2777 18%, transparent);
+   --focus-ring-strong: 0 0 0 3px color-mix(in srgb, #db2777 28%, transparent);
+}
+
+html[data-font-size="pequena"] {
+   --tamanho-minimo: 0.58rem;
+   --tamanho-xs: 0.64rem;
+   --tamanho-pequeno: 0.7rem;
+   --tamanho-base: 0.76rem;
+   --tamanho-medio: 0.82rem;
+   --tamanho-normal: 0.89rem;
+   --tamanho-grande: 0.95rem;
+   --tamanho-subtitulo: 1.02rem;
+   --tamanho-titulo: 1.12rem;
+   --tamanho-display: 1.3rem;
+   --tamanho-heroi: 1.48rem;
+   --text-xs: 0.7rem;
+   --text-sm: 0.82rem;
+   --text-md: 0.89rem;
+   --text-lg: 0.95rem;
+   --text-xl: 1.16rem;
+   --text-2xl: 1.38rem;
+   --text-3xl: 1.84rem;
+}
+
+html[data-font-size="media"] {
+   --tamanho-minimo: 0.625rem;
+   --tamanho-xs: 0.6875rem;
+   --tamanho-pequeno: 0.75rem;
+   --tamanho-base: 0.8125rem;
+   --tamanho-medio: 0.875rem;
+   --tamanho-normal: 0.95rem;
+   --tamanho-grande: 1rem;
+   --tamanho-subtitulo: 1.1rem;
+   --tamanho-titulo: 1.2rem;
+   --tamanho-display: 1.4rem;
+   --tamanho-heroi: 1.6rem;
+   --text-xs: 0.75rem;
+   --text-sm: 0.875rem;
+   --text-md: 0.95rem;
+   --text-lg: 1rem;
+   --text-xl: 1.25rem;
+   --text-2xl: 1.5rem;
+   --text-3xl: 2rem;
+}
+
+html[data-font-size="grande"] {
+   --tamanho-minimo: 0.69rem;
+   --tamanho-xs: 0.76rem;
+   --tamanho-pequeno: 0.82rem;
+   --tamanho-base: 0.9rem;
+   --tamanho-medio: 0.97rem;
+   --tamanho-normal: 1.05rem;
+   --tamanho-grande: 1.1rem;
+   --tamanho-subtitulo: 1.2rem;
+   --tamanho-titulo: 1.32rem;
+   --tamanho-display: 1.54rem;
+   --tamanho-heroi: 1.76rem;
+   --text-xs: 0.82rem;
+   --text-sm: 0.96rem;
+   --text-md: 1.05rem;
+   --text-lg: 1.1rem;
+   --text-xl: 1.38rem;
+   --text-2xl: 1.65rem;
+   --text-3xl: 2.2rem;
+}

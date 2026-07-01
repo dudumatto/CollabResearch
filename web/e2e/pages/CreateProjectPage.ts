@@ -14,7 +14,7 @@ export class CreateProjectPage {
   }
 
   async fillForm(project: ProjectDraft): Promise<void> {
-    await this.page.getByPlaceholder("Ex: Sistema de deteccao de anomalias com IA").fill(project.title);
+    await this.page.getByPlaceholder("Ex: Sistema de detecção de anomalias com IA").fill(project.title);
     await this.page
       .getByPlaceholder("Descreva os objetivos, metodologia e resultados esperados...")
       .fill(project.description);

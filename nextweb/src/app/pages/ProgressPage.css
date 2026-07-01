@@ -37,10 +37,7 @@
   flex-direction: column;
   gap: 1.25rem;
   padding: 1rem 0 2rem;
-  background:
-    radial-gradient(circle at top right, rgba(31, 122, 90, 0.08), transparent 26%),
-    radial-gradient(circle at left center, rgba(126, 160, 106, 0.1), transparent 28%),
-    var(--progress-bg);
+  background: transparent;
 }
 
 .dark .progress-page {
@@ -530,12 +527,4 @@
   height: 170px;
   flex: 0 0 auto;
   margin: 0 auto 0.5rem;
-}
-
-
-.dark .progress-page {
-  background:
-    radial-gradient(circle at top right, rgba(31, 122, 90, 0.1), transparent 24rem),
-    radial-gradient(circle at left center, rgba(126, 160, 106, 0.08), transparent 26rem),
-    var(--progress-bg);
 }

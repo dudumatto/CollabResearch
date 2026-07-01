@@ -1,4 +1,4 @@
-﻿@import '../src/styles/fonts.css';
+@import '../src/styles/fonts.css';
 @import '../src/styles/tailwind.css';
 @import '../src/styles/theme.css';
 @import '../src/styles/animations.css';
@@ -15,6 +15,8 @@
 @import '../src/app/components/SearchModal.css';
 @import '../src/app/components/Sidebar.css';
 @import '../src/app/components/Topbar.css';
+@import '../src/app/pages/SettingsPage.css';
+@import '../src/app/pages/ProgressPage.css';
 
 
 
