@@ -956,8 +956,7 @@
   font-weight: 700;
 }
 
-.progress-page__toggle-form,
-.progress-page__refresh-button {
+.progress-page__toggle-form {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -977,11 +976,6 @@
   border: 1px dashed var(--progress-border-input);
   color: var(--progress-text-muted);
   background: var(--progress-surface);
-}
-
-.progress-page__refresh-row {
-  display: flex;
-  justify-content: flex-end;
 }
 
 .progress-donut {

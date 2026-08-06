@@ -6,6 +6,7 @@ import {
   runLandingToLogin,
   runLandingToRegister,
   assertLandingSections,
+  assertUpdatedLandingContent,
 } from "./landing.robot";
 
 test.describe("landing page real", () => {
@@ -32,5 +33,10 @@ test.describe("landing page real", () => {
   test("secoes principais da landing estao visiveis", async ({ page }) => {
     await gotoLanding(page);
     await assertLandingSections(page);
+  });
+
+  test("conteudo institucional atualizado esta visivel", async ({ page }) => {
+    await gotoLanding(page);
+    await assertUpdatedLandingContent(page);
   });
 });

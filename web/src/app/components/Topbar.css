@@ -85,40 +85,6 @@
   gap: var(--espaco-2);
 }
 
-/* ---- Campo de busca ---- */
-.barra-topo__busca {
-  display: none;
-  align-items: center;
-  gap: var(--espaco-2);
-  padding: var(--espaco-2) var(--espaco-3);
-  background-color: var(--cor-superficie-2);
-  border-radius: var(--raio-medio);
-  border: 1px solid var(--cor-separador-suave);
-  color: var(--cor-texto-mudo);
-  cursor: pointer;
-  transition: var(--transicao-normal);
-  font-size: var(--tamanho-medio);
-}
-
-.barra-topo__busca:hover {
-  border-color: var(--cor-borda);
-}
-
-@media (min-width: 1024px) {
-  .barra-topo__busca {
-    display: flex;
-  }
-}
-
-.barra-topo__atalho-busca {
-  margin-left: var(--espaco-8);
-  font-size: var(--tamanho-xs);
-  background-color: var(--cor-fundo-leve);
-  padding: 0.125rem var(--espaco-1) 0.125rem var(--espaco-1);
-  border-radius: 0.25rem;
-  color: var(--cor-texto-mudo);
-}
-
 /* ---- Botão de notificações ---- */
 .barra-topo__botao-notificacoes {
   position: relative;

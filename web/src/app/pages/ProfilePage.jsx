@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { User, Mail, BookOpen, Building2, GraduationCap, Edit3, Save, X, Award, Calendar } from "lucide-react";
+import { User, Mail, BookOpen, Building2, GraduationCap, Edit3, Save, X, Award } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -81,23 +81,6 @@ function ProfileSkeleton() {
   );
 }
 
-function getProfileAccent(theme) {
-  switch ((theme ?? "").toLowerCase()) {
-    case "claro":
-      return {
-        capa: { background: "linear-gradient(to bottom right, var(--cor-primaria-clara), var(--cor-fundo-leve))" },
-        avatar: { background: "linear-gradient(to bottom right, var(--cor-primaria), var(--cor-secundaria-media))" },
-      };
-    case "escuro":
-      return {
-        capa: { background: "linear-gradient(to bottom right, var(--cor-texto-secundario), var(--cor-texto-mudo))" },
-        avatar: { background: "linear-gradient(to bottom right, var(--cor-texto-forte), var(--cor-texto-secundario))" },
-      };
-    default:
-      return {};
-  }
-}
-
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
   const avatarInputRef = useRef(null);
@@ -120,6 +103,7 @@ export default function ProfilePage() {
   }, [user?.id], { initialData: { profile: user, applications: [], documents: [], courses: [] } });
   const [editing, setEditing] = useState(false);
   const [loadingSave, setLoadingSave] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [form, setForm] = useState({
     nome: "",
     email: "",
@@ -127,7 +111,6 @@ export default function ProfilePage() {
     instituicao: "",
     semestre: "",
     bio: "",
-    tema: "",
   });
 
   useEffect(() => {
@@ -139,10 +122,13 @@ export default function ProfilePage() {
         instituicao: data.profile.instituicao ?? "",
         semestre: data.profile.semestre ?? "",
         bio: data.profile.bio ?? "",
-        tema: data.profile.tema ?? "sistema",
       });
     }
   }, [data]);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [data?.profile?.fotoPerfilUrl]);
 
   const approvedApps = useMemo(
     () => (data?.applications ?? []).filter((item) => item.status === "APROVADO").length,
@@ -161,10 +147,6 @@ export default function ProfilePage() {
         instituicao: form.instituicao,
         semestre: form.semestre === "" ? null : Number(form.semestre),
         bio: form.bio,
-      });
-      await userService.updatePreferencias({
-        notificacoesAtivas: data?.profile?.notificacoesAtivas ?? true,
-        tema: form.tema || "sistema",
       });
       await reload();
       await refreshUser();
@@ -215,20 +197,21 @@ export default function ProfilePage() {
   const profile = data.profile;
   const isAluno = profile.tipo === "ALUNO";
   const courseOptions = Array.isArray(data?.courses) ? data.courses : [];
-  const profileAccent = getProfileAccent(profile.tema ?? form.tema);
+  const showProfilePhoto = Boolean(profile.fotoPerfilUrl) && !avatarLoadFailed;
 
   return (
     <div className="pagina-perfil">
       <div className="pagina-perfil__grade">
         <div className="cartao-perfil">
-          <div className="cartao-perfil__capa" style={profileAccent.capa} />
+          <div className="cartao-perfil__capa" />
           <div className="cartao-perfil__corpo">
             <div className="cartao-perfil__avatar-wrapper">
-              <div className="cartao-perfil__avatar" style={profileAccent.avatar}>
-                {profile.fotoPerfilUrl ? (
+              <div className="cartao-perfil__avatar">
+                {showProfilePhoto ? (
                   <img
                     src={profile.fotoPerfilUrl}
                     alt={profile.nome ?? "Foto de perfil"}
+                    onError={() => setAvatarLoadFailed(true)}
                     style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
                   />
                 ) : (
@@ -281,7 +264,6 @@ export default function ProfilePage() {
                 { icon: BookOpen, label: profile.cursoNome ?? "Curso não informado" },
                 { icon: Building2, label: profile.instituicao ?? "Instituição não informada" },
                 { icon: GraduationCap, label: profile.semestre ?? "Semestre não informado" },
-                { icon: Calendar, label: "Conta autenticada via API" },
               ].map((item) => (
                 <div key={item.label} className="cartao-perfil__info-item">
                   <item.icon size={14} className="cartao-perfil__info-icone" />
@@ -321,7 +303,6 @@ export default function ProfilePage() {
                 { label: "Curso", value: form.cursoId, icon: BookOpen, field: "cursoId" },
                 { label: "Instituição", value: form.instituicao, icon: Building2, field: "instituicao" },
                 { label: "Semestre", value: form.semestre, icon: GraduationCap, field: "semestre" },
-                { label: "Tema visual", value: form.tema, icon: Calendar, field: "tema" },
                 { label: "Tipo", value: formatUserType(profile.tipo), icon: Award, field: null },
               ].map((field) => (
                 <div key={field.label}>
@@ -341,17 +322,6 @@ export default function ProfilePage() {
                             {course.nome}
                           </option>
                         ))}
-                      </select>
-                    ) : field.field === "tema" ? (
-                      <select
-                        value={form.tema}
-                        disabled={!editing}
-                        onChange={(e) => setForm((prev) => ({ ...prev, tema: e.target.value }))}
-                        className={`campo-perfil__input ${editing ? "campo-perfil__input--editando" : "campo-perfil__input--leitura"}`}
-                      >
-                        <option value="sistema">Sistema</option>
-                        <option value="claro">Claro</option>
-                        <option value="escuro">Escuro</option>
                       </select>
                     ) : (
                       <input

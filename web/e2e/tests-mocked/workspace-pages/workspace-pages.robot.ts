@@ -81,9 +81,24 @@ export async function runFeedbackFlow(page: Page, browser: Browser) {
 }
 
 export async function runProfileFlow(page: Page) {
+  await page.route("**/api/usuarios/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...mockUsers.student,
+        fotoPerfilUrl: "/foto-perfil-inexistente.png",
+      }),
+    });
+  });
   await page.goto("/app/profile");
   await expect(page.getByRole("heading", { name: "Meu Perfil", exact: true })).toBeVisible();
   await expect(page.getByText("Informações do perfil")).toBeVisible();
+  await expect(page.getByText("Conta autenticada via API")).toHaveCount(0);
+  await expect(page.getByText("Tema visual")).toHaveCount(0);
+  await expect(page.locator(".cartao-perfil__avatar-inicial")).toHaveText("AE");
+  await expect(page.locator(".cartao-perfil__avatar img")).toHaveCount(0);
+  await page.unroute("**/api/usuarios/me");
   await page.getByRole("button", { name: "Editar perfil" }).click();
   await page.locator(".campo-perfil__input--editando").first().fill("Aluno E2E Atualizado");
   await page.getByRole("button", { name: "Salvar" }).click();

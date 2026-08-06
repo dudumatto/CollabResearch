@@ -1,5 +1,5 @@
 import { conversationService } from "../services/conversationService";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   ArrowLeft, Users, Clock, BookOpen, Send, Mail, MessageSquare,
@@ -89,6 +89,107 @@ function ProjectDetailSkeleton() {
   );
 }
 
+function ConfirmationDialog({
+  title,
+  description,
+  confirmLabel,
+  loadingLabel,
+  loading,
+  onCancel,
+  onConfirm,
+  titleId,
+  descriptionId,
+  returnFocusRef,
+}) {
+  const dialogRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape" && !loading) {
+        event.preventDefault();
+        onCancel();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusableElements = Array.from(
+        dialogRef.current?.querySelectorAll("button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])") ?? [],
+      );
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey && (activeElement === firstElement || !dialogRef.current?.contains(activeElement))) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && (activeElement === lastElement || !dialogRef.current?.contains(activeElement))) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [loading, onCancel]);
+
+  useEffect(() => () => {
+    returnFocusRef?.current?.focus();
+  }, [returnFocusRef]);
+
+  return (
+    <div
+      className="modal-inscricao__sobreposicao"
+      role="presentation"
+      onClick={(event) => event.target === event.currentTarget && !loading && onCancel()}
+    >
+      <div
+        ref={dialogRef}
+        className="modal-inscricao__painel modal-confirmacao"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+      >
+        <div className="modal-confirmacao__conteudo">
+          <div className="modal-confirmacao__icone" aria-hidden="true">
+            <AlertTriangle size={32} />
+          </div>
+          <h3 id={titleId} className="modal-inscricao__titulo">{title}</h3>
+          <p id={descriptionId} className="modal-confirmacao__texto">{description}</p>
+        </div>
+        <div className="modal-inscricao__rodape">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="modal-inscricao__botao-cancelar"
+            disabled={loading}
+            autoFocus
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+            className="modal-confirmacao__botao-confirmar"
+          >
+            {loading
+              ? <><Loader2 size={15} className="girando" /> {loadingLabel}</>
+              : <><Trash2 size={15} /> {confirmLabel}</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -113,6 +214,9 @@ export default function ProjectDetailPage() {
   const [collaborators, setCollaborators] = useState([]);
   const [collabLoading, setCollabLoading] = useState(false);
   const [removingId, setRemovingId] = useState(null);
+  const [collaboratorToRemove, setCollaboratorToRemove] = useState(null);
+  const removeCollaboratorTriggerRef = useRef(null);
+  const deleteProjectTriggerRef = useRef(null);
 
   // Recrutar
   const [inscricoes, setInscricoes] = useState([]);
@@ -200,6 +304,11 @@ export default function ProjectDetailPage() {
       : "detalhe-card__badge-status--aberto";
 
   const openConversation = async (kind) => {
+    if (kind === "private" && Number(user?.id) === Number(project.advisor?.id)) {
+      toast.error("Você é o orientador deste projeto e não pode enviar uma mensagem para si mesmo. Use a conversa do grupo.");
+      return;
+    }
+
     try {
       const conversa = kind === "group"
         ? await conversationService.abrirOuCriarPorProjeto(project.id)
@@ -262,18 +371,21 @@ export default function ProjectDetailPage() {
       navigate("/app/projects");
     } catch (err) {
       toast.error(err.message || "Não foi possível excluir o projeto.");
-      setShowDeleteConfirm(false);
     } finally {
       setDeleteLoading(false);
     }
   };
 
-  const handleRemoveCollaborator = async (usuarioId) => {
+  const handleRemoveCollaborator = async () => {
+    const usuarioId = getCollaboratorId(collaboratorToRemove);
+    if (usuarioId == null) return;
+
     setRemovingId(usuarioId);
     try {
       await projectService.removerColaborador(id, usuarioId);
       toast.success("Colaborador removido.");
-      loadCollaborators();
+      setCollaboratorToRemove(null);
+      await loadCollaborators();
     } catch (err) {
       toast.error(err.message || "Não foi possível remover o colaborador.");
     } finally {
@@ -355,7 +467,10 @@ export default function ProjectDetailPage() {
               <Pencil size={15} /> Editar
             </button>
             <button
-              onClick={() => setShowDeleteConfirm(true)}
+              onClick={(event) => {
+                deleteProjectTriggerRef.current = event.currentTarget;
+                setShowDeleteConfirm(true);
+              }}
               className="pagina-detalhe-projeto__botao-excluir"
             >
               <Trash2 size={15} /> Excluir
@@ -444,19 +559,6 @@ export default function ProjectDetailPage() {
                     </div>
                     <span className="detalhe-card__requisito-texto">{req}</span>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="detalhe-card">
-            <h2 className="detalhe-card__titulo-secao">Cursos elegíveis</h2>
-            <div className="detalhe-card__chips">
-              {project.courses.length === 0 ? (
-                <span className="detalhe-card__chip-curso">Não informado</span>
-              ) : (
-                project.courses.map((course) => (
-                  <span key={course} className="detalhe-card__chip-curso">{course}</span>
                 ))
               )}
             </div>
@@ -625,10 +727,15 @@ export default function ProjectDetailPage() {
                     </span>
                     {canRemoveCollaborator(c) && (
                       <button
-                        onClick={() => handleRemoveCollaborator(getCollaboratorId(c))}
+                        type="button"
+                        onClick={(event) => {
+                          removeCollaboratorTriggerRef.current = event.currentTarget;
+                          setCollaboratorToRemove(c);
+                        }}
                         disabled={removingId === getCollaboratorId(c)}
                         className="card-colaboradores__botao-remover"
                         title="Remover colaborador"
+                        aria-label={`Remover ${getCollaboratorName(c)}`}
                       >
                         {removingId === getCollaboratorId(c)
                           ? <Loader2 size={12} className="girando" />
@@ -736,27 +843,35 @@ export default function ProjectDetailPage() {
         </div>
       )}
 
+      {collaboratorToRemove && (
+        <ConfirmationDialog
+          title="Remover colaborador"
+          description={<>Tem certeza que deseja remover <strong>{getCollaboratorName(collaboratorToRemove)}</strong> deste projeto?</>}
+          confirmLabel="Remover"
+          loadingLabel="Removendo..."
+          loading={removingId != null}
+          onCancel={() => setCollaboratorToRemove(null)}
+          onConfirm={handleRemoveCollaborator}
+          titleId="remove-collaborator-title"
+          descriptionId="remove-collaborator-description"
+          returnFocusRef={removeCollaboratorTriggerRef}
+        />
+      )}
+
       {/* ── Modal confirmação exclusão ── */}
       {showDeleteConfirm && (
-        <div className="modal-inscricao__sobreposicao">
-          <div className="modal-inscricao__painel modal-confirmacao">
-            <div className="modal-confirmacao__icone">
-              <AlertTriangle size={32} style={{ color: "var(--cor-erro, #ef4444)" }} />
-            </div>
-            <h3 className="modal-inscricao__titulo">Excluir projeto</h3>
-            <p className="modal-confirmacao__texto">
-              Tem certeza que deseja excluir <strong>{project.title}</strong>? Esta ação não pode ser desfeita.
-            </p>
-            <div className="modal-inscricao__rodape">
-              <button onClick={() => setShowDeleteConfirm(false)} className="modal-inscricao__botao-cancelar" disabled={deleteLoading}>
-                Cancelar
-              </button>
-              <button onClick={handleDelete} disabled={deleteLoading} className="modal-confirmacao__botao-confirmar">
-                {deleteLoading ? <Loader2 size={15} className="girando" /> : <><Trash2 size={15} /> Excluir</>}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmationDialog
+          title="Excluir projeto"
+          description={<>Tem certeza que deseja excluir <strong>{project.title}</strong>? Esta ação não pode ser desfeita.</>}
+          confirmLabel="Excluir"
+          loadingLabel="Excluindo..."
+          loading={deleteLoading}
+          onCancel={() => setShowDeleteConfirm(false)}
+          onConfirm={handleDelete}
+          titleId="delete-project-title"
+          descriptionId="delete-project-description"
+          returnFocusRef={deleteProjectTriggerRef}
+        />
       )}
     </div>
   );

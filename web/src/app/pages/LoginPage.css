@@ -19,7 +19,8 @@
   flex-direction: column;
   justify-content: space-between;
   padding: var(--espaco-12);
-  background: linear-gradient(to bottom right, var(--cor-primaria), #5b21b6);
+  background-color: var(--cor-primaria-escura);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 @media (min-width: 1024px) {
@@ -30,31 +31,7 @@
 }
 
 .pagina-login__decoracao-esquerda {
-  position: absolute;
-  inset: 0;
-  opacity: 0.1;
-}
-
-.pagina-login__decoracao-circulo-topo {
-  position: absolute;
-  top: 25%;
-  left: 25%;
-  width: 24rem;
-  height: 24rem;
-  background-color: var(--cor-branco);
-  border-radius: var(--raio-completo);
-  filter: blur(3rem);
-}
-
-.pagina-login__decoracao-circulo-base {
-  position: absolute;
-  bottom: 25%;
-  right: 25%;
-  width: 16rem;
-  height: 16rem;
-  background-color: var(--cor-branco);
-  border-radius: var(--raio-completo);
-  filter: blur(3rem);
+  display: none;
 }
 
 .pagina-login__logo-esquerda {
@@ -69,7 +46,8 @@
 .pagina-login__logo-icone-area {
   width: 2.25rem;
   height: 2.25rem;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: var(--raio-medio);
   display: flex;
   align-items: center;
@@ -87,6 +65,7 @@
 .pagina-login__conteudo-esquerdo {
   position: relative;
   z-index: 10;
+  max-width: 32rem;
 }
 
 .pagina-login__titulo-esquerdo {
@@ -99,7 +78,7 @@
 }
 
 .pagina-login__descricao-esquerda {
-  color: rgba(219, 234, 254, 0.9);
+  color: rgba(255, 255, 255, 0.82);
   font-size: var(--tamanho-grande);
   line-height: 1.7;
 }
@@ -115,13 +94,14 @@
   display: flex;
   align-items: center;
   gap: var(--espaco-3);
-  color: rgba(219, 234, 254, 0.9);
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .pagina-login__icone-beneficio {
   width: 1.5rem;
   height: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--raio-completo);
   display: flex;
   align-items: center;
@@ -134,7 +114,7 @@
 }
 
 .pagina-login__rodape-esquerdo {
-  color: rgba(191, 219, 254, 0.8);
+  color: rgba(255, 255, 255, 0.68);
   font-size: var(--tamanho-base);
   position: relative;
   z-index: 10;

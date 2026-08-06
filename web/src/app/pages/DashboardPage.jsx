@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import {
@@ -8,7 +8,6 @@ import {
   TrendingUp,
   ArrowRight,
   ChevronRight,
-  Search,
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useAuth } from "../hooks/useAuth";
@@ -17,7 +16,6 @@ import { projectService } from "../services/projectService";
 import { applicationService } from "../services/applicationService";
 import { notificationService } from "../services/notificationService";
 import { StatusView } from "../components/StatusView";
-import { SearchModal } from "../components/SearchModal";
 import {
   getProjectSeatHolders,
   getProjectSlotsUsage,
@@ -121,35 +119,6 @@ const statusClassMap = {
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [searchOpen, setSearchOpen] = useState(false);
-  const searchRef = useRef(null);
-
-  // Fecha ao clicar fora da barra de pesquisa inline (não do modal)
-  useEffect(() => {
-    const handler = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        // noop — pesquisa inline não tem dropdown; modal fecha pelo próprio overlay
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    document.addEventListener("touchstart", handler);
-    return () => {
-      document.removeEventListener("mousedown", handler);
-      document.removeEventListener("touchstart", handler);
-    };
-  }, []);
-
-  // Atalho Ctrl+K / Cmd+K
-  useEffect(() => {
-    const handler = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        setSearchOpen(true);
-      }
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, []);
 
   const { data, loading, error } = useAsyncData(async () => {
     const [projects, applications, notifications] = await Promise.all([
@@ -295,18 +264,6 @@ export default function DashboardPage() {
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Barra de pesquisa — visível apenas em mobile/tablet */}
-        <div className="painel__barra-pesquisa" ref={searchRef}>
-          <button
-            className="painel__campo-pesquisa"
-            onClick={() => setSearchOpen(true)}
-          >
-            <Search size={16} className="painel__icone-pesquisa" />
-            <span className="painel__pesquisa-placeholder">Buscar projetos, usuários...</span>
-            <span className="painel__pesquisa-atalho">CRTL+K</span>
-          </button>
         </div>
 
         {/* Grade de cartões de resumo */}
@@ -517,9 +474,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </motion.div>
-
-      {/* Modal de pesquisa — fecha ao clicar no overlay (mousedown + touchstart no próprio SearchModal) */}
-      {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
     </>
   );
 }

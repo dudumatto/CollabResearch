@@ -83,7 +83,8 @@
 
 @media (min-width: 1024px) {
   .pagina-feedback__grade-principal {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.6fr);
+    align-items: start;
   }
 }
 

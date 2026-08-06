@@ -258,6 +258,7 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
         editada: false,
       },
     ],
+    removedCollaboratorIds: new Set<number>(),
   };
 
   if (state.applications[0] && state.projects[1]) state.applications[0].projeto = state.projects[1];
@@ -464,12 +465,13 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
       const collaborators = projectId === 2
         ? [mockUsers.advisor, mockUsers.student, mockUsers.collaborator]
         : [mockUsers.advisor, mockUsers.student];
-      await fulfill(route, 200, collaborators);
+      await fulfill(route, 200, collaborators.filter((user) => !state.removedCollaboratorIds.has(user.id)));
       return;
     }
 
     const removeCollaboratorMatch = path.match(/^\/api\/projetos\/(\d+)\/colaboradores\/(\d+)$/);
     if (removeCollaboratorMatch && method === "DELETE") {
+      state.removedCollaboratorIds.add(Number(removeCollaboratorMatch[2]));
       await fulfill(route, 204);
       return;
     }

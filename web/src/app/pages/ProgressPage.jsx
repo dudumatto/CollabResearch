@@ -143,7 +143,7 @@ export default function ProgressPage() {
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [showUpdateForm, setShowUpdateForm] = useState(false);
 
-  const { data, loading, error, reload } = useAsyncData(
+  const { data, loading, error } = useAsyncData(
     async () => {
       if (!user?.id) return { projects: [] };
 
@@ -373,12 +373,6 @@ export default function ProgressPage() {
 
         <UpdateFeed updates={updates} />
       </section>
-
-      <div className="progress-page__refresh-row">
-        <button type="button" className="progress-page__refresh-button" onClick={() => reload().catch(() => {})}>
-          Recarregar dados
-        </button>
-      </div>
     </div>
   );
 }

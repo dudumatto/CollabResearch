@@ -179,60 +179,6 @@
 }
 
 /* ================================================================
-   Barra de pesquisa (mobile/tablet apenas)
-   ================================================================ */
-.painel__barra-pesquisa {
-  display: block;
-}
-
-@media (min-width: 1024px) {
-  .painel__barra-pesquisa {
-    display: none;
-  }
-}
-
-.painel__campo-pesquisa {
-  display: flex;
-  align-items: center;
-  gap: var(--espaco-3);
-  width: 100%;
-  padding: var(--espaco-3) var(--espaco-4);
-  background-color: var(--cor-superficie);
-  border: 1px solid var(--cor-borda-clara);
-  border-radius: var(--raio-grande);
-  cursor: pointer;
-  transition: var(--transicao-normal);
-  font-family: var(--fonte-principal);
-  text-align: left;
-}
-
-.painel__campo-pesquisa:hover {
-  border-color: var(--cor-primaria);
-  box-shadow: 0 0 0 3px var(--cor-primaria-leve);
-}
-
-.painel__icone-pesquisa {
-  color: var(--cor-texto-mudo);
-  flex-shrink: 0;
-}
-
-.painel__pesquisa-placeholder {
-  flex: 1;
-  font-size: var(--tamanho-base);
-  color: var(--cor-texto-mudo);
-}
-
-.painel__pesquisa-atalho {
-  font-size: var(--tamanho-xs);
-  color: var(--cor-texto-mudo);
-  background-color: var(--cor-fundo-leve);
-  border: 1px solid var(--cor-borda-clara);
-  border-radius: var(--raio-pequeno);
-  padding: 1px 5px;
-  flex-shrink: 0;
-}
-
-/* ================================================================
    Grade de cartões de resumo
    ================================================================ */
 .painel__grade-resumos {

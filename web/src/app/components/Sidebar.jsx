@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -13,12 +13,10 @@ import {
   ChevronLeft,
   FlaskConical,
   Settings,
-  Search,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { notificationService } from "../services/notificationService";
-import { SearchModal } from "./SearchModal";
 import "./Sidebar.css";
 
 const navItems = [
@@ -34,7 +32,6 @@ const navItems = [
 
 export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
   const { user } = useAuth();
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const { data, reload } = useAsyncData(
     () => notificationService.listMine(),
@@ -47,18 +44,6 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
     window.addEventListener("notificationsUpdated", atualizar);
     return () => window.removeEventListener("notificationsUpdated", atualizar);
   }, [reload]);
-
-  // Atalho de teclado Ctrl+K / Cmd+K
-  useEffect(() => {
-    const handler = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        setSearchOpen(true);
-      }
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, []);
 
   const notifications = Array.isArray(data) ? data : [];
   const unreadCount = notifications.filter((item) => !item.lida).length;
@@ -82,30 +67,6 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             <p className="barra-lateral__subtitulo-app">Iniciacao Cientifica</p>
           </div>
         )}
-      </div>
-
-      {/* Área de pesquisa */}
-      <div className="barra-lateral__pesquisa">
-        <button
-          className={`barra-lateral__botao-pesquisa ${
-            collapsed ? "barra-lateral__botao-pesquisa--recolhido" : ""
-          }`}
-          onClick={() => {
-            setMobileOpen(false);
-            setSearchOpen(true);
-          }}
-          title="Buscar (Ctrl+K)"
-        >
-          <Search size={15} className="barra-lateral__pesquisa-icone" />
-          {!collapsed && (
-            <>
-              <span className="barra-lateral__pesquisa-placeholder">
-                Buscar...
-              </span>
-              <span className="barra-lateral__pesquisa-atalho">CTRL+K</span>
-            </>
-          )}
-        </button>
       </div>
 
       <nav className="barra-lateral__navegacao">
@@ -239,8 +200,6 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
           </motion.aside>
         )}
       </AnimatePresence>
-
-      {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
     </>
   );
 }

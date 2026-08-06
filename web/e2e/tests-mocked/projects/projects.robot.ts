@@ -20,6 +20,7 @@ export async function runProjectsListAndApplyFlow(page: Page) {
   await expect(page.getByText("1/3")).toBeVisible();
   await expect(page.getByText("orientador", { exact: true })).toBeVisible();
   await expect(page.getByText("Sobre o projeto")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cursos elegíveis" })).toHaveCount(0);
   await page.getByRole("button", { name: "Inscrever-se" }).click();
   await expect(page.getByText("Inscricao no projeto")).toBeVisible();
   await page.getByPlaceholder("Escreva sua motivação para o projeto...").fill("Quero contribuir com a pesquisa.");
@@ -51,9 +52,46 @@ export async function runProjectsCrudFlow(page: Page) {
   await expect(page.getByText("Projeto atualizado! Redirecionando...")).toBeVisible();
   await expect(page).toHaveURL(/\/app\/projects\/\d+$/);
   await page.getByRole("button", { name: "Excluir" }).click();
-  await expect(page.getByRole("heading", { name: "Excluir projeto" })).toBeVisible();
-  await page.locator(".modal-confirmacao").getByRole("button", { name: "Excluir" }).click();
+  const deleteDialog = page.getByRole("alertdialog", { name: "Excluir projeto" });
+  await expect(deleteDialog).toBeVisible();
+  await deleteDialog.getByRole("button", { name: "Cancelar" }).click();
+  await expect(deleteDialog).toBeHidden();
+  await page.getByRole("button", { name: "Excluir" }).click();
+  await page.getByRole("alertdialog", { name: "Excluir projeto" }).getByRole("button", { name: "Excluir" }).click();
   await expect(page).toHaveURL(/\/app\/projects$/);
+}
+
+export async function runProjectOwnerConfirmationsFlow(page: Page) {
+  await page.goto("/app/projects/2");
+
+  await page.getByRole("button", { name: "Enviar mensagem" }).click();
+  await expectToast(page, "Você é o orientador deste projeto e não pode enviar uma mensagem para si mesmo. Use a conversa do grupo.");
+
+  const removeButton = page.getByRole("button", { name: "Remover Aluno Colaborador" });
+  await removeButton.click();
+  const removeDialog = page.getByRole("alertdialog", { name: "Remover colaborador" });
+  await expect(removeDialog).toContainText("Aluno Colaborador");
+  await expect(removeDialog.getByRole("button", { name: "Cancelar" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(removeDialog.getByRole("button", { name: "Remover" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(removeDialog.getByRole("button", { name: "Cancelar" })).toBeFocused();
+  await removeDialog.getByRole("button", { name: "Cancelar" }).click();
+  await expect(removeDialog).toBeHidden();
+  await expect(removeButton).toBeFocused();
+
+  await removeButton.click();
+  await removeDialog.getByRole("button", { name: "Remover" }).click();
+  await expectToast(page, "Colaborador removido.");
+  await expect(page.getByText("Aluno Colaborador", { exact: true })).toHaveCount(0);
+
+  const deleteProjectButton = page.getByRole("button", { name: "Excluir" });
+  await deleteProjectButton.click();
+  const deleteProjectDialog = page.getByRole("alertdialog", { name: "Excluir projeto" });
+  await expect(deleteProjectDialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(deleteProjectDialog).toBeHidden();
+  await expect(deleteProjectButton).toBeFocused();
 }
 
 export async function runProjectsEmptyAndErrorFlow(page: Page) {

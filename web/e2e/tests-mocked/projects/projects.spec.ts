@@ -5,6 +5,7 @@ import {
   runProjectsCrudFlow,
   runProjectsEmptyAndErrorFlow,
   runProjectApplicationsAccessFlow,
+  runProjectOwnerConfirmationsFlow,
 } from "./projects.robot";
 
 test.describe("projetos", () => {
@@ -27,5 +28,14 @@ test.describe("projetos", () => {
 
   test("gerenciamento de inscricoes nega aluno e permite orientador aprovar candidato", async ({ browser }) => {
     await runProjectApplicationsAccessFlow(browser);
+  });
+
+  test("orientador recebe aviso ao falar consigo e confirma remoção de colaborador", async ({ browser }) => {
+    const context = await browser.newContext();
+    const advisorPage = await context.newPage();
+    await setupApiMock(advisorPage, { user: mockUsers.advisor });
+    await authenticateAs(advisorPage, mockUsers.advisor);
+    await runProjectOwnerConfirmationsFlow(advisorPage);
+    await context.close();
   });
 });

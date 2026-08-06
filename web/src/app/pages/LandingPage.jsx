@@ -16,7 +16,7 @@ const navItems = [
 ];
 
 const features = [
-  { icon: Search,       title: "Busca Inteligente de Projetos",  description: "Encontre projetos alinhados ao seu perfil com filtros por área, curso e bolsa disponível.", colorClass: "landing__card-feature__icone-area--azul" },
+  { icon: Search,       title: "Busca Inteligente de Projetos",  description: "Pesquise projetos por área de pesquisa, curso ou orientador e encontre a oportunidade certa para você.", colorClass: "landing__card-feature__icone-area--azul" },
   { icon: FileText,     title: "Inscrição 100% Online",          description: "Candidate-se a projetos, envie documentos e acompanhe tudo em um único lugar.", colorClass: "landing__card-feature__icone-area--violeta" },
   { icon: TrendingUp,   title: "Acompanhamento de Progresso",    description: "Visualize marcos, entregas e evolução do projeto com timelines interativas.", colorClass: "landing__card-feature__icone-area--esmeralda" },
   { icon: MessageSquare,title: "Chat com Orientadores",          description: "Comunicação direta e ágil com seu orientador sem precisar de e-mails.", colorClass: "landing__card-feature__icone-area--laranja" },
@@ -36,10 +36,10 @@ const benefits = {
 };
 
 const stats = [
-  { value: "500+",   label: "Projetos publicados" },
-  { value: "2.400+", label: "Alunos inscritos" },
+  { value: "500+",   label: "Projetos disponíveis" },
+  { value: "2.400+", label: "Estudantes conectados" },
   { value: "180+",   label: "Orientadores ativos" },
-  { value: "94%",    label: "Taxa de satisfação" },
+  { value: "700+",   label: "Pesquisas em andamento" },
 ];
 
 const mockupNavItems = [
@@ -59,14 +59,14 @@ const problemCards = [
   {
     id: "falta-visibilidade",
     icon: "BUSCA",
-    title: "Falta de visibilidade",
-    desc: "Alunos não sabem quais projetos estão disponíveis ou como candidatar-se.",
+    title: "🔍 Dificuldade para encontrar oportunidades",
+    desc: "Muitos estudantes têm dificuldade para descobrir projetos compatíveis com seus interesses ou entender como se candidatar.",
   },
   {
     id: "acompanhamento-manual",
     icon: "CHECK",
-    title: "Acompanhamento manual",
-    desc: "Sem sistema centralizado, progresso e feedbacks ficam perdidos ou esquecidos.",
+    title: "Gestão pouco eficiente",
+    desc: "Orientadores precisam controlar inscrições, documentos, cronogramas e feedbacks manualmente, tornando o processo mais lento e sujeito a erros.",
   },
 ];
 
@@ -185,7 +185,7 @@ export default function LandingPage() {
               </div>
 
               <div className="landing__hero-checklist">
-                {["Gratuito para estudantes", "Seguro e confiável", "Suporte ativo"].map((item) => (
+                {["Gestão centralizada", "Fluxo simplificado", "Segurança e controle"].map((item) => (
                   <div key={item} className="landing__hero-check-item">
                     <CheckCircle size={14} className="landing__hero-check-icone" />
                     {item}
@@ -208,7 +208,7 @@ export default function LandingPage() {
                     <div className="landing__mockup-circulo--amarelo" />
                     <div className="landing__mockup-circulo--verde" />
                     <div className="landing__mockup-url">
-                      <span className="landing__mockup-url-texto">app.iniciacao.edu.br</span>
+                      <span className="landing__mockup-url-texto">collab-research.vercel.app</span>
                     </div>
                   </div>
                   <div className="landing__mockup-conteudo">
@@ -299,11 +299,8 @@ export default function LandingPage() {
           <div className="landing__secao-cabecalho">
             <span className="landing__secao-badge landing__secao-badge--vermelho">O Problema</span>
             <h2 className="landing__secao-titulo">
-              A iniciação científica ainda é <span className="landing__secao-titulo-destaque--vermelho">caótica</span>
+              Encontrar e gerenciar projetos de pesquisa não deveria ser complicado
             </h2>
-            <p className="landing__secao-subtitulo">
-              Hoje, o processo envolve e-mails dispersos, planilhas desatualizadas e comunicações confusas.
-            </p>
           </div>
           <motion.div variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} className="landing__grade-3">
             {problemCards.map((item) => (
@@ -461,7 +458,7 @@ export default function LandingPage() {
               </div>
               <span className="landing__rodape-logo-nome">CollabResearch</span>
             </div>
-            <p className="landing__rodape-copyright">© 2025 CollabResearch. Plataforma de Gerenciamento de Iniciação Científica.</p>
+            <p className="landing__rodape-copyright">© 2026 CollabResearch. Plataforma de Gerenciamento de Iniciação Científica.</p>
             <div className="landing__rodape-links">
               {["Termos", "Privacidade", "Contato"].map((item) => (
                 <a key={item} href="#" className="landing__rodape-link">{item}</a>
