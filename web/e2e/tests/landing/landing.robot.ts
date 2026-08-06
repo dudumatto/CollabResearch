@@ -43,7 +43,7 @@ export async function assertUpdatedLandingContent(page: Page) {
   await expect(page.getByText("Orientadores ativos", { exact: true })).toBeVisible();
   await expect(page.getByText("Pesquisas em andamento", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Encontrar e gerenciar projetos de pesquisa não deveria ser complicado" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "🔍 Dificuldade para encontrar oportunidades" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dificuldade para encontrar oportunidades" })).toBeVisible();
   await expect(page.getByText("Muitos estudantes têm dificuldade para descobrir projetos compatíveis com seus interesses ou entender como se candidatar.", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Gestão pouco eficiente" })).toBeVisible();
   await expect(page.getByText("Orientadores precisam controlar inscrições, documentos, cronogramas e feedbacks manualmente, tornando o processo mais lento e sujeito a erros.", { exact: true })).toBeVisible();

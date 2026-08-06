@@ -19,7 +19,12 @@
   flex-direction: column;
   justify-content: space-between;
   padding: var(--espaco-12);
-  background-color: var(--cor-primaria-escura);
+  background: linear-gradient(
+    145deg,
+    #2f9b73 0%,
+    var(--cor-primaria) 46%,
+    var(--cor-primaria-escura) 100%
+  );
   border-right: 1px solid rgba(255, 255, 255, 0.12);
 }
 

@@ -59,7 +59,7 @@ const problemCards = [
   {
     id: "falta-visibilidade",
     icon: "BUSCA",
-    title: "🔍 Dificuldade para encontrar oportunidades",
+    title: "Dificuldade para encontrar oportunidades",
     desc: "Muitos estudantes têm dificuldade para descobrir projetos compatíveis com seus interesses ou entender como se candidatar.",
   },
   {
