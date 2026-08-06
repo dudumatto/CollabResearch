@@ -43,10 +43,11 @@ export async function assertUpdatedLandingContent(page: Page) {
   await expect(page.getByText("Orientadores ativos", { exact: true })).toBeVisible();
   await expect(page.getByText("Pesquisas em andamento", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Encontrar e gerenciar projetos de pesquisa não deveria ser complicado" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Dificuldade para encontrar oportunidades" })).toBeVisible();
-  await expect(page.getByText("Muitos estudantes têm dificuldade para descobrir projetos compatíveis com seus interesses ou entender como se candidatar.", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Gestão pouco eficiente" })).toBeVisible();
-  await expect(page.getByText("Orientadores precisam controlar inscrições, documentos, cronogramas e feedbacks manualmente, tornando o processo mais lento e sujeito a erros.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Informações espalhadas geram atrasos e retrabalho.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Poucas oportunidades visíveis" })).toBeVisible();
+  await expect(page.getByText("Estudantes têm dificuldade para encontrar projetos e se candidatar.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Gestão manual" })).toBeVisible();
+  await expect(page.getByText("Inscrições, documentos e prazos ainda exigem controle manual.", { exact: true })).toBeVisible();
   await expect(page.getByText("Pesquise projetos por área de pesquisa, curso ou orientador e encontre a oportunidade certa para você.", { exact: true })).toBeVisible();
   await expect(page.getByText("© 2026 CollabResearch. Plataforma de Gerenciamento de Iniciação Científica.", { exact: true })).toBeVisible();
   await expect(page.getByText("Hoje, o processo envolve e-mails dispersos, planilhas desatualizadas e comunicações confusas.", { exact: true })).toHaveCount(0);

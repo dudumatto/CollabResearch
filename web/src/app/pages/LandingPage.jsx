@@ -54,19 +54,19 @@ const problemCards = [
     id: "emails-planilhas",
     icon: "EMAIL",
     title: "E-mails e planilhas",
-    desc: "Processos seletivos gerenciados por e-mail, causando perda de informações e atrasos.",
+    desc: "Informações espalhadas geram atrasos e retrabalho.",
   },
   {
     id: "falta-visibilidade",
     icon: "BUSCA",
-    title: "Dificuldade para encontrar oportunidades",
-    desc: "Muitos estudantes têm dificuldade para descobrir projetos compatíveis com seus interesses ou entender como se candidatar.",
+    title: "Poucas oportunidades visíveis",
+    desc: "Estudantes têm dificuldade para encontrar projetos e se candidatar.",
   },
   {
     id: "acompanhamento-manual",
     icon: "CHECK",
-    title: "Gestão pouco eficiente",
-    desc: "Orientadores precisam controlar inscrições, documentos, cronogramas e feedbacks manualmente, tornando o processo mais lento e sujeito a erros.",
+    title: "Gestão manual",
+    desc: "Inscrições, documentos e prazos ainda exigem controle manual.",
   },
 ];
 

@@ -987,14 +987,14 @@
 
 .landing__card-problema__titulo {
   font-weight: var(--peso-semi);
-  font-size: var(--tamanho-grande);
+  font-size: var(--tamanho-medio);
   color: var(--cor-texto);
   margin-bottom: var(--espaco-2);
 }
 
 .landing__card-problema__descricao {
   color: var(--cor-texto-fraco);
-  font-size: var(--tamanho-medio);
+  font-size: var(--tamanho-base);
   line-height: 1.6;
 }
 
