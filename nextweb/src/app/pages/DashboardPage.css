@@ -42,18 +42,26 @@
 .painel__decoracao-banner {
   position: absolute;
   inset: 0 0 0 auto;
-  width: 42%;
+  width: 36%;
   pointer-events: none;
-  background:
-    linear-gradient(120deg, transparent 0 28%, rgba(31, 122, 90, 0.08) 28% 41%, transparent 41% 54%, rgba(126, 160, 106, 0.14) 54% 70%, transparent 70%),
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42));
-  opacity: 0.86;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.58));
+}
+
+.painel__decoracao-banner img {
+  width: clamp(12rem, 19vw, 18rem);
+  height: auto;
+  margin-right: -2.3rem;
+  opacity: 0.38;
 }
 
 .painel__conteudo-banner {
   position: relative;
   z-index: 1;
-  max-width: 47rem;
+  width: min(68%, 47rem);
   padding: var(--espaco-6);
 }
 
@@ -683,8 +691,16 @@
   }
 
   .painel__decoracao-banner {
-    width: 100%;
-    opacity: 0.36;
+    width: 46%;
+  }
+
+  .painel__decoracao-banner img {
+    margin-right: -3rem;
+    opacity: 0.2;
+  }
+
+  .painel__conteudo-banner {
+    width: 78%;
   }
 }
 
@@ -700,7 +716,13 @@
   }
 
   .painel__conteudo-banner {
+    width: 100%;
     padding: var(--espaco-4);
+  }
+
+  .painel__decoracao-banner {
+    width: 55%;
+    opacity: 0.55;
   }
 
   .painel__titulo-banner {
@@ -799,9 +821,7 @@
 }
 
 .dark .painel__decoracao-banner {
-  background:
-    linear-gradient(120deg, transparent 0 28%, rgba(126, 160, 106, 0.1) 28% 41%, transparent 41% 54%, rgba(31, 122, 90, 0.1) 54% 70%, transparent 70%),
-    linear-gradient(90deg, transparent, rgba(15, 26, 20, 0.3));
+  background: linear-gradient(90deg, transparent, rgba(15, 26, 20, 0.3));
 }
 
 .dark .cartao-resumo {

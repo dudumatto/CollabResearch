@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -14,7 +15,6 @@ import {
   User,
   Bell,
   ChevronLeft,
-  FlaskConical,
   Settings,
   Search,
 } from "lucide-react";
@@ -106,15 +106,14 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
     return (
       <div className="barra-lateral__conteudo-interno">
         <div className={`barra-lateral__cabecalho ${isCollapsed ? "barra-lateral__cabecalho--centralizado" : ""}`}>
-          <div className="barra-lateral__logo" aria-hidden="true">
-            <FlaskConical size={18} className="barra-lateral__logo-icone" />
-          </div>
-          {!isCollapsed && (
-            <div className="barra-lateral__info-app">
-              <p className="barra-lateral__nome-app">CollabResearch</p>
-              <p className="barra-lateral__subtitulo-app">Iniciação Científica</p>
-            </div>
-          )}
+          <Image
+            className={isCollapsed ? "barra-lateral__marca barra-lateral__marca--icone" : "barra-lateral__marca barra-lateral__marca--completa"}
+            src={isCollapsed ? "/brand/logo-icon.svg" : "/brand/logo-full.svg"}
+            width={isCollapsed ? 28 : 101}
+            height={isCollapsed ? 28 : 20}
+            alt="Collab"
+            priority
+          />
         </div>
 
         <div className="barra-lateral__pesquisa">
