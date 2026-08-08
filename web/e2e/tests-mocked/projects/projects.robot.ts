@@ -6,11 +6,11 @@ export async function runProjectsListAndApplyFlow(page: Page) {
   await page.goto("/app/projects");
   await expect(page.getByText("projetos encontrados")).toBeVisible();
   await expect(page.getByText("Projeto E2E Candidatura")).toBeVisible();
-  await page.getByPlaceholder("Buscar projetos por titulo, area ou tecnologia...").fill("Candidatura");
+  await page.getByPlaceholder("Buscar projetos por título, área ou tecnologia...").fill("Candidatura");
   await expect(page.getByText("Projeto E2E Candidatura")).toBeVisible();
   await expect(page.getByText("Projeto E2E Autoria")).toBeHidden();
   await page.getByRole("button", { name: "Filtros" }).click();
-  await expect(page.getByText("Area de pesquisa")).toBeVisible();
+  await expect(page.getByText("Área de pesquisa")).toBeVisible();
   await page.locator("select.pagina-projetos__input-filtro-curso").selectOption("Sistemas de Informacao");
   await expect(page.getByText("2 / 3")).toBeVisible();
   await expect(page.getByText("Prof Ana Orientadora (orientador)")).toBeVisible();
@@ -18,14 +18,14 @@ export async function runProjectsListAndApplyFlow(page: Page) {
   await expect(page).toHaveURL(/\/app\/projects\/2$/);
   await expect(page.getByRole("heading", { name: "Projeto E2E Candidatura" })).toBeVisible();
   await expect(page.getByText("1/3")).toBeVisible();
-  await expect(page.getByText("orientador", { exact: true })).toBeVisible();
+  await expect(page.getByText("Orientador do projeto")).toBeVisible();
   await expect(page.getByText("Sobre o projeto")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cursos elegíveis" })).toHaveCount(0);
   await page.getByRole("button", { name: "Inscrever-se" }).click();
-  await expect(page.getByText("Inscricao no projeto")).toBeVisible();
+  await expect(page.getByText("Inscrição no projeto")).toBeVisible();
   await page.getByPlaceholder("Escreva sua motivação para o projeto...").fill("Quero contribuir com a pesquisa.");
   await page.getByRole("button", { name: "Enviar inscrição" }).click();
-  await expectToast(page, "Inscricao enviada com sucesso.");
+  await expectToast(page, "Inscrição enviada com sucesso.");
 }
 
 export async function runProjectsCrudFlow(page: Page) {
@@ -33,12 +33,13 @@ export async function runProjectsCrudFlow(page: Page) {
   await page.goto("/app/projects/new");
   await expect(page.getByRole("heading", { name: "Novo projeto" })).toBeVisible();
   await page.getByRole("button", { name: "Criar projeto" }).click();
-  await expect(page.getByText("O titulo e obrigatorio.")).toBeVisible();
-  await page.getByPlaceholder("Ex: Sistema de deteccao de anomalias com IA").fill(project.title);
+  await expect(page.getByText("O título é obrigatório.")).toBeVisible();
+  await page.getByPlaceholder("Ex: Sistema de detecção de anomalias com IA").fill(project.title);
   await page.getByPlaceholder("Descreva os objetivos, metodologia e resultados esperados...").fill(project.description);
   await page.getByPlaceholder("Ex: Conhecimento em Python, estatística básica").fill(project.requirements);
   await page.getByPlaceholder("Ex: React, Spring Boot, PostgreSQL").fill(project.technologies);
   await page.locator("#areaId").selectOption({ index: 1 });
+  await page.locator("#orientadorId").selectOption({ index: 1 });
   await page.getByPlaceholder("Ex: 3").fill(String(project.slots));
   await page.getByRole("button", { name: "Criar projeto" }).click();
   await expect(page.getByText("Projeto criado com sucesso! Redirecionando...")).toBeVisible();
@@ -125,6 +126,6 @@ export async function runProjectApplicationsAccessFlow(browser: Browser) {
   await expect(advisorPage.getByText("Aprovar inscrição")).toBeVisible();
   await advisorPage.getByPlaceholder("Escreva um parecer opcional...").fill("Aprovado no E2E.");
   await advisorPage.getByRole("button", { name: "Confirmar" }).click();
-  await expectToast(advisorPage, "Inscricao aprovada.");
+  await expectToast(advisorPage, "Inscrição aprovada.");
   await advisorContext.close();
 }

@@ -13,7 +13,7 @@ const cases = [
     name: "detalhe de projeto",
     path: "/app/projects/1",
     fail: /^\/api\/projetos\/1$/,
-    expected: "Projeto indisponivel",
+    expected: "Projeto indisponível",
   },
   {
     name: "inscricoes do projeto",
@@ -23,16 +23,16 @@ const cases = [
     user: mockUsers.advisor,
   },
   {
-    name: "documentos",
-    path: "/app/documents",
+    name: "perfil degrada quando documentos falham",
+    path: "/app/profile",
     fail: /^\/api\/documentos\/usuario\/1$/,
-    expected: "Falha ao carregar documentos",
+    expected: "Nenhum documento",
   },
   {
     name: "notificacoes",
     path: "/app/notifications",
     fail: /^\/api\/notificacoes$/,
-    expected: "Falha ao carregar notificacoes",
+    expected: "Falha ao carregar notificações",
   },
   {
     name: "chat",

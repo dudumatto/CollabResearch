@@ -360,6 +360,18 @@
   appearance: none;
   box-sizing: border-box;
 }
+
+.cfg-readonly {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: var(--raio-grande);
+  border: 1px solid var(--cor-input-borda);
+  background-color: var(--cor-fundo-leve);
+  color: var(--cor-texto-fraco);
+  font-size: 14px;
+  font-family: var(--fonte-principal);
+  box-sizing: border-box;
+}
  
 /* ── Buttons ──────────────────────────────────────────── */
 .cfg-btn {

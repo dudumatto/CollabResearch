@@ -374,10 +374,14 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
     if (method === "GET" && path === "/api/projetos") {
       const busca = (url.searchParams.get("busca") ?? "").toLowerCase();
       const status = url.searchParams.get("status") ?? "";
+      const curso = (url.searchParams.get("curso") ?? "").toLowerCase();
+      const area = (url.searchParams.get("area") ?? "").toLowerCase();
       const projects = state.projects.filter((project) => {
         const matchesSearch = !busca || project.titulo.toLowerCase().includes(busca) || project.descricao.toLowerCase().includes(busca);
         const matchesStatus = !status || project.status === status;
-        return matchesSearch && matchesStatus;
+        const matchesCurso = !curso || String(project.cursoNome ?? "").toLowerCase() === curso;
+        const matchesArea = !area || String(project.areaNome ?? "").toLowerCase() === area;
+        return matchesSearch && matchesStatus && matchesCurso && matchesArea;
       });
       await fulfill(route, 200, projects);
       return;
@@ -451,7 +455,8 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
       const body = await readJson(route);
       state.progress.unshift({
         id: Math.max(0, ...state.progress.map((item) => item.id)) + 1,
-        descricao: String(body.descricao),
+        titulo: String(body.titulo ?? ""),
+        descricao: String(body.descricao ?? ""),
         dataRegistro: new Date().toISOString(),
         usuario: state.currentUser,
       });

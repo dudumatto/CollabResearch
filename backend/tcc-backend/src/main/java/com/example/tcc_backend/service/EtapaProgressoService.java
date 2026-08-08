@@ -2,7 +2,9 @@ package com.example.tcc_backend.service;
 
 import com.example.tcc_backend.dto.request.AdvanceProgressStepRequest;
 import com.example.tcc_backend.dto.request.CreateProjectProgressUpdateRequest;
+import com.example.tcc_backend.dto.request.EtapaRequest;
 import com.example.tcc_backend.dto.response.AdvanceProgressStepResponse;
+import com.example.tcc_backend.dto.response.EtapaResponse;
 import com.example.tcc_backend.dto.response.ProjectProgressResponse;
 import com.example.tcc_backend.dto.response.ProjectProgressUpdateResponse;
 import com.example.tcc_backend.dto.response.ProgressStepResponse;
@@ -12,6 +14,7 @@ import com.example.tcc_backend.repository.InscricaoRepository;
 import com.example.tcc_backend.repository.ProgressoRepository;
 import com.example.tcc_backend.repository.ProjetoRepository;
 import com.example.tcc_backend.security.AuthHelper;
+import com.example.tcc_backend.security.ProjectAccessPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -29,12 +32,12 @@ import java.util.Optional;
 public class EtapaProgressoService {
 
     private static final List<DefaultStep> DEFAULT_STEPS = List.of(
-            new DefaultStep("Proposta aprovada", 10),
-            new DefaultStep("Revisao bibliografica", 15),
-            new DefaultStep("Metodologia definida", 15),
-            new DefaultStep("Desenvolvimento", 30),
-            new DefaultStep("Revisao do orientador", 20),
-            new DefaultStep("Entrega final", 10)
+            new DefaultStep("Proposta aprovada", 10, EtapaResponsavel.ORIENTADOR),
+            new DefaultStep("Revisao bibliografica", 15, EtapaResponsavel.ALUNO),
+            new DefaultStep("Metodologia definida", 15, EtapaResponsavel.ALUNO),
+            new DefaultStep("Desenvolvimento", 30, EtapaResponsavel.ALUNO),
+            new DefaultStep("Revisao do orientador", 20, EtapaResponsavel.ORIENTADOR),
+            new DefaultStep("Entrega final", 10, EtapaResponsavel.AMBOS)
     );
 
     private final EtapaProgressoRepository etapaProgressoRepository;
@@ -42,6 +45,7 @@ public class EtapaProgressoService {
     private final ProjetoRepository projetoRepository;
     private final InscricaoRepository inscricaoRepository;
     private final AuthHelper authHelper;
+    private final ProjectAccessPolicy projectAccessPolicy;
 
     @Transactional
     public ProjectProgressResponse obterResumo(Integer projetoId) {
@@ -97,6 +101,108 @@ public class EtapaProgressoService {
                 .step(ProgressStepResponse.fromEntity(etapa))
                 .overallPercent(calcularPercentualGeral(etapas))
                 .build();
+    }
+
+    @Transactional
+    public List<EtapaResponse> listarEtapas(Integer projetoId) {
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        Projeto projeto = carregarProjeto(projetoId);
+        projectAccessPolicy.requireCanViewTeam(projeto, usuarioLogado);
+        return etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId).stream()
+                .map(EtapaResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public EtapaResponse criarEtapa(Integer projetoId, EtapaRequest request) {
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        Projeto projeto = carregarProjeto(projetoId);
+        projectAccessPolicy.requireResponsibleAdvisor(projeto, usuarioLogado);
+        validarDadosEtapa(request);
+
+        int proximaOrdem = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId).stream()
+                .mapToInt(e -> e.getOrdem() == null ? 0 : e.getOrdem())
+                .max()
+                .orElse(0) + 1;
+
+        EtapaProgresso etapa = EtapaProgresso.builder()
+                .projeto(projeto)
+                .titulo(request.getTitulo().trim())
+                .descricao(normalizarTexto(request.getDescricao()))
+                .peso(request.getPeso() != null ? request.getPeso() : 0)
+                .ordem(proximaOrdem)
+                .status(EtapaProgressoStatus.PENDING)
+                .responsavel(request.getResponsavel() != null ? request.getResponsavel() : EtapaResponsavel.AMBOS)
+                .prazo(request.getPrazo())
+                .obrigatoria(request.getObrigatoria() != null ? request.getObrigatoria() : true)
+                .build();
+
+        return EtapaResponse.fromEntity(etapaProgressoRepository.save(etapa));
+    }
+
+    @Transactional
+    public EtapaResponse atualizarEtapa(Integer projetoId, Integer etapaId, EtapaRequest request) {
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        Projeto projeto = carregarProjeto(projetoId);
+        projectAccessPolicy.requireResponsibleAdvisor(projeto, usuarioLogado);
+        validarDadosEtapa(request);
+
+        EtapaProgresso etapa = etapaProgressoRepository.findByProjetoIdAndId(projetoId, etapaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Etapa nao encontrada"));
+
+        if (etapa.getStatus() == EtapaProgressoStatus.DONE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Etapa concluida nao pode ser alterada");
+        }
+
+        etapa.setTitulo(request.getTitulo().trim());
+        etapa.setDescricao(normalizarTexto(request.getDescricao()));
+        etapa.setPeso(request.getPeso() != null ? request.getPeso() : etapa.getPeso());
+        etapa.setResponsavel(request.getResponsavel() != null ? request.getResponsavel() : etapa.getResponsavel());
+        etapa.setPrazo(request.getPrazo());
+        etapa.setObrigatoria(request.getObrigatoria() != null ? request.getObrigatoria() : etapa.getObrigatoria());
+
+        return EtapaResponse.fromEntity(etapaProgressoRepository.save(etapa));
+    }
+
+    @Transactional
+    public void excluirEtapa(Integer projetoId, Integer etapaId) {
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        Projeto projeto = carregarProjeto(projetoId);
+        projectAccessPolicy.requireResponsibleAdvisor(projeto, usuarioLogado);
+
+        EtapaProgresso etapa = etapaProgressoRepository.findByProjetoIdAndId(projetoId, etapaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Etapa nao encontrada"));
+
+        if (etapa.getStatus() == EtapaProgressoStatus.DONE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Etapa concluida nao pode ser removida");
+        }
+
+        etapaProgressoRepository.delete(etapa);
+    }
+
+    @Transactional
+    public EtapaResponse concluirEtapa(Integer projetoId, Integer etapaId, AdvanceProgressStepRequest request) {
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        Projeto projeto = carregarProjeto(projetoId);
+        validarParticipacaoProjeto(projeto, usuarioLogado.getId());
+
+        if (request == null || request.getStatus() == null || !"done".equalsIgnoreCase(request.getStatus().trim())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status invalido");
+        }
+
+        EtapaProgresso etapa = etapaProgressoRepository.findByProjetoIdAndId(projetoId, etapaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Etapa nao encontrada"));
+
+        validarPermissaoConclusao(etapa, usuarioLogado);
+
+        if (etapa.getStatus() != EtapaProgressoStatus.DONE) {
+            etapa.setStatus(EtapaProgressoStatus.DONE);
+            etapa.setConcluidaEm(LocalDateTime.now());
+            etapa.setConcluidaPor(usuarioLogado);
+            etapaProgressoRepository.save(etapa);
+        }
+
+        return EtapaResponse.fromEntity(etapa);
     }
 
     @Transactional
@@ -160,6 +266,7 @@ public class EtapaProgressoService {
                     .peso(def.weight())
                     .ordem(index + 1)
                     .status(index == 0 ? EtapaProgressoStatus.ACTIVE : EtapaProgressoStatus.PENDING)
+                    .responsavel(def.responsavel())
                     .build());
         }
 
@@ -229,6 +336,27 @@ public class EtapaProgressoService {
     }
 
     private void validarPermissaoConclusao(EtapaProgresso etapa, Usuario usuario) {
+        if (etapa.getResponsavel() == null) {
+            validarPermissaoConclusaoLegada(etapa, usuario);
+            return;
+        }
+
+        ProjectAccessPolicy.Relationship relacao = projectAccessPolicy.relationship(etapa.getProjeto(), usuario);
+        boolean podeConcluir = switch (etapa.getResponsavel()) {
+            case ORIENTADOR -> relacao == ProjectAccessPolicy.Relationship.RESPONSIBLE_ADVISOR;
+            case ALUNO -> relacao == ProjectAccessPolicy.Relationship.STUDENT_CREATOR
+                    || relacao == ProjectAccessPolicy.Relationship.APPROVED_MEMBER;
+            case AMBOS -> relacao == ProjectAccessPolicy.Relationship.RESPONSIBLE_ADVISOR
+                    || relacao == ProjectAccessPolicy.Relationship.STUDENT_CREATOR
+                    || relacao == ProjectAccessPolicy.Relationship.APPROVED_MEMBER;
+        };
+
+        if (!podeConcluir) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para concluir esta etapa");
+        }
+    }
+
+    private void validarPermissaoConclusaoLegada(EtapaProgresso etapa, Usuario usuario) {
         TipoUsuario tipo = usuario.getTipo();
         boolean podeConcluir = switch (etapa.getOrdem()) {
             case 1, 5 -> tipo == TipoUsuario.ORIENTADOR;
@@ -239,6 +367,18 @@ public class EtapaProgressoService {
 
         if (!podeConcluir) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para concluir esta etapa");
+        }
+    }
+
+    private void validarDadosEtapa(EtapaRequest request) {
+        if (request.getPeso() != null && (request.getPeso() < 0 || request.getPeso() > 100)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Peso deve estar entre 0 e 100");
+        }
+        if (request.getResponsavel() != null
+                && request.getResponsavel() != EtapaResponsavel.ALUNO
+                && request.getResponsavel() != EtapaResponsavel.ORIENTADOR
+                && request.getResponsavel() != EtapaResponsavel.AMBOS) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Responsavel invalido");
         }
     }
 
@@ -268,6 +408,6 @@ public class EtapaProgressoService {
         };
     }
 
-    private record DefaultStep(String title, int weight) {
+    private record DefaultStep(String title, int weight, EtapaResponsavel responsavel) {
     }
 }

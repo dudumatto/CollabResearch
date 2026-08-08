@@ -14,12 +14,14 @@ import com.example.tcc_backend.repository.AlunoRepository;
 import com.example.tcc_backend.repository.InscricaoRepository;
 import com.example.tcc_backend.repository.ProjetoRepository;
 import com.example.tcc_backend.security.AuthHelper;
+import com.example.tcc_backend.security.ProjectAccessPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -33,21 +35,43 @@ public class InscricaoService {
     private final ProjetoRepository projetoRepository;
     private final AuthHelper authHelper;
     private final NotificacaoService notificacaoService;
+    private final ProjectAccessPolicy projectAccessPolicy;
 
     public List<Inscricao> findAll() {
-        return inscricaoRepository.findAll();
+        Usuario usuario = authHelper.getCurrentUser();
+        return switch (usuario.getTipo()) {
+            case ADMIN -> inscricaoRepository.findAll();
+            case ORIENTADOR -> inscricaoRepository.findByProjetoOrientadorUsuarioId(usuario.getId());
+            case ALUNO -> inscricaoRepository.findByAlunoUsuarioId(usuario.getId());
+        };
     }
 
     public Page<Inscricao> findAll(Pageable pageable) {
-        return inscricaoRepository.findAll(pageable);
+        Usuario usuario = authHelper.getCurrentUser();
+        return switch (usuario.getTipo()) {
+            case ADMIN -> inscricaoRepository.findAll(pageable);
+            case ORIENTADOR -> inscricaoRepository.findByProjetoOrientadorUsuarioId(usuario.getId(), pageable);
+            case ALUNO -> inscricaoRepository.findByAlunoUsuarioId(usuario.getId(), pageable);
+        };
     }
 
     public Inscricao findById(Integer id) {
-        return inscricaoRepository.findById(id)
+        Usuario usuario = authHelper.getCurrentUser();
+        Inscricao inscricao = inscricaoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inscricao nao encontrada"));
+
+        boolean propriaInscricao = inscricao.getAluno().getUsuario().getId().equals(usuario.getId());
+        if (!propriaInscricao) {
+            projectAccessPolicy.requireCanViewApplications(inscricao.getProjeto(), usuario);
+        }
+        return inscricao;
     }
 
     public List<Inscricao> findByProjeto(Integer projetoId) {
+        Usuario usuario = authHelper.getCurrentUser();
+        Projeto projeto = projetoRepository.findById(projetoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
+        projectAccessPolicy.requireCanViewApplications(projeto, usuario);
         return inscricaoRepository.findByProjetoId(projetoId);
     }
 
@@ -64,6 +88,10 @@ public class InscricaoService {
     }
 
     public Page<Inscricao> findByProjeto(Integer projetoId, Pageable pageable) {
+        Usuario usuario = authHelper.getCurrentUser();
+        Projeto projeto = projetoRepository.findById(projetoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
+        projectAccessPolicy.requireCanViewApplications(projeto, usuario);
         return inscricaoRepository.findByProjetoId(projetoId, pageable);
     }
 
@@ -113,51 +141,62 @@ public class InscricaoService {
         }
     }
 
+    @Transactional
     public Inscricao aprovar(Integer id) {
         return aprovar(id, null);
     }
 
+    @Transactional
     public Inscricao aprovar(Integer id, InscricaoAvaliacaoRequest dto) {
-        Inscricao inscricao = findById(id);
+        Integer projetoId = inscricaoRepository.findProjetoIdById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inscricao nao encontrada"));
+        Projeto projeto = projetoRepository.findByIdForUpdate(projetoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
+        Inscricao inscricao = inscricaoRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inscricao nao encontrada"));
         validarOrientador(inscricao);
-
+        if (inscricao.getStatus() != StatusInscricao.PENDENTE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Inscricao nao esta pendente");
+        }
+        if (projeto.getStatus() != StatusProjeto.ABERTO) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Projeto nao esta aberto");
+        }
+        long aprovados = inscricaoRepository.countByProjetoIdAndStatus(projeto.getId(), StatusInscricao.APROVADO);
+        if (projeto.getVagas() == null || aprovados >= projeto.getVagas()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Projeto sem vagas disponiveis");
+        }
         inscricao.setStatus(StatusInscricao.APROVADO);
         inscricao.setParecerOrientador(dto != null ? normalizarTexto(dto.getParecerOrientador()) : inscricao.getParecerOrientador());
-
         Inscricao salva = inscricaoRepository.save(inscricao);
-        notificacaoService.criarNotificacao(
-                inscricao.getAluno().getUsuario().getId(),
-                "Sua inscricao foi aprovada",
-                TipoNotificacao.INSCRICAO_APROVADA,
-                "INSCRICAO",
-                inscricao.getId(),
-                "/app/applications",
-                inscricao.getProjeto().getTitulo()
-        );
+        notificacaoService.criarNotificacao(inscricao.getAluno().getUsuario().getId(), "Sua inscricao foi aprovada",
+                TipoNotificacao.INSCRICAO_APROVADA, "INSCRICAO", inscricao.getId(),
+                "/app/applications", projeto.getTitulo());
         return salva;
     }
 
+    @Transactional
     public Inscricao rejeitar(Integer id) {
         return rejeitar(id, null);
     }
 
+    @Transactional
     public Inscricao rejeitar(Integer id, InscricaoAvaliacaoRequest dto) {
-        Inscricao inscricao = findById(id);
+        Integer projetoId = inscricaoRepository.findProjetoIdById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inscricao nao encontrada"));
+        projetoRepository.findByIdForUpdate(projetoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
+        Inscricao inscricao = inscricaoRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inscricao nao encontrada"));
         validarOrientador(inscricao);
-
+        if (inscricao.getStatus() != StatusInscricao.PENDENTE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Inscricao nao esta pendente");
+        }
         inscricao.setStatus(StatusInscricao.REJEITADO);
         inscricao.setParecerOrientador(dto != null ? normalizarTexto(dto.getParecerOrientador()) : inscricao.getParecerOrientador());
-
         Inscricao salva = inscricaoRepository.save(inscricao);
-        notificacaoService.criarNotificacao(
-                inscricao.getAluno().getUsuario().getId(),
-                "Sua inscricao foi rejeitada",
-                TipoNotificacao.INSCRICAO_REJEITADA,
-                "INSCRICAO",
-                inscricao.getId(),
-                "/app/applications",
-                inscricao.getProjeto().getTitulo()
-        );
+        notificacaoService.criarNotificacao(inscricao.getAluno().getUsuario().getId(), "Sua inscricao foi rejeitada",
+                TipoNotificacao.INSCRICAO_REJEITADA, "INSCRICAO", inscricao.getId(),
+                "/app/applications", inscricao.getProjeto().getTitulo());
         return salva;
     }
 
@@ -176,35 +215,26 @@ public class InscricaoService {
         cancel(id);
     }
 
+    @Transactional
     public Inscricao update(Integer id, InscricaoRequest dto) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
-        Inscricao inscricao = findById(id);
+        Inscricao inscricao = inscricaoRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inscricao nao encontrada"));
 
         if (!inscricao.getAluno().getUsuario().getId().equals(usuarioLogado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode editar a inscricao de outro aluno");
         }
 
-        Projeto projeto = projetoRepository.findById(dto.getProjetoId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
-
-        inscricao.setProjeto(projeto);
+        if (!inscricao.getProjeto().getId().equals(dto.getProjetoId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Projeto da inscricao nao pode ser alterado");
+        }
         inscricao.setMotivacao(normalizarTexto(dto.getMotivacao()));
         return inscricaoRepository.save(inscricao);
     }
 
     private void validarOrientador(Inscricao inscricao) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
-
-        if (usuarioLogado.getTipo() != TipoUsuario.ORIENTADOR) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas orientadores podem aprovar ou rejeitar inscricoes");
-        }
-
-        boolean isOrientadorDoProjeto = inscricao.getProjeto().getOrientador() != null &&
-                inscricao.getProjeto().getOrientador().getUsuario().getId().equals(usuarioLogado.getId());
-
-        if (!isOrientadorDoProjeto) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao e o orientador deste projeto");
-        }
+        projectAccessPolicy.requireResponsibleAdvisor(inscricao.getProjeto(), usuarioLogado);
     }
 
     private String normalizarTexto(String valor) {

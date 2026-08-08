@@ -4,7 +4,7 @@ import { buildTestUser } from "../../helpers/test-data.helper";
 export async function runLandingNavigationFlow(page: Page) {
   await page.goto("/");
   await expect(page).toHaveTitle(/CollabResearch/);
-  await expect(page.getByText("Sua pesquisa comeca")).toBeVisible();
+  await expect(page.getByText("Sua pesquisa começa")).toBeVisible();
   await expect(page.getByText("Busca Inteligente de Projetos")).toBeVisible();
   await page.getByRole("button", { name: "Entrar" }).first().click();
   await expect(page).toHaveURL(/\/login$/);
@@ -36,7 +36,7 @@ export async function runRegisterFlow(page: Page) {
   await page.getByPlaceholder("Seu nome completo").fill(user.nome);
   await page.getByPlaceholder("seu@universidade.br").fill(user.email);
   await page.getByPlaceholder("Seu registro acadêmico").fill(user.ra);
-  await page.getByPlaceholder("Minimo 8 caracteres").fill(user.senha);
+  await page.getByPlaceholder("Mínimo 8 caracteres").fill(user.senha);
   await page.getByPlaceholder("Repita a senha").fill("SenhaDiferente123!");
   await page.getByRole("button", { name: "Continuar" }).click();
   await expect(page.getByText("As senhas não coincidem.")).toBeVisible();
@@ -44,7 +44,6 @@ export async function runRegisterFlow(page: Page) {
   await page.getByRole("button", { name: "Continuar" }).click();
   await page.locator("select").first().selectOption({ index: 1 });
   await page.locator("select").nth(1).selectOption({ index: 1 });
-  await page.locator("select").nth(2).selectOption({ index: 1 });
   await page.locator("#terms").check();
   await page.getByRole("button", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/\/app$/);

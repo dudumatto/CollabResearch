@@ -88,8 +88,15 @@ public class UsuarioService {
         }
 
         Usuario usuario = findById(id);
+        String emailNormalizado = dto.getEmail().trim().toLowerCase();
+        usuarioRepository.findByEmail(emailNormalizado)
+                .filter(outro -> !outro.getId().equals(usuario.getId()))
+                .ifPresent(outro -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "Email ja esta em uso por outro usuario");
+                });
         usuario.setNome(dto.getNome().trim());
-        usuario.setEmail(dto.getEmail().trim().toLowerCase());
+        usuario.setEmail(emailNormalizado);
         usuario.setInstituicao(normalizarTexto(dto.getInstituicao()));
         usuario.setBio(normalizarTexto(dto.getBio()));
         if (dto.getFotoPerfilUrl() != null) {

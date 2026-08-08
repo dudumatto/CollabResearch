@@ -217,6 +217,25 @@ export function mapApplication(application) {
   };
 }
 
+export function mapAdvisorApplication(application) {
+  const project = application?.projeto ? mapProject(application.projeto) : null;
+
+  return {
+    id: application?.id,
+    status: application?.status ?? "PENDENTE",
+    motivacao: application?.motivacao ?? "",
+    parecerOrientador: application?.parecerOrientador ?? "",
+    appliedAt: application?.dataInscricao ?? null,
+    updatedAt: application?.dataAtualizacao ?? null,
+    projetoId: application?.projetoId ?? project?.id ?? null,
+    projetoTitulo: application?.projetoTitulo ?? project?.title ?? "Projeto",
+    alunoId: application?.alunoId ?? null,
+    alunoUsuarioId: application?.alunoUsuarioId ?? null,
+    alunoNome: application?.alunoNome ?? project?.owner?.name ?? "Estudante",
+    project,
+  };
+}
+
 function normalizeActionUrl(actionUrl) {
   if (!actionUrl) return "/app/notifications";
 
@@ -339,5 +358,241 @@ export function mapDocument(document) {
     status: document?.status ?? "ENVIADO",
     previewUrl: document?.previewUrl ?? null,
     downloadUrl: document?.downloadUrl ?? null,
+  };
+}
+
+function queueItems(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((item) => ({
+      id: item?.id ?? null,
+      titulo: item?.titulo ?? "",
+      subtitulo: item?.subtitulo ?? "",
+      destino: item?.destino ?? "",
+      status: item?.status ?? "",
+    }))
+    .filter((item) => item.id != null);
+}
+
+export function mapOrientadorDashboard(dashboard) {
+  const metricas = dashboard?.metricas ?? {};
+  const filas = dashboard?.filas ?? {};
+
+  return {
+    metricas: {
+      projetosAtivos: Number(metricas.projetosAtivos ?? 0),
+      solicitacoesOrientacao: Number(metricas.solicitacoesOrientacao ?? 0),
+      inscricoesPendentes: Number(metricas.inscricoesPendentes ?? 0),
+      orientandosAtivos: Number(metricas.orientandosAtivos ?? 0),
+      etapasAtrasadas: Number(metricas.etapasAtrasadas ?? 0),
+      entregasAguardandoRevisao: Number(metricas.entregasAguardandoRevisao ?? 0),
+      avaliacoesAguardandoCiencia: Number(metricas.avaliacoesAguardandoCiencia ?? 0),
+    },
+    filas: {
+      projetosAtivos: queueItems(filas.projetosAtivos),
+      solicitacoesOrientacao: queueItems(filas.solicitacoesOrientacao),
+      inscricoesPendentes: queueItems(filas.inscricoesPendentes),
+      orientandosAtivos: queueItems(filas.orientandosAtivos),
+      etapasAtrasadas: queueItems(filas.etapasAtrasadas),
+      entregasAguardandoRevisao: queueItems(filas.entregasAguardandoRevisao),
+      avaliacoesAguardandoCiencia: queueItems(filas.avaliacoesAguardandoCiencia),
+    },
+  };
+}
+
+export function mapOrientando(orientando) {
+  if (!orientando) return null;
+
+  const projetos = Array.isArray(orientando.projetos)
+    ? orientando.projetos.map((p) => ({
+        projetoId: p?.projetoId ?? null,
+        projetoTitulo: p?.projetoTitulo ?? "Projeto",
+        status: p?.status ?? "",
+      }))
+    : [];
+
+  return {
+    alunoId: orientando.alunoId ?? null,
+    alunoUsuarioId: orientando.alunoUsuarioId ?? null,
+    nome: orientando.nome ?? "Estudante",
+    email: orientando.email ?? "",
+    ra: orientando.ra ?? "",
+    curso: orientando.curso ?? "",
+    situacao: orientando.situacao ?? "INATIVO",
+    progresso: Number(orientando.progresso ?? 0),
+    pendencias: Number(orientando.pendencias ?? 0),
+    projetos,
+  };
+}
+
+export function mapOrientandoDetalhe(detalhe) {
+  if (!detalhe) return null;
+
+  const projetos = Array.isArray(detalhe.projetos)
+    ? detalhe.projetos.map((p) => ({
+        projetoId: p?.projetoId ?? null,
+        projetoTitulo: p?.projetoTitulo ?? "Projeto",
+        status: p?.status ?? "",
+      }))
+    : [];
+
+  const etapas = Array.isArray(detalhe.etapas)
+    ? detalhe.etapas.map((e) => ({
+        id: e?.id ?? null,
+        titulo: e?.titulo ?? "Etapa",
+        descricao: e?.descricao ?? "",
+        ordem: e?.ordem ?? 0,
+        peso: e?.peso ?? 0,
+        obrigatoria: Boolean(e?.obrigatoria),
+        status: e?.status ?? "PENDING",
+        responsavel: e?.responsavel ?? "AMBOS",
+        prazo: e?.prazo ?? null,
+        concluidaEm: e?.concluidaEm ?? null,
+        concluidaPorNome: e?.concluidaPorNome ?? "",
+      }))
+    : [];
+
+  const historico = Array.isArray(detalhe.historico)
+    ? detalhe.historico.map((h) => ({
+        id: h?.id ?? null,
+        titulo: h?.titulo ?? "Atualização",
+        descricao: h?.descricao ?? "",
+        categoria: h?.categoria ?? "ATUALIZACAO",
+        dataRegistro: h?.dataRegistro ?? null,
+      }))
+    : [];
+
+  const selecionado = detalhe.projetoSelecionado ?? null;
+
+  return {
+    alunoId: detalhe.alunoId ?? null,
+    alunoUsuarioId: detalhe.alunoUsuarioId ?? null,
+    nome: detalhe.nome ?? "Estudante",
+    email: detalhe.email ?? "",
+    ra: detalhe.ra ?? "",
+    curso: detalhe.curso ?? "",
+    semestre: detalhe.semestre ?? null,
+    interesses: detalhe.interesses ?? "",
+    projetoSelecionado: selecionado
+      ? {
+          projetoId: selecionado.projetoId ?? null,
+          projetoTitulo: selecionado.projetoTitulo ?? "Projeto",
+          status: selecionado.status ?? "",
+        }
+      : null,
+    projetos,
+    progresso: Number(detalhe.progresso ?? 0),
+    etapas,
+    historico,
+  };
+}
+
+export function mapOrientadorPerfil(perfil) {
+  if (!perfil) return null;
+
+  return {
+    id: perfil?.id ?? null,
+    nome: perfil?.nome ?? "",
+    email: perfil?.email ?? "",
+    tipo: perfil?.tipo ?? "ORIENTADOR",
+    dataCadastro: perfil?.dataCadastro ?? null,
+    instituicao: perfil?.instituicao ?? "",
+    bio: perfil?.bio ?? "",
+    fotoPerfilUrl: perfil?.fotoPerfilUrl ?? "",
+    departamento: perfil?.departamento ?? "",
+    titulacao: perfil?.titulacao ?? "",
+    projetos: Number(perfil?.projetos ?? 0),
+    orientandos: Number(perfil?.orientandos ?? 0),
+    avaliacoes: Number(perfil?.avaliacoes ?? 0),
+  };
+}
+
+export function mapEtapa(etapa) {
+  if (!etapa) return null;
+
+  return {
+    id: etapa?.id ?? null,
+    projetoId: etapa?.projetoId ?? null,
+    titulo: etapa?.titulo ?? "Etapa",
+    descricao: etapa?.descricao ?? "",
+    peso: Number(etapa?.peso ?? 0),
+    ordem: Number(etapa?.ordem ?? 0),
+    status: etapa?.status ?? "PENDING",
+    responsavel: etapa?.responsavel ?? "AMBOS",
+    prazo: etapa?.prazo ?? null,
+    obrigatoria: Boolean(etapa?.obrigatoria),
+    concluidaEm: etapa?.concluidaEm ?? null,
+    concluidaPorId: etapa?.concluidaPorId ?? null,
+    concluidaPorNome: etapa?.concluidaPorNome ?? "",
+  };
+}
+
+export function mapEntrega(entrega) {
+  if (!entrega) return null;
+
+  return {
+    id: entrega?.id ?? null,
+    projetoId: entrega?.projetoId ?? null,
+    etapaId: entrega?.etapaId ?? null,
+    etapaTitulo: entrega?.etapaTitulo ?? "",
+    autorId: entrega?.autorId ?? null,
+    autorNome: entrega?.autorNome ?? "",
+    titulo: entrega?.titulo ?? "Entrega",
+    categoria: entrega?.categoria ?? "",
+    status: entrega?.status ?? "PENDING_REVIEW",
+    criadaEm: entrega?.criadaEm ?? null,
+    atualizadaEm: entrega?.atualizadaEm ?? null,
+    ultimaVersaoId: entrega?.ultimaVersaoId ?? null,
+    totalVersoes: Number(entrega?.totalVersoes ?? 0),
+  };
+}
+
+export function mapDeliveryVersion(versao) {
+  if (!versao) return null;
+
+  return {
+    id: versao?.id ?? null,
+    numeroVersao: Number(versao?.numeroVersao ?? 1),
+    nomeArquivo: versao?.nomeArquivo ?? "Arquivo",
+    contentType: versao?.contentType ?? "",
+    tamanhoBytes: Number(versao?.tamanhoBytes ?? 0),
+    enviadaEm: versao?.enviadaEm ?? null,
+    revisao: versao?.revisao
+      ? {
+          id: versao.revisao.id ?? null,
+          versaoId: versao.revisao.versaoId ?? null,
+          revisorId: versao.revisao.revisorId ?? null,
+          revisorNome: versao.revisao.revisorNome ?? "",
+          decisao: versao.revisao.decisao ?? "",
+          comentario: versao.revisao.comentario ?? "",
+          revisadaEm: versao.revisao.revisadaEm ?? null,
+        }
+      : null,
+  };
+}
+
+export function mapAvaliacaoAcademica(avaliacao) {
+  if (!avaliacao) return null;
+
+  return {
+    id: avaliacao?.id ?? null,
+    projetoId: avaliacao?.projetoId ?? null,
+    etapaId: avaliacao?.etapaId ?? null,
+    etapaTitulo: avaliacao?.etapaTitulo ?? "",
+    alunoId: avaliacao?.alunoId ?? null,
+    alunoNome: avaliacao?.alunoNome ?? "",
+    orientadorId: avaliacao?.orientadorId ?? null,
+    orientadorNome: avaliacao?.orientadorNome ?? "",
+    participacao: Number(avaliacao?.participacao ?? 0),
+    qualidadeTecnica: Number(avaliacao?.qualidadeTecnica ?? 0),
+    cumprimentoDePrazos: Number(avaliacao?.cumprimentoDePrazos ?? 0),
+    comunicacao: Number(avaliacao?.comunicacao ?? 0),
+    comentarioOrientador: avaliacao?.comentarioOrientador ?? "",
+    media: avaliacao?.media ?? null,
+    cienciaRegistrada: Boolean(avaliacao?.cienciaRegistrada),
+    comentarioAluno: avaliacao?.comentarioAluno ?? "",
+    dataCiencia: avaliacao?.dataCiencia ?? null,
+    criadaEm: avaliacao?.criadaEm ?? null,
+    atualizadaEm: avaliacao?.atualizadaEm ?? null,
   };
 }

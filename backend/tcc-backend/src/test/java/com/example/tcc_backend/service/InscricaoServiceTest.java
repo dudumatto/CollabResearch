@@ -6,13 +6,16 @@ import com.example.tcc_backend.repository.AlunoRepository;
 import com.example.tcc_backend.repository.InscricaoRepository;
 import com.example.tcc_backend.repository.ProjetoRepository;
 import com.example.tcc_backend.security.AuthHelper;
+import com.example.tcc_backend.security.ProjectAccessPolicy;
 import com.example.tcc_backend.support.TestDataFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -37,12 +40,88 @@ class InscricaoServiceTest {
     private ProjetoRepository projetoRepository;
     @Mock
     private AuthHelper authHelper;
+    private ProjectAccessPolicy projectAccessPolicy;
     @Mock
     private NotificacaoService notificacaoService;
 
-    @InjectMocks
     private InscricaoService inscricaoService;
 
+    @BeforeEach
+    void setUp() {
+        projectAccessPolicy = new ProjectAccessPolicy(inscricaoRepository);
+        inscricaoService = new InscricaoService(
+                inscricaoRepository, alunoRepository, projetoRepository,
+                authHelper, notificacaoService, projectAccessPolicy);
+    }
+
+    @Test
+    void findAllDeveRetornarSomenteInscricoesDoAluno() {
+        Usuario aluno = TestDataFactory.usuarioAluno(1);
+        Inscricao inscricao = TestDataFactory.inscricaoAprovada(
+                5, TestDataFactory.aluno(1, aluno), TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, aluno)));
+        when(authHelper.getCurrentUser()).thenReturn(aluno);
+        when(inscricaoRepository.findByAlunoUsuarioId(1)).thenReturn(List.of(inscricao));
+
+        assertThat(inscricaoService.findAll()).containsExactly(inscricao);
+        verify(inscricaoRepository, never()).findAll();
+    }
+
+    @Test
+    void findAllDeveRetornarProjetosDoOrientador() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(inscricaoRepository.findByProjetoOrientadorUsuarioId(2)).thenReturn(List.of());
+
+        assertThat(inscricaoService.findAll()).isEmpty();
+        verify(inscricaoRepository).findByProjetoOrientadorUsuarioId(2);
+    }
+
+    @Test
+    void findAllDevePermitirAuditoriaDoAdmin() {
+        when(authHelper.getCurrentUser()).thenReturn(TestDataFactory.usuarioAdmin(8));
+        when(inscricaoRepository.findAll()).thenReturn(List.of());
+
+        assertThat(inscricaoService.findAll()).isEmpty();
+        verify(inscricaoRepository).findAll();
+    }
+
+    @Test
+    void findAllPaginadoDeveEscoparOrientador() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        PageRequest pageable = PageRequest.of(0, 10);
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(inscricaoRepository.findByProjetoOrientadorUsuarioId(2, pageable))
+                .thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+        assertThat(inscricaoService.findAll(pageable)).isEmpty();
+        verify(inscricaoRepository).findByProjetoOrientadorUsuarioId(2, pageable);
+    }
+
+    @Test
+    void findByProjetoDeveNegarAlunoExterno() {
+        Usuario externo = TestDataFactory.usuarioAluno(9);
+        Projeto projeto = TestDataFactory.projetoComOrientador(
+                10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        when(authHelper.getCurrentUser()).thenReturn(externo);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> inscricaoService.findByProjeto(10))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        verify(inscricaoRepository, never()).findByProjetoId(10);
+    }
+
+    @Test
+    void findByIdDevePermitirPropriaInscricao() {
+        Usuario aluno = TestDataFactory.usuarioAluno(1);
+        Inscricao inscricao = TestDataFactory.inscricaoAprovada(
+                5, TestDataFactory.aluno(1, aluno), TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, aluno)));
+        when(authHelper.getCurrentUser()).thenReturn(aluno);
+        when(inscricaoRepository.findById(5)).thenReturn(Optional.of(inscricao));
+
+        assertThat(inscricaoService.findById(5)).isSameAs(inscricao);
+    }
     @Test
     void createDeveSalvarInscricaoENotificarOrientador() {
         Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
@@ -108,7 +187,10 @@ class InscricaoServiceTest {
         inscricao.setStatus(StatusInscricao.PENDENTE);
 
         when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
-        when(inscricaoRepository.findById(5)).thenReturn(Optional.of(inscricao));
+        when(inscricaoRepository.findProjetoIdById(5)).thenReturn(Optional.of(10));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(inscricaoRepository.findByIdForUpdate(5)).thenReturn(Optional.of(inscricao));
+        when(inscricaoRepository.countByProjetoIdAndStatus(10, StatusInscricao.APROVADO)).thenReturn(0L);
         when(inscricaoRepository.save(any(Inscricao.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Inscricao aprovada = inscricaoService.aprovar(5);
@@ -133,7 +215,9 @@ class InscricaoServiceTest {
         Inscricao inscricao = TestDataFactory.inscricaoAprovada(5, TestDataFactory.aluno(1, alunoUsuario), projeto);
 
         when(authHelper.getCurrentUser()).thenReturn(outroOrientador);
-        when(inscricaoRepository.findById(5)).thenReturn(Optional.of(inscricao));
+        when(inscricaoRepository.findProjetoIdById(5)).thenReturn(Optional.of(10));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(inscricaoRepository.findByIdForUpdate(5)).thenReturn(Optional.of(inscricao));
 
         assertThatThrownBy(() -> inscricaoService.aprovar(5))
                 .isInstanceOf(ResponseStatusException.class)
@@ -152,7 +236,9 @@ class InscricaoServiceTest {
         inscricao.setStatus(StatusInscricao.PENDENTE);
 
         when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
-        when(inscricaoRepository.findById(5)).thenReturn(Optional.of(inscricao));
+        when(inscricaoRepository.findProjetoIdById(5)).thenReturn(Optional.of(10));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(inscricaoRepository.findByIdForUpdate(5)).thenReturn(Optional.of(inscricao));
         when(inscricaoRepository.save(any(Inscricao.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Inscricao rejeitada = inscricaoService.rejeitar(5);
@@ -189,20 +275,36 @@ class InscricaoServiceTest {
     }
 
     @Test
-    void updateDeveTrocarProjetoDaInscricaoDoProprioAluno() {
+    void updateDeveNegarTrocaDeProjetoMesmoParaInscricaoAprovadaDoProprioAluno() {
         Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
         Projeto projetoAtual = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
-        Projeto novoProjeto = TestDataFactory.projetoComOrientador(11, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
         Inscricao inscricao = TestDataFactory.inscricaoAprovada(5, TestDataFactory.aluno(1, alunoUsuario), projetoAtual);
 
         when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
-        when(inscricaoRepository.findById(5)).thenReturn(Optional.of(inscricao));
-        when(projetoRepository.findById(11)).thenReturn(Optional.of(novoProjeto));
+        when(inscricaoRepository.findByIdForUpdate(5)).thenReturn(Optional.of(inscricao));
+
+        assertThatThrownBy(() -> inscricaoService.update(5, InscricaoRequest.builder().projetoId(11).build()))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.CONFLICT);
+        verify(inscricaoRepository, never()).save(any(Inscricao.class));
+    }
+
+    @Test
+    void updateDeveAlterarSomenteMotivacaoNoMesmoProjeto() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        Inscricao inscricao = TestDataFactory.inscricaoAprovada(5, TestDataFactory.aluno(1, alunoUsuario), projeto);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(inscricaoRepository.findByIdForUpdate(5)).thenReturn(Optional.of(inscricao));
         when(inscricaoRepository.save(any(Inscricao.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Inscricao atualizada = inscricaoService.update(5, InscricaoRequest.builder().projetoId(11).build());
+        Inscricao atualizada = inscricaoService.update(
+                5, InscricaoRequest.builder().projetoId(10).motivacao("  Nova motivacao  ").build());
 
-        assertThat(atualizada.getProjeto().getId()).isEqualTo(11);
+        assertThat(atualizada.getMotivacao()).isEqualTo("Nova motivacao");
+        assertThat(atualizada.getProjeto()).isSameAs(projeto);
     }
 
     @Test
@@ -226,4 +328,24 @@ class InscricaoServiceTest {
 
         assertThat(inscricaoService.findByUsuarioLogado()).isEmpty();
     }
-}
+
+    @Test
+    void aprovarDeveNegarProjetoSemVagas() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Inscricao inscricao = TestDataFactory.inscricaoAprovada(5, TestDataFactory.aluno(1, alunoUsuario), projeto);
+        inscricao.setStatus(StatusInscricao.PENDENTE);
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(inscricaoRepository.findProjetoIdById(5)).thenReturn(Optional.of(10));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(inscricaoRepository.findByIdForUpdate(5)).thenReturn(Optional.of(inscricao));
+        when(inscricaoRepository.countByProjetoIdAndStatus(10, StatusInscricao.APROVADO)).thenReturn(1L);
+
+        assertThatThrownBy(() -> inscricaoService.aprovar(5))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.CONFLICT);
+        verify(projetoRepository).findByIdForUpdate(10);
+        verify(inscricaoRepository, never()).save(inscricao);
+    }}

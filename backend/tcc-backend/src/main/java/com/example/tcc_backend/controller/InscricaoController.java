@@ -30,9 +30,10 @@ public class InscricaoController {
 
     private final InscricaoService inscricaoService;
 
-    @Operation(summary = "Listar inscrições", description = "Retorna todas as inscrições do sistema.")
+    @Operation(summary = "Listar inscrições", description = "Retorna inscrições visíveis ao perfil autenticado: próprias para alunos, dos projetos sob responsabilidade para orientadores e todas para administradores.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
     })
     @GetMapping
     public ResponseEntity<List<InscricaoResponse>> findAll() {
@@ -41,9 +42,10 @@ public class InscricaoController {
         );
     }
 
-    @Operation(summary = "Listar inscrições paginadas", description = "Retorna inscrições com paginação.")
+    @Operation(summary = "Listar inscrições paginadas", description = "Retorna inscrições visíveis ao perfil autenticado com paginação.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista paginada retornada com sucesso")
+            @ApiResponse(responseCode = "200", description = "Lista paginada retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
     })
     @GetMapping({"/pagina", "/page"})
     public ResponseEntity<PageResponse<InscricaoResponse>> findAllPaginado(
@@ -63,6 +65,7 @@ public class InscricaoController {
     @Operation(summary = "Buscar inscrição por ID", description = "Retorna uma inscrição específica.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Inscrição encontrada"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
             @ApiResponse(responseCode = "404", description = "Inscrição não encontrada")
     })
     @GetMapping("/{id}")
@@ -74,7 +77,8 @@ public class InscricaoController {
 
     @Operation(summary = "Listar inscrições por projeto", description = "Retorna inscrições de um projeto específico.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
     })
     @GetMapping({"/projeto/{projetoId}", "/project/{projetoId}"})
     public ResponseEntity<List<InscricaoResponse>> findByProjeto(@PathVariable Integer projetoId) {
@@ -86,7 +90,8 @@ public class InscricaoController {
 
     @Operation(summary = "Listar inscrições por projeto paginadas", description = "Retorna inscrições paginadas de um projeto.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista paginada retornada com sucesso")
+            @ApiResponse(responseCode = "200", description = "Lista paginada retornada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado")
     })
     @GetMapping({"/projeto/{projetoId}/pagina", "/project/{projetoId}/page"})
     public ResponseEntity<PageResponse<InscricaoResponse>> findByProjetoPaginado(
@@ -119,6 +124,8 @@ public class InscricaoController {
     @Operation(summary = "Aprovar inscrição", description = "Aprova uma inscrição.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Inscrição aprovada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "409", description = "Inscricao nao esta pendente ou projeto sem vagas"),
             @ApiResponse(responseCode = "404", description = "Inscrição não encontrada")
     })
     @PutMapping({"/{id}/aprovar", "/{id}/approve"})
@@ -132,6 +139,8 @@ public class InscricaoController {
     @Operation(summary = "Rejeitar inscrição", description = "Rejeita uma inscrição.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Inscrição rejeitada com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "409", description = "Inscricao nao esta pendente"),
             @ApiResponse(responseCode = "404", description = "Inscrição não encontrada")
     })
     @PutMapping({"/{id}/rejeitar", "/{id}/reject"})

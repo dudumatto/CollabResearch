@@ -1,6 +1,7 @@
 package com.example.tcc_backend.controller;
 
 import com.example.tcc_backend.dto.request.ProjetoRequest;
+import com.example.tcc_backend.dto.request.ProjetoStatusRequest;
 import com.example.tcc_backend.dto.request.RecrutarColaboradorRequest;
 import com.example.tcc_backend.dto.response.InscricaoResponse;
 import com.example.tcc_backend.dto.response.PageResponse;
@@ -132,12 +133,27 @@ public class ProjetoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Projeto atualizado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "409", description = "Capacidade menor que alunos aprovados"),
             @ApiResponse(responseCode = "404", description = "Projeto não encontrado")
     })
-    @PutMapping("/{id}")
+@PutMapping("/{id}")
     public ResponseEntity<ProjetoResponse> update(@PathVariable Integer id,
                                                   @RequestBody @Valid ProjetoRequest dto) {
         return ResponseEntity.ok(ProjetoResponse.fromEntity(projetoService.update(id, dto)));
+    }
+
+    @Operation(summary = "Alterar status do projeto", description = "Inicia ou finaliza projeto pelo orientador responsavel.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Status alterado"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "404", description = "Projeto nao encontrado"),
+            @ApiResponse(responseCode = "409", description = "Transicao ou pre-condicao invalida")
+    })
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ProjetoResponse> updateStatus(@PathVariable Integer id,
+                                                        @RequestBody @Valid ProjetoStatusRequest dto) {
+        return ResponseEntity.ok(ProjetoResponse.fromEntity(projetoService.updateStatus(id, dto.getStatus())));
     }
 
     @Operation(
@@ -147,6 +163,7 @@ public class ProjetoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Projeto aceito com sucesso"),
             @ApiResponse(responseCode = "403", description = "Usuario nao e o orientador solicitado"),
+            @ApiResponse(responseCode = "409", description = "Projeto nao esta pendente"),
             @ApiResponse(responseCode = "404", description = "Projeto nao encontrado")
     })
     @PutMapping("/{id}/aceitar-orientacao")
@@ -161,6 +178,7 @@ public class ProjetoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Projeto recusado com sucesso"),
             @ApiResponse(responseCode = "403", description = "Usuario nao e o orientador solicitado"),
+            @ApiResponse(responseCode = "409", description = "Projeto nao esta pendente"),
             @ApiResponse(responseCode = "404", description = "Projeto nao encontrado")
     })
     @PutMapping("/{id}/rejeitar-orientacao")
@@ -174,6 +192,7 @@ public class ProjetoController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Projeto removido com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
             @ApiResponse(responseCode = "404", description = "Projeto não encontrado")
     })
     @DeleteMapping("/{id}")
@@ -189,6 +208,8 @@ public class ProjetoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Colaborador adicionado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
+            @ApiResponse(responseCode = "409", description = "Projeto fechado ou sem vagas"),
             @ApiResponse(responseCode = "404", description = "Projeto ou usuário não encontrado")
     })
     @PostMapping("/{id}/recrutar")
@@ -205,6 +226,7 @@ public class ProjetoController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Colaboradores retornados com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
             @ApiResponse(responseCode = "404", description = "Projeto não encontrado")
     })
     @GetMapping("/{id}/colaboradores")
@@ -222,6 +244,8 @@ public class ProjetoController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Colaborador removido com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Operacao invalida"),
+            @ApiResponse(responseCode = "403", description = "Acesso negado"),
             @ApiResponse(responseCode = "404", description = "Projeto ou usuário não encontrado")
     })
     @DeleteMapping("/{id}/colaboradores/{usuarioId}")

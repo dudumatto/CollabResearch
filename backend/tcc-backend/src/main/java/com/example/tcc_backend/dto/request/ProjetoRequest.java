@@ -24,7 +24,6 @@ public class ProjetoRequest {
     @JsonAlias({"competencias", "technologies", "tecnologia", "technology"})
     private Object tecnologias;
 
-    @NotNull(message = "Vagas é obrigatório")
     private Integer vagas;
 
     private LocalDate dataInicio;

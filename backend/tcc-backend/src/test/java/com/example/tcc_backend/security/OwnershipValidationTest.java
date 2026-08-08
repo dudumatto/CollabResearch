@@ -35,8 +35,10 @@ class OwnershipValidationTest {
     @Mock private NotificacaoRepository notificacaoRepository;
     @Mock private ProgressoRepository progressoRepository;
     @Mock private AuthHelper authHelper;
+    private ProjectAccessPolicy projectAccessPolicy;
     @Mock private AreaPesquisaRepository areaPesquisaRepository;
     @Mock private EtapaProgressoService etapaProgressoService;
+    @Mock private EtapaProgressoRepository etapaProgressoRepository;
     @Mock private ChatRealtimeService chatRealtimeService;
 
     private NotificacaoService notificacaoService;
@@ -49,20 +51,21 @@ class OwnershipValidationTest {
 
     @BeforeEach
     void setUp() {
+        projectAccessPolicy = new ProjectAccessPolicy(inscricaoRepository);
         notificacaoService = new NotificacaoService(notificacaoRepository, usuarioRepository, authHelper);
         usuarioService = new UsuarioService(
                 usuarioRepository, alunoRepository, orientadorRepository,
                 cursoRepository, projetoRepository, inscricaoRepository, authHelper);
         inscricaoService = new InscricaoService(
                 inscricaoRepository, alunoRepository, projetoRepository,
-                authHelper, notificacaoService);
+                authHelper, notificacaoService, projectAccessPolicy);
         documentoService = new DocumentoService(
                 documentoRepository, usuarioRepository, authHelper);
         projetoService = new ProjetoService(
                 projetoRepository, orientadorRepository, alunoRepository,
                 inscricaoRepository, areaPesquisaRepository,
                 usuarioRepository, authHelper, notificacaoService,
-                etapaProgressoService);
+                etapaProgressoService, projectAccessPolicy, etapaProgressoRepository);
         progressoService = new ProgressoService(
                 progressoRepository, projetoRepository, inscricaoRepository,
                 authHelper, notificacaoService);
@@ -409,7 +412,9 @@ class OwnershipValidationTest {
             Aluno alunoDono = TestDataFactory.aluno(99, TestDataFactory.usuarioAluno(99));
             Projeto projeto = TestDataFactory.projetoComOrientador(10, orientador);
             Inscricao inscricao = TestDataFactory.inscricaoAprovada(5, alunoDono, projeto);
-            when(inscricaoRepository.findById(5)).thenReturn(Optional.of(inscricao));
+            when(inscricaoRepository.findProjetoIdById(5)).thenReturn(Optional.of(10));
+            when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+            when(inscricaoRepository.findByIdForUpdate(5)).thenReturn(Optional.of(inscricao));
 
             assertThatThrownBy(() -> inscricaoService.aprovar(5))
                     .isInstanceOf(ResponseStatusException.class)
@@ -426,7 +431,9 @@ class OwnershipValidationTest {
             Aluno aluno = TestDataFactory.aluno(99, TestDataFactory.usuarioAluno(99));
             Projeto projeto = TestDataFactory.projetoComOrientador(10, orientadorB);
             Inscricao inscricao = TestDataFactory.inscricaoAprovada(5, aluno, projeto);
-            when(inscricaoRepository.findById(5)).thenReturn(Optional.of(inscricao));
+            when(inscricaoRepository.findProjetoIdById(5)).thenReturn(Optional.of(10));
+            when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+            when(inscricaoRepository.findByIdForUpdate(5)).thenReturn(Optional.of(inscricao));
 
             assertThatThrownBy(() -> inscricaoService.aprovar(5))
                     .isInstanceOf(ResponseStatusException.class)
@@ -447,7 +454,9 @@ class OwnershipValidationTest {
             Aluno alunoDono = TestDataFactory.aluno(99, TestDataFactory.usuarioAluno(99));
             Projeto projeto = TestDataFactory.projetoComOrientador(10, orientador);
             Inscricao inscricao = TestDataFactory.inscricaoAprovada(5, alunoDono, projeto);
-            when(inscricaoRepository.findById(5)).thenReturn(Optional.of(inscricao));
+            when(inscricaoRepository.findProjetoIdById(5)).thenReturn(Optional.of(10));
+            when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+            when(inscricaoRepository.findByIdForUpdate(5)).thenReturn(Optional.of(inscricao));
 
             assertThatThrownBy(() -> inscricaoService.rejeitar(5))
                     .isInstanceOf(ResponseStatusException.class)
@@ -505,7 +514,7 @@ class OwnershipValidationTest {
             Orientador ori = TestDataFactory.orientador(2, orientador);
             Projeto projeto = Projeto.builder()
                     .id(10).titulo("P").orientador(ori).status(StatusProjeto.ABERTO).build();
-            when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+            when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
             when(projetoRepository.save(any())).thenAnswer(i -> i.getArgument(0));
             when(areaPesquisaRepository.findById(any())).thenReturn(Optional.of(
                     com.example.tcc_backend.model.AreaPesquisa.builder().id(1).nome("IA").build()));
@@ -529,7 +538,7 @@ class OwnershipValidationTest {
             Orientador orientador = TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2));
             Projeto projeto = Projeto.builder()
                     .id(10).titulo("P").orientador(orientador).status(StatusProjeto.ABERTO).build();
-            when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+            when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
 
             var dto = new com.example.tcc_backend.dto.request.ProjetoRequest();
             dto.setTitulo("Hack");
@@ -556,7 +565,7 @@ class OwnershipValidationTest {
             Orientador ori = TestDataFactory.orientador(2, orientador);
             Projeto projeto = Projeto.builder()
                     .id(10).titulo("P").orientador(ori).status(StatusProjeto.ABERTO).build();
-            when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+            when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
 
             projetoService.delete(10);
             verify(projetoRepository).delete(projeto);
@@ -570,7 +579,7 @@ class OwnershipValidationTest {
             Orientador orientador = TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2));
             Projeto projeto = Projeto.builder()
                     .id(10).titulo("P").orientador(orientador).status(StatusProjeto.ABERTO).build();
-            when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+            when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
 
             assertThatThrownBy(() -> projetoService.delete(10))
                     .isInstanceOf(ResponseStatusException.class)
@@ -590,7 +599,7 @@ class OwnershipValidationTest {
             Orientador orientador = TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2));
             Projeto projeto = Projeto.builder()
                     .id(10).titulo("P").orientador(orientador).status(StatusProjeto.ABERTO).build();
-            when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+            when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
 
             assertThatThrownBy(() -> projetoService.recrutar(10, 3))
                     .isInstanceOf(ResponseStatusException.class)

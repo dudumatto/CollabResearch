@@ -26,13 +26,16 @@ import java.time.LocalDateTime;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final CronSecretAuthFilter cronSecretAuthFilter;
     private final ObjectMapper objectMapper;
     private final boolean swaggerEnabled;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          CronSecretAuthFilter cronSecretAuthFilter,
                           ObjectMapper objectMapper,
                           @Value("${SWAGGER_ENABLED:false}") boolean swaggerEnabled) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.cronSecretAuthFilter = cronSecretAuthFilter;
         this.objectMapper = objectMapper;
         this.swaggerEnabled = swaggerEnabled;
     }
@@ -60,6 +63,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).access((authentication, context) -> new AuthorizationDecision(swaggerEnabled))
+                        .requestMatchers("/api/internal/jobs/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -74,7 +78,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(cronSecretAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter, CronSecretAuthFilter.class);
 
         return http.build();
     }

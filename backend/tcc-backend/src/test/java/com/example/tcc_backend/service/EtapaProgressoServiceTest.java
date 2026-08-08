@@ -2,12 +2,14 @@ package com.example.tcc_backend.service;
 
 import com.example.tcc_backend.dto.request.AdvanceProgressStepRequest;
 import com.example.tcc_backend.dto.request.CreateProjectProgressUpdateRequest;
+import com.example.tcc_backend.dto.request.EtapaRequest;
 import com.example.tcc_backend.model.*;
 import com.example.tcc_backend.repository.EtapaProgressoRepository;
 import com.example.tcc_backend.repository.InscricaoRepository;
 import com.example.tcc_backend.repository.ProgressoRepository;
 import com.example.tcc_backend.repository.ProjetoRepository;
 import com.example.tcc_backend.security.AuthHelper;
+import com.example.tcc_backend.security.ProjectAccessPolicy;
 import com.example.tcc_backend.support.TestDataFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +25,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +42,8 @@ class EtapaProgressoServiceTest {
     private InscricaoRepository inscricaoRepository;
     @Mock
     private AuthHelper authHelper;
+    @Mock
+    private ProjectAccessPolicy projectAccessPolicy;
 
     @InjectMocks
     private EtapaProgressoService etapaProgressoService;
@@ -106,5 +111,90 @@ class EtapaProgressoServiceTest {
         assertThat(response.getCategory()).isEqualTo("milestone");
         assertThat(response.getStepContribution()).isEqualTo(60);
         verify(progressoRepository).save(any());
+    }
+
+    @Test
+    void criarEtapaDeveExigirOrientadorResponsavel() {
+        Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(1, orientadorUsuario));
+
+        EtapaRequest request = new EtapaRequest();
+        request.setTitulo("Etapa personalizada");
+        request.setPeso(20);
+        request.setResponsavel(EtapaResponsavel.ALUNO);
+
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(10)).thenReturn(List.of());
+        when(etapaProgressoRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = etapaProgressoService.criarEtapa(10, request);
+
+        assertThat(response.getTitulo()).isEqualTo("Etapa personalizada");
+        assertThat(response.getResponsavel()).isEqualTo(EtapaResponsavel.ALUNO);
+        assertThat(response.getStatus()).isEqualTo(EtapaProgressoStatus.PENDING);
+        verify(projectAccessPolicy).requireResponsibleAdvisor(projeto, orientadorUsuario);
+    }
+
+    @Test
+    void atualizarEtapaConcluidaDeveLancarConflito() {
+        Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(1, orientadorUsuario));
+        EtapaProgresso etapaConcluida = TestDataFactory.etapaProgresso(1, projeto, orientadorUsuario, 1, 10, EtapaProgressoStatus.DONE);
+
+        EtapaRequest request = new EtapaRequest();
+        request.setTitulo("Novo titulo");
+
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(etapaProgressoRepository.findByProjetoIdAndId(10, 1)).thenReturn(Optional.of(etapaConcluida));
+
+        assertThatThrownBy(() -> etapaProgressoService.atualizarEtapa(10, 1, request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+    }
+
+    @Test
+    void concluirEtapaNaoDevePermitirAlunoEmEtapaDoOrientador() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));
+        EtapaProgresso etapa = TestDataFactory.etapaProgresso(1, projeto, null, 1, 10, EtapaProgressoStatus.ACTIVE);
+        etapa.setResponsavel(EtapaResponsavel.ORIENTADOR);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(etapaProgressoRepository.findByProjetoIdAndId(10, 1)).thenReturn(Optional.of(etapa));
+        when(projectAccessPolicy.relationship(projeto, alunoUsuario))
+                .thenReturn(ProjectAccessPolicy.Relationship.STUDENT_CREATOR);
+
+        AdvanceProgressStepRequest request = new AdvanceProgressStepRequest();
+        request.setStatus("done");
+
+        assertThatThrownBy(() -> etapaProgressoService.concluirEtapa(10, 1, request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN));
+    }
+
+    @Test
+    void concluirEtapaDevePermitirAlunoEmEtapaDoAluno() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));
+        EtapaProgresso etapa = TestDataFactory.etapaProgresso(1, projeto, null, 1, 10, EtapaProgressoStatus.ACTIVE);
+        etapa.setResponsavel(EtapaResponsavel.ALUNO);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(etapaProgressoRepository.findByProjetoIdAndId(10, 1)).thenReturn(Optional.of(etapa));
+        when(projectAccessPolicy.relationship(projeto, alunoUsuario))
+                .thenReturn(ProjectAccessPolicy.Relationship.STUDENT_CREATOR);
+
+        AdvanceProgressStepRequest request = new AdvanceProgressStepRequest();
+        request.setStatus("done");
+
+        var response = etapaProgressoService.concluirEtapa(10, 1, request);
+
+        assertThat(response.getStatus()).isEqualTo(EtapaProgressoStatus.DONE);
+        assertThat(response.getConcluidaPorId()).isEqualTo(1);
+        verify(etapaProgressoRepository).save(any());
     }
 }

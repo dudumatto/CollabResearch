@@ -13,10 +13,14 @@ import {
   ChevronLeft,
   FlaskConical,
   Settings,
+  Users,
+  ClipboardCheck,
+  GraduationCap,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { notificationService } from "../services/notificationService";
+import { features } from "../config/features";
 import "./Sidebar.css";
 
 const navItems = [
@@ -26,6 +30,19 @@ const navItems = [
   { path: "/app/chat", label: "Mensagens", icon: MessageSquare },
   { path: "/app/progress", label: "Progresso", icon: TrendingUp },
   { path: "/app/feedback", label: "Feedback", icon: Star },
+  { path: "/app/notifications", label: "Notificacoes", icon: Bell },
+  { path: "/app/profile", label: "Meu Perfil", icon: User },
+];
+
+const advisorNavItems = [
+  { path: "/app", label: "Visao geral", icon: LayoutDashboard, exact: true },
+  { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
+  { path: "/app/applications", label: "Inscricoes recebidas", icon: FileText },
+  { path: "/app/advisees", label: "Orientandos", icon: GraduationCap },
+  { path: "/app/progress", label: "Progresso", icon: TrendingUp },
+  { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
+  { path: "/app/avaliacoes", label: "Avaliacoes", icon: Users },
+  { path: "/app/chat", label: "Mensagens", icon: MessageSquare },
   { path: "/app/notifications", label: "Notificacoes", icon: Bell },
   { path: "/app/profile", label: "Meu Perfil", icon: User },
 ];
@@ -47,7 +64,9 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
 
   const notifications = Array.isArray(data) ? data : [];
   const unreadCount = notifications.filter((item) => !item.lida).length;
-  const visibleNavItems = navItems.filter(
+  const isAdvisor = features.advisorWorkspaceV2 && user?.tipo === "ORIENTADOR";
+  const activeNavItems = isAdvisor ? advisorNavItems : navItems;
+  const visibleNavItems = activeNavItems.filter(
     (item) => !item.roles || item.roles.includes(user?.tipo)
   );
 
