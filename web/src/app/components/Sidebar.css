@@ -79,34 +79,20 @@
   justify-content: center;
 }
 
-.barra-lateral__logo {
-  width: 2.25rem;
-  height: 2.25rem;
-  background: var(--gradiente-primario);
-  border-radius: var(--raio-medio);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(31, 122, 90, 0.25);
+.barra-lateral__marca {
+  display: block;
+  flex: 0 0 auto;
+  object-fit: contain;
 }
 
-.barra-lateral__logo-icone {
-  color: var(--cor-branco);
+.barra-lateral__marca--icone {
+  width: 1.75rem;
+  height: 1.75rem;
 }
 
-.barra-lateral__nome-app {
-  font-family: var(--fonte-titulo);
-  font-weight: var(--peso-negrito);
-  font-size: var(--tamanho-normal);
-  color: var(--cor-texto);
-  line-height: 1.2;
-}
-
-.barra-lateral__subtitulo-app {
-  font-size: var(--tamanho-xs);
-  font-weight: var(--peso-medio);
-  color: var(--cor-texto-mudo);
+.barra-lateral__marca--completa {
+  width: 7.6rem;
+  height: auto;
 }
 
 /* ---- Navegação ---- */
