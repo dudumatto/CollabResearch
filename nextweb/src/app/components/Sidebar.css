@@ -87,49 +87,20 @@
   padding-right: var(--space-2);
 }
 
-.barra-lateral__logo {
-  width: 2.1rem;
-  height: 2.1rem;
-  background: var(--gradiente-acao);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 8px 18px rgba(31, 122, 90, 0.16);
+.barra-lateral__marca {
+  display: block;
+  flex: 0 0 auto;
+  object-fit: contain;
 }
 
-.barra-lateral__logo-icone {
-  color: #ffffff;
+.barra-lateral__marca--icone {
+  width: 1.75rem;
+  height: 1.75rem;
 }
 
-.barra-lateral__info-app {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.barra-lateral__nome-app {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: var(--peso-negrito);
-  font-size: 0.98rem;
-  color: var(--color-ink-900);
-  letter-spacing: 0;
-  line-height: 1.15;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.barra-lateral__subtitulo-app {
-  font-size: var(--text-xs);
-  font-weight: var(--peso-medio);
-  color: var(--color-ink-500);
-  line-height: 1.15;
-  margin: 0;
+.barra-lateral__marca--completa {
+  width: 7.6rem;
+  height: auto;
 }
 
 .barra-lateral__pesquisa {
