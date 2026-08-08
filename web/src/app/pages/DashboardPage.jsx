@@ -235,8 +235,7 @@ export default function DashboardPage() {
         {/* Banner de boas-vindas */}
         <div className="painel__banner-boas-vindas">
           <div className="painel__decoracao-banner">
-            <div className="painel__decoracao-circulo-topo" />
-            <div className="painel__decoracao-circulo-base" />
+            <img src="/brand/logo-icon.svg" width={280} height={280} alt="" />
           </div>
           <div className="painel__conteudo-banner">
             <p className="painel__data-banner">

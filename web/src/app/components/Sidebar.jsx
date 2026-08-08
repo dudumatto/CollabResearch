@@ -11,7 +11,6 @@ import {
   User,
   Bell,
   ChevronLeft,
-  FlaskConical,
   Settings,
   Users,
   ClipboardCheck,
@@ -70,83 +69,88 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
     (item) => !item.roles || item.roles.includes(user?.tipo)
   );
 
-  const SidebarContent = () => (
-    <div className="barra-lateral__conteudo-interno">
-      <div
-        className={`barra-lateral__cabecalho ${
-          collapsed ? "barra-lateral__cabecalho--centralizado" : ""
-        }`}
-      >
-        <div className="barra-lateral__logo">
-          <FlaskConical size={18} className="barra-lateral__logo-icone" />
-        </div>
-        {!collapsed && (
-          <div>
-            <p className="barra-lateral__nome-app">CollabResearch</p>
-            <p className="barra-lateral__subtitulo-app">Iniciacao Cientifica</p>
-          </div>
-        )}
-      </div>
+  const SidebarContent = ({ forceExpanded = false } = {}) => {
+    const isCollapsed = forceExpanded ? false : collapsed;
 
-      <nav className="barra-lateral__navegacao">
-        {visibleNavItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.exact}
-            onClick={() => setMobileOpen(false)}
-            className={({ isActive }) =>
-              [
-                "barra-lateral__item-nav",
-                isActive ? "barra-lateral__item-nav--ativo" : "",
-                collapsed ? "barra-lateral__item-nav--centralizado" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")
+    return (
+      <div className="barra-lateral__conteudo-interno">
+        <div
+          className={`barra-lateral__cabecalho ${
+            isCollapsed ? "barra-lateral__cabecalho--centralizado" : ""
+          }`}
+        >
+          <img
+            className={
+              isCollapsed
+                ? "barra-lateral__marca barra-lateral__marca--icone"
+                : "barra-lateral__marca barra-lateral__marca--completa"
             }
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && <span className="barra-lateral__indicador-ativo" />}
-                <item.icon
-                  size={18}
-                  className={
-                    isActive
-                      ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo"
-                      : "barra-lateral__icone-nav"
-                  }
-                />
-                {!collapsed && (
-                  <span
+            src={isCollapsed ? "/brand/logo-icon.svg" : "/brand/logo-full.svg"}
+            width={isCollapsed ? 28 : 101}
+            height={isCollapsed ? 28 : 20}
+            alt="Collab"
+          />
+        </div>
+
+        <nav className="barra-lateral__navegacao">
+          {visibleNavItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.exact}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                [
+                  "barra-lateral__item-nav",
+                  isActive ? "barra-lateral__item-nav--ativo" : "",
+                  isCollapsed ? "barra-lateral__item-nav--centralizado" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && <span className="barra-lateral__indicador-ativo" />}
+                  <item.icon
+                    size={18}
                     className={
                       isActive
-                        ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo"
-                        : "barra-lateral__rotulo-nav"
+                        ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo"
+                        : "barra-lateral__icone-nav"
                     }
-                  >
-                    {item.label}
-                  </span>
-                )}
-                {!collapsed &&
-                  item.path === "/app/notifications" &&
-                  unreadCount > 0 && (
-                    <span className="barra-lateral__contador">{unreadCount}</span>
+                  />
+                  {!isCollapsed && (
+                    <span
+                      className={
+                        isActive
+                          ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo"
+                          : "barra-lateral__rotulo-nav"
+                      }
+                    >
+                      {item.label}
+                    </span>
                   )}
-              </>
-            )}
-          </NavLink>
-                  ))}
-                </nav>
+                  {!isCollapsed &&
+                    item.path === "/app/notifications" &&
+                    unreadCount > 0 && (
+                      <span className="barra-lateral__contador">{unreadCount}</span>
+                    )}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
 
-                <div className="barra-lateral__rodape">
-                  <NavLink
+        <div className="barra-lateral__rodape">
+          <NavLink
             to="/app/configuracoes"
             onClick={() => setMobileOpen(false)}
             className={({ isActive }) =>
               [
                 "barra-lateral__item-configuracoes",
                 isActive ? "barra-lateral__item-nav--ativo" : "",
-                collapsed ? "barra-lateral__item-nav--centralizado" : "",
+                isCollapsed ? "barra-lateral__item-nav--centralizado" : "",
               ].filter(Boolean).join(" ")
             }
           >
@@ -157,7 +161,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
                   size={18}
                   className={isActive ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo" : "barra-lateral__icone-nav"}
                 />
-                {!collapsed && (
+                {!isCollapsed && (
                   <span className={isActive ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo" : "barra-lateral__rotulo-nav"}>
                     Configuracoes
                   </span>
@@ -165,9 +169,10 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
               </>
             )}
           </NavLink>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
@@ -215,7 +220,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="barra-lateral-mobile"
           >
-            <SidebarContent />
+            <SidebarContent forceExpanded />
           </motion.aside>
         )}
       </AnimatePresence>

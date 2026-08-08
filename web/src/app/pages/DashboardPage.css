@@ -38,6 +38,10 @@
   box-shadow: 0 24px 48px rgba(2, 6, 23, 0.34);
 }
 
+.dark .painel__decoracao-banner {
+  background: linear-gradient(90deg, transparent, rgba(15, 26, 20, 0.3));
+}
+
 @media (min-width: 768px) {
   .painel__banner-boas-vindas {
     padding: var(--espaco-6);
@@ -46,40 +50,27 @@
 
 .painel__decoracao-banner {
   position: absolute;
-  right: 0;
-  top: 0;
-  width: 16rem;
-  height: 100%;
-  opacity: 0.9;
+  inset: 0 0 0 auto;
+  width: 36%;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.58));
 }
 
-.painel__decoracao-circulo-topo {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 12rem;
-  height: 12rem;
-  background: rgba(126, 160, 106, 0.16);
-  border-radius: var(--raio-completo);
-  transform: translateY(-33%);
-  filter: blur(14px);
-}
-
-.painel__decoracao-circulo-base {
-  position: absolute;
-  bottom: 0;
-  right: 2.5rem;
-  width: 8rem;
-  height: 8rem;
-  background: rgba(85, 124, 85, 0.16);
-  border-radius: var(--raio-completo);
-  transform: translateY(33%);
-  filter: blur(16px);
+.painel__decoracao-banner img {
+  width: clamp(12rem, 19vw, 18rem);
+  height: auto;
+  margin-right: -2.3rem;
+  opacity: 0.38;
 }
 
 .painel__conteudo-banner {
   position: relative;
   z-index: 10;
+  width: min(68%, 47rem);
 }
 
 .painel__data-banner {
@@ -674,4 +665,33 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-2);
+}
+
+/* ================================================================
+   Responsivo do banner de boas-vindas (espelhado do nextweb)
+   ================================================================ */
+@media (max-width: 820px) {
+  .painel__decoracao-banner {
+    width: 46%;
+  }
+
+  .painel__decoracao-banner img {
+    margin-right: -3rem;
+    opacity: 0.2;
+  }
+
+  .painel__conteudo-banner {
+    width: 78%;
+  }
+}
+
+@media (max-width: 640px) {
+  .painel__conteudo-banner {
+    width: 100%;
+  }
+
+  .painel__decoracao-banner {
+    width: 55%;
+    opacity: 0.55;
+  }
 }
