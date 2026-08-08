@@ -54,6 +54,8 @@ public class Inscricao {
     @PrePersist
     public void prePersist() {
         this.dataInscricao = LocalDateTime.now();
-        this.status = StatusInscricao.PENDENTE;
+        if (this.status == null) {
+            this.status = StatusInscricao.PENDENTE;
+        }
     }
 }

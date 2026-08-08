@@ -26,6 +26,7 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
+e2e/results/
 
 # OS and editor files
 .DS_Store

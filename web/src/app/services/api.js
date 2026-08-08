@@ -1,4 +1,5 @@
 import { clearStoredToken, getStoredToken } from "../utils/storage";
+import { ApiError } from "../utils/apiError";
 
 const API_BASE_URL = (
   import.meta.env.DEV ? "" : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || ""
@@ -52,14 +53,23 @@ async function request(path, options = {}) {
       }
     }
 
+    const payloadObject = typeof payload === "object" && payload !== null ? payload : null;
     const message =
       typeof payload === "string"
         ? payload
-        : payload?.message || payload?.error || "Não foi possível concluir a requisição.";
-    const error = new Error(message);
-    error.status = response.status;
-    error.payload = payload;
-    throw error;
+        : payloadObject?.message || payloadObject?.error || "Não foi possível concluir a requisição.";
+
+    throw new ApiError(message, {
+      status: response.status,
+      code: payloadObject?.code ?? undefined,
+      details: Array.isArray(payloadObject?.errors)
+        ? payloadObject.errors.map((e) => ({
+            field: e?.field ?? null,
+            message: e?.message ?? null,
+          }))
+        : [],
+      payload: payloadObject ?? undefined,
+    });
   }
 
   return payload;
@@ -96,9 +106,10 @@ export const api = {
       },
     }).then(async (res) => {
       if (!res.ok) {
-        const error = new Error("Erro ao carregar arquivo.");
-        error.status = res.status;
-        throw error;
+        throw new ApiError("Erro ao carregar arquivo.", {
+          status: res.status,
+          code: `HTTP_${res.status}`,
+        });
       }
       return res.blob();
     }),

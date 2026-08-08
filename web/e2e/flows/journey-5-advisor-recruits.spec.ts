@@ -65,8 +65,7 @@ test.describe("jornada 5 — orientador recruta aluno", () => {
     await loginViaUI(page, (await setupOrientador(request)));
 
     await page.goto(`/app/projects/${projectId}/applications`);
-    await expect(page.getByText(aluno.email.split("@")[0]).first()).toBeVisible({ timeout: 10000 }).catch(() => {
-    });
+    await expect(page.getByText(aluno.email.split("@")[0]).first()).toBeVisible({ timeout: 10000 });
 
     const inscricoesRes = await request.get(`${API_URL}/api/inscricoes/projeto/${projectId}`, {
       headers: { Authorization: `Bearer ${orientadorToken}` },

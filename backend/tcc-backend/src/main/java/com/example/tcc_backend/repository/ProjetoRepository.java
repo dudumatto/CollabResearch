@@ -5,15 +5,21 @@ import com.example.tcc_backend.model.StatusProjeto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+import jakarta.persistence.LockModeType;
 
 @Repository
 public interface ProjetoRepository extends JpaRepository<Projeto, Integer>, JpaSpecificationExecutor<Projeto> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Projeto p WHERE p.id = :id")
+    Optional<Projeto> findByIdForUpdate(@Param("id") Integer id);
     List<Projeto> findByStatus(StatusProjeto status);
     Page<Projeto> findByStatus(StatusProjeto status, Pageable pageable);
     long countByStatus(StatusProjeto status);
@@ -27,6 +33,7 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Integer>, JpaS
     Page<Projeto> findByTituloContainingIgnoreCase(String busca, Pageable pageable);
     List<Projeto> findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(Integer orientadorUsuarioId, Integer alunoCriadorUsuarioId);
     Page<Projeto> findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(Integer orientadorUsuarioId, Integer alunoCriadorUsuarioId, Pageable pageable);
+    List<Projeto> findByOrientadorUsuarioId(Integer usuarioId);
     @Query("""
     SELECT p FROM Projeto p
     WHERE p.orientador.usuario.id = :usuarioId

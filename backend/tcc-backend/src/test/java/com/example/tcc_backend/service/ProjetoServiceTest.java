@@ -3,17 +3,19 @@ package com.example.tcc_backend.service;
 import com.example.tcc_backend.dto.request.ProjetoRequest;
 import com.example.tcc_backend.model.*;
 import com.example.tcc_backend.repository.AlunoRepository;
+import com.example.tcc_backend.repository.EtapaProgressoRepository;
 import com.example.tcc_backend.repository.AreaPesquisaRepository;
 import com.example.tcc_backend.repository.InscricaoRepository;
 import com.example.tcc_backend.repository.OrientadorRepository;
 import com.example.tcc_backend.repository.ProjetoRepository;
 import com.example.tcc_backend.repository.UsuarioRepository;
 import com.example.tcc_backend.security.AuthHelper;
+import com.example.tcc_backend.security.ProjectAccessPolicy;
 import com.example.tcc_backend.support.TestDataFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -47,13 +49,24 @@ class ProjetoServiceTest {
     private UsuarioRepository usuarioRepository;
     @Mock
     private AuthHelper authHelper;
+    private ProjectAccessPolicy projectAccessPolicy;
     @Mock
     private NotificacaoService notificacaoService;
     @Mock
     private EtapaProgressoService etapaProgressoService;
+    @Mock
+    private EtapaProgressoRepository etapaProgressoRepository;
 
-    @InjectMocks
     private ProjetoService projetoService;
+
+    @BeforeEach
+    void setUp() {
+        projectAccessPolicy = new ProjectAccessPolicy(inscricaoRepository);
+        projetoService = new ProjetoService(
+                projetoRepository, orientadorRepository, alunoRepository,
+                inscricaoRepository, areaPesquisaRepository, usuarioRepository,
+                authHelper, notificacaoService, etapaProgressoService, projectAccessPolicy, etapaProgressoRepository);
+    }
 
     @Test
     void createDeveCriarProjetoPendenteEInscricaoQuandoUsuarioForAluno() {
@@ -141,7 +154,7 @@ class ProjetoServiceTest {
         projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
 
         when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
-        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
         when(projetoRepository.save(any(Projeto.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Projeto aceito = projetoService.aceitarOrientacao(10);
@@ -167,7 +180,7 @@ class ProjetoServiceTest {
         projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
 
         when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
-        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
         when(projetoRepository.save(any(Projeto.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Projeto rejeitado = projetoService.rejeitarOrientacao(10);
@@ -191,7 +204,7 @@ class ProjetoServiceTest {
         projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
 
         when(authHelper.getCurrentUser()).thenReturn(outroOrientador);
-        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
 
         assertThatThrownBy(() -> projetoService.aceitarOrientacao(10))
                 .isInstanceOf(ResponseStatusException.class)
@@ -207,7 +220,7 @@ class ProjetoServiceTest {
         Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
 
         when(authHelper.getCurrentUser()).thenReturn(outro);
-        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
 
         assertThatThrownBy(() -> projetoService.update(10, requestProjeto()))
                 .isInstanceOf(ResponseStatusException.class)
@@ -223,7 +236,7 @@ class ProjetoServiceTest {
         AreaPesquisa area = AreaPesquisa.builder().id(3).nome("IA").build();
 
         when(authHelper.getCurrentUser()).thenReturn(usuario);
-        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
         when(areaPesquisaRepository.findById(3)).thenReturn(Optional.of(area));
         when(projetoRepository.save(any(Projeto.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -250,8 +263,9 @@ class ProjetoServiceTest {
         Usuario usuario = TestDataFactory.usuarioAluno(1);
         Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, usuario));
 
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
         when(authHelper.getCurrentUser()).thenReturn(usuario);
-        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
 
         projetoService.delete(10);
 
@@ -266,7 +280,7 @@ class ProjetoServiceTest {
         Aluno aluno = TestDataFactory.aluno(3, alunoUsuario);
 
         when(authHelper.getCurrentUser()).thenReturn(gestor);
-        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
         when(usuarioRepository.findById(3)).thenReturn(Optional.of(alunoUsuario));
         when(alunoRepository.findByUsuarioId(3)).thenReturn(Optional.of(aluno));
         when(inscricaoRepository.findByProjetoIdAndAlunoUsuarioId(10, 3)).thenReturn(Optional.empty());
@@ -292,7 +306,7 @@ class ProjetoServiceTest {
         Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
 
         when(authHelper.getCurrentUser()).thenReturn(gestor);
-        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
 
         assertThatThrownBy(() -> projetoService.recrutar(10, 3))
                 .isInstanceOf(ResponseStatusException.class)
@@ -310,6 +324,7 @@ class ProjetoServiceTest {
         projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
         Inscricao inscricao = TestDataFactory.inscricaoAprovada(5, TestDataFactory.aluno(1, alunoUsuario), projeto);
 
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
         when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
         when(inscricaoRepository.findByProjetoIdAndStatus(10, StatusInscricao.APROVADO)).thenReturn(List.of(inscricao));
 
@@ -319,7 +334,7 @@ class ProjetoServiceTest {
     }
 
     @Test
-    void removerColaboradorDeveNegarRemocaoDoAlunoCriador() {
+    void removerColaboradorDeveNegarAlunoCriador() {
         Usuario usuario = TestDataFactory.usuarioAluno(1);
         Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, usuario));
 
@@ -329,7 +344,7 @@ class ProjetoServiceTest {
         assertThatThrownBy(() -> projetoService.removerColaborador(10, 1))
                 .isInstanceOf(ResponseStatusException.class)
                 .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
-                .isEqualTo(HttpStatus.BAD_REQUEST);
+                .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -341,6 +356,123 @@ class ProjetoServiceTest {
         assertThat(projetos).isEmpty();
     }
 
+    @Test
+    void updateStatusDeveIniciarComAlunoAprovado() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(inscricaoRepository.countByProjetoIdAndStatus(10, StatusInscricao.APROVADO)).thenReturn(1L);
+        when(projetoRepository.save(projeto)).thenReturn(projeto);
+
+        assertThat(projetoService.updateStatus(10, StatusProjeto.EM_ANDAMENTO).getStatus())
+                .isEqualTo(StatusProjeto.EM_ANDAMENTO);
+    }
+
+    @Test
+    void updateStatusDeveNegarFinalizacaoComEtapaObrigatoriaPendente() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        projeto.setStatus(StatusProjeto.EM_ANDAMENTO);
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(etapaProgressoRepository.existsByProjetoIdAndObrigatoriaTrueAndStatusNot(10, EtapaProgressoStatus.DONE)).thenReturn(true);
+
+        assertThatThrownBy(() -> projetoService.updateStatus(10, StatusProjeto.FINALIZADO))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void updateDeveNegarVagasAbaixoDosAprovados() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        AreaPesquisa area = AreaPesquisa.builder().id(3).nome("IA").build();
+        ProjetoRequest request = requestProjeto();
+        request.setVagas(1);
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(areaPesquisaRepository.findById(3)).thenReturn(Optional.of(area));
+        when(inscricaoRepository.countByProjetoIdAndStatus(10, StatusInscricao.APROVADO)).thenReturn(2L);
+
+        assertThatThrownBy(() -> projetoService.update(10, request))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.CONFLICT);
+    }
+    @Test
+    void updateStatusDeveNegarInicioSemAprovados() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(inscricaoRepository.countByProjetoIdAndStatus(10, StatusInscricao.APROVADO)).thenReturn(0L);
+        assertThatThrownBy(() -> projetoService.updateStatus(10, StatusProjeto.EM_ANDAMENTO))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void updateStatusDeveFinalizarSemEtapasObrigatoriasPendentes() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        projeto.setStatus(StatusProjeto.EM_ANDAMENTO);
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.save(projeto)).thenReturn(projeto);
+        assertThat(projetoService.updateStatus(10, StatusProjeto.FINALIZADO).getStatus()).isEqualTo(StatusProjeto.FINALIZADO);
+    }
+
+    @Test
+    void updateStatusDeveNegarTransicaoInvalida() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        assertThatThrownBy(() -> projetoService.updateStatus(10, StatusProjeto.FINALIZADO))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void recrutarDeveNegarProjetoSemVagas() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(3);
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(usuarioRepository.findById(3)).thenReturn(Optional.of(alunoUsuario));
+        when(alunoRepository.findByUsuarioId(3)).thenReturn(Optional.of(TestDataFactory.aluno(3, alunoUsuario)));
+        when(inscricaoRepository.findByProjetoIdAndAlunoUsuarioId(10, 3)).thenReturn(Optional.empty());
+        when(inscricaoRepository.countByProjetoIdAndStatus(10, StatusInscricao.APROVADO)).thenReturn(1L);
+        assertThatThrownBy(() -> projetoService.recrutar(10, 3))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void aceitarOrientacaoRepetidoDeveRetornarConflito() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        assertThatThrownBy(() -> projetoService.aceitarOrientacao(10))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void rejeitarOrientacaoRepetidoDeveRetornarConflito() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientador));
+        projeto.setStatus(StatusProjeto.REJEITADO_ORIENTADOR);
+        when(authHelper.getCurrentUser()).thenReturn(orientador);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        assertThatThrownBy(() -> projetoService.rejeitarOrientacao(10))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
     private ProjetoRequest requestProjeto() {
         ProjetoRequest request = new ProjetoRequest();
         request.setTitulo("Projeto");

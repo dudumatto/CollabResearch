@@ -1,4 +1,4 @@
-﻿services:
+services:
   - type: web
     name: tcc-backend
     env: docker
@@ -19,10 +19,18 @@
         sync: false
       - key: JWT_EXPIRATION_MS
         value: "2592000000"
+      - key: CRON_SECRET
+        sync: false
       - key: CORS_ALLOWED_ORIGIN_PATTERNS
         value: "http://localhost:*,http://127.0.0.1:*,https://collab-research.vercel.app,https://*.vercel.app"
       - key: JPA_DDL_AUTO
-        value: update
+        value: validate
+      - key: FLYWAY_ENABLED
+        value: true
+      - key: FLYWAY_BASELINE_ON_MIGRATE
+        value: true
+      - key: FLYWAY_BASELINE_VERSION
+        value: 1
       - key: JPA_SHOW_SQL
         value: "false"
 
@@ -34,4 +42,6 @@
         sync: false
       - key: SUPABASE_STORAGE_BUCKET
         value: documents
+      - key: SUPABASE_PROJECT_DOCUMENTS_BUCKET
+        value: project-deliveries
 

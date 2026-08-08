@@ -43,3 +43,60 @@ export function formatNotificationType(value) {
 
   return map[value] ?? value ?? "-";
 }
+
+export function formatEtapaStatus(value) {
+  const map = {
+    PENDING: "Pendente",
+    ACTIVE: "Em andamento",
+    DONE: "Concluída",
+    REJECTED: "Rejeitada",
+  };
+
+  return map[value] ?? value ?? "-";
+}
+
+export function formatEtapaResponsavel(value) {
+  const map = {
+    ALUNO: "Aluno",
+    ORIENTADOR: "Orientador",
+    AMBOS: "Aluno e orientador",
+  };
+
+  return map[value] ?? value ?? "-";
+}
+
+export function formatEntregaStatus(value) {
+  const map = {
+    PENDING_REVIEW: "Aguardando revisão",
+    CHANGES_REQUESTED: "Ajustes solicitados",
+    APPROVED: "Aprovada",
+  };
+
+  return map[value] ?? value ?? "-";
+}
+
+export function formatEntregaDecisao(value) {
+  const map = {
+    APPROVED: "Aprovar",
+    CHANGES_REQUESTED: "Solicitar ajustes",
+  };
+
+  return map[value] ?? value ?? "-";
+}
+
+export function formatOrientandoSituacao(value) {
+  const map = {
+    EM_ANDAMENTO: "Em andamento",
+    ABERTO: "Ativo",
+    FINALIZADO: "Finalizado",
+    INATIVO: "Inativo",
+  };
+
+  return map[value] ?? value ?? "-";
+}
+
+export function formatAvaliacaoNota(value) {
+  if (value === null || value === undefined || value === "") return "-";
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) : String(value);
+}

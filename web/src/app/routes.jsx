@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate, useLocation, useParams } from "react-router";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { features } from "./config/features";
+import { useAuth } from "./hooks/useAuth";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -18,6 +20,31 @@ import SettingsPage from "./pages/SettingsPage";
 import CreateProjectPage from "./pages/CreateProjectPage";
 import EditProjectPage from "./pages/EditProjectPage";
 import UserProfilePage from "./pages/UserProfilePage";
+import AdvisorDashboardPage from "./pages/AdvisorDashboardPage";
+import AdvisorProjectsPage from "./pages/AdvisorProjectsPage";
+import AdvisorApplicationsPage from "./pages/AdvisorApplicationsPage";
+import AdvisorAdviseesPage from "./pages/AdvisorAdviseesPage";
+import AdvisorAdviseeDetailPage from "./pages/AdvisorAdviseeDetailPage";
+import AdvisorProgressPage from "./pages/AdvisorProgressPage";
+import AdvisorDeliveriesPage from "./pages/AdvisorDeliveriesPage";
+import AdvisorEvaluationsPage from "./pages/AdvisorEvaluationsPage";
+import AdvisorProfilePage from "./pages/AdvisorProfilePage";
+
+function useIsAdvisor() {
+  const { user } = useAuth();
+  return Boolean(features.advisorWorkspaceV2 && user?.tipo === "ORIENTADOR");
+}
+
+function RoleAware({ advisor: AdvisorComponent, student: StudentComponent }) {
+  const isAdvisor = useIsAdvisor();
+  return isAdvisor ? <AdvisorComponent /> : <StudentComponent />;
+}
+
+function AdvisorOnly({ children }) {
+  const isAdvisor = useIsAdvisor();
+  if (!isAdvisor) return <Navigate replace to="/app" />;
+  return children;
+}
 
 export const router = createBrowserRouter([
   {
@@ -76,17 +103,80 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, Component: DashboardPage },
-      { path: "projects", Component: ProjectsPage },
+      {
+        index: true,
+        element: <RoleAware advisor={AdvisorDashboardPage} student={DashboardPage} />,
+      },
+      {
+        path: "projects",
+        element: <RoleAware advisor={AdvisorProjectsPage} student={ProjectsPage} />,
+      },
       { path: "projects/new", Component: CreateProjectPage },
       { path: "projects/:id/edit", Component: EditProjectPage },
       { path: "projects/:id/applications", Component: ProjectApplicationsPage },
       { path: "projects/:id", Component: ProjectDetailPage },
-      { path: "applications", Component: ApplicationsPage },
+      {
+        path: "projects/:id/deliveries",
+        element: (
+          <AdvisorOnly>
+            <AdvisorDeliveriesPage />
+          </AdvisorOnly>
+        ),
+      },
+      {
+        path: "projects/:id/evaluations",
+        element: (
+          <AdvisorOnly>
+            <AdvisorEvaluationsPage />
+          </AdvisorOnly>
+        ),
+      },
+      {
+        path: "applications",
+        element: <RoleAware advisor={AdvisorApplicationsPage} student={ApplicationsPage} />,
+      },
       { path: "chat", Component: ChatPage },
-      { path: "progress", Component: ProgressPage },
+      {
+        path: "progress",
+        element: <RoleAware advisor={AdvisorProgressPage} student={ProgressPage} />,
+      },
+      {
+        path: "deliveries",
+        element: (
+          <AdvisorOnly>
+            <AdvisorDeliveriesPage />
+          </AdvisorOnly>
+        ),
+      },
+      {
+        path: "avaliacoes",
+        element: (
+          <AdvisorOnly>
+            <AdvisorEvaluationsPage />
+          </AdvisorOnly>
+        ),
+      },
+      {
+        path: "advisees",
+        element: (
+          <AdvisorOnly>
+            <AdvisorAdviseesPage />
+          </AdvisorOnly>
+        ),
+      },
+      {
+        path: "advisees/:id",
+        element: (
+          <AdvisorOnly>
+            <AdvisorAdviseeDetailPage />
+          </AdvisorOnly>
+        ),
+      },
       { path: "feedback", Component: FeedbackPage },
-      { path: "profile", Component: ProfilePage },
+      {
+        path: "profile",
+        element: <RoleAware advisor={AdvisorProfilePage} student={ProfilePage} />,
+      },
       { path: "documents", Component: ProfilePage },
       { path: "notifications", Component: NotificationsPage },
       { path: "configuracoes", Component: SettingsPage },

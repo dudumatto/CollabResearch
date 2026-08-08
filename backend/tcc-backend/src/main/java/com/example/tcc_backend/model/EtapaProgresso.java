@@ -6,6 +6,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "progress_steps")
@@ -40,6 +41,14 @@ public class EtapaProgresso {
     @Column(name = "status", nullable = false, length = 20)
     private EtapaProgressoStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "responsible", nullable = false, length = 20)
+    @Builder.Default
+    private EtapaResponsavel responsavel = EtapaResponsavel.AMBOS;
+
+    @Column(name = "due_at")
+    private OffsetDateTime prazo;
+
     @Column(name = "completed_at")
     private LocalDateTime concluidaEm;
 
@@ -47,6 +56,9 @@ public class EtapaProgresso {
     @JoinColumn(name = "completed_by")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private Usuario concluidaPor;
+
+    @Column(name = "required", nullable = false)
+    private Boolean obrigatoria;
 
     @Column(name = "created_at")
     private LocalDateTime criadaEm;
@@ -56,8 +68,14 @@ public class EtapaProgresso {
         if (this.criadaEm == null) {
             this.criadaEm = LocalDateTime.now();
         }
+        if (this.obrigatoria == null) {
+            this.obrigatoria = true;
+        }
         if (this.status == null) {
             this.status = EtapaProgressoStatus.PENDING;
+        }
+        if (this.responsavel == null) {
+            this.responsavel = EtapaResponsavel.AMBOS;
         }
     }
 }

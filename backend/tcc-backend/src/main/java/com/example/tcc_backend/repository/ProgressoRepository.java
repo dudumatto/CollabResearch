@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ProgressoRepository extends JpaRepository <Progresso, Integer> {
     List<Progresso> findByProjetoIdOrderByDataRegistroDesc(Integer projetoId);
+    List<Progresso> findByProjetoIdAndAutorIdOrderByDataRegistroDesc(Integer projetoId, Integer autorId);
 }

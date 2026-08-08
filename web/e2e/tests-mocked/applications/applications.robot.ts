@@ -20,7 +20,7 @@ export async function runApplicationsFilterAndCancelFlow(page: Page) {
   await page.getByRole("button", { name: "Cancelar inscrição" }).click();
   await expect(page.getByRole("heading", { name: "Cancelar inscrição" })).toBeVisible();
   await page.getByRole("button", { name: "Confirmar cancelamento" }).click();
-  await expectToast(page, "Inscricao cancelada.");
+  await expectToast(page, "Inscrição cancelada.");
 }
 
 export async function runApplicationsEmptyAndErrorFlow(browser: Browser) {

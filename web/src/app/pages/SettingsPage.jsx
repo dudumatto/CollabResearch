@@ -10,6 +10,7 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../providers/ThemeProvider";
 import { userService } from "../services/userService";
+import { formatUserType } from "../utils/formatters";
 import "./SettingsPage.css";
 
 function getInitials(name = "") {
@@ -117,10 +118,6 @@ function Input(props) {
   return <input className="cfg-input" {...props} />;
 }
 
-function Select({ children, ...props }) {
-  return <select className="cfg-select" {...props}>{children}</select>;
-}
-
 function PrimaryBtn({ children, ...props }) {
   return <button className="cfg-btn cfg-btn--primary" {...props}>{children}</button>;
 }
@@ -217,9 +214,11 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    nome: "", email: "", matricula: "", tipoPerfil: "Aluno",
+    nome: "", email: "",
     senhaAtual: "", senhaNova: "", confirmarSenha: "",
   });
+  const [tipoPerfil, setTipoPerfil] = useState("ALUNO");
+  const [matricula, setMatricula] = useState("");
 
   const [notif, setNotif] = useState({
     geral: true, sons: true, vibracao: false,
@@ -244,9 +243,9 @@ export default function SettingsPage() {
           ...prev,
           nome: profile.nome ?? "",
           email: profile.email ?? "",
-          matricula: profile.matricula ?? "",
-          tipoPerfil: profile.tipoPerfil ?? "Aluno",
         }));
+        setTipoPerfil(profile.tipo ?? user?.tipo ?? "ALUNO");
+        setMatricula(profile.ra ?? "");
       })
       .finally(() => setLoading(false));
   }, [user?.id]);
@@ -274,8 +273,6 @@ export default function SettingsPage() {
       await userService.update(user.id, {
         nome: form.nome,
         email: form.email,
-        matricula: form.matricula,
-        tipoPerfil: form.tipoPerfil,
       });
       await refreshUser();
       toast.success("Configurações salvas com sucesso.");
@@ -314,14 +311,14 @@ export default function SettingsPage() {
         <Avatar name={form.nome} size={52} />
         <div>
           <p className="cfg-profile-card__name">{form.nome || "—"}</p>
-          <p className="cfg-profile-card__sub">{form.email} · {form.tipoPerfil}</p>
+          <p className="cfg-profile-card__sub">{form.email} · {formatUserType(tipoPerfil)}</p>
         </div>
       </div>
 
       <div className="cfg-section">
         <SectionLabel>Conta</SectionLabel>
         <SectionGroup>
-          <NavItem icon={User} iconClass="icon-blue" title="Informações da conta" sub="Nome, email, tipo de perfil" onClick={() => open("conta")} />
+          <NavItem icon={User} iconClass="icon-blue" title="Informações da conta" sub="Nome, e-mail e função" onClick={() => open("conta")} />
           <NavItem icon={Lock} iconClass="icon-purple" title="Senha" sub="Alterar senha de acesso" onClick={() => open("senha")} />
           <NavItem icon={Laptop} iconClass="icon-teal" title="Sessões ativas" sub="Dispositivos conectados" onClick={() => open("sessoes")} />
         </SectionGroup>
@@ -384,15 +381,13 @@ export default function SettingsPage() {
         <FormGroup label="Email">
           <Input value={form.email} onChange={(e) => handleInput("email", e.target.value)} />
         </FormGroup>
-        <FormGroup label="Matrícula">
-          <Input value={form.matricula} onChange={(e) => handleInput("matricula", e.target.value)} />
-        </FormGroup>
-        <FormGroup label="Tipo de perfil">
-          <Select value={form.tipoPerfil} onChange={(e) => handleInput("tipoPerfil", e.target.value)}>
-            <option>Aluno</option>
-            <option>Professor</option>
-            <option>Coordenador</option>
-          </Select>
+        {tipoPerfil === "ALUNO" && (
+          <FormGroup label="Matrícula">
+            <p className="cfg-readonly">{matricula || "—"}</p>
+          </FormGroup>
+        )}
+        <FormGroup label="Função">
+          <p className="cfg-readonly">{formatUserType(tipoPerfil)}</p>
         </FormGroup>
         <PrimaryBtn onClick={saveProfile} disabled={saving}>
           {saving ? "Salvando..." : "Salvar alterações"}

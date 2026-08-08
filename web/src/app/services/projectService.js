@@ -102,6 +102,11 @@ export const projectService = {
     return api.put(`/api/projetos/${id}/rejeitar-orientacao`);
   },
 
+  // updateStatus
+  updateStatus(id, status) {
+    return api.patch(`/api/projetos/${id}/status`, { status });
+  },
+
   // delete
   remove(id) {
     return api.delete(`/api/projetos/${id}`);

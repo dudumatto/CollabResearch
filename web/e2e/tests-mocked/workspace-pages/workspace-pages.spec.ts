@@ -22,7 +22,7 @@ test.describe("paginas internas", () => {
   test("progresso publica atualizacao e cobre estado sem projetos", async ({ page, browser }) => runProgressFlow(page, browser));
   test("feedback valida botao desabilitado, envia avaliacao e cobre lista vazia", async ({ page, browser }) => runFeedbackFlow(page, browser));
   test("perfil edita dados e exibe historico academico", async ({ page }) => runProfileFlow(page));
-  test("documentos alterna tipo, envia, remove e cobre estado vazio", async ({ page, browser }) => runDocumentsFlow(page, browser));
+  test("documentos lista, remove e cobre estado vazio", async ({ page, browser }) => runDocumentsFlow(page, browser));
   test("notificacoes marca como lida, filtra e limpa vista local", async ({ page }) => runNotificationsFlow(page));
   test("configuracoes salva, valida senha, alterna tema e faz logout", async ({ page }) => runSettingsFlow(page));
 });

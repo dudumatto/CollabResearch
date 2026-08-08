@@ -96,6 +96,7 @@ public class NotificacaoService {
             case INSCRICAO_APROVADA, INSCRICAO_REJEITADA -> "/app/applications";
             case MENSAGEM_RECEBIDA -> "/app/chat";
             case PROGRESSO_REGISTRADO -> "/app/projects";
+            case PRAZO_PROXIMO, PRAZO_ATRASADO -> "/app/projects";
         };
     }
 }
