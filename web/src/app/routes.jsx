@@ -29,6 +29,8 @@ import AdvisorProgressPage from "./pages/AdvisorProgressPage";
 import AdvisorDeliveriesPage from "./pages/AdvisorDeliveriesPage";
 import AdvisorEvaluationsPage from "./pages/AdvisorEvaluationsPage";
 import AdvisorProfilePage from "./pages/AdvisorProfilePage";
+import StudentDeliveriesPage from "./pages/StudentDeliveriesPage";
+import StudentEvaluationsPage from "./pages/StudentEvaluationsPage";
 
 function useIsAdvisor() {
   const { user } = useAuth();
@@ -41,9 +43,11 @@ function RoleAware({ advisor: AdvisorComponent, student: StudentComponent }) {
 }
 
 function AdvisorOnly({ children }) {
-  const isAdvisor = useIsAdvisor();
-  if (!isAdvisor) return <Navigate replace to="/app" />;
-  return children;
+  return <ProtectedRoute allowedRoles={["ORIENTADOR"]}>{children}</ProtectedRoute>;
+}
+
+function StudentOnly({ children }) {
+  return <ProtectedRoute allowedRoles={["ALUNO"]}>{children}</ProtectedRoute>;
 }
 
 export const router = createBrowserRouter([
@@ -113,7 +117,10 @@ export const router = createBrowserRouter([
       },
       { path: "projects/new", Component: CreateProjectPage },
       { path: "projects/:id/edit", Component: EditProjectPage },
-      { path: "projects/:id/applications", Component: ProjectApplicationsPage },
+      {
+        path: "projects/:id/applications",
+        element: <AdvisorOnly><ProjectApplicationsPage /></AdvisorOnly>,
+      },
       { path: "projects/:id", Component: ProjectDetailPage },
       {
         path: "projects/:id/deliveries",
@@ -142,19 +149,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "deliveries",
-        element: (
-          <AdvisorOnly>
-            <AdvisorDeliveriesPage />
-          </AdvisorOnly>
-        ),
+        element: <RoleAware advisor={AdvisorDeliveriesPage} student={StudentDeliveriesPage} />,
       },
       {
         path: "avaliacoes",
-        element: (
-          <AdvisorOnly>
-            <AdvisorEvaluationsPage />
-          </AdvisorOnly>
-        ),
+        element: <RoleAware advisor={AdvisorEvaluationsPage} student={StudentEvaluationsPage} />,
       },
       {
         path: "advisees",
@@ -172,12 +171,18 @@ export const router = createBrowserRouter([
           </AdvisorOnly>
         ),
       },
-      { path: "feedback", Component: FeedbackPage },
+      {
+        path: "feedback",
+        element: <StudentOnly><FeedbackPage /></StudentOnly>,
+      },
       {
         path: "profile",
         element: <RoleAware advisor={AdvisorProfilePage} student={ProfilePage} />,
       },
-      { path: "documents", Component: ProfilePage },
+      {
+        path: "documents",
+        element: <StudentOnly><ProfilePage /></StudentOnly>,
+      },
       { path: "notifications", Component: NotificationsPage },
       { path: "configuracoes", Component: SettingsPage },
       { path: "users/:id", Component: UserProfilePage },

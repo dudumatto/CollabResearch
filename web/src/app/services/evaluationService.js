@@ -16,4 +16,8 @@ export const evaluationService = {
   getById(projectId, avaliacaoId) {
     return api.get(`/api/projetos/${projectId}/avaliacoes/${avaliacaoId}`);
   },
+
+  acknowledge(projectId, avaliacaoId, comentarioAluno) {
+    return api.post(`/api/projetos/${projectId}/avaliacoes/${avaliacaoId}/ciencia`, { comentarioAluno });
+  },
 };

@@ -1,6 +1,6 @@
 const isEnabled = (key) => {
   const value = import.meta.env[key];
-  if (value === undefined || value === null || value === "") return false;
+  if (value === undefined || value === null || value === "") return true;
   return String(value).toLowerCase() === "true";
 };
 

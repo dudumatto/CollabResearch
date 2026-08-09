@@ -15,6 +15,7 @@ import {
   Users,
   ClipboardCheck,
   GraduationCap,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -28,6 +29,8 @@ const navItems = [
   { path: "/app/applications", label: "Inscricoes", icon: FileText, roles: ["ALUNO"] },
   { path: "/app/chat", label: "Mensagens", icon: MessageSquare },
   { path: "/app/progress", label: "Progresso", icon: TrendingUp },
+  { path: "/app/deliveries", label: "Minhas entregas", icon: ClipboardCheck, roles: ["ALUNO"] },
+  { path: "/app/avaliacoes", label: "Minhas avaliacoes", icon: ClipboardList, roles: ["ALUNO"] },
   { path: "/app/feedback", label: "Feedback", icon: Star },
   { path: "/app/notifications", label: "Notificacoes", icon: Bell },
   { path: "/app/profile", label: "Meu Perfil", icon: User },
