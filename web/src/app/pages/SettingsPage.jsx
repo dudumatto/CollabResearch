@@ -436,7 +436,7 @@ export default function SettingsPage() {
         <SectionLabel>Informações visíveis</SectionLabel>
         <SectionGroup>
           <ToggleRow title="Mostrar email" on={priv.mostrarEmail} onToggle={() => setPriv((p) => ({ ...p, mostrarEmail: !p.mostrarEmail }))} />
-          <ToggleRow title="Mostrar matrícula" on={priv.mostrarMatricula} onToggle={() => setPriv((p) => ({ ...p, mostrarMatricula: !p.mostrarMatricula }))} />
+          {tipoPerfil === "ALUNO" && <ToggleRow title="Mostrar matrícula" on={priv.mostrarMatricula} onToggle={() => setPriv((p) => ({ ...p, mostrarMatricula: !p.mostrarMatricula }))} />}
           <ToggleRow title="Mostrar projetos" on={priv.mostrarProjetos} onToggle={() => setPriv((p) => ({ ...p, mostrarProjetos: !p.mostrarProjetos }))} />
         </SectionGroup>
         <PrimaryBtn style={{ marginTop: 16 }} onClick={() => toast.success("Preferências salvas.")}>

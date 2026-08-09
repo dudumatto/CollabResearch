@@ -242,14 +242,18 @@ export default function ProjectDetailPage() {
     [project, collaborators],
   );
 
-  const isOwner = useMemo(() => {
+  const isStudentCreator = useMemo(() => {
     if (!user?.id || !project) return false;
-    const uid = Number(user.id);
-    return (project.ownerId != null && uid === Number(project.ownerId))
-        || (project.advisorId != null && uid === Number(project.advisorId));
+    return user?.tipo === "ALUNO" && project.ownerId != null && Number(user.id) === Number(project.ownerId);
   }, [user, project]);
 
-  const canApply = user?.tipo === "ALUNO" && !isOwner;
+  const isAdvisorOwner = useMemo(() => {
+    if (!user?.id || !project) return false;
+    return user?.tipo === "ORIENTADOR" && project.advisorId != null && Number(user.id) === Number(project.advisorId);
+  }, [user, project]);
+
+  const canEditProject = isStudentCreator || isAdvisorOwner;
+  const canApply = user?.tipo === "ALUNO" && !isStudentCreator;
 
   const canReviewGuidance = useMemo(() => {
     if (!user?.id || !project) return false;
@@ -283,9 +287,9 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     if (!loading && project) {
       loadCollaborators();
-      if (isOwner) loadInscricoes();
+      if (isAdvisorOwner) loadInscricoes();
     }
-  }, [loading, project, isOwner, loadCollaborators, loadInscricoes]);
+  }, [loading, project, isAdvisorOwner, loadCollaborators, loadInscricoes]);
 
   const feedbackAverage = useMemo(() => {
     const ratings = data?.feedbacks ?? [];
@@ -435,7 +439,7 @@ export default function ProjectDetailPage() {
   const canRemoveCollaborator = (c) => {
     const collaboratorId = getCollaboratorId(c);
     return (
-      isOwner &&
+      isAdvisorOwner &&
       collaboratorId != null &&
       !isProjectAdvisor(project, c) &&
       (project.ownerId == null || Number(collaboratorId) !== Number(project.ownerId))
@@ -458,7 +462,7 @@ export default function ProjectDetailPage() {
           <ArrowLeft size={16} />
           Voltar para projetos
         </button>
-        {isOwner && (
+        {isAdvisorOwner && (
           <div className="pagina-detalhe-projeto__acoes-dono">
             <button
               onClick={() => navigate(`/app/projects/${id}/edit`)}
@@ -578,7 +582,7 @@ export default function ProjectDetailPage() {
           </div>
 
           {/* Inscrições pendentes (apenas dono) */}
-          {isOwner && (
+          {isAdvisorOwner && (
             <div className="detalhe-card">
               <div className="detalhe-card__linha-inscricoes">
                 <h2 className="detalhe-card__titulo-secao detalhe-card__titulo-secao--inline">Inscrições pendentes</h2>
@@ -692,7 +696,7 @@ export default function ProjectDetailPage() {
             >
               <Mail size={14} /> Enviar mensagem
             </button>
-            {!isOwner && project.status === "FINALIZADO" && (
+            {user?.tipo === "ALUNO" && !isStudentCreator && project.status === "FINALIZADO" && (
               <button
                 type="button"
                 onClick={() => setShowFeedbackModal(true)}
