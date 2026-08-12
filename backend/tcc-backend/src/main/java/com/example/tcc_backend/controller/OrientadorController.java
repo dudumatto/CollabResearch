@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orientador")
+@RequestMapping({"/api/orientador", "/api/orientadores"})
 @RequiredArgsConstructor
 @Tag(name = "Orientador", description = "Endpoints da area do professor/orientador")
 public class OrientadorController {
