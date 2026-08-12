@@ -1,15 +1,16 @@
 import { createPortal } from "react-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
-  User, Lock, Laptop, Shield, MessageCircle, Ban,
-  Bell, Palette, HelpCircle, Info, LogOut, ChevronRight,
+  User, Lock,
+  Bell, Palette, LogOut, ChevronRight,
   ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../providers/ThemeProvider";
 import { userService } from "../services/userService";
+import { authService } from "../services/authService";
 import { formatUserType } from "../utils/formatters";
 import "./SettingsPage.css";
 
@@ -126,28 +127,6 @@ function DangerBtn({ children, ...props }) {
   return <button className="cfg-btn cfg-btn--danger" {...props}>{children}</button>;
 }
 
-function RadioGroup({ options, value, onChange }) {
-  return (
-    <div className="cfg-radio-group">
-      {options.map((opt) => (
-        <button
-          key={opt.value}
-          className={`cfg-radio-item ${value === opt.value ? "cfg-radio-item--selected" : ""}`}
-          onClick={() => onChange(opt.value)}
-        >
-          <span className="cfg-radio-circle">
-            {value === opt.value && <span className="cfg-radio-dot" />}
-          </span>
-          <span className="cfg-radio-text">
-            <span className="cfg-radio-label">{opt.label}</span>
-            {opt.sub && <span className="cfg-radio-sub">{opt.sub}</span>}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function ChipGroup({ options, value, onChange }) {
   return (
     <div className="cfg-chip-group">
@@ -160,25 +139,6 @@ function ChipGroup({ options, value, onChange }) {
           {opt}
         </button>
       ))}
-    </div>
-  );
-}
-
-function SessionCard({ device, location, time, ip, current, onEnd }) {
-  return (
-    <div className="cfg-session-card">
-      <div className="cfg-session-card__header">
-        <Laptop size={18} className="cfg-session-card__icon" />
-        <span className="cfg-session-card__device">{device}</span>
-        {current && <span className="cfg-session-card__badge">Atual</span>}
-      </div>
-      <p className="cfg-session-card__detail">{location} · {time}</p>
-      <p className="cfg-session-card__detail">IP: {ip}</p>
-      {!current && (
-        <button className="cfg-session-card__end" onClick={onEnd}>
-          Encerrar sessão
-        </button>
-      )}
     </div>
   );
 }
@@ -226,13 +186,6 @@ export default function SettingsPage() {
     comentarios: false, prazos: true,
     emailResumo: true, emailAvisos: true,
   });
-
-  const [priv, setPriv] = useState({
-    visibilidade: "publico",
-    mostrarEmail: false, mostrarMatricula: false, mostrarProjetos: true,
-  });
-
-  const [mensagensPermissao, setMensagensPermissao] = useState("projetos");
   const [aparencia, setAparencia] = useState({ cor: "Azul", fonte: "Média", seguirSistema: false });
 
   useEffect(() => {
@@ -284,17 +237,30 @@ export default function SettingsPage() {
     }
   };
 
-  const changePassword = () => {
+  const changePassword = async () => {
     if (!form.senhaAtual || !form.senhaNova || !form.confirmarSenha) {
       toast.error("Preencha todos os campos de senha.");
       return;
     }
     if (form.senhaNova !== form.confirmarSenha) {
-      toast.error("A confirmação de senha não confere.");
+      toast.error("A confirma��o de senha n�o confere.");
       return;
     }
-    toast.info("Backend sem rota de troca de senha — interface preparada.");
-    setActivePanel(null);
+
+    setSaving(true);
+    try {
+      await authService.changePassword({
+        senhaAtual: form.senhaAtual,
+        novaSenha: form.senhaNova,
+      });
+      setForm((prev) => ({ ...prev, senhaAtual: "", senhaNova: "", confirmarSenha: "" }));
+      toast.success("Senha alterada com sucesso.");
+      setActivePanel(null);
+    } catch (err) {
+      toast.error(err.message || "N�o foi poss�vel alterar a senha.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const open = (id) => setActivePanel(id);
@@ -320,19 +286,8 @@ export default function SettingsPage() {
         <SectionGroup>
           <NavItem icon={User} iconClass="icon-blue" title="Informações da conta" sub="Nome, e-mail e função" onClick={() => open("conta")} />
           <NavItem icon={Lock} iconClass="icon-purple" title="Senha" sub="Alterar senha de acesso" onClick={() => open("senha")} />
-          <NavItem icon={Laptop} iconClass="icon-teal" title="Sessões ativas" sub="Dispositivos conectados" onClick={() => open("sessoes")} />
         </SectionGroup>
       </div>
-
-      <div className="cfg-section">
-        <SectionLabel>Privacidade</SectionLabel>
-        <SectionGroup>
-          <NavItem icon={Shield} iconClass="icon-green" title="Privacidade da conta" sub="Visibilidade do perfil" onClick={() => open("privacidade")} />
-          <NavItem icon={MessageCircle} iconClass="icon-blue" title="Quem pode me enviar mensagens" sub="Qualquer um, pessoas do projeto..." onClick={() => open("mensagens")} />
-          <NavItem icon={Ban} iconClass="icon-red" title="Usuários bloqueados" sub="Gerenciar bloqueios" onClick={() => open("bloqueados")} />
-        </SectionGroup>
-      </div>
-
       <div className="cfg-section">
         <SectionLabel>Notificações</SectionLabel>
         <SectionGroup>
@@ -346,15 +301,6 @@ export default function SettingsPage() {
           <NavItem icon={Palette} iconClass="icon-pink" title="Aparência" sub="Tema, modo escuro" onClick={() => open("aparencia")} />
         </SectionGroup>
       </div>
-
-      <div className="cfg-section">
-        <SectionLabel>Suporte</SectionLabel>
-        <SectionGroup>
-          <NavItem icon={HelpCircle} iconClass="icon-teal" title="Ajuda" sub="Central de ajuda, reportar problema" onClick={() => open("ajuda")} />
-          <NavItem icon={Info} iconClass="icon-gray" title="Sobre o app" sub="Versão, termos, licenças" onClick={() => open("sobre")} />
-        </SectionGroup>
-      </div>
-
       <div className="cfg-section">
         <SectionGroup>
           <button className="cfg-nav-item cfg-nav-item--danger" onClick={() => open("logout")}>
@@ -372,7 +318,6 @@ export default function SettingsPage() {
           <Avatar name={form.nome} size={64} />
           <div>
             <p className="cfg-profile-card__name">{form.nome}</p>
-            <span className="cfg-panel-avatar-change">Alterar foto de perfil</span>
           </div>
         </div>
         <FormGroup label="Nome completo">
@@ -410,63 +355,7 @@ export default function SettingsPage() {
           <p>· Letras maiúsculas e minúsculas</p>
           <p>· Pelo menos um número</p>
         </div>
-        <PrimaryBtn onClick={changePassword}>Alterar senha</PrimaryBtn>
-      </Panel>
-
-      <Panel panelId="sessoes" title="Sessões ativas" {...panelProps}>
-        <SessionCard device="Chrome · Windows" location="São Paulo, BR" time="Agora" ip="187.64.xxx.xxx" current />
-        <SessionCard device="Safari · iPhone" location="São Paulo, BR" time="Há 2 dias" ip="187.64.xxx.xxx" onEnd={() => toast.success("Sessão encerrada.")} />
-        <DangerBtn style={{ marginTop: 8 }} onClick={() => toast.success("Outras sessões encerradas.")}>
-          Encerrar todas as outras sessões
-        </DangerBtn>
-      </Panel>
-
-      <Panel panelId="privacidade" title="Privacidade da conta" {...panelProps}>
-        <p className="cfg-panel-desc">Controle quem pode ver seu perfil e suas informações.</p>
-        <SectionLabel>Visibilidade do perfil</SectionLabel>
-        <RadioGroup
-          value={priv.visibilidade}
-          onChange={(v) => setPriv((p) => ({ ...p, visibilidade: v }))}
-          options={[
-            { value: "publico", label: "Público", sub: "Qualquer usuário pode ver seu perfil" },
-            { value: "projetos", label: "Apenas projetos", sub: "Só membros dos seus projetos" },
-            { value: "privado", label: "Privado", sub: "Somente você" },
-          ]}
-        />
-        <SectionLabel>Informações visíveis</SectionLabel>
-        <SectionGroup>
-          <ToggleRow title="Mostrar email" on={priv.mostrarEmail} onToggle={() => setPriv((p) => ({ ...p, mostrarEmail: !p.mostrarEmail }))} />
-          {tipoPerfil === "ALUNO" && <ToggleRow title="Mostrar matrícula" on={priv.mostrarMatricula} onToggle={() => setPriv((p) => ({ ...p, mostrarMatricula: !p.mostrarMatricula }))} />}
-          <ToggleRow title="Mostrar projetos" on={priv.mostrarProjetos} onToggle={() => setPriv((p) => ({ ...p, mostrarProjetos: !p.mostrarProjetos }))} />
-        </SectionGroup>
-        <PrimaryBtn style={{ marginTop: 16 }} onClick={() => toast.success("Preferências salvas.")}>
-          Salvar preferências
-        </PrimaryBtn>
-      </Panel>
-
-      <Panel panelId="mensagens" title="Quem pode me enviar mensagens" {...panelProps}>
-        <p className="cfg-panel-desc">Escolha quem tem permissão para iniciar uma conversa com você.</p>
-        <RadioGroup
-          value={mensagensPermissao}
-          onChange={setMensagensPermissao}
-          options={[
-            { value: "todos", label: "Qualquer pessoa", sub: "Qualquer usuário da plataforma" },
-            { value: "projetos", label: "Pessoas do projeto", sub: "Apenas membros dos seus projetos" },
-            { value: "seguindo", label: "Pessoas que sigo", sub: "Apenas quem você segue" },
-            { value: "ninguem", label: "Ninguém", sub: "Desativar mensagens diretas" },
-          ]}
-        />
-        <PrimaryBtn style={{ marginTop: 16 }} onClick={() => toast.success("Preferência salva.")}>
-          Salvar
-        </PrimaryBtn>
-      </Panel>
-
-      <Panel panelId="bloqueados" title="Usuários bloqueados" {...panelProps}>
-        <div className="cfg-empty-state">
-          <Ban size={36} className="cfg-empty-state__icon" />
-          <p className="cfg-empty-state__title">Nenhum usuário bloqueado</p>
-          <p className="cfg-empty-state__sub">Usuários bloqueados não conseguem ver seu perfil ou enviar mensagens</p>
-        </div>
+        <PrimaryBtn onClick={changePassword} disabled={saving}>{saving ? "Alterando..." : "Alterar senha"}</PrimaryBtn>
       </Panel>
 
       <Panel panelId="notificacoes" title="Notificações" {...panelProps}>
@@ -504,50 +393,6 @@ export default function SettingsPage() {
         <PrimaryBtn style={{ marginTop: 20 }} onClick={() => toast.success("Preferências salvas.")}>
           Salvar preferências
         </PrimaryBtn>
-      </Panel>
-
-      <Panel panelId="ajuda" title="Ajuda" {...panelProps}>
-        <SectionGroup>
-          {[
-            { title: "Central de ajuda", sub: "Tutoriais e documentação" },
-            { title: "Reportar um problema", sub: "Nos ajude a melhorar" },
-            { title: "Avaliar o app", sub: "Sua opinião importa" },
-            { title: "Falar com suporte", sub: "suporte@universidade.edu.br" },
-          ].map((item) => (
-            <button key={item.title} className="cfg-help-item">
-              <span className="cfg-help-item__text">
-                <span className="cfg-help-item__title">{item.title}</span>
-                <span className="cfg-help-item__sub">{item.sub}</span>
-              </span>
-              <ChevronRight size={16} className="cfg-nav-item__chevron" />
-            </button>
-          ))}
-        </SectionGroup>
-      </Panel>
-
-      <Panel panelId="sobre" title="Sobre o app" {...panelProps}>
-        <div className="cfg-about-header">
-          <div className="cfg-about-logo"><Info size={28} /></div>
-          <p className="cfg-about-name">CollabResearch</p>
-          <p className="cfg-about-version">Versão 1.0.0 · Build 2026.06</p>
-          <p className="cfg-about-desc">Plataforma colaborativa universitária para gestão de projetos de iniciação científica.</p>
-        </div>
-        <SectionGroup>
-          {["Termos de uso", "Política de privacidade", "Licenças de código aberto"].map((item) => (
-            <button key={item} className="cfg-help-item">
-              <span className="cfg-help-item__text">
-                <span className="cfg-help-item__title">{item}</span>
-              </span>
-              <ChevronRight size={16} className="cfg-nav-item__chevron" />
-            </button>
-          ))}
-          <div className="cfg-help-item cfg-help-item--info">
-            <span className="cfg-help-item__text">
-              <span className="cfg-help-item__title">Última atualização</span>
-            </span>
-            <span className="cfg-help-item__value">07/06/2026</span>
-          </div>
-        </SectionGroup>
       </Panel>
 
       <Panel panelId="logout" title="Sair da conta" {...panelProps}>

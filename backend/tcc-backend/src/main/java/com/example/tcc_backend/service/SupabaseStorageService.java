@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -27,25 +28,29 @@ public class SupabaseStorageService {
     private final String supabaseUrl;
     private final String supabaseServiceRoleKey;
     private final String projectDocumentsBucket;
+    private final String userDocumentsBucket;
 
     @Autowired
     public SupabaseStorageService(@Value("${SUPABASE_URL:}") String supabaseUrl,
                                   @Value("${SUPABASE_SERVICE_ROLE_KEY:}") String supabaseServiceRoleKey,
                                   @Value("${SUPABASE_PROJECT_DOCUMENTS_BUCKET:project-deliveries}") String projectDocumentsBucket,
+                                  @Value("${SUPABASE_STORAGE_BUCKET:documents}") String userDocumentsBucket,
                                   ObjectMapper objectMapper) {
         this(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build(),
-                supabaseUrl, supabaseServiceRoleKey, projectDocumentsBucket, objectMapper);
+                supabaseUrl, supabaseServiceRoleKey, projectDocumentsBucket, userDocumentsBucket, objectMapper);
     }
 
     SupabaseStorageService(HttpClient httpClient,
                            String supabaseUrl,
                            String supabaseServiceRoleKey,
                            String projectDocumentsBucket,
+                           String userDocumentsBucket,
                            ObjectMapper objectMapper) {
         this.httpClient = httpClient;
         this.supabaseUrl = supabaseUrl;
         this.supabaseServiceRoleKey = supabaseServiceRoleKey;
         this.projectDocumentsBucket = projectDocumentsBucket;
+        this.userDocumentsBucket = userDocumentsBucket;
         this.objectMapper = objectMapper;
     }
 
@@ -85,12 +90,29 @@ public class SupabaseStorageService {
     }
 
     public String createSignedUrl(String caminho) {
-        if (!isConfigured() || caminho == null || caminho.isBlank()) {
+        return createSignedUrl(projectDocumentsBucket, caminho);
+    }
+
+    public String createSignedUserDocumentUrlFromPublicUrl(String publicUrl) {
+        StorageObjectRef ref = parsePublicStorageUrl(publicUrl);
+        if (ref == null || !ref.bucket().equals(userDocumentsBucket)) {
+            return null;
+        }
+        return createSignedUrl(ref.bucket(), ref.path());
+    }
+
+    public boolean isUserDocumentPublicUrl(String publicUrl) {
+        StorageObjectRef ref = parsePublicStorageUrl(publicUrl);
+        return ref != null && ref.bucket().equals(userDocumentsBucket);
+    }
+
+    private String createSignedUrl(String bucket, String caminho) {
+        if (!isConfigured() || isBlank(bucket) || caminho == null || caminho.isBlank()) {
             return null;
         }
 
         String cleanPath = caminho.replaceAll("^/+", "");
-        String endpoint = "/storage/v1/object/sign/" + URLEncoder.encode(projectDocumentsBucket, StandardCharsets.UTF_8) + "/" + cleanPath;
+        String endpoint = "/storage/v1/object/sign/" + URLEncoder.encode(bucket, StandardCharsets.UTF_8) + "/" + cleanPath;
 
         try {
             String body = objectMapper.writeValueAsString(java.util.Map.of("expiresIn", SIGNED_URL_EXPIRATION_SECONDS));
@@ -122,11 +144,43 @@ public class SupabaseStorageService {
         }
     }
 
+    private StorageObjectRef parsePublicStorageUrl(String publicUrl) {
+        if (isBlank(publicUrl) || isBlank(supabaseUrl)) {
+            return null;
+        }
+        try {
+            URI base = URI.create(normalizedUrl());
+            URI uri = URI.create(publicUrl.trim());
+            if (uri.getHost() == null || !uri.getHost().equalsIgnoreCase(base.getHost())) {
+                return null;
+            }
+            String marker = "/storage/v1/object/public/";
+            String path = uri.getPath();
+            int markerIndex = path.indexOf(marker);
+            if (markerIndex < 0) {
+                return null;
+            }
+            String remainder = path.substring(markerIndex + marker.length());
+            int slashIndex = remainder.indexOf('/');
+            if (slashIndex <= 0 || slashIndex == remainder.length() - 1) {
+                return null;
+            }
+            String bucket = URLDecoder.decode(remainder.substring(0, slashIndex), StandardCharsets.UTF_8);
+            String objectPath = URLDecoder.decode(remainder.substring(slashIndex + 1), StandardCharsets.UTF_8);
+            return new StorageObjectRef(bucket, objectPath);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
     private String normalizedUrl() {
         return supabaseUrl.replaceAll("/+$", "");
     }
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private record StorageObjectRef(String bucket, String path) {
     }
 }

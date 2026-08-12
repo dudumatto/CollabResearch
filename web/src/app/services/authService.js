@@ -10,4 +10,7 @@ export const authService = {
   logout() {
     return api.post("/api/auth/logout");
   },
+  changePassword(payload) {
+    return api.put("/api/auth/senha", payload);
+  },
 };
