@@ -2,20 +2,16 @@ import { NavLink } from "react-router";
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  LayoutDashboard,
   FolderOpen,
   FileText,
-  MessageSquare,
   TrendingUp,
   Star,
-  User,
-  Bell,
   ChevronLeft,
   Settings,
   Users,
   ClipboardCheck,
   GraduationCap,
-  ClipboardList,
+  CalendarClock,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -24,29 +20,20 @@ import { features } from "../config/features";
 import "./Sidebar.css";
 
 const navItems = [
-  { path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { path: "/app/projects", label: "Projetos", icon: FolderOpen },
-  { path: "/app/applications", label: "Inscricoes", icon: FileText, roles: ["ALUNO"] },
-  { path: "/app/chat", label: "Mensagens", icon: MessageSquare },
-  { path: "/app/progress", label: "Progresso", icon: TrendingUp },
-  { path: "/app/deliveries", label: "Minhas entregas", icon: ClipboardCheck, roles: ["ALUNO"] },
-  { path: "/app/avaliacoes", label: "Minhas avaliacoes", icon: ClipboardList, roles: ["ALUNO"] },
-  { path: "/app/feedback", label: "Feedback", icon: Star },
-  { path: "/app/notifications", label: "Notificacoes", icon: Bell },
-  { path: "/app/profile", label: "Meu Perfil", icon: User },
+  { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
+  { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
+  { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck, roles: ["ALUNO"] },
+  { path: "/app/feedback", label: "Feedbacks", icon: Star },
+  { path: "/app/deadlines", label: "Prazos", icon: CalendarClock, roles: ["ALUNO"] },
 ];
 
 const advisorNavItems = [
-  { path: "/app", label: "Visao geral", icon: LayoutDashboard, exact: true },
   { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
-  { path: "/app/applications", label: "Inscricoes recebidas", icon: FileText },
-  { path: "/app/advisees", label: "Orientandos", icon: GraduationCap },
-  { path: "/app/progress", label: "Progresso", icon: TrendingUp },
+  { path: "/app/advisees", label: "Alunos", icon: GraduationCap },
+  { path: "/app/applications", label: "Inscrições", icon: FileText },
   { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
-  { path: "/app/avaliacoes", label: "Avaliacoes", icon: Users },
-  { path: "/app/chat", label: "Mensagens", icon: MessageSquare },
-  { path: "/app/notifications", label: "Notificacoes", icon: Bell },
-  { path: "/app/profile", label: "Meu Perfil", icon: User },
+  { path: "/app/progress", label: "Progresso", icon: TrendingUp },
+  { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
 ];
 
 export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
