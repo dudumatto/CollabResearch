@@ -83,7 +83,7 @@ export async function loginAndOpenProgress(page: Page, user: { email: string; se
   const loginPage = new LoginPage(page);
   await loginPage.login(user.email, user.senha);
   await page.goto("/app/progress");
-  await expect(page.getByText(/progresso do projeto|acompanhamento estruturado/i).first()).toBeVisible();
+  await expect(page.getByText(/minhas etapas|progresso|acompanhamento estruturado/i).first()).toBeVisible();
 }
 
 export async function publishUpdate(page: Page, payload: { title: string; category: string; description?: string; stepName?: string; contribution?: number }) {

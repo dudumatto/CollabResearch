@@ -3,6 +3,10 @@ import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   FolderOpen,
+  LayoutDashboard,
+  MessageSquare,
+  Bell,
+  User,
   FileText,
   TrendingUp,
   Star,
@@ -20,20 +24,30 @@ import { features } from "../config/features";
 import "./Sidebar.css";
 
 const navItems = [
+  { path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
+  { path: "/app/applications", label: "Inscrições", icon: FileText },
+  { path: "/app/chat", label: "Conversas", icon: MessageSquare },
   { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
   { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck, roles: ["ALUNO"] },
+  { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
   { path: "/app/feedback", label: "Feedbacks", icon: Star },
   { path: "/app/deadlines", label: "Prazos", icon: CalendarClock, roles: ["ALUNO"] },
+  { path: "/app/notifications", label: "Notificações", icon: Bell },
+  { path: "/app/profile", label: "Meu perfil", icon: User },
 ];
 
 const advisorNavItems = [
+  { path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
   { path: "/app/advisees", label: "Alunos", icon: GraduationCap },
   { path: "/app/applications", label: "Inscrições", icon: FileText },
   { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
   { path: "/app/progress", label: "Progresso", icon: TrendingUp },
   { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
+  { path: "/app/chat", label: "Conversas", icon: MessageSquare },
+  { path: "/app/notifications", label: "Notificações", icon: Bell },
+  { path: "/app/profile", label: "Meu perfil", icon: User },
 ];
 
 export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
