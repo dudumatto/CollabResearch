@@ -15,18 +15,22 @@ const pageTitles = {
   "/app/projects": { title: "Projetos", subtitle: "Explore oportunidades de pesquisa" },
   "/app/applications": { title: "Minhas Inscrições", subtitle: "Acompanhe o status das suas candidaturas" },
   "/app/chat": { title: "Mensagens", subtitle: "Conversas com orientadores" },
-  "/app/progress": { title: "Progresso do Projeto", subtitle: "Acompanhe o andamento da sua pesquisa" },
-  "/app/feedback": { title: "Feedback", subtitle: "Avaliações e comentários" },
+  "/app/progress": { title: "Minhas etapas", subtitle: "Acompanhe o andamento da sua pesquisa" },
+  "/app/feedback": { title: "Feedbacks", subtitle: "Avaliações e comentários" },
   "/app/profile": { title: "Meu Perfil", subtitle: "Gerencie suas informações pessoais" },
   "/app/documents": { title: "Documentos", subtitle: "Seus arquivos enviados" },
   "/app/notifications": { title: "Notificações", subtitle: "Suas atualizações recentes" },
   "/app/configuracoes": { title: "Configurações", subtitle: "Preferências da conta" },
-  "/app/advisees": { title: "Orientandos", subtitle: "Estudantes que você orienta" },
+  "/app/advisees": { title: "Alunos", subtitle: "Estudantes que você orienta" },
   "/app/deliveries": { title: "Entregas", subtitle: "Arquivos enviados pelos orientandos" },
   "/app/avaliacoes": { title: "Avaliações", subtitle: "Avaliações acadêmicas por etapa" },
 };
 
 function pageInfoFor(location, user) {
+  if (location.pathname === "/app/projects") return { title: "Meus projetos", subtitle: "Acompanhe seus projetos de pesquisa" };
+  if (location.pathname === "/app/progress" && user?.tipo === "ORIENTADOR") return { title: "Progresso", subtitle: "Gerencie etapas e acompanhe os projetos" };
+  if (location.pathname === "/app/deliveries" && user?.tipo === "ORIENTADOR") return { title: "Entregas para revisar", subtitle: "Arquivos enviados pelos alunos" };
+  if (location.pathname === "/app/deadlines") return { title: "Prazos", subtitle: "Próximos compromissos do projeto" };
   if (location.pathname === "/app/applications" && user?.tipo === "ORIENTADOR") {
     return { title: "Inscrições recebidas", subtitle: "Candidaturas aguardando análise" };
   }

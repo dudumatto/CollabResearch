@@ -31,6 +31,7 @@ import AdvisorEvaluationsPage from "./pages/AdvisorEvaluationsPage";
 import AdvisorProfilePage from "./pages/AdvisorProfilePage";
 import StudentDeliveriesPage from "./pages/StudentDeliveriesPage";
 import StudentEvaluationsPage from "./pages/StudentEvaluationsPage";
+import StudentDeadlinesPage from "./pages/StudentDeadlinesPage";
 
 function useIsAdvisor() {
   const { user } = useAuth();
@@ -170,6 +171,10 @@ export const router = createBrowserRouter([
             <AdvisorAdviseeDetailPage />
           </AdvisorOnly>
         ),
+      },
+      {
+        path: "deadlines",
+        element: <StudentOnly><StudentDeadlinesPage /></StudentOnly>,
       },
       {
         path: "feedback",
