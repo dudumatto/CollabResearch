@@ -78,8 +78,11 @@ public class ConversaResponse {
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getId() : null)
                     .alunoCriadorNome(conversa.getProjeto() != null && conversa.getProjeto().getAlunoCriador() != null
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getNome() : null)
-                    .fotoPerfilUrl(conversa.getProjeto() != null && conversa.getProjeto().getOrientador() != null
-                            ? conversa.getProjeto().getOrientador().getUsuario().getFotoPerfilUrl() : null)
+                    .fotoPerfilUrl(conversa.getProjeto() != null && conversa.getProjeto().getFotoProjetoUrl() != null
+                            ? conversa.getProjeto().getFotoProjetoUrl()
+                            : conversa.getProjeto() != null && conversa.getProjeto().getOrientador() != null
+                                    ? conversa.getProjeto().getOrientador().getUsuario().getFotoPerfilUrl()
+                                    : null)
                     .titulo(conversa.getProjeto() != null ? conversa.getProjeto().getTitulo() : "Grupo");
         }
 

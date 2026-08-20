@@ -10,7 +10,6 @@ import {
   Star,
   ChevronRight,
   CheckCircle2,
-  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -162,7 +161,7 @@ function QueueCard({ title, icon: Icon, items, kind, onNavigate }) {
       <div className="advisor-card__corpo">
         {items.length === 0 ? (
           <div className="advisor-card__vazio">
-            <CheckCircle2 size={18} style={{ marginBottom: 6 }} />
+            <CheckCircle2 size={18} />
             <div>Nada pendente por aqui.</div>
           </div>
         ) : (
@@ -332,16 +331,6 @@ export default function AdvisorDashboardPage() {
             </div>
           </AdvisorSection>
 
-          <div className="advisor-dashboard-atalho" role="note">
-            <MessageSquare size={18} />
-            <div>
-              <strong>Conversas com alunos</strong>
-              <p>Use o chat para resolver pendências antes que virem atraso.</p>
-              <button type="button" onClick={() => handleNavigate("/app/chat")}>
-                Abrir chat
-              </button>
-            </div>
-          </div>
         </aside>
       </div>
 

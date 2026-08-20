@@ -109,6 +109,16 @@
   padding: var(--espaco-6);
 }
 
+.detalhe-card__foto-projeto {
+  display: block;
+  width: calc(100% + (var(--espaco-6) * 2));
+  max-height: 18rem;
+  margin: calc(var(--espaco-6) * -1) calc(var(--espaco-6) * -1) var(--espaco-5);
+  object-fit: cover;
+  border-radius: var(--raio-grande) var(--raio-grande) 0 0;
+  background-color: var(--cor-fundo-leve);
+}
+
 .detalhe-card__titulo-secao {
   font-weight: var(--peso-semi);
   font-size: var(--tamanho-grande);
@@ -561,6 +571,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.card-orientador__avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .card-orientador__avatar-inicial {
@@ -934,6 +952,14 @@
   font-size: 0.75rem;
   font-weight: var(--peso-negrito);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.card-colaboradores__avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .card-colaboradores__nome {

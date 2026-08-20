@@ -24,6 +24,8 @@ public class ProjetoRequest {
     @JsonAlias({"competencias", "technologies", "tecnologia", "technology"})
     private Object tecnologias;
 
+    private String fotoProjetoUrl;
+
     private Integer vagas;
 
     private LocalDate dataInicio;

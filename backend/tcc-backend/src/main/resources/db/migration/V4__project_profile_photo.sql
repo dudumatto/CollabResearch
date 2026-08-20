@@ -1,0 +1,1 @@
+ALTER TABLE projeto ADD COLUMN IF NOT EXISTS foto_projeto_url VARCHAR(1000);

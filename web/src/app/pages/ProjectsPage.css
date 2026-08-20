@@ -418,6 +418,15 @@
   transition: opacity 0.2s ease;
 }
 
+.projeto-card__foto {
+  display: block;
+  width: 100%;
+  height: 9rem;
+  object-fit: cover;
+  border-radius: var(--raio-grande) var(--raio-grande) 0 0;
+  background-color: var(--cor-fundo-leve);
+}
+
 .projeto-card:hover .projeto-card__barra-topo {
   opacity: 1;
 }
@@ -597,6 +606,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.projeto-card__avatar-orientador img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .projeto-card__iniciais-orientador {

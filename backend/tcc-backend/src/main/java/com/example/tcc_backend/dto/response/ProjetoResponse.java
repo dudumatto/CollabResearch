@@ -21,6 +21,7 @@ public class ProjetoResponse {
     private String descricao;
     private String requisitos;
     private String tecnologias;
+    private String fotoProjetoUrl;
     private Integer vagas;
     private StatusProjeto status;
     private LocalDateTime dataCriacao;
@@ -32,8 +33,10 @@ public class ProjetoResponse {
     private String cursoNome;
     private Integer orientadorId;
     private String orientadorNome;
+    private String orientadorFotoPerfilUrl;
     private Integer alunoCriadorId;
     private String alunoCriadorNome;
+    private String alunoCriadorFotoPerfilUrl;
 
     public static ProjetoResponse fromEntity(Projeto projeto) {
         return ProjetoResponse.builder()
@@ -42,6 +45,7 @@ public class ProjetoResponse {
                 .descricao(projeto.getDescricao())
                 .requisitos(projeto.getRequisitos())
                 .tecnologias(projeto.getTecnologias())
+                .fotoProjetoUrl(projeto.getFotoProjetoUrl())
                 .vagas(projeto.getVagas())
                 .status(projeto.getStatus())
                 .dataCriacao(projeto.getDataCriacao())
@@ -53,8 +57,10 @@ public class ProjetoResponse {
                 .cursoNome(projeto.getArea() != null && projeto.getArea().getCurso() != null ? projeto.getArea().getCurso().getNome() : null)
                 .orientadorId(projeto.getOrientador() != null ? projeto.getOrientador().getUsuario().getId() : null)
                 .orientadorNome(projeto.getOrientador() != null ? projeto.getOrientador().getUsuario().getNome() : null)
+                .orientadorFotoPerfilUrl(projeto.getOrientador() != null ? projeto.getOrientador().getUsuario().getFotoPerfilUrl() : null)
                 .alunoCriadorId(projeto.getAlunoCriador() != null ? projeto.getAlunoCriador().getUsuario().getId() : null)
                 .alunoCriadorNome(projeto.getAlunoCriador() != null ? projeto.getAlunoCriador().getUsuario().getNome() : null)
+                .alunoCriadorFotoPerfilUrl(projeto.getAlunoCriador() != null ? projeto.getAlunoCriador().getUsuario().getFotoPerfilUrl() : null)
                 .build();
     }
 }

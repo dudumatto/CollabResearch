@@ -35,6 +35,9 @@ public class Projeto {
     @Column(name = "tecnologias", columnDefinition = "TEXT")
     private String tecnologias;
 
+    @Column(name = "foto_projeto_url", length = 1000)
+    private String fotoProjetoUrl;
+
     @Column(name = "vagas")
     private Integer vagas;
 

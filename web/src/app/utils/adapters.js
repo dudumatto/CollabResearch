@@ -15,6 +15,11 @@ export function getUserType(user) {
   return user?.tipo ?? user?.type ?? nestedUser?.tipo ?? nestedUser?.type ?? "";
 }
 
+export function getUserPhotoUrl(user) {
+  const nestedUser = user?.usuario ?? user?.user ?? user?.aluno?.usuario ?? user?.aluno;
+  return user?.fotoPerfilUrl ?? user?.avatarUrl ?? user?.photoUrl ?? nestedUser?.fotoPerfilUrl ?? nestedUser?.avatarUrl ?? nestedUser?.photoUrl ?? "";
+}
+
 export function getUserId(user) {
   const nestedUser = user?.usuario ?? user?.user ?? user?.aluno?.usuario ?? user?.aluno;
   return user?.usuarioId ?? user?.userId ?? nestedUser?.id ?? user?.id ?? null;
@@ -159,6 +164,8 @@ export function mapProject(project) {
       return r.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
     })(),
     technologies: tecnologias ?? "",
+    fotoProjetoUrl: project?.fotoProjetoUrl ?? project?.projectPhotoUrl ?? project?.imagemUrl ?? project?.imageUrl ?? "",
+    coverUrl: project?.fotoProjetoUrl ?? project?.projectPhotoUrl ?? project?.imagemUrl ?? project?.imageUrl ?? "",
     tags: (() => {
       if (!tecnologias) return [];
       if (Array.isArray(tecnologias)) return tecnologias;
@@ -188,6 +195,8 @@ export function mapProject(project) {
           email: orientadorEmail ?? "",
           type: "ORIENTADOR",
           specialty: project?.orientador?.areaAtuacao ?? project?.areaNome ?? "",
+          fotoPerfilUrl: project?.orientadorFotoPerfilUrl ?? project?.orientador?.usuario?.fotoPerfilUrl ?? project?.orientador?.fotoPerfilUrl ?? "",
+          avatarUrl: project?.orientadorFotoPerfilUrl ?? project?.orientador?.usuario?.fotoPerfilUrl ?? project?.orientador?.fotoPerfilUrl ?? "",
         }
       : null,
     owner: (alunoCriadorId || alunoCriadorNome)
@@ -196,6 +205,7 @@ export function mapProject(project) {
           name: alunoCriadorNome ?? "Aluno",
           email: "",
           type: "ALUNO",
+          fotoPerfilUrl: project?.alunoCriadorFotoPerfilUrl ?? project?.alunoCriador?.usuario?.fotoPerfilUrl ?? project?.alunoCriador?.fotoPerfilUrl ?? "",
         }
       : null,
   };

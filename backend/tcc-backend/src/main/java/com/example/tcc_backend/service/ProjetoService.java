@@ -174,6 +174,7 @@ public class ProjetoService {
                 .descricao(dto.getDescricao())
                 .requisitos(dto.getRequisitos())
                 .tecnologias(dto.getTecnologias())
+                .fotoProjetoUrl(dto.getFotoProjetoUrl())
                 .vagas(dto.getVagas())
                 .dataInicio(dto.getDataInicio())
                 .dataFim(dto.getDataFim())
@@ -271,6 +272,7 @@ public class ProjetoService {
         projeto.setDescricao(dto.getDescricao());
         projeto.setRequisitos(dto.getRequisitos());
         projeto.setTecnologias(dto.getTecnologias());
+        projeto.setFotoProjetoUrl(dto.getFotoProjetoUrl());
         projeto.setArea(area);
         if (orientador) {
             if (dto.getVagas() == null || dto.getVagas() < 1) {

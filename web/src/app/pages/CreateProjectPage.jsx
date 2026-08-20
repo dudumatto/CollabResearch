@@ -14,6 +14,7 @@ const INITIAL_FORM = {
   descricao: "",
   requisitos: "",
   tecnologias: [],
+  fotoProjetoUrl: "",
   areaId: "",
   vagas: "",
   dataInicio: "",
@@ -171,6 +172,7 @@ export default function CreateProjectPage() {
         descricao: form.descricao.trim() || undefined,
         requisitos: form.requisitos.trim() || undefined,
         tecnologias: tecnologias.length > 0 ? tecnologias : undefined,
+        fotoProjetoUrl: form.fotoProjetoUrl.trim() || undefined,
         areaId: Number(form.areaId),
         vagas: Number(form.vagas),
         dataInicio: form.dataInicio || undefined,
@@ -330,6 +332,20 @@ export default function CreateProjectPage() {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="formulario-projeto__campo">
+            <label htmlFor="fotoProjetoUrl" className="formulario-projeto__rotulo">URL da foto do projeto</label>
+            <input
+              id="fotoProjetoUrl"
+              name="fotoProjetoUrl"
+              type="url"
+              value={form.fotoProjetoUrl}
+              onChange={handleChange}
+              placeholder="https://..."
+              className="formulario-projeto__input"
+              disabled={isDisabled}
+            />
           </div>
 
           {/* Area + Vagas */}

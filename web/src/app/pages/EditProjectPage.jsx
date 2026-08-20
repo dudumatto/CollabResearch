@@ -29,6 +29,7 @@ export default function EditProjectPage() {
           descricao: raw.descricao ?? "",
           requisitos: raw.requisitos ?? "",
           tecnologias: raw.tecnologias ?? "",
+          fotoProjetoUrl: raw.fotoProjetoUrl ?? "",
           areaId: String(raw.areaId ?? ""),
           vagas: String(raw.vagas ?? ""),
           dataInicio: raw.dataInicio ?? "",
@@ -71,6 +72,7 @@ export default function EditProjectPage() {
         descricao: form.descricao.trim() || undefined,
         requisitos: form.requisitos.trim() || undefined,
         tecnologias: form.tecnologias.trim() || undefined,
+        fotoProjetoUrl: form.fotoProjetoUrl.trim() || undefined,
         areaId: Number(form.areaId),
         vagas: Number(form.vagas),
         dataInicio: form.dataInicio || undefined,
@@ -155,6 +157,13 @@ export default function EditProjectPage() {
             <label htmlFor="tecnologias" className="formulario-projeto__rotulo">Tecnologias e competências</label>
             <input id="tecnologias" name="tecnologias" type="text" value={form.tecnologias} onChange={handleChange}
               placeholder="Ex: React, Spring Boot, PostgreSQL"
+              className="formulario-projeto__input" disabled={isDisabled} />
+          </div>
+
+          <div className="formulario-projeto__campo">
+            <label htmlFor="fotoProjetoUrl" className="formulario-projeto__rotulo">URL da foto do projeto</label>
+            <input id="fotoProjetoUrl" name="fotoProjetoUrl" type="url" value={form.fotoProjetoUrl} onChange={handleChange}
+              placeholder="https://..."
               className="formulario-projeto__input" disabled={isDisabled} />
           </div>
 
