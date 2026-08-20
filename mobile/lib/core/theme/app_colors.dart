@@ -20,4 +20,13 @@ class AppColors {
   static const Color warning = Color(0xFFB7791F);
   static const Color danger = Color(0xFFDC2626);
   static const Color border = Color(0xFFDDE5DA);
+
+  static const Color darkPrimary = Color(0xFF7CCFA6);
+  static const Color darkPrimaryContainer = Color(0xFF163B2B);
+  static const Color darkBackground = Color(0xFF0D1411);
+  static const Color darkSurface = Color(0xFF151E1A);
+  static const Color darkSurfaceTint = Color(0xFF203329);
+  static const Color darkText = Color(0xFFEAF1EC);
+  static const Color darkMuted = Color(0xFFB0BBB4);
+  static const Color darkBorder = Color(0xFF2E3D35);
 }

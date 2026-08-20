@@ -20,6 +20,7 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { notificationService } from "../services/notificationService";
+import { mapNotification } from "../utils/adapters";
 import { features } from "../config/features";
 import "./Sidebar.css";
 
@@ -54,7 +55,10 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
   const { user } = useAuth();
 
   const { data, reload } = useAsyncData(
-    () => notificationService.listMine(),
+    async () => {
+      const result = await notificationService.listMine();
+      return Array.isArray(result) ? result.map(mapNotification) : [];
+    },
     [],
     { initialData: [] }
   );
@@ -62,11 +66,15 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
   useEffect(() => {
     const atualizar = () => reload();
     window.addEventListener("notificationsUpdated", atualizar);
-    return () => window.removeEventListener("notificationsUpdated", atualizar);
+    window.addEventListener("notifications-updated", atualizar);
+    return () => {
+      window.removeEventListener("notificationsUpdated", atualizar);
+      window.removeEventListener("notifications-updated", atualizar);
+    };
   }, [reload]);
 
   const notifications = Array.isArray(data) ? data : [];
-  const unreadCount = notifications.filter((item) => !item.lida).length;
+  const unreadCount = notifications.filter((item) => !item.read).length;
   const isAdvisor = features.advisorWorkspaceV2 && user?.tipo === "ORIENTADOR";
   const activeNavItems = isAdvisor ? advisorNavItems : navItems;
   const visibleNavItems = activeNavItems.filter(

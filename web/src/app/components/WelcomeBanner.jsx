@@ -1,5 +1,4 @@
 import { FolderOpen, TrendingUp } from "lucide-react";
-import { useState } from "react";
 import "./WelcomeBanner.css";
 
 function formatToday() {
@@ -10,18 +9,7 @@ function formatToday() {
   }).format(new Date());
 }
 
-function ProfileAvatar({ name, src }) {
-  const [hasImageError, setHasImageError] = useState(false);
-  const initial = name?.trim()?.charAt(0)?.toUpperCase() ?? "U";
-
-  return (
-    <div className="welcome-banner__avatar">
-      {src && !hasImageError ? <img src={src} alt={`Foto de perfil de ${name}`} onError={() => setHasImageError(true)} /> : initial}
-    </div>
-  );
-}
-
-export function WelcomeBanner({ name, avatarUrl, summary, primaryAction, secondaryAction }) {
+export function WelcomeBanner({ name, summary, primaryAction, secondaryAction }) {
   return (
     <section className="welcome-banner" aria-label="Resumo do painel">
       <div className="welcome-banner__decoration" aria-hidden="true">
@@ -30,7 +18,6 @@ export function WelcomeBanner({ name, avatarUrl, summary, primaryAction, seconda
       <div className="welcome-banner__content">
         <p className="welcome-banner__date">{formatToday()}</p>
         <div className="welcome-banner__greeting">
-          <ProfileAvatar name={name} src={avatarUrl} />
           <h2 className="welcome-banner__title">Olá, <span>{name || "pesquisador(a)"}</span></h2>
         </div>
         <p className="welcome-banner__summary">{summary}</p>

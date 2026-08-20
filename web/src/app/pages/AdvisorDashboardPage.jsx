@@ -10,6 +10,7 @@ import {
   Star,
   ChevronRight,
   CheckCircle2,
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -82,6 +83,7 @@ function buildMetricCards(metricas) {
       areaClass: "advisor-metrica__icone-area--azul",
       iconClass: "advisor-metrica__icone--azul",
       href: "/app/projects",
+      priority: "normal",
     },
     {
       label: "Solicitações de orientação",
@@ -90,6 +92,7 @@ function buildMetricCards(metricas) {
       areaClass: "advisor-metrica__icone-area--violeta",
       iconClass: "advisor-metrica__icone--violeta",
       href: "/app/projects",
+      priority: "action",
     },
     {
       label: "Inscrições aguardando análise",
@@ -98,6 +101,7 @@ function buildMetricCards(metricas) {
       areaClass: "advisor-metrica__icone-area--laranja",
       iconClass: "advisor-metrica__icone--laranja",
       href: "/app/applications",
+      priority: "action",
     },
     {
       label: "Orientandos ativos",
@@ -106,6 +110,7 @@ function buildMetricCards(metricas) {
       areaClass: "advisor-metrica__icone-area--verde",
       iconClass: "advisor-metrica__icone--verde",
       href: "/app/advisees",
+      priority: "normal",
     },
     {
       label: "Etapas atrasadas",
@@ -114,6 +119,7 @@ function buildMetricCards(metricas) {
       areaClass: "advisor-metrica__icone-area--erro",
       iconClass: "advisor-metrica__icone--erro",
       href: "/app/progress",
+      priority: "risk",
     },
     {
       label: "Entregas aguardando revisão",
@@ -122,6 +128,7 @@ function buildMetricCards(metricas) {
       areaClass: "advisor-metrica__icone-area--laranja",
       iconClass: "advisor-metrica__icone--laranja",
       href: "/app/deliveries",
+      priority: "action",
     },
     {
       label: "Avaliações aguardando ciência",
@@ -130,6 +137,7 @@ function buildMetricCards(metricas) {
       areaClass: "advisor-metrica__icone-area--violeta",
       iconClass: "advisor-metrica__icone--violeta",
       href: "/app/avaliacoes",
+      priority: "normal",
     },
   ];
 }
@@ -185,6 +193,20 @@ function QueueCard({ title, icon: Icon, items, kind, onNavigate }) {
   );
 }
 
+function AdvisorSection({ title, description, children }) {
+  return (
+    <section className="advisor-dashboard-section">
+      <div className="advisor-dashboard-section__cabecalho">
+        <div>
+          <h3 className="advisor-dashboard-section__titulo">{title}</h3>
+          {description && <p className="advisor-dashboard-section__descricao">{description}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export default function AdvisorDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -219,6 +241,14 @@ export default function AdvisorDashboardPage() {
   const metricas = data?.metricas ?? {};
   const filas = data?.filas ?? {};
   const metricCards = buildMetricCards(metricas);
+  const actionMetricCards = metricCards.filter((card) => card.priority === "action" || card.priority === "risk");
+  const overviewMetricCards = metricCards.filter((card) => card.priority === "normal");
+  const highPriorityQueues = filasConfig.filter((config) =>
+    ["inscricoesPendentes", "entregasAguardandoRevisao", "etapasAtrasadas"].includes(config.key),
+  );
+  const followUpQueues = filasConfig.filter((config) =>
+    !["inscricoesPendentes", "entregasAguardandoRevisao", "etapasAtrasadas"].includes(config.key),
+  );
 
   const handleNavigate = (destino) => navigate(destino);
 
@@ -231,7 +261,6 @@ export default function AdvisorDashboardPage() {
     >
       <WelcomeBanner
         name={user?.nome?.split(" ")[0] ?? "professor(a)"}
-        avatarUrl={user?.fotoPerfilUrl ?? user?.avatarUrl}
         summary={<>
           Você tem <strong>{metricas.inscricoesPendentes} inscrições</strong> aguardando análise, <strong>{metricas.entregasAguardandoRevisao} entregas</strong> para revisar e <strong>{metricas.etapasAtrasadas} etapas atrasadas</strong>.
         </>}
@@ -239,42 +268,97 @@ export default function AdvisorDashboardPage() {
         secondaryAction={{ label: "Ver progresso", onClick: () => handleNavigate("/app/progress") }}
       />
 
-      <div className="advisor-grade-metricas">
-        {metricCards.map((card, index) => (
-          <motion.button
-            key={card.label}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.04 }}
-            whileHover={{ scale: 1.03, boxShadow: "0 16px 30px rgba(31,122,90,0.16)" }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => handleNavigate(card.href)}
-            className="advisor-metrica"
-          >
-            <div className="advisor-metrica__cabecalho">
-              <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
-                <card.icon size={18} className={card.iconClass} />
+      <AdvisorSection title="Atenção do dia" description="Itens que tendem a bloquear alunos ou etapas do projeto.">
+        <div className="advisor-grade-metricas advisor-grade-metricas--prioridade">
+          {actionMetricCards.map((card, index) => (
+            <motion.button
+              key={card.label}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.04 }}
+              whileHover={{ scale: 1.02, boxShadow: "0 16px 30px rgba(31,122,90,0.16)" }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleNavigate(card.href)}
+              className={`advisor-metrica advisor-metrica--${card.priority}`}
+            >
+              <div className="advisor-metrica__cabecalho">
+                <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
+                  <card.icon size={18} className={card.iconClass} />
+                </div>
+                <ChevronRight size={14} className="advisor-metrica__seta" />
               </div>
-              <ChevronRight size={14} className="advisor-metrica__seta" />
+              <p className="advisor-metrica__valor">{card.value}</p>
+              <p className="advisor-metrica__rotulo">{card.label}</p>
+            </motion.button>
+          ))}
+        </div>
+      </AdvisorSection>
+
+      <div className="advisor-dashboard-layout">
+        <AdvisorSection title="Filas prioritárias" description="Revise primeiro inscrições, entregas e atrasos.">
+          <div className="advisor-grade-filas advisor-grade-filas--prioridade">
+            {highPriorityQueues.map((config) => (
+              <QueueCard
+                key={config.key}
+                title={config.title}
+                icon={config.icon}
+                kind={config.kind}
+                items={filas[config.key] ?? []}
+                onNavigate={handleNavigate}
+              />
+            ))}
+          </div>
+        </AdvisorSection>
+
+        <aside className="advisor-dashboard-lateral">
+          <AdvisorSection title="Resumo da carteira">
+            <div className="advisor-grade-metricas advisor-grade-metricas--resumo">
+              {overviewMetricCards.map((card) => (
+                <button
+                  key={card.label}
+                  type="button"
+                  onClick={() => handleNavigate(card.href)}
+                  className="advisor-metrica advisor-metrica--compacta"
+                >
+                  <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
+                    <card.icon size={16} className={card.iconClass} />
+                  </div>
+                  <div>
+                    <p className="advisor-metrica__valor">{card.value}</p>
+                    <p className="advisor-metrica__rotulo">{card.label}</p>
+                  </div>
+                </button>
+              ))}
             </div>
-            <p className="advisor-metrica__valor">{card.value}</p>
-            <p className="advisor-metrica__rotulo">{card.label}</p>
-          </motion.button>
-        ))}
+          </AdvisorSection>
+
+          <div className="advisor-dashboard-atalho" role="note">
+            <MessageSquare size={18} />
+            <div>
+              <strong>Conversas com alunos</strong>
+              <p>Use o chat para resolver pendências antes que virem atraso.</p>
+              <button type="button" onClick={() => handleNavigate("/app/chat")}>
+                Abrir chat
+              </button>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      <div className="advisor-grade-filas">
-        {filasConfig.map((config) => (
-          <QueueCard
-            key={config.key}
-            title={config.title}
-            icon={config.icon}
-            kind={config.kind}
-            items={filas[config.key] ?? []}
-            onNavigate={handleNavigate}
-          />
-        ))}
-      </div>
+      <AdvisorSection title="Acompanhamento" description="Visão geral para manter projetos, orientandos e avaliações em dia.">
+        <div className="advisor-grade-filas advisor-grade-filas--acompanhamento">
+          {followUpQueues.map((config) => (
+            <QueueCard
+              key={config.key}
+              title={config.title}
+              icon={config.icon}
+              kind={config.kind}
+              items={filas[config.key] ?? []}
+              onNavigate={handleNavigate}
+            />
+          ))}
+        </div>
+      </AdvisorSection>
     </motion.div>
   );
 }

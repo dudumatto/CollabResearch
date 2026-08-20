@@ -55,7 +55,7 @@ class User {
       avatarUrl: (json['avatarUrl'] ?? json['fotoPerfilUrl']) as String?,
       institution: (json['institution'] ?? json['instituicao']) as String?,
       bio: json['bio'] as String?,
-      theme: json['tema'] as String?,
+      theme: (json['tema'] ?? json['theme']) as String?,
       notificationsEnabled: json['notificacoesAtivas'] != false,
       semester: (json['semester'] as num?)?.toInt() ??
           (json['semestre'] as num?)?.toInt(),

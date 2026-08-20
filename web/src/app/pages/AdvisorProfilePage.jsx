@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Building2, GraduationCap, Save, X } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { mapOrientadorPerfil } from "../utils/adapters";
@@ -36,6 +37,7 @@ function PerfilSkeleton() {
 }
 
 export default function AdvisorProfilePage() {
+  const { refreshUser } = useAuth();
   const { data: perfil, loading, error, reload } = useAsyncData(
     async () => mapOrientadorPerfil(await advisorService.perfil()),
     [],
@@ -94,7 +96,8 @@ export default function AdvisorProfilePage() {
         fotoPerfilUrl: atualizado.fotoPerfilUrl ?? form.fotoPerfilUrl,
       });
       toast.success("Perfil atualizado com sucesso.");
-      reload();
+      await reload();
+      await refreshUser();
     } catch (err) {
       toast.error(getErrorMessage(normalizeError(err), "Não foi possível salvar o perfil."));
     } finally {

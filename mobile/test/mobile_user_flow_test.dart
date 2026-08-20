@@ -146,4 +146,26 @@ void main() {
     expect(find.byType(TextFormField), findsNWidgets(2));
     expect(find.widgetWithText(AppButton, 'Entrar'), findsOneWidget);
   });
+
+  testWidgets('aplica preferencia de tema escuro no app', (tester) async {
+    final auth = FakeAuthProvider()
+      ..currentUser = const User(
+        id: '1',
+        name: 'Usuario Teste',
+        email: 'usuario@example.com',
+        theme: 'escuro',
+      );
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AuthProvider>.value(
+        value: auth,
+        child: TccMobileApp(authProvider: auth),
+      ),
+    );
+
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(materialApp.themeMode, ThemeMode.dark);
+  });
 }

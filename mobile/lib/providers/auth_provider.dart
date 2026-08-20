@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import '../core/api/api_client.dart';
 import '../core/auth/jwt_decoder.dart';
@@ -19,6 +20,17 @@ class AuthProvider extends ChangeNotifier {
   String? pendingRedirectLocation;
 
   bool get isAuthenticated => token != null && token!.isNotEmpty;
+
+  ThemeMode get themeMode {
+    switch (currentUser?.theme?.toLowerCase()) {
+      case 'claro':
+        return ThemeMode.light;
+      case 'escuro':
+        return ThemeMode.dark;
+      default:
+        return ThemeMode.system;
+    }
+  }
 
   Future<void> login(String email, String password) async {
     isLoading = true;

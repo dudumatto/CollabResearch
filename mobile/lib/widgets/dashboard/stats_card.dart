@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../common/app_card.dart';
 
 class StatsCard extends StatelessWidget {
@@ -17,6 +16,8 @@ class StatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return AppCard(
       padding: const EdgeInsets.all(16),
       child: ConstrainedBox(
@@ -25,7 +26,7 @@ class StatsCard extends StatelessWidget {
           children: [
             DecoratedBox(
               decoration: BoxDecoration(
-                color: AppColors.surfaceTint,
+                color: colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: SizedBox(
@@ -34,7 +35,7 @@ class StatsCard extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 22,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: colorScheme.primary,
                 ),
               ),
             ),
