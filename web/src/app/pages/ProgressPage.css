@@ -1037,7 +1037,7 @@
 
 .step-card {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   gap: 0.9rem;
   align-items: start;
   padding: 1rem;
@@ -1124,6 +1124,33 @@
   color: var(--progress-text-muted);
   font-size: 0.84rem;
 }
+
+.step-card__reorder {
+  display: inline-flex;
+  align-self: center;
+  overflow: hidden;
+  border: 1px solid var(--progress-border-input);
+  border-radius: var(--raio-pequeno);
+}
+
+.step-card__reorder button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-right: 1px solid var(--progress-border-input);
+  background: var(--progress-surface);
+  color: var(--progress-text-muted);
+  cursor: pointer;
+  transition: var(--transicao-rapida);
+}
+
+.step-card__reorder button:last-child { border-right: 0; }
+.step-card__reorder button:hover:not(:disabled) { background: var(--progress-accent-soft); color: var(--progress-accent); }
+.step-card__reorder button:focus-visible { position: relative; z-index: 1; outline: 2px solid var(--progress-accent); outline-offset: -2px; }
+.step-card__reorder button:disabled { cursor: not-allowed; opacity: 0.4; }
 
 .step-card__status {
   display: inline-flex;
@@ -1425,6 +1452,12 @@
 
   .step-card {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .step-card__reorder {
+    grid-column: 2;
+    justify-self: start;
+    align-self: start;
   }
 
   .step-card__action {

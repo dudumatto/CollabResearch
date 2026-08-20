@@ -1,4 +1,4 @@
-import { CheckCircle2, Lock, PlayCircle } from "lucide-react";
+import { ArrowDown, ArrowUp, CheckCircle2, Lock, PlayCircle } from "lucide-react";
 import { formatUserType } from "../../utils/formatters";
 
 function canCompleteStep(step, currentUserRole) {
@@ -16,7 +16,7 @@ function canCompleteStep(step, currentUserRole) {
   return false;
 }
 
-export function StepCard({ step, currentUserRole, onAdvanceStep }) {
+export function StepCard({ step, currentUserRole, onAdvanceStep, displayOrder, canMoveUp, canMoveDown, onMoveUp, onMoveDown }) {
   const isDone = step.status === "DONE";
   const isActive = step.status === "ACTIVE";
   const canAdvance = isActive && canCompleteStep(step, currentUserRole);
@@ -24,13 +24,13 @@ export function StepCard({ step, currentUserRole, onAdvanceStep }) {
   return (
     <article className={`step-card step-card--${step.status.toLowerCase()}`}>
       <div className="step-card__marker">
-        {isDone ? <CheckCircle2 size={18} /> : isActive ? <PlayCircle size={18} /> : <span>{step.stepOrder}</span>}
+        {isDone ? <CheckCircle2 size={18} /> : isActive ? <PlayCircle size={18} /> : <span>{displayOrder ?? step.stepOrder}</span>}
       </div>
 
       <div className="step-card__content">
         <div className="step-card__header">
           <div>
-            <p className="step-card__eyebrow">Etapa {step.stepOrder}</p>
+            <p className="step-card__eyebrow">Etapa {displayOrder ?? step.stepOrder}</p>
             <h4 className="step-card__title">{step.title}</h4>
           </div>
           <span className="step-card__weight">+{step.weight}%</span>
@@ -47,6 +47,17 @@ export function StepCard({ step, currentUserRole, onAdvanceStep }) {
           </span>
         </div>
       </div>
+
+      {currentUserRole === "ALUNO" && (
+        <div className="step-card__reorder" aria-label={`Reordenar ${step.title}`}>
+          <button type="button" onClick={onMoveUp} disabled={!canMoveUp} aria-label={`Mover ${step.title} para cima`} title="Mover para cima">
+            <ArrowUp size={15} />
+          </button>
+          <button type="button" onClick={onMoveDown} disabled={!canMoveDown} aria-label={`Mover ${step.title} para baixo`} title="Mover para baixo">
+            <ArrowDown size={15} />
+          </button>
+        </div>
+      )}
 
       {isActive ? (
         <button

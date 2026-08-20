@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Send, Search, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { ArrowUp, Search, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { conversationService } from "../services/conversationService";
@@ -12,6 +12,15 @@ import { useLocation, useNavigate } from "react-router";
 function getInitials(name) {
   if (!name) return "PR";
   return name.split(" ").slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
+}
+
+function ChatAvatar({ name, src, className }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className={className}>
+      {src && !failed ? <img src={src} alt={`Foto de perfil de ${name}`} onError={() => setFailed(true)} /> : <span>{getInitials(name)}</span>}
+    </div>
+  );
 }
 
 function formatarHora(data) {
@@ -413,9 +422,7 @@ export default function ChatPage() {
               onClick={() => { setSelectedConversation(c); setShowMobileList(false); }}
               className={`conversa-item ${selectedConversation?.id === c.id ? "conversa-item--selecionada" : ""}`}
             >
-              <div className="conversa-item__avatar">
-                <span className="conversa-item__iniciais">{getInitials(c?.titulo)}</span>
-              </div>
+              <ChatAvatar name={c?.titulo} src={c?.fotoPerfilUrl} className="conversa-item__avatar" />
               <div className="conversa-item__info">
                 <div className="conversa-item__header">
                   <p className="conversa-item__nome">{c?.titulo ?? "Conversa"}</p>
@@ -448,6 +455,7 @@ export default function ChatPage() {
               >
                 <ArrowLeft size={16} />
               </button>
+              <ChatAvatar name={selectedConversation?.titulo} src={selectedConversation?.fotoPerfilUrl} className="pagina-chat__avatar-contato" />
               <div>
                 <p className="pagina-chat__nome-contato">{selectedConversation?.titulo ?? "Conversa"}</p>
               </div>
@@ -559,7 +567,7 @@ export default function ChatPage() {
                 />
                 <button onClick={sendMessage} className="pagina-chat__botao-enviar">
                   <span className="texto-enviar">Enviar Mensagem</span>
-                  <Send size={16} />
+                  <ArrowUp size={16} />
                 </button>
               </div>
             </div>

@@ -35,6 +35,7 @@ public class ConversaResponse {
 
     // Nome a exibir na lista
     private String titulo;
+    private String fotoPerfilUrl;
 
     // Última mensagem
     private String ultimaMensagem;
@@ -63,6 +64,7 @@ public class ConversaResponse {
             builder
                     .outroUsuarioId(outro != null ? outro.getId() : null)
                     .outroUsuarioNome(outro != null ? outro.getNome() : null)
+                    .fotoPerfilUrl(outro != null ? outro.getFotoPerfilUrl() : null)
                     .titulo(outro != null ? outro.getNome() : "Conversa privada");
         } else {
             builder
@@ -76,6 +78,8 @@ public class ConversaResponse {
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getId() : null)
                     .alunoCriadorNome(conversa.getProjeto() != null && conversa.getProjeto().getAlunoCriador() != null
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getNome() : null)
+                    .fotoPerfilUrl(conversa.getProjeto() != null && conversa.getProjeto().getOrientador() != null
+                            ? conversa.getProjeto().getOrientador().getUsuario().getFotoPerfilUrl() : null)
                     .titulo(conversa.getProjeto() != null ? conversa.getProjeto().getTitulo() : "Grupo");
         }
 

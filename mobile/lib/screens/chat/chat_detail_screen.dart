@@ -286,7 +286,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: ChatInputBar(
                   controller: _controller,
                   onSend: provider.isSending ? () {} : _sendMessage,

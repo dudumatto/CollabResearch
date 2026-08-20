@@ -7,6 +7,7 @@ class Conversation {
     this.type,
     this.projectTitle,
     this.otherUserName,
+    this.avatarUrl,
     this.unreadCount = 0,
   });
 
@@ -17,6 +18,7 @@ class Conversation {
   final String? type;
   final String? projectTitle;
   final String? otherUserName;
+  final String? avatarUrl;
   final int unreadCount;
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
@@ -53,6 +55,7 @@ class Conversation {
       type: type,
       projectTitle: projectTitle,
       otherUserName: otherUserName,
+      avatarUrl: _nullableString(json['avatarUrl'] ?? json['fotoPerfilUrl']),
       unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
     );
   }

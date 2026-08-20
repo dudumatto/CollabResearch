@@ -18,6 +18,7 @@ import { mapOrientadorDashboard } from "../utils/adapters";
 import { formatProjectStatus, formatApplicationStatus, formatEntregaStatus } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { WelcomeBanner } from "../components/WelcomeBanner";
 import "./AdvisorWorkspace.css";
 
 const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
@@ -228,21 +229,15 @@ export default function AdvisorDashboardPage() {
       transition={{ duration: 0.3 }}
       className="advisor-pagina"
     >
-      <div className="advisor-hero">
-        <div className="advisor-hero__conteudo">
-          <p className="painel__data-banner" style={{ color: "rgba(226,232,240,0.78)" }}>
-            {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
-          </p>
-          <h2 className="advisor-hero__titulo">
-            Olá, {user?.nome?.split(" ")[0] ?? "professor(a)"}!
-          </h2>
-          <p className="advisor-hero__subtitulo">
-            Você tem <strong>{metricas.inscricoesPendentes} inscrições</strong> aguardando análise,{" "}
-            <strong>{metricas.entregasAguardandoRevisao} entregas</strong> para revisar e{" "}
-            <strong>{metricas.etapasAtrasadas} etapas atrasadas</strong>.
-          </p>
-        </div>
-      </div>
+      <WelcomeBanner
+        name={user?.nome?.split(" ")[0] ?? "professor(a)"}
+        avatarUrl={user?.fotoPerfilUrl ?? user?.avatarUrl}
+        summary={<>
+          Você tem <strong>{metricas.inscricoesPendentes} inscrições</strong> aguardando análise, <strong>{metricas.entregasAguardandoRevisao} entregas</strong> para revisar e <strong>{metricas.etapasAtrasadas} etapas atrasadas</strong>.
+        </>}
+        primaryAction={{ label: "Ver inscrições", onClick: () => handleNavigate("/app/applications") }}
+        secondaryAction={{ label: "Ver progresso", onClick: () => handleNavigate("/app/progress") }}
+      />
 
       <div className="advisor-grade-metricas">
         {metricCards.map((card, index) => (

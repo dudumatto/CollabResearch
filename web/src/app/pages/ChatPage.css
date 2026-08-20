@@ -555,6 +555,24 @@
   background: #185e46;
 }
 
+.conversa-item__avatar img,
+.pagina-chat__avatar-contato img { width: 100%; height: 100%; object-fit: cover; }
+
+.pagina-chat__avatar-contato {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-texto);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-negrito);
+  flex: 0 0 auto;
+}
+
 /* =========================
    Estado vazio
 ========================= */

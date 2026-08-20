@@ -134,6 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 42,
+                        foregroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
                         child: Text(
                           _initials(user),
                           style: Theme.of(context).textTheme.headlineSmall,
