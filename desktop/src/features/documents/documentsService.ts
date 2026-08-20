@@ -2,34 +2,28 @@ import { apiClient } from '../../lib/apiClient'
 import type { PageResponse } from '../../lib/apiTypes'
 import type { DocumentItem, DocumentStatus } from './documentsTypes'
 
-const isPublicDocumentUrl = (value?: string) => {
-  if (!value) return false
+const apiPathFromUrl = (value?: string) => {
+  if (!value) return undefined
   try {
     const url = new URL(value)
-    return url.protocol === 'https:' && url.hostname.endsWith('.supabase.co')
+    const path = `${url.pathname}${url.search}`
+    return path.startsWith('/api/') ? path.replace(/^\/api/, '') : path
   } catch {
-    return false
+    return value.startsWith('/api/') ? value.replace(/^\/api/, '') : value
   }
 }
 
-const blobFromUrl = async (url: string) => {
-  const response = await fetch(url)
-  if (!response.ok) throw new Error('Nao foi possivel carregar o documento no Supabase.')
-  return response.blob()
+const documentBlob = (value?: string) => {
+  const path = apiPathFromUrl(value)
+  if (!path) throw new Error('Documento sem URL de acesso.')
+  return apiClient.blob(path)
 }
 
-const fallbackPath = (url: string) => url.replace('/api', '')
-
 export const documentsService = {
-  list: (status?: DocumentStatus) => apiClient.get<PageResponse<DocumentItem>>(`/admin/documentos?size=50${status ? `&status=${status}` : ''}`),
+  list: (status?: DocumentStatus) => apiClient.get<PageResponse<DocumentItem>>(`/admin/documentos?size=100${status ? `&status=${status}` : ''}`),
   setStatus: (id: number, status: DocumentStatus, observacao?: string) =>
     apiClient.patch<DocumentItem>(`/admin/documentos/${id}/status`, { status, observacao }),
   remove: (id: number) => apiClient.delete(`/admin/documentos/${id}`),
-  previewUrl: (document: DocumentItem) => isPublicDocumentUrl(document.url) ? document.url : undefined,
-  preview: (document: DocumentItem) => isPublicDocumentUrl(document.url)
-    ? blobFromUrl(document.url as string)
-    : apiClient.blob(fallbackPath(document.previewUrl)),
-  download: (document: DocumentItem) => isPublicDocumentUrl(document.url)
-    ? blobFromUrl(document.url as string)
-    : apiClient.blob(fallbackPath(document.downloadUrl)),
+  preview: (document: DocumentItem) => documentBlob(document.previewUrl || document.downloadUrl || document.url),
+  download: (document: DocumentItem) => documentBlob(document.downloadUrl || document.previewUrl || document.url),
 }

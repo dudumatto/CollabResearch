@@ -23,7 +23,7 @@ export function LoginPage() {
     try {
       const response = await authService.login(email, senha)
       if (response.usuario.tipo !== 'ADMIN') {
-        throw new Error('Esta aplicacao e exclusiva para administradores.')
+        throw new Error('Esta aplicação é exclusiva para administradores.')
       }
       authStore.setSession(response.token, response.usuario)
       navigate('/')
@@ -39,12 +39,12 @@ export function LoginPage() {
       <section className="login-brand">
         <p className="eyebrow">CollabResearch</p>
         <h1>Admin Desktop</h1>
-        <p>Governanca, acompanhamento e seguranca da colaboracao cientifica em um unico painel.</p>
+        <p>Governança, acompanhamento e segurança da colaboração científica em um único painel.</p>
       </section>
       <form className="login-card" onSubmit={submit}>
         <p className="eyebrow">Acesso administrativo</p>
         <h2>Entrar</h2>
-        <Input label="Email" name="email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
+        <Input label="E-mail" name="email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
         <Input label="Senha" name="senha" type="password" required value={senha} onChange={(event) => setSenha(event.target.value)} />
         {error && <p className="login-error" role="alert">{error}</p>}
         <Button type="submit" disabled={busy}>{busy ? 'Autenticando...' : 'Entrar no painel'}</Button>

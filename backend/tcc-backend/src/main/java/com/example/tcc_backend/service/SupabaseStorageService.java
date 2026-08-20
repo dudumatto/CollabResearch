@@ -10,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -85,12 +86,55 @@ public class SupabaseStorageService {
     }
 
     public String createSignedUrl(String caminho) {
-        if (!isConfigured() || caminho == null || caminho.isBlank()) {
+        return createSignedUrl(projectDocumentsBucket, caminho);
+    }
+
+    public String createSignedUrlFromPublicUrl(String publicUrl) {
+        if (!isConfigured() || isBlank(publicUrl)) {
+            return null;
+        }
+
+        try {
+            URI uri = URI.create(publicUrl.trim());
+            String host = uri.getHost();
+            if (host == null || !host.toLowerCase().endsWith(".supabase.co")) {
+                return null;
+            }
+
+            String rawPath = uri.getRawPath();
+            String publicPrefix = "/storage/v1/object/public/";
+            String signedPrefix = "/storage/v1/object/sign/";
+            if (rawPath == null) {
+                return null;
+            }
+            if (rawPath.startsWith(signedPrefix)) {
+                return publicUrl;
+            }
+            if (!rawPath.startsWith(publicPrefix)) {
+                return null;
+            }
+
+            String bucketAndPath = rawPath.substring(publicPrefix.length());
+            int separator = bucketAndPath.indexOf('/');
+            if (separator <= 0 || separator >= bucketAndPath.length() - 1) {
+                return null;
+            }
+
+            String bucket = URLDecoder.decode(bucketAndPath.substring(0, separator), StandardCharsets.UTF_8);
+            String objectPath = bucketAndPath.substring(separator + 1);
+            return createSignedUrl(bucket, objectPath);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    private String createSignedUrl(String bucket, String caminho) {
+        if (!isConfigured() || isBlank(bucket) || isBlank(caminho)) {
             return null;
         }
 
         String cleanPath = caminho.replaceAll("^/+", "");
-        String endpoint = "/storage/v1/object/sign/" + URLEncoder.encode(projectDocumentsBucket, StandardCharsets.UTF_8) + "/" + cleanPath;
+        String endpoint = "/storage/v1/object/sign/" + URLEncoder.encode(bucket, StandardCharsets.UTF_8) + "/" + cleanPath;
 
         try {
             String body = objectMapper.writeValueAsString(java.util.Map.of("expiresIn", SIGNED_URL_EXPIRATION_SECONDS));
@@ -113,7 +157,16 @@ public class SupabaseStorageService {
             if (signedPath == null || signedPath.isBlank()) {
                 return null;
             }
-            return normalizedUrl() + "/storage/v1/object/sign/" + signedPath;
+            if (signedPath.startsWith("http://") || signedPath.startsWith("https://")) {
+                return signedPath;
+            }
+            if (signedPath.startsWith("/storage/v1")) {
+                return normalizedUrl() + signedPath;
+            }
+            if (signedPath.startsWith("/object/")) {
+                return normalizedUrl() + "/storage/v1" + signedPath;
+            }
+            return normalizedUrl() + "/storage/v1/" + signedPath.replaceAll("^/+", "");
         } catch (IOException | InterruptedException ex) {
             if (ex instanceof InterruptedException) {
                 Thread.currentThread().interrupt();

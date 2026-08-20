@@ -57,7 +57,7 @@ export function ProjectsPage({ forcedStatus, title = 'Projetos' }: { forcedStatu
       <Card>
         {!forcedStatus && <div className="filters"><Select label="Status" value={status} onChange={(event) => setStatus(event.target.value as ProjectStatus | '')} options={[{ value: '', label: 'Todos' }, { value: 'ABERTO', label: 'Abertos' }, { value: 'EM_ANDAMENTO', label: 'Em andamento' }, { value: 'FINALIZADO', label: 'Finalizados' }]} /></div>}
         {error ? <ErrorState message={error} onRetry={() => void load()} /> : !projects ? <LoadingState /> : !projects.length ? <EmptyState /> : (
-          <Table><thead><tr><th>Projeto</th><th>Area</th><th>Tecnologias</th><th>Status</th><th>Limite</th><th className="actions">Acoes</th></tr></thead><tbody>
+          <Table><thead><tr><th>Projeto</th><th>Área</th><th>Tecnologias</th><th>Status</th><th>Limite</th><th className="actions">Ações</th></tr></thead><tbody>
             {projects.map((project) => (
               <tr key={project.id}>
                 <td><strong>{project.titulo}</strong><small>{project.vagas} vaga(s)</small></td><td>{project.areaNome}</td><td>{project.tecnologias || '-'}</td><td><Badge tone={tone(project.status)}>{project.status}</Badge></td><td>{formatDate(project.dataLimiteInscricao)}</td>

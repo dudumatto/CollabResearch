@@ -49,11 +49,11 @@ export function DocumentsPage() {
   }
   return (
     <div className="page">
-      <header className="page-header"><div><p className="eyebrow">Conformidade</p><h1>Documentos</h1><p>Revise curriculos e historicos enviados por usuarios.</p></div></header>
+      <header className="page-header"><div><p className="eyebrow">Conformidade</p><h1>Documentos</h1><p>Revise currículos e históricos enviados por usuários.</p></div></header>
       <Card>
-        <div className="filters"><Select label="Status" value={status} onChange={(event) => setStatus(event.target.value as DocumentStatus | '')} options={[{ value: '', label: 'Todos' }, { value: 'ENVIADO', label: 'Enviados' }, { value: 'EM_ANALISE', label: 'Em analise' }, { value: 'VERIFICADO', label: 'Verificados' }, { value: 'REJEITADO', label: 'Rejeitados' }]} /></div>
+        <div className="filters"><Select label="Status" value={status} onChange={(event) => setStatus(event.target.value as DocumentStatus | '')} options={[{ value: '', label: 'Todos' }, { value: 'ENVIADO', label: 'Enviados' }, { value: 'EM_ANALISE', label: 'Em análise' }, { value: 'VERIFICADO', label: 'Verificados' }, { value: 'REJEITADO', label: 'Rejeitados' }]} /></div>
         {error ? <ErrorState message={error} onRetry={() => void load()} /> : !items ? <LoadingState /> : !items.length ? <EmptyState /> : (
-          <Table><thead><tr><th>Arquivo</th><th>Usuario</th><th>Tipo</th><th>Status</th><th>Envio</th><th className="actions">Acoes</th></tr></thead><tbody>
+          <Table><thead><tr><th>Arquivo</th><th>Usuário</th><th>Tipo</th><th>Status</th><th>Envio</th><th className="actions">Ações</th></tr></thead><tbody>
             {items.map((item) => <tr key={item.id}><td><strong>{item.nomeArquivo}</strong></td><td>{item.usuarioNome}</td><td>{item.tipo}</td><td><Badge tone={tone(item.status)}>{item.status}</Badge></td><td>{formatDate(item.dataEnvio)}</td><td className="actions"><Button variant="ghost" onClick={() => setPreview(item)}>Preview</Button><Button variant="ghost" onClick={() => void download(item)}>Baixar</Button>{item.status !== 'VERIFICADO' && <Button variant="ghost" onClick={() => void review(item, 'VERIFICADO')}>Validar</Button>}{item.status !== 'REJEITADO' && <Button variant="ghost" onClick={() => void review(item, 'REJEITADO')}>Rejeitar</Button>}<Button variant="ghost" onClick={() => setRemoving(item)}>Remover</Button></td></tr>)}
           </tbody></Table>
         )}
@@ -63,3 +63,4 @@ export function DocumentsPage() {
     </div>
   )
 }
+

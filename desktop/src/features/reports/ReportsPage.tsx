@@ -19,11 +19,11 @@ export function ReportsPage() {
   }
   useEffect(() => { void load() }, [])
   if (error) return <ErrorState message={error} onRetry={() => void load()} />
-  if (!data) return <LoadingState label="Gerando relatorio..." />
+  if (!data) return <LoadingState label="Gerando relatório..." />
   const datasets = [
-    { title: 'Usuarios por perfil', values: data.usuariosPorTipo },
+    { title: 'Usuários por perfil', values: data.usuariosPorTipo },
     { title: 'Projetos por status', values: data.projetosPorStatus },
-    { title: 'Inscricoes por status', values: data.inscricoesPorStatus },
+    { title: 'Inscrições por status', values: data.inscricoesPorStatus },
     { title: 'Documentos por status', values: data.documentosPorStatus },
   ]
   const total = datasets.reduce((sum, dataset) => sum + sumReportValues(dataset.values), 0)
@@ -47,19 +47,19 @@ export function ReportsPage() {
   return (
     <div className="page report-page">
       <header className="page-header report-screen-header">
-        <div><p className="eyebrow">Governanca</p><h1>Relatorios</h1><p>Gerado em {formatDateTime(data.geradoEm)}</p></div>
+        <div><p className="eyebrow">Governança</p><h1>Relatórios</h1><p>Gerado em {formatDateTime(data.geradoEm)}</p></div>
         <div className="report-actions">
           <Button variant="secondary" onClick={downloadCsv}>Exportar CSV</Button>
           <Button onClick={() => void exportPdf()} disabled={exportingPdf}>{exportingPdf ? 'Exportando...' : 'Exportar PDF'}</Button>
         </div>
       </header>
 
-      <section className="report-document" aria-label="Relatorio CollabResearch">
+      <section className="report-document" aria-label="Relatório CollabResearch">
         <div className="report-cover">
           <div>
             <p className="eyebrow">CollabResearch</p>
-            <h2>Relatorio administrativo</h2>
-            <p>Resumo consolidado de usuarios, projetos, inscricoes e documentos.</p>
+            <h2>Relatório administrativo</h2>
+            <p>Resumo consolidado de usuários, projetos, inscrições e documentos.</p>
           </div>
           <dl>
             <div><dt>Gerado em</dt><dd>{formatDateTime(data.geradoEm)}</dd></div>
@@ -94,3 +94,4 @@ export function ReportsPage() {
     </div>
   )
 }
+

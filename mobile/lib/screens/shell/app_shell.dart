@@ -81,16 +81,25 @@ class _BrandMark extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 16,
+            offset: Offset(0, 8),
+          ),
+        ],
       ),
       child: const SizedBox(
         height: 42,
         width: 42,
         child: Center(
-          child: Text(
-            'CR',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+          child: Image(
+            image: AssetImage('assets/brand/logo-icon.png'),
+            width: 26,
+            height: 26,
+            semanticLabel: 'CollabResearch',
           ),
         ),
       ),

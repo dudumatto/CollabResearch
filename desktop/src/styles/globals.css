@@ -11,8 +11,8 @@
   --navy-950: #17251d;
   --navy-900: #185e46;
   --blue-700: #1f7a5a;
-  --blue-600: #557c55;
-  --blue-100: #e0e7d2;
+  --blue-600: #2d6f53;
+  --blue-100: #e5eee4;
   --slate-700: #35493c;
   --slate-500: #66736a;
   --slate-300: #c7d1c3;
@@ -68,8 +68,8 @@ button { min-height: 44px; }
   width: clamp(200px, 16vw, 240px);
   flex: none;
   overflow-y: auto;
-  background: #0f1a14;
-  color: #a8b8c8;
+  background: linear-gradient(180deg, #0f1a14 0%, #142219 100%);
+  color: #b8c7bd;
   padding: 20px 12px;
   display: flex;
   flex-direction: column;
@@ -86,14 +86,18 @@ button { min-height: 44px; }
 }
 .sidebar-logo {
   align-items: center;
-  background: linear-gradient(135deg, #1a5e46, #238a64);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 10px;
   display: inline-flex;
   flex: none;
-  height: 32px;
+  height: 34px;
   justify-content: center;
-  width: 32px;
-  color: white;
+  width: 34px;
+}
+.sidebar-logo img {
+  display: block;
+  height: 22px;
+  width: 22px;
 }
 .sidebar-brand-text { min-width: 0; }
 .sidebar-brand-text strong { display: block; color: #e8edf2; font-size: .88rem; font-weight: 600; letter-spacing: -.01em; }
@@ -125,7 +129,7 @@ button { min-height: 44px; }
 .sidebar-link-icon { flex: none; }
 .sidebar-link:hover { background: rgba(255, 255, 255, 0.05); color: #d0dce8; }
 .sidebar-link.active {
-  background: rgba(35, 138, 100, 0.12);
+  background: rgba(62, 180, 128, 0.15);
   color: #e8edf2;
   font-weight: 500;
 }
@@ -285,7 +289,7 @@ button { min-height: 44px; }
 .topbar-dropdown-item:hover { background: #f0f3ee; }
 
 .welcome-banner {
-  background: linear-gradient(135deg, #0f1a14 0%, #1a3d2e 50%, #1f5c48 100%);
+  background: linear-gradient(135deg, #0f1a14 0%, #1d3b2d 52%, #245c44 100%);
   border-radius: 12px;
   overflow: hidden;
   position: relative;
@@ -343,40 +347,7 @@ button { min-height: 44px; }
   height: 12px;
   width: 1px;
 }
-.welcome-progress { margin-top: 16px; max-width: 320px; }
-.welcome-progress-info {
-  align-items: center;
-  display: flex;
-  font-size: .72rem;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  color: rgba(255, 255, 255, 0.55);
-}
-.welcome-progress-info span:last-child { color: rgba(255, 255, 255, 0.75); font-weight: 500; }
-.welcome-progress-bar {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  height: 4px;
-  overflow: hidden;
-}
-.welcome-progress-fill {
-  background: linear-gradient(90deg, #238a64, #35a878);
-  border-radius: inherit;
-  height: 100%;
-  transition: width .6s ease;
-}
-.welcome-banner-visual { flex: none; margin-left: 24px; }
-.welcome-banner-icon {
-  align-items: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  color: rgba(255, 255, 255, 0.3);
-  display: flex;
-  height: 72px;
-  justify-content: center;
-  width: 72px;
-}
+
 
 .page-content { flex: 1; overflow-y: auto; padding: clamp(18px, 2.5vw, 30px) clamp(18px, 2.6vw, 32px); }
 .page { display: flex; flex-direction: column; gap: 20px; margin: 0 auto; max-width: 1320px; }
@@ -483,9 +454,9 @@ button { min-height: 44px; }
 .chart-card-header-left { align-items: center; display: flex; gap: 10px; }
 .chart-card-icon {
   align-items: center;
-  background: #eef2ff;
+  background: #e5eee4;
   border-radius: 8px;
-  color: #3b82f6;
+  color: #1f7a5a;
   display: flex;
   height: 32px;
   justify-content: center;
@@ -498,7 +469,7 @@ button { min-height: 44px; }
 .chart-bar-label { color: #5a6b5e; font-size: .84rem; font-weight: 450; }
 .chart-bar-track { background: #f0f3ee; border-radius: 20px; height: 8px; overflow: hidden; }
 .chart-bar-fill {
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  background: linear-gradient(90deg, #1f7a5a, #6b8f55);
   border-radius: inherit;
   height: 100%;
   transition: width .6s ease;
@@ -712,7 +683,9 @@ button { min-height: 44px; }
 .setting-row:last-child { border: 0; }
 .setting-row p { color: var(--slate-500); font-size: .82rem; margin-top: 5px; }
 .login-page {
-  background: radial-gradient(circle at 25% 15%, #1f7a5a, var(--navy-950) 58%);
+  background:
+    radial-gradient(circle at 24% 18%, rgba(97, 139, 85, 0.52), transparent 30%),
+    linear-gradient(135deg, #0f1a14 0%, #173021 48%, #1f5e46 100%);
   display: grid;
   gap: clamp(28px, 5vw, 72px);
   grid-template-columns: minmax(320px, 560px) minmax(360px, 430px);
@@ -720,14 +693,16 @@ button { min-height: 44px; }
   place-content: center;
   padding: clamp(24px, 5vw, 72px);
 }
-.login-brand { align-self: center; color: #bed0f4; max-width: 560px; padding: 0; }
-.login-brand .eyebrow { color: #78a1ff; }
+.login-brand { align-self: center; color: rgba(255, 255, 255, 0.78); max-width: 560px; padding: 0; }
+.login-brand .eyebrow { color: #ffffff; }
 .login-brand h1 { color: white; font-size: clamp(2.2rem, 4vw, 3.4rem); margin-bottom: 20px; }
-.login-brand p:last-child { font-size: 1.08rem; line-height: 1.65; max-width: 520px; }
+.login-brand p:last-child { color: rgba(255, 255, 255, 0.82); font-size: 1.08rem; line-height: 1.65; max-width: 520px; }
 .login-card {
   align-self: center;
-  background: white;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(8, 18, 12, 0.28);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -737,6 +712,7 @@ button { min-height: 44px; }
 .login-card h2 { font-size: 1.7rem; margin-bottom: 9px; }
 .login-card .field { flex: 0 0 auto; }
 .login-card .button { margin-top: 8px; width: 100%; }
+.filters-actions { align-items: end; display: flex; flex: 0 0 auto; gap: 8px; }
 .toasts { bottom: 24px; display: flex; flex-direction: column; gap: 10px; position: fixed; right: 24px; z-index: 40; }
 .toast { border-radius: 8px; box-shadow: var(--shadow); color: white; font-size: .9rem; padding: 14px 18px; }
 .toast-success { background: var(--green); }
@@ -797,7 +773,6 @@ button { min-height: 44px; }
   .sidebar-link.active { border-bottom: 2px solid #238a64; border-radius: 0; background: transparent; padding-bottom: 4px; }
   .sidebar-link-icon { display: none; }
   .welcome-banner-content { padding: 18px 20px; }
-  .welcome-progress { max-width: none; }
 }
 
 /* ── Mobile large ── */
@@ -838,7 +813,6 @@ button { min-height: 44px; }
   .welcome-banner-content { padding: 16px; }
   .welcome-metrics { gap: 6px; }
   .welcome-metrics-sep { display: none; }
-  .welcome-progress { margin-top: 12px; }
 }
 
 /* ── Mobile small ── */
@@ -891,3 +865,6 @@ button { min-height: 44px; }
     page-break-inside: avoid;
   }
 }
+
+
+

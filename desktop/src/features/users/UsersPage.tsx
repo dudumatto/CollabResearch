@@ -16,7 +16,7 @@ import { UserFormModal } from './UserFormModal'
 import { usersService } from './usersService'
 import type { UserProfile } from './usersTypes'
 
-export function UsersPage({ lockedRole, title = 'Usuarios' }: { lockedRole?: UserRole; title?: string }) {
+export function UsersPage({ lockedRole, title = 'Usuários' }: { lockedRole?: UserRole; title?: string }) {
   const [users, setUsers] = useState<UserProfile[] | null>(null)
   const [role, setRole] = useState<UserRole | ''>(lockedRole ?? '')
   const [search, setSearch] = useState('')
@@ -39,7 +39,7 @@ export function UsersPage({ lockedRole, title = 'Usuarios' }: { lockedRole?: Use
   const toggle = async (user: UserProfile) => {
     try {
       await usersService.setActive(user.id, !user.ativo)
-      notify(`Usuario ${user.ativo ? 'desativado' : 'ativado'} com sucesso.`)
+      notify(`Usuário ${user.ativo ? 'desativado' : 'ativado'} com sucesso.`)
       await load()
     } catch (caught) {
       notify(errorMessage(caught), 'error')
@@ -54,7 +54,7 @@ export function UsersPage({ lockedRole, title = 'Usuarios' }: { lockedRole?: Use
       </header>
       <Card>
         <form className="filters" onSubmit={(event) => { event.preventDefault(); void load() }}>
-          <Input aria-label="Buscar usuario" placeholder="Buscar nome ou email" value={search} onChange={(event) => setSearch(event.target.value)} />
+          <Input aria-label="Buscar usuário" placeholder="Buscar nome ou e-mail" value={search} onChange={(event) => setSearch(event.target.value)} />
           {!lockedRole && <Select aria-label="Filtrar perfil" value={role} onChange={(event) => setRole(event.target.value as UserRole | '')} options={[
             { value: '', label: 'Todos os perfis' }, { value: 'ALUNO', label: 'Alunos' }, { value: 'ORIENTADOR', label: 'Orientadores' }, { value: 'ADMIN', label: 'Administradores' },
           ]} />}
@@ -62,7 +62,7 @@ export function UsersPage({ lockedRole, title = 'Usuarios' }: { lockedRole?: Use
         </form>
         {error ? <ErrorState message={error} onRetry={() => void load()} /> : !users ? <LoadingState /> : !users.length ? <EmptyState /> : (
           <Table>
-            <thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Status</th><th className="actions">Acoes</th></tr></thead>
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th className="actions">Ações</th></tr></thead>
             <tbody>{users.map((user) => (
               <tr key={user.id}>
                 <td><strong>{user.nome}</strong></td><td>{user.email}</td><td>{user.tipo}</td>

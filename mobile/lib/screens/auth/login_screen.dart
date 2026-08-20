@@ -99,9 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   _passwordController.text.trim(),
                                 );
                             if (context.mounted &&
-                                context
-                                    .read<AuthProvider>()
-                                    .isAuthenticated) {
+                                context.read<AuthProvider>().isAuthenticated) {
                               final redirect = context
                                   .read<AuthProvider>()
                                   .pendingRedirectLocation;
@@ -148,7 +146,8 @@ class _LoginScreenState extends State<LoginScreen> {
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.fromLTRB(20, 24, 20, 24 + bottomInset),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight - 48),
+                constraints:
+                    BoxConstraints(minHeight: constraints.maxHeight - 48),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 940),
@@ -162,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           )
                         : formCard,
-                          ),
+                  ),
                 ),
               ),
             );
@@ -192,17 +191,16 @@ class _LoginBrandPanel extends StatelessWidget {
           children: [
             DecoratedBox(
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .12),
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
               ),
               child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                child: Text(
-                  'CR',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
+                padding: EdgeInsets.all(10),
+                child: Image(
+                  image: AssetImage('assets/brand/logo-icon.png'),
+                  width: 28,
+                  height: 28,
+                  semanticLabel: 'CollabResearch',
                 ),
               ),
             ),

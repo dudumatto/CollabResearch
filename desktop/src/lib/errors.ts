@@ -10,4 +10,4 @@ export class ApiError extends Error {
 }
 
 export const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : 'Nao foi possivel concluir a operacao.'
+  error instanceof Error ? error.message : 'Não foi possível concluir a operação.'

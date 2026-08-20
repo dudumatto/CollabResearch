@@ -151,15 +151,19 @@ function RadioGroup({ options, value, onChange }) {
 function ChipGroup({ options, value, onChange }) {
   return (
     <div className="cfg-chip-group">
-      {options.map((opt) => (
-        <button
-          key={opt}
-          className={`cfg-chip ${value === opt ? "cfg-chip--active" : ""}`}
-          onClick={() => onChange(opt)}
-        >
-          {opt}
-        </button>
-      ))}
+      {options.map((option) => {
+        const optionValue = typeof option === "string" ? option : option.value;
+        const optionLabel = typeof option === "string" ? option : option.label;
+        return (
+          <button
+            key={optionValue}
+            className={`cfg-chip ${value === optionValue ? "cfg-chip--active" : ""}`}
+            onClick={() => onChange(optionValue)}
+          >
+            {optionLabel}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -208,7 +212,7 @@ import { useSidebarContext } from "../layouts/DashboardLayout";
 export default function SettingsPage() {
   const { collapsed } = useSidebarContext();
   const { user, logout, refreshUser } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, toggleTheme, fontSize, setFontSize } = useTheme();
   const [loading, setLoading] = useState(true);
   const [activePanel, setActivePanel] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -233,7 +237,7 @@ export default function SettingsPage() {
   });
 
   const [mensagensPermissao, setMensagensPermissao] = useState("projetos");
-  const [aparencia, setAparencia] = useState({ cor: "Azul", fonte: "Média", seguirSistema: false });
+  const [aparencia, setAparencia] = useState({ seguirSistema: false });
 
   useEffect(() => {
     if (!user?.id) return;
@@ -343,7 +347,7 @@ export default function SettingsPage() {
       <div className="cfg-section">
         <SectionLabel>Aparência</SectionLabel>
         <SectionGroup>
-          <NavItem icon={Palette} iconClass="icon-pink" title="Aparência" sub="Tema, modo escuro" onClick={() => open("aparencia")} />
+          <NavItem icon={Palette} iconClass="icon-pink" title="Aparência" sub="Tema e tamanho da fonte" onClick={() => open("aparencia")} />
         </SectionGroup>
       </div>
 
@@ -497,10 +501,8 @@ export default function SettingsPage() {
           <ToggleRow title="Modo escuro" sub="Salvo no navegador" on={isDark} onToggle={toggleTheme} />
           <ToggleRow title="Seguir sistema" sub="Usar preferência do dispositivo" on={aparencia.seguirSistema} onToggle={() => setAparencia((a) => ({ ...a, seguirSistema: !a.seguirSistema }))} />
         </SectionGroup>
-        <SectionLabel>Cor de destaque</SectionLabel>
-        <ChipGroup options={["Azul", "Verde", "Roxo", "Laranja", "Rosa"]} value={aparencia.cor} onChange={(v) => setAparencia((a) => ({ ...a, cor: v }))} />
         <SectionLabel>Tamanho da fonte</SectionLabel>
-        <ChipGroup options={["Pequena", "Média", "Grande"]} value={aparencia.fonte} onChange={(v) => setAparencia((a) => ({ ...a, fonte: v }))} />
+        <ChipGroup options={[{ value: "pequena", label: "Pequena" }, { value: "media", label: "Média" }, { value: "grande", label: "Grande" }]} value={fontSize} onChange={setFontSize} />
         <PrimaryBtn style={{ marginTop: 20 }} onClick={() => toast.success("Preferências salvas.")}>
           Salvar preferências
         </PrimaryBtn>
@@ -565,3 +567,6 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+
+

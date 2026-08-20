@@ -33,10 +33,10 @@ export function AreasPage() {
   }
   return (
     <div className="page">
-      <header className="page-header"><div><p className="eyebrow">Pesquisa</p><h1>Areas de pesquisa</h1><p>Organize os temas usados em projetos e oportunidades.</p></div><Button onClick={() => setEditing(null)}>Nova area</Button></header>
+      <header className="page-header"><div><p className="eyebrow">Pesquisa</p><h1>Áreas de pesquisa</h1><p>Organize os temas usados em projetos.</p></div><Button onClick={() => setEditing(null)}>Nova area</Button></header>
       <Card>
         {error ? <ErrorState message={error} onRetry={() => void load()} /> : !areas ? <LoadingState /> : !areas.length ? <EmptyState /> : (
-          <Table><thead><tr><th>Area</th><th>Curso relacionado</th><th className="actions">Acoes</th></tr></thead><tbody>
+          <Table><thead><tr><th>Área</th><th>Curso relacionado</th><th className="actions">Ações</th></tr></thead><tbody>
             {areas.map((area) => <tr key={area.id}><td><strong>{area.nome}</strong></td><td>{area.cursoNome || '-'}</td><td className="actions"><Button variant="ghost" onClick={() => setEditing(area)}>Editar</Button><Button variant="ghost" onClick={() => setRemoving(area)}>Remover</Button></td></tr>)}
           </tbody></Table>
         )}

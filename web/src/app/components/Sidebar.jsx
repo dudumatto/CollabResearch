@@ -61,12 +61,12 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
 
   useEffect(() => {
     const atualizar = () => reload();
-    window.addEventListener("notificationsUpdated", atualizar);
-    return () => window.removeEventListener("notificationsUpdated", atualizar);
+    window.addEventListener("notifications-updated", atualizar);
+    return () => window.removeEventListener("notifications-updated", atualizar);
   }, [reload]);
 
   const notifications = Array.isArray(data) ? data : [];
-  const unreadCount = notifications.filter((item) => !item.lida).length;
+  const unreadCount = notifications.filter((item) => !(item.read ?? item.lida)).length;
   const isAdvisor = features.advisorWorkspaceV2 && user?.tipo === "ORIENTADOR";
   const activeNavItems = isAdvisor ? advisorNavItems : navItems;
   const visibleNavItems = activeNavItems.filter(
@@ -167,7 +167,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
                 />
                 {!isCollapsed && (
                   <span className={isActive ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo" : "barra-lateral__rotulo-nav"}>
-                    Configuracoes
+                    Configurações
                   </span>
                 )}
               </>
@@ -206,7 +206,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
             className="sobreposicao-mobile"
             style={{ display: "block" }}
             onClick={() => setMobileOpen(false)}
@@ -221,7 +221,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ type: "spring", stiffness: 420, damping: 42, mass: 0.6 }}
             className="barra-lateral-mobile"
           >
             <SidebarContent forceExpanded />

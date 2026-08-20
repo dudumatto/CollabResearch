@@ -17,7 +17,7 @@ const send = async (path: string, options: RequestOptions = {}, responseType: Re
 
   if (window.location.protocol === 'file:' && window.desktop?.request) {
     if (init.body && typeof init.body !== 'string') {
-      throw new ApiError('Tipo de requisicao nao suportado no aplicativo desktop.', 0)
+      throw new ApiError('Tipo de requisição não suportado no aplicativo desktop.', 0)
     }
 
     return window.desktop.request({
@@ -69,7 +69,7 @@ const request = async <T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (response.status === 204) return undefined as T
   if (typeof response.body !== 'string') {
-    throw new ApiError('Resposta invalida recebida do servidor.', response.status)
+    throw new ApiError('Resposta inválida recebida do servidor.', response.status)
   }
   return response.contentType.includes('application/json')
     ? JSON.parse(response.body) as T
@@ -78,8 +78,8 @@ const request = async <T>(path: string, options: RequestOptions = {}): Promise<T
 
 const blob = async (path: string): Promise<Blob> => {
   const response = await send(path, {}, 'binary')
-  if (!isOk(response.status)) throw new ApiError('Nao foi possivel carregar o documento.', response.status)
-  if (!(response.body instanceof Uint8Array)) throw new ApiError('Resposta invalida recebida do servidor.', response.status)
+  if (!isOk(response.status)) throw new ApiError('Não foi possível carregar o documento.', response.status)
+  if (!(response.body instanceof Uint8Array)) throw new ApiError('Resposta inválida recebida do servidor.', response.status)
   return new Blob([response.body], { type: response.contentType })
 }
 

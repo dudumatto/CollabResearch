@@ -48,7 +48,7 @@ export function UserFormModal({ user, initialRole, onSaved, onClose }: { user?: 
     <Modal title={user ? 'Editar usuario' : 'Novo usuario'} onClose={onClose}>
       <form className="form-grid" onSubmit={submit}>
         <Input label="Nome" required value={nome} onChange={(event) => setNome(event.target.value)} />
-        <Input label="Email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
+        <Input label="E-mail" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
         <Input label={user ? 'Nova senha (opcional)' : 'Senha'} type="password" required={!user} minLength={8} value={senha} onChange={(event) => setSenha(event.target.value)} />
         <Select label="Perfil" value={tipo} disabled={Boolean(user)} onChange={(event) => setTipo(event.target.value as UserRole)} options={[
           { label: 'Aluno', value: 'ALUNO' }, { label: 'Orientador', value: 'ORIENTADOR' }, { label: 'Administrador', value: 'ADMIN' },

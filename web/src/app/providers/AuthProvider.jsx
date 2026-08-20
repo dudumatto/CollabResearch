@@ -27,20 +27,26 @@ async function resolveCurrentUser(identity) {
     return currentUser;
   }
 
-  // Fallback (se o getCurrentUser falhar ou não retornar o usuário esperado)
-  const users = await userService.list().catch(() => []);
+  // Fallback em paralelo: evita encadear listas pesadas quando /usuarios/me falha.
+  const [usersResult, notificationsResult, projectsResult] = await Promise.allSettled([
+    userService.list(),
+    notificationService.listMine(),
+    projectService.list(),
+  ]);
+
+  const users = usersResult.status === "fulfilled" ? usersResult.value : [];
   if (Array.isArray(users)) {
     const matchedUser = users.find((item) => item.email === identity.email);
     if (matchedUser) return matchedUser;
   }
 
-  const notifications = await notificationService.listMine().catch(() => []);
+  const notifications = notificationsResult.status === "fulfilled" ? notificationsResult.value : [];
   const userFromNotifications = Array.isArray(notifications)
     ? notifications.find((item) => item.usuario?.email === identity.email)?.usuario
     : null;
   if (userFromNotifications) return userFromNotifications;
 
-  const projects = await projectService.list().catch(() => []);
+  const projects = projectsResult.status === "fulfilled" ? projectsResult.value : [];
   const projectMatch = Array.isArray(projects)
     ? projects.find(
         (item) =>
@@ -156,3 +162,4 @@ export function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+

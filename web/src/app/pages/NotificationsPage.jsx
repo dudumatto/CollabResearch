@@ -32,7 +32,7 @@ function NotificationsSkeleton() {
   );
 
   return (
-    <div className="pagina-notificacoes pagina-notificacoes--skeleton" aria-busy="true" aria-label="Carregando notificacoes">
+    <div className="pagina-notificacoes pagina-notificacoes--skeleton" aria-busy="true" aria-label="Carregando notificações">
       <div className="pagina-notificacoes__acoes">
         <div className="pagina-notificacoes__contagem">
           <Sk w={20} h={20} r="50%" />
@@ -131,7 +131,7 @@ export default function NotificationsPage() {
   );
 
   const notificarAtualizacaoGlobal = () => {
-    window.dispatchEvent(new Event("notificationsUpdated"));
+    window.dispatchEvent(new Event("notifications-updated"));
   };
 
   const filtered = useMemo(
@@ -143,7 +143,6 @@ export default function NotificationsPage() {
     try {
       await notificationService.markAsRead(id);
       await reload();
-      window.dispatchEvent(new Event("notifications-updated"));
       notificarAtualizacaoGlobal();
     } catch (err) {
       toast.error(err.message || "Não foi possível marcar como lida.");
@@ -154,7 +153,7 @@ export default function NotificationsPage() {
     try {
       await notificationService.markAllAsRead();
       await reload();
-      window.dispatchEvent(new Event("notifications-updated"));
+      notificarAtualizacaoGlobal();
     } catch (err) {
       toast.error(err.message || "Não foi possível marcar todas como lidas.");
     }
@@ -164,8 +163,16 @@ export default function NotificationsPage() {
     setData((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const clearAll = () => {
-    setData([]);
+  const clearAll = async () => {
+    try {
+      if (initialNotifications.length > 0) await notificationService.markAllAsRead();
+      setData([]);
+      setFilter("all");
+      notificarAtualizacaoGlobal();
+      toast.success("Notificações limpas.");
+    } catch (err) {
+      toast.error(err.message || "Não foi possível limpar as notificações.");
+    }
   };
 
   const handleOpenNotification = async (notification) => {
@@ -179,7 +186,6 @@ export default function NotificationsPage() {
         setData((prev) =>
           prev.map((item) => (item.id === notification.id ? { ...item, read: true } : item)),
         );
-        window.dispatchEvent(new Event("notifications-updated"));
         notificarAtualizacaoGlobal();
       } catch (err) {
         toast.error(err.message || "Não foi possível marcar como lida.");
@@ -232,8 +238,8 @@ export default function NotificationsPage() {
               <CheckCheck size={14} /> Marcar todas como lidas
             </button>
           )}
-          <button onClick={clearAll} className="pagina-notificacoes__botao-limpar">
-            <Trash2 size={14} /> Limpar vista local
+          <button onClick={clearAll} disabled={initialNotifications.length === 0} className="pagina-notificacoes__botao-limpar">
+            <Trash2 size={14} /> Limpar notificações
           </button>
         </div>
       </div>
@@ -324,3 +330,5 @@ export default function NotificationsPage() {
     </div>
   );
 }
+
+

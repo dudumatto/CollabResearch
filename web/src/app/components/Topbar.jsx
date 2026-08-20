@@ -118,7 +118,11 @@ export function Topbar({ onMenuClick, title, subtitle }) {
             aria-label="Abrir menu de perfil"
           >
             <div className="barra-topo__avatar">
-              <span className="barra-topo__iniciais-avatar">{getInitials(user?.nome)}</span>
+              {user?.fotoPerfilUrl ? (
+                <img className="barra-topo__foto-avatar" src={user.fotoPerfilUrl} alt={user?.nome ? `Foto de ${user.nome}` : "Foto de perfil"} />
+              ) : (
+                <span className="barra-topo__iniciais-avatar">{getInitials(user?.nome)}</span>
+              )}
             </div>
             <div className="barra-topo__info-perfil">
               <p className="barra-topo__nome-perfil">{user?.nome?.split(" ")[0] ?? "Usuário"}</p>

@@ -111,6 +111,7 @@ export default function ProfilePage() {
     instituicao: "",
     semestre: "",
     bio: "",
+    fotoPerfilUrl: "",
   });
 
   useEffect(() => {
@@ -122,6 +123,7 @@ export default function ProfilePage() {
         instituicao: data.profile.instituicao ?? "",
         semestre: data.profile.semestre ?? "",
         bio: data.profile.bio ?? "",
+        fotoPerfilUrl: data.profile.fotoPerfilUrl ?? "",
       });
     }
   }, [data]);
@@ -147,6 +149,7 @@ export default function ProfilePage() {
         instituicao: form.instituicao,
         semestre: form.semestre === "" ? null : Number(form.semestre),
         bio: form.bio,
+        fotoPerfilUrl: form.fotoPerfilUrl,
       });
       await reload();
       await refreshUser();
@@ -178,6 +181,8 @@ export default function ProfilePage() {
         bio: form.bio,
         fotoPerfilUrl: uploaded.publicUrl,
       });
+      setForm((prev) => ({ ...prev, fotoPerfilUrl: uploaded.publicUrl }));
+      setAvatarLoadFailed(false);
       await reload();
       await refreshUser();
       toast.success("Foto de perfil atualizada.");
@@ -197,7 +202,8 @@ export default function ProfilePage() {
   const profile = data.profile;
   const isAluno = profile.tipo === "ALUNO";
   const courseOptions = Array.isArray(data?.courses) ? data.courses : [];
-  const showProfilePhoto = Boolean(profile.fotoPerfilUrl) && !avatarLoadFailed;
+  const currentProfilePhoto = editing ? form.fotoPerfilUrl : profile.fotoPerfilUrl;
+  const showProfilePhoto = Boolean(currentProfilePhoto) && !avatarLoadFailed;
 
   return (
     <div className="pagina-perfil">
@@ -209,7 +215,7 @@ export default function ProfilePage() {
               <div className="cartao-perfil__avatar">
                 {showProfilePhoto ? (
                   <img
-                    src={profile.fotoPerfilUrl}
+                    src={currentProfilePhoto}
                     alt={profile.nome ?? "Foto de perfil"}
                     onError={() => setAvatarLoadFailed(true)}
                     style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
@@ -303,14 +309,16 @@ export default function ProfilePage() {
                 { label: "Curso", value: form.cursoId, icon: BookOpen, field: "cursoId" },
                 { label: "Instituição", value: form.instituicao, icon: Building2, field: "instituicao" },
                 { label: "Semestre", value: form.semestre, icon: GraduationCap, field: "semestre" },
+                { label: "URL da foto de perfil", value: form.fotoPerfilUrl, icon: User, field: "fotoPerfilUrl" },
                 { label: "Tipo", value: formatUserType(profile.tipo), icon: Award, field: null },
               ].map((field) => (
                 <div key={field.label}>
-                  <label className="campo-perfil__label">{field.label}</label>
+                  <label className="campo-perfil__label" htmlFor={field.field ? `profile-${field.field}` : undefined}>{field.label}</label>
                   <div className="campo-perfil__wrapper">
                     <field.icon size={14} className="campo-perfil__icone" />
                     {field.field === "cursoId" ? (
                       <select
+                        id={field.field ? `profile-${field.field}` : undefined}
                         value={form.cursoId}
                         disabled={!editing}
                         onChange={(e) => setForm((prev) => ({ ...prev, cursoId: e.target.value }))}
@@ -325,6 +333,7 @@ export default function ProfilePage() {
                       </select>
                     ) : (
                       <input
+                        id={field.field ? `profile-${field.field}` : undefined}
                         type="text"
                         value={field.value}
                         disabled={!editing || !field.field}
@@ -338,8 +347,9 @@ export default function ProfilePage() {
             </div>
 
             <div style={{ marginTop: "var(--espaco-4)" }}>
-              <label className="campo-perfil__label">Biografia</label>
+              <label className="campo-perfil__label" htmlFor="profile-bio">Biografia</label>
               <textarea
+                id="profile-bio"
                 value={form.bio}
                 onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
                 disabled={!editing}
@@ -392,3 +402,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+

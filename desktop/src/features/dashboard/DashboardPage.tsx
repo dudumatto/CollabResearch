@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FlaskConical, Users, FolderKanban, FileText, FileSearch } from 'lucide-react'
+import { Users, FolderKanban, FileText, FileSearch } from 'lucide-react'
 import { ChartCard } from '../../components/dashboard/ChartCard'
 import { RecentActivity } from '../../components/dashboard/RecentActivity'
 import { StatCard } from '../../components/dashboard/StatCard'
@@ -46,20 +46,6 @@ export function DashboardPage() {
               <span className="welcome-metrics-sep" />
               <span><strong>{data.totalAlunos}</strong> alunos matriculados</span>
             </div>
-            <div className="welcome-progress">
-              <div className="welcome-progress-info">
-                <span>Semestre 2026.1</span>
-                <span>67% concluído</span>
-              </div>
-              <div className="welcome-progress-bar">
-                <div className="welcome-progress-fill" style={{ width: '67%' }} />
-              </div>
-            </div>
-          </div>
-          <div className="welcome-banner-visual">
-            <div className="welcome-banner-icon">
-              <FlaskConical size={32} strokeWidth={1.5} />
-            </div>
           </div>
         </div>
       </section>
@@ -70,7 +56,7 @@ export function DashboardPage() {
         <StatCard label="Documentos em análise" value={data.documentosEmAnalise} icon={FileSearch} accent="purple" trend={3} />
       </div>
       <div className="dashboard-grid">
-        <ChartCard title="Usuarios por perfil" items={[
+        <ChartCard title="Usuários por perfil" items={[
           { label: 'Alunos', value: data.totalAlunos },
           { label: 'Orientadores', value: data.totalOrientadores },
           { label: 'Administradores', value: data.totalAdministradores },

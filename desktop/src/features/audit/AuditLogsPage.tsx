@@ -20,9 +20,9 @@ export function AuditLogsPage() {
   useEffect(() => { void load() }, [])
   return (
     <div className="page">
-      <header className="page-header"><div><p className="eyebrow">Governanca</p><h1>Auditoria</h1><p>Trilha de alteracoes feitas pelos administradores.</p></div></header>
+      <header className="page-header"><div><p className="eyebrow">Governança</p><h1>Auditoria</h1><p>Trilha de alterações feitas pelos administradores.</p></div></header>
       <Card>
-        {error ? <ErrorState message={error} onRetry={() => void load()} /> : !items ? <LoadingState /> : !items.length ? <EmptyState message="Ainda nao ha alteracoes administrativas registradas." /> : (
+        {error ? <ErrorState message={error} onRetry={() => void load()} /> : !items ? <LoadingState /> : !items.length ? <EmptyState message="Ainda nao ha alterações administrativas registradas." /> : (
           <Table><thead><tr><th>Data</th><th>Administrador</th><th>Acao</th><th>Recurso</th><th>Descricao</th></tr></thead><tbody>
             {items.map((item) => <tr key={item.id}><td>{formatDateTime(item.dataEvento)}</td><td>{item.administrador}</td><td><Badge tone="info">{formatAuditAction(item.acao)}</Badge></td><td>{formatAuditResource(item.recurso)}{item.recursoId ? ` #${item.recursoId}` : ''}</td><td>{item.descricao ? formatAuditDescription(item.descricao) : '-'}</td></tr>)}
           </tbody></Table>

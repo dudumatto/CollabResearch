@@ -9,7 +9,7 @@ export function UserDetailsModal({ user, onClose }: { user: UserProfile; onClose
       <div className="details-grid">
         <div><small>Nome</small><strong>{user.nome}</strong></div>
         <div><small>Status</small><Badge tone={user.ativo ? 'success' : 'danger'}>{user.ativo ? 'Ativo' : 'Inativo'}</Badge></div>
-        <div><small>Email</small><strong>{user.email}</strong></div>
+        <div><small>E-mail</small><strong>{user.email}</strong></div>
         <div><small>Perfil</small><strong>{user.tipo}</strong></div>
         <div><small>Cadastro</small><strong>{formatDate(user.dataCadastro)}</strong></div>
         <div><small>Instituicao</small><strong>{user.instituicao || '-'}</strong></div>

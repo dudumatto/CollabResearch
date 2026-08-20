@@ -32,20 +32,23 @@ class LandingScreen extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x14000000),
+                                blurRadius: 18,
+                                offset: Offset(0, 10),
+                              ),
+                            ],
                           ),
                           child: const Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                            child: Text(
-                              'CR',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                              ),
+                            padding: EdgeInsets.all(10),
+                            child: Image(
+                              image: AssetImage('assets/brand/logo-icon.png'),
+                              width: 28,
+                              height: 28,
+                              semanticLabel: 'CollabResearch',
                             ),
                           ),
                         ),
@@ -57,7 +60,7 @@ class LandingScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Projetos, inscricoes e conversas academicas em um app organizado.',
+                        'Projetos, inscrições e conversas acadêmicas em um app organizado.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 24),

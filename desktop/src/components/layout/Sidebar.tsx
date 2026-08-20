@@ -6,8 +6,6 @@ import {
   Telescope,
   ShieldCheck,
   FolderKanban,
-  Sparkles,
-  FileText,
   BookOpen,
   File,
   BarChart3,
@@ -33,8 +31,6 @@ const sections = [
     label: 'Pesquisa',
     items: [
       { to: '/projetos', label: 'Projetos', icon: FolderKanban },
-      { to: '/oportunidades', label: 'Oportunidades', icon: Sparkles },
-      { to: '/inscricoes', label: 'Inscrições', icon: FileText },
       { to: '/areas', label: 'Áreas de pesquisa', icon: BookOpen },
       { to: '/documentos', label: 'Documentos', icon: File },
     ],
@@ -54,7 +50,7 @@ export function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <div className="sidebar-logo">
-          <BookOpen size={18} strokeWidth={2.5} />
+          <img src="/brand/logo-icon.svg" alt="CollabResearch" />
         </div>
         <div className="sidebar-brand-text">
           <strong>CollabResearch</strong>
@@ -78,3 +74,7 @@ export function Sidebar() {
     </aside>
   )
 }
+
+
+
+

@@ -5,7 +5,7 @@ export default function ProjectCardSkeleton({ index = 0 }) {
     <motion.div
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.06 }}
+      transition={{ duration: 0.18, delay: Math.min(index, 3) * 0.025 }}
       className="projeto-card projeto-card--skeleton"
       aria-hidden="true"
     >
@@ -64,3 +64,4 @@ export default function ProjectCardSkeleton({ index = 0 }) {
     </motion.div>
   );
 }
+

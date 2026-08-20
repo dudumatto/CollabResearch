@@ -40,7 +40,7 @@ export function OpportunityFormModal({ project, onSaved, onClose }: { project?: 
         <Input label="Titulo" required value={titulo} onChange={(event) => setTitulo(event.target.value)} />
         <Select label="Area" required value={areaId} onChange={(event) => setAreaId(event.target.value)} options={[{ label: 'Selecione', value: '' }, ...areas.map((area) => ({ label: area.nome, value: String(area.id) }))]} />
         <Input label="Vagas" type="number" min={1} required value={vagas} onChange={(event) => setVagas(event.target.value)} />
-        <Input label="Inscricoes ate" type="date" value={limite} onChange={(event) => setLimite(event.target.value)} />
+        <Input label="Inscrições até" type="date" value={limite} onChange={(event) => setLimite(event.target.value)} />
         <label className="field full"><span>Descricao</span><textarea value={descricao} onChange={(event) => setDescricao(event.target.value)} /></label>
         <label className="field full"><span>Requisitos</span><textarea value={requisitos} onChange={(event) => setRequisitos(event.target.value)} /></label>
         <label className="field full"><span>Tecnologias e competencias</span><textarea value={tecnologias} onChange={(event) => setTecnologias(event.target.value)} placeholder="React, Spring Boot, PostgreSQL" /></label>

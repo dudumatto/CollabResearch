@@ -13,12 +13,6 @@ export function DocumentPreviewModal({ document, onClose }: { document: Document
     let currentUrl: string | undefined
     setUrl(undefined)
     setError('')
-    const publicUrl = documentsService.previewUrl(document)
-    if (publicUrl) {
-      setUrl(publicUrl)
-      return undefined
-    }
-
     documentsService.preview(document).then((blob) => {
       currentUrl = URL.createObjectURL(blob)
       setUrl(currentUrl)
@@ -27,7 +21,9 @@ export function DocumentPreviewModal({ document, onClose }: { document: Document
   }, [document])
   return (
     <Modal title={document.nomeArquivo} onClose={onClose}>
-      {error ? <ErrorState message={error} /> : !url ? <LoadingState label="Carregando visualizacao..." /> : <iframe className="document-frame" title={document.nomeArquivo} src={url} />}
+      {error ? <ErrorState message={error} /> : !url ? <LoadingState label="Carregando visualização..." /> : <iframe className="document-frame" title={document.nomeArquivo} src={url} />}
     </Modal>
   )
 }
+
+

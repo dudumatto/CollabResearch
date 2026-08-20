@@ -40,8 +40,8 @@ export function SettingsPage() {
   useEffect(() => { void load() }, [])
   return (
     <div className="page">
-      <header className="page-header"><div><p className="eyebrow">Sistema</p><h1>Configuracoes</h1><p>Valores operacionais permitidos para o painel administrativo.</p></div></header>
-      <Card title="Configuracoes gerais">
+      <header className="page-header"><div><p className="eyebrow">Sistema</p><h1>Configurações</h1><p>Valores operacionais permitidos para o painel administrativo.</p></div></header>
+      <Card title="Configurações gerais">
         {error ? <ErrorState message={error} onRetry={() => void load()} /> : !items ? <LoadingState /> : items.map((setting) => (
           <SettingForm key={setting.chave} setting={setting} onSaved={(updated) => setItems((current) => current?.map((item) => item.chave === updated.chave ? updated : item) ?? [])} />
         ))}

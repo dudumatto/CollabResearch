@@ -20,7 +20,8 @@
   border-right: 1px solid var(--cor-separador-suave);
   z-index: 30;
   width: var(--largura-sidebar);
-  transition: var(--transicao-lenta);
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.18s ease, background-color 0.18s ease;
+  will-change: width;
   overflow: visible;
 }
 
@@ -112,7 +113,7 @@
   gap: var(--espaco-3);
   padding: 0.625rem var(--espaco-2);
   border-radius: var(--raio-medio);
-  transition: var(--transicao-rapida);
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
   color: var(--cor-texto-mudo);
   font-size: var(--tamanho-medio);
   font-weight: var(--peso-normal);
@@ -196,7 +197,7 @@
   border-radius: var(--raio-medio);
   color: var(--cor-texto-mudo);
   text-decoration: none;
-  transition: var(--transicao-rapida);
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
   font-size: var(--tamanho-medio);
   position: relative;
 }
@@ -244,4 +245,14 @@
 
 .barra-lateral__navegacao::-webkit-scrollbar {
   display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra-lateral,
+  .barra-lateral__item-nav,
+  .barra-lateral__item-configuracoes,
+  .barra-lateral__botao-recolher,
+  .barra-lateral__icone-recolher {
+    transition-duration: 0.01ms !important;
+  }
 }

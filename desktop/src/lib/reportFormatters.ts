@@ -5,7 +5,7 @@ const labelMap: Record<string, string> = {
   ABERTO: 'Abertos',
   APROVADO: 'Aprovadas',
   CANCELADO: 'Canceladas',
-  EM_ANALISE: 'Em analise',
+  EM_ANALISE: 'Em análise',
   EM_ANDAMENTO: 'Em andamento',
   FINALIZADO: 'Finalizados',
   PENDENTE: 'Pendentes',
@@ -24,3 +24,4 @@ export function formatReportLabel(value: string) {
 export function sumReportValues(values: Record<string, number>) {
   return Object.values(values).reduce((total, value) => total + value, 0)
 }
+
