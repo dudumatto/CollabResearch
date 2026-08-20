@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, CheckCircle2, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle2, GripVertical, Lock, PlayCircle } from "lucide-react";
 import { formatUserType } from "../../utils/formatters";
 
 function canCompleteStep(step, currentUserRole) {
@@ -16,13 +16,41 @@ function canCompleteStep(step, currentUserRole) {
   return false;
 }
 
-export function StepCard({ step, currentUserRole, onAdvanceStep, displayOrder, canMoveUp, canMoveDown, onMoveUp, onMoveDown }) {
+export function StepCard({
+  step,
+  currentUserRole,
+  onAdvanceStep,
+  displayOrder,
+  canReorder,
+  isDragging,
+  onDragStart,
+  onDragEnter,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+}) {
   const isDone = step.status === "DONE";
   const isActive = step.status === "ACTIVE";
   const canAdvance = isActive && canCompleteStep(step, currentUserRole);
+  const weight = Number.isFinite(Number(step.weight)) ? Number(step.weight) : 0;
 
   return (
-    <article className={`step-card step-card--${step.status.toLowerCase()}`}>
+    <article
+      className={`step-card step-card--${step.status.toLowerCase()}${canReorder ? " step-card--reorderable" : ""}${isDragging ? " step-card--dragging" : ""}`}
+      draggable={canReorder}
+      aria-grabbed={canReorder ? Boolean(isDragging) : undefined}
+      onDragStart={onDragStart}
+      onDragEnter={onDragEnter}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+    >
+      {canReorder ? (
+        <div className="step-card__drag-handle" aria-hidden="true" title="Arraste para reordenar">
+          <GripVertical size={17} />
+        </div>
+      ) : null}
+
       <div className="step-card__marker">
         {isDone ? <CheckCircle2 size={18} /> : isActive ? <PlayCircle size={18} /> : <span>{displayOrder ?? step.stepOrder}</span>}
       </div>
@@ -30,10 +58,13 @@ export function StepCard({ step, currentUserRole, onAdvanceStep, displayOrder, c
       <div className="step-card__content">
         <div className="step-card__header">
           <div>
-            <p className="step-card__eyebrow">Etapa {displayOrder ?? step.stepOrder}</p>
+            <p className="step-card__eyebrow">Progresso {displayOrder ?? step.stepOrder}</p>
             <h4 className="step-card__title">{step.title}</h4>
           </div>
-          <span className="step-card__weight">+{step.weight}%</span>
+          <span className="step-card__weight" title="Participação desta etapa no progresso total">
+            <span>Peso calculado</span>
+            <strong>{weight}%</strong>
+          </span>
         </div>
 
         {step.description ? <p className="step-card__description">{step.description}</p> : null}
@@ -47,17 +78,6 @@ export function StepCard({ step, currentUserRole, onAdvanceStep, displayOrder, c
           </span>
         </div>
       </div>
-
-      {currentUserRole === "ALUNO" && (
-        <div className="step-card__reorder" aria-label={`Reordenar ${step.title}`}>
-          <button type="button" onClick={onMoveUp} disabled={!canMoveUp} aria-label={`Mover ${step.title} para cima`} title="Mover para cima">
-            <ArrowUp size={15} />
-          </button>
-          <button type="button" onClick={onMoveDown} disabled={!canMoveDown} aria-label={`Mover ${step.title} para baixo`} title="Mover para baixo">
-            <ArrowDown size={15} />
-          </button>
-        </div>
-      )}
 
       {isActive ? (
         <button

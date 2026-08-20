@@ -229,8 +229,9 @@ export default function ProgressPage() {
     });
   }, [steps, stepDisplayOrder]);
 
-  const handleMoveStep = (fromIndex, toIndex) => {
+  const handleReorderStep = (fromIndex, toIndex) => {
     if (currentUserRole !== "ALUNO" || toIndex < 0 || toIndex >= orderedSteps.length) return;
+    if (fromIndex === toIndex) return;
 
     const next = [...orderedSteps];
     const [moved] = next.splice(fromIndex, 1);
@@ -295,7 +296,7 @@ export default function ProgressPage() {
           <span className="progress-page__eyebrow">Acompanhamento estruturado</span>
           <h1 className="progress-page__title">Progresso do projeto</h1>
           <p className="progress-page__lead">
-            Etapas com peso calculado automaticamente, atualizações com título e categoria e um feed que conecta cada
+            Progresso com peso calculado automaticamente, atualizações com título e categoria e um feed que conecta cada
             movimento ao avanço real do projeto.
           </p>
         </div>
@@ -371,12 +372,12 @@ export default function ProgressPage() {
         <div className="progress-page__panel">
           <div className="progress-page__panel-header">
             <div>
-              <h2>Etapas</h2>
-              <p>{currentUserRole === "ALUNO" ? "Reordene sua visualização ou conclua a etapa ativa quando permitido." : "Conclua a etapa ativa quando o papel do usuário permitir."}</p>
+              <h2>Progresso</h2>
+              <p>{currentUserRole === "ALUNO" ? "Arraste um item para reorganizar sua visualização ou conclua a etapa ativa quando permitido." : "Conclua a etapa ativa quando o papel do usuário permitir."}</p>
             </div>
-            <span className="progress-page__hint">+ peso calculado</span>
+            <span className="progress-page__hint">Peso por etapa</span>
           </div>
-          <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onMoveStep={handleMoveStep} />
+          <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onReorderStep={handleReorderStep} />
         </div>
 
         <div className="progress-page__panel">
