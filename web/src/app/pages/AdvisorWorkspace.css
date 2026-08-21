@@ -1342,3 +1342,284 @@
 .advisor-estrela--vazia {
   color: var(--cor-borda);
 }
+
+/* ---- Calendario de prazos ---- */
+.calendario-pagina {
+  width: 100%;
+  max-width: 76rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.calendario-cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  flex-wrap: wrap;
+}
+
+.calendario-cabecalho__eyebrow {
+  margin: 0 0 var(--espaco-1);
+  color: var(--cor-primaria);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.calendario-cabecalho__titulo {
+  margin: 0;
+  color: var(--cor-texto-forte);
+  font-size: var(--tamanho-titulo);
+  font-weight: var(--peso-negrito);
+}
+
+.calendario-cabecalho__descricao {
+  margin-top: var(--espaco-1);
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-base);
+}
+
+.calendario-cabecalho__resumo {
+  min-width: 9rem;
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-medio);
+  background: var(--cor-superficie);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.calendario-cabecalho__resumo strong {
+  color: var(--cor-texto-forte);
+  font-size: var(--tamanho-titulo);
+  line-height: 1;
+}
+
+.calendario-cabecalho__resumo span {
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-pequeno);
+}
+
+.calendario-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-4);
+  align-items: start;
+}
+
+@media (min-width: 1120px) {
+  .calendario-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  }
+}
+
+.calendario-card {
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-grande);
+  background: var(--cor-superficie);
+  padding: var(--espaco-4);
+  min-width: 0;
+}
+
+.calendario-card__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+}
+
+.calendario-card__topo h2,
+.calendario-card__titulo {
+  margin: 0;
+  color: var(--cor-texto-forte);
+  font-size: var(--tamanho-normal);
+  font-weight: var(--peso-semi);
+  text-transform: capitalize;
+}
+
+.calendario-card__topo button {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-medio);
+  background: var(--cor-fundo-leve);
+  color: var(--cor-texto-fraco);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.calendario-grade {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--espaco-2);
+}
+
+.calendario-grade--semana {
+  margin-bottom: var(--espaco-2);
+}
+
+.calendario-grade--semana span {
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  text-align: center;
+}
+
+.calendario-dia {
+  min-height: 6.5rem;
+  padding: var(--espaco-2);
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-medio);
+  background: var(--cor-fundo-leve);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.calendario-dia--fora {
+  opacity: 0.45;
+}
+
+.calendario-dia--hoje {
+  border-color: var(--cor-primaria-borda);
+  box-shadow: inset 0 0 0 1px var(--cor-primaria-borda);
+}
+
+.calendario-dia__numero {
+  color: var(--cor-texto-forte);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+}
+
+.calendario-dia__eventos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.calendario-dia__eventos span,
+.calendario-dia__eventos small {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-texto);
+  padding: 0.2rem 0.4rem;
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-medio);
+}
+
+.calendario-lateral,
+.calendario-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.calendario-vazio {
+  margin-top: var(--espaco-3);
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-base);
+}
+
+.calendario-prazo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--espaco-3);
+  align-items: start;
+  padding: var(--espaco-3);
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-medio);
+  background: var(--cor-fundo-leve);
+}
+
+.calendario-prazo--compacto {
+  padding: var(--espaco-2);
+}
+
+.calendario-prazo__icone {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendario-prazo__conteudo {
+  min-width: 0;
+}
+
+.calendario-prazo__titulo {
+  margin: 0;
+  color: var(--cor-texto-forte);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+}
+
+.calendario-prazo__meta {
+  margin-top: 0.1rem;
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-pequeno);
+}
+
+.calendario-prazo__detalhes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-pequeno);
+}
+
+.calendario-card--alerta {
+  border-color: color-mix(in srgb, var(--cor-laranja) 28%, var(--cor-borda-clara));
+}
+
+.calendario-alerta__topo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--cor-laranja);
+  margin-bottom: var(--espaco-3);
+}
+
+.calendario-alerta__topo h2 {
+  margin: 0;
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+}
+
+@media (max-width: 720px) {
+  .calendario-card {
+    padding: var(--espaco-3);
+  }
+
+  .calendario-grade {
+    gap: 0.35rem;
+  }
+
+  .calendario-dia {
+    min-height: 4.8rem;
+    padding: 0.4rem;
+  }
+
+  .calendario-dia__eventos span {
+    padding: 0.15rem 0.25rem;
+  }
+}

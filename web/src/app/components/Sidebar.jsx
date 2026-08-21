@@ -32,7 +32,7 @@ const navItems = [
   { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
   { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
   { path: "/app/feedback", label: "Feedbacks", icon: Star },
-  { path: "/app/deadlines", label: "Prazos", icon: CalendarClock, roles: ["ALUNO"] },
+  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
   { path: "/app/notifications", label: "Notificações", icon: Bell },
   { path: "/app/profile", label: "Meu perfil", icon: User },
 ];
@@ -44,6 +44,7 @@ const advisorNavItems = [
   { path: "/app/applications", label: "Inscrições", icon: FileText },
   { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
   { path: "/app/progress", label: "Progresso", icon: TrendingUp },
+  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
   { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
   { path: "/app/chat", label: "Conversas", icon: MessageSquare },
   { path: "/app/notifications", label: "Notificações", icon: Bell },

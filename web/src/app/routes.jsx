@@ -174,7 +174,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "deadlines",
-        element: <StudentOnly><StudentDeadlinesPage /></StudentOnly>,
+        Component: StudentDeadlinesPage,
       },
       {
         path: "feedback",

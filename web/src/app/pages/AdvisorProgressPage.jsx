@@ -33,6 +33,19 @@ function camposVazios() {
   return { titulo: "", descricao: "", responsavel: "AMBOS", prazo: "", obrigatoria: true };
 }
 
+function toDeliveryDatePayload(value) {
+  if (!value) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  const date = new Date(year, month - 1, day, 23, 59, 0, 0);
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? "+" : "-";
+  const abs = Math.abs(offsetMinutes);
+  const hours = String(Math.floor(abs / 60)).padStart(2, "0");
+  const minutes = String(abs % 60).padStart(2, "0");
+  return `${value}T23:59:00${sign}${hours}:${minutes}`;
+}
+
 function SkeletonProgresso() {
   return (
     <div className="advisor-pagina">
@@ -119,6 +132,10 @@ export default function AdvisorProgressPage() {
       setCampoErro("Informe o título da etapa.");
       return;
     }
+    if (!campos.prazo) {
+      setCampoErro("Informe a data de entrega da etapa.");
+      return;
+    }
     if (!activeProjectId) return;
     setMutando(true);
     try {
@@ -126,7 +143,7 @@ export default function AdvisorProgressPage() {
         titulo: campos.titulo.trim(),
         descricao: campos.descricao.trim(),
         responsavel: campos.responsavel,
-        prazo: campos.prazo || null,
+        prazo: toDeliveryDatePayload(campos.prazo),
         obrigatoria: campos.obrigatoria,
       };
       if (modal.tipo === "nova") {
@@ -402,11 +419,14 @@ export default function AdvisorProgressPage() {
                     id="etapa-titulo"
                     type="text"
                     value={campos.titulo}
-                    onChange={(e) => setCampos({ ...campos, titulo: e.target.value })}
-                    className={`advisor-campo__input ${campoErro ? "advisor-campo__input--erro" : ""}`}
+                    onChange={(e) => {
+                      setCampos({ ...campos, titulo: e.target.value });
+                      if (campoErro && campoErro !== "Informe a data de entrega da etapa.") setCampoErro("");
+                    }}
+                    className={`advisor-campo__input ${campoErro && campoErro !== "Informe a data de entrega da etapa." ? "advisor-campo__input--erro" : ""}`}
                     placeholder="Ex.: Entrega da monografia"
                   />
-                  {campoErro && <span className="advisor-campo__erro">{campoErro}</span>}
+                  {campoErro && campoErro !== "Informe a data de entrega da etapa." && <span className="advisor-campo__erro">{campoErro}</span>}
                 </div>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="etapa-descricao">Descrição</label>
@@ -433,14 +453,18 @@ export default function AdvisorProgressPage() {
                   </select>
                 </div>
                 <div className="advisor-campo">
-                  <label className="advisor-campo__rotulo" htmlFor="etapa-prazo">Prazo</label>
+                  <label className="advisor-campo__rotulo" htmlFor="etapa-prazo">Data de entrega *</label>
                   <input
                     id="etapa-prazo"
                     type="date"
                     value={campos.prazo}
-                    onChange={(e) => setCampos({ ...campos, prazo: e.target.value })}
-                    className="advisor-campo__input"
+                    onChange={(e) => {
+                      setCampos({ ...campos, prazo: e.target.value });
+                      if (campoErro === "Informe a data de entrega da etapa.") setCampoErro("");
+                    }}
+                    className={`advisor-campo__input ${campoErro === "Informe a data de entrega da etapa." ? "advisor-campo__input--erro" : ""}`}
                   />
+                  {campoErro === "Informe a data de entrega da etapa." && <span className="advisor-campo__erro">{campoErro}</span>}
                 </div>
                 <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--tamanho-base)", color: "var(--cor-texto-medio)", cursor: "pointer" }}>
                   <input
