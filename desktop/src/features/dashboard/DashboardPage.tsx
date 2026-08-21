@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FlaskConical, Users, FolderKanban, FileText, FileSearch } from 'lucide-react'
+import { Users, FolderKanban, FileText, FileSearch } from 'lucide-react'
 import { ChartCard } from '../../components/dashboard/ChartCard'
 import { RecentActivity } from '../../components/dashboard/RecentActivity'
 import { StatCard } from '../../components/dashboard/StatCard'
@@ -58,7 +58,7 @@ export function DashboardPage() {
           </div>
           <div className="welcome-banner-visual">
             <div className="welcome-banner-icon">
-              <FlaskConical size={32} strokeWidth={1.5} />
+              <img src="/brand/logo-icon.svg" alt="" />
             </div>
           </div>
         </div>

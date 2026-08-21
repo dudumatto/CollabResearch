@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../widgets/common/collab_logo.dart';
+
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
 
@@ -79,20 +81,11 @@ class _BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const SizedBox(
-        height: 42,
-        width: 42,
-        child: Center(
-          child: Text(
-            'CR',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
-          ),
-        ),
+    return const SizedBox(
+      height: 42,
+      width: 42,
+      child: Center(
+        child: CollabLogo(full: false, height: 32),
       ),
     );
   }

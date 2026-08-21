@@ -55,7 +55,16 @@ class Conversation {
       type: type,
       projectTitle: projectTitle,
       otherUserName: otherUserName,
-      avatarUrl: _nullableString(json['avatarUrl'] ?? json['fotoPerfilUrl']),
+      avatarUrl: _nullableString(
+        json['avatarUrl'] ??
+            json['fotoPerfilUrl'] ??
+            json['outroUsuario']?['avatarUrl'] ??
+            json['outroUsuario']?['fotoPerfilUrl'] ??
+            json['participant']?['avatarUrl'] ??
+            json['participant']?['fotoPerfilUrl'] ??
+            json['participante']?['avatarUrl'] ??
+            json['participante']?['fotoPerfilUrl'],
+      ),
       unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
     );
   }

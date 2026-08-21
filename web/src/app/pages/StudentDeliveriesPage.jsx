@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router";
 import { Download, FileUp, FolderOpen, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
@@ -14,11 +15,16 @@ import "./AdvisorWorkspace.css";
 
 export default function StudentDeliveriesPage() {
   const { user } = useAuth();
-  const [projectId, setProjectId] = useState("");
+  const location = useLocation();
+  const queryProjectId = new URLSearchParams(location.search).get("projectId") ?? "";
+  const queryStageId = new URLSearchParams(location.search).get("stageId") ?? "";
+  const [projectId, setProjectId] = useState(queryProjectId);
   const [form, setForm] = useState({ titulo: "", categoria: "", etapaId: "", arquivo: null });
   const [versions, setVersions] = useState({});
   const [sending, setSending] = useState(false);
   const { data: projects } = useAsyncData(async () => (await userService.getProjects(user.id)).map(mapProject), [user?.id], { initialData: [] });
+  useEffect(() => { if (queryProjectId && queryProjectId !== projectId) setProjectId(queryProjectId); }, [queryProjectId, projectId]);
+  useEffect(() => { if (queryStageId) setForm((value) => ({ ...value, etapaId: queryStageId })); }, [queryStageId]);
   useEffect(() => { if (!projectId && projects[0]?.id) setProjectId(String(projects[0].id)); }, [projects, projectId]);
   const activeProject = useMemo(() => projects.find((item) => String(item.id) === projectId), [projects, projectId]);
   const { data: deliveries, loading, error, reload } = useAsyncData(async () => projectId ? (await deliveryService.list(projectId)).map(mapEntrega) : [], [projectId], { initialData: [] });

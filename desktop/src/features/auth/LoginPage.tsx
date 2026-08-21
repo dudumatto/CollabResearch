@@ -37,7 +37,7 @@ export function LoginPage() {
   return (
     <main className="login-page">
       <section className="login-brand">
-        <p className="eyebrow">CollabResearch</p>
+        <img className="login-brand-logo" src="/brand/logo-full.svg" alt="CollabResearch" />
         <h1>Admin Desktop</h1>
         <p>Governanca, acompanhamento e seguranca da colaboracao cientifica em um unico painel.</p>
       </section>

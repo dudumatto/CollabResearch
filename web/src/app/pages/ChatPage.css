@@ -365,7 +365,9 @@
 }
 
 .mensagem-linha {
+  align-items: flex-end;
   display: flex;
+  gap: 8px;
   width: 100%;
   position: relative;
 }
@@ -429,6 +431,33 @@
   background: #fee2e2;
   color: #dc2626;
   border-color: #fca5a5;
+}
+
+.mensagem-avatar {
+  align-items: center;
+  background: var(--gradiente-avatar-claro);
+  border-radius: 999px;
+  color: var(--cor-branco);
+  display: flex;
+  flex: 0 0 28px;
+  font-size: 11px;
+  font-weight: var(--peso-negrito);
+  height: 28px;
+  justify-content: center;
+  overflow: hidden;
+  width: 28px;
+}
+
+.mensagem-avatar img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.mensagem-avatar--usuario {
+  background: rgba(31, 122, 90, 0.18);
+  color: #1f7a5a;
 }
 
 .bolha-mensagem {

@@ -453,6 +453,9 @@ export default function ProjectDetailPage() {
   const getInscricaoName = (i) =>
     i?.alunoNome ?? i?.aluno?.usuario?.nome ?? i?.usuario?.nome ?? i?.nome ?? `Inscrição #${i?.id}`;
 
+  const getInscricaoPhotoUrl = (i) =>
+    getUserPhotoUrl(i?.aluno?.usuario ?? i?.aluno ?? i?.usuario ?? i);
+
   if (loading) return <ProjectDetailSkeleton />;
   if (error || !project) {
     return <StatusView title="Projeto indisponível" description={error?.message || "Não foi possível localizar este projeto."} />;
@@ -617,7 +620,11 @@ export default function ProjectDetailPage() {
                   {inscricoes.map((insc) => (
                     <div key={insc.id} className="detalhe-colaboradores__item">
                       <div className="detalhe-colaboradores__avatar">
-                        {getInscricaoName(insc).charAt(0).toUpperCase()}
+                        {getInscricaoPhotoUrl(insc) ? (
+                          <img src={getInscricaoPhotoUrl(insc)} alt={`Foto de perfil de ${getInscricaoName(insc)}`} />
+                        ) : (
+                          getInscricaoName(insc).charAt(0).toUpperCase()
+                        )}
                       </div>
                       <span className="detalhe-colaboradores__nome">{getInscricaoName(insc)}</span>
                       <button

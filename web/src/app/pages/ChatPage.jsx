@@ -25,15 +25,30 @@ function ChatAvatar({ name, src, className }) {
   );
 }
 
+function getMessagePhotoUrl(message, currentUser, mine) {
+  if (mine) return getUserPhotoUrl(currentUser);
+  return (
+    message?.remetenteFotoPerfilUrl ||
+    message?.remetenteAvatarUrl ||
+    message?.fotoPerfilUrl ||
+    getUserPhotoUrl(message?.remetente) ||
+    getUserPhotoUrl(message?.usuario) ||
+    ""
+  );
+}
+
 async function hydrateConversationPhotos(items, currentUser) {
   const conversations = Array.isArray(items) ? items : [];
 
   return Promise.all(conversations.map(async (conversation) => {
     const explicitPhoto =
-      conversation?.fotoPerfilUrl ??
-      conversation?.fotoProjetoUrl ??
-      conversation?.projectPhotoUrl ??
-      conversation?.avatarUrl ??
+      conversation?.fotoPerfilUrl ||
+      conversation?.fotoProjetoUrl ||
+      conversation?.projectPhotoUrl ||
+      conversation?.avatarUrl ||
+      getUserPhotoUrl(conversation?.participant) ||
+      getUserPhotoUrl(conversation?.participante) ||
+      getUserPhotoUrl(conversation?.outroUsuario) ||
       "";
 
     if (explicitPhoto) {
@@ -575,6 +590,14 @@ export default function ChatPage() {
                             </div>
                           )}
 
+                          {!mine && (
+                            <ChatAvatar
+                              name={m?.remetenteNome}
+                              src={getMessagePhotoUrl(m, user, mine)}
+                              className="mensagem-avatar"
+                            />
+                          )}
+
                           <div className="bolha-mensagem">
                             {!mine && (
                               <button
@@ -598,6 +621,14 @@ export default function ChatPage() {
                               </div>
                             </div>
                           </div>
+
+                          {mine && (
+                            <ChatAvatar
+                              name={user?.nome}
+                              src={getMessagePhotoUrl(m, user, mine)}
+                              className="mensagem-avatar mensagem-avatar--usuario"
+                            />
+                          )}
                         </div>
                       </div>
                     );

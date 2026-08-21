@@ -60,6 +60,13 @@
   backdrop-filter: blur(4px);
 }
 
+.pagina-login__logo-full {
+  display: block;
+  filter: brightness(0) invert(1);
+  height: 24px;
+  width: auto;
+}
+
 .pagina-login__logo-nome {
   color: var(--cor-branco);
   font-weight: var(--peso-negrito);
@@ -170,6 +177,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.pagina-login__logo-full-mobile {
+  display: block;
+  height: 24px;
+  width: auto;
 }
 
 .pagina-login__logo-nome-mobile {

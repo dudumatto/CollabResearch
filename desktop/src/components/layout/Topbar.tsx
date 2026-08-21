@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { Search, Bell, LogOut, ChevronDown } from 'lucide-react'
+import { Bell, LogOut, ChevronDown } from 'lucide-react'
 import { authService } from '../../features/auth/authService'
 import { authStore, useAuthStore } from '../../features/auth/authStore'
 
@@ -24,14 +24,8 @@ export function Topbar() {
 
   return (
     <header className="topbar">
-      <div className="topbar-search">
-        <Search size={16} strokeWidth={1.8} className="topbar-search-icon" />
-        <input type="text" placeholder="Buscar projetos, alunos, documentos..." readOnly />
-        <span className="topbar-search-hint">⌘K</span>
-      </div>
-
       <div className="topbar-actions">
-        <button className="topbar-notification" aria-label="Notificações">
+        <button className="topbar-notification" aria-label="Notificacoes">
           <Bell size={18} strokeWidth={1.8} />
           <span className="topbar-notification-dot" />
         </button>

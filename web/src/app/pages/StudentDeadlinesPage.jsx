@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { CalendarClock, ChevronLeft, ChevronRight, CircleAlert, ClipboardList } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -76,6 +77,14 @@ function DeadlineItem({ item, compact = false }) {
   );
 }
 
+function deadlineTarget(item) {
+  const params = new URLSearchParams({
+    projectId: String(item.projectId),
+    stageId: String(item.id),
+  });
+  return `/app/deliveries?${params.toString()}`;
+}
+
 async function loadProjectsForUser(user) {
   if (!user?.id) return [];
   const raw = user.tipo === "ORIENTADOR"
@@ -87,6 +96,7 @@ async function loadProjectsForUser(user) {
 
 export default function StudentDeadlinesPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
@@ -138,6 +148,10 @@ export default function StudentDeadlinesPage() {
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
   };
 
+  const openDeadline = (item) => {
+    navigate(deadlineTarget(item), { state: { projectId: item.projectId, stageId: item.id } });
+  };
+
   if (loading) return <div className="skeleton" style={{ width: "100%", height: 360, borderRadius: "var(--raio-grande)" }} />;
   if (error) return <StatusView title="Falha ao carregar calendário" description="Não foi possível carregar as etapas dos seus projetos." />;
 
@@ -187,14 +201,27 @@ export default function StudentDeadlinesPage() {
                 return (
                   <div
                     key={key}
-                    className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""}`}
+                    className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""} ${items.length ? "calendario-dia--com-evento" : ""}`}
                   >
                     <span className="calendario-dia__numero">{date.getDate()}</span>
                     <div className="calendario-dia__eventos">
                       {items.slice(0, 2).map((item) => (
-                        <span key={`${item.projectId}-${item.id}`} title={`${item.titulo} - ${item.projectTitle}`}>
-                          {item.titulo}
-                        </span>
+                        <button
+                          key={`${item.projectId}-${item.id}`}
+                          type="button"
+                          className="calendario-evento"
+                          onClick={() => openDeadline(item)}
+                          aria-label={`Abrir entrega ${item.titulo}`}
+                        >
+                          <span className="calendario-evento__rotulo">{item.titulo}</span>
+                          <span className="calendario-evento__tooltip" role="tooltip">
+                            <strong>{item.titulo}</strong>
+                            <small>{item.projectTitle}</small>
+                            <span>{formatLocalDate(item.prazo)}</span>
+                            <span>{formatEtapaResponsavel(item.responsavel)}</span>
+                            <em>{formatEtapaStatus(item.status)}</em>
+                          </span>
+                        </button>
                       ))}
                       {items.length > 2 && <small>+{items.length - 2}</small>}
                     </div>

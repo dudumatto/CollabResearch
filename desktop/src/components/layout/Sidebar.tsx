@@ -54,7 +54,7 @@ export function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <div className="sidebar-logo">
-          <BookOpen size={18} strokeWidth={2.5} />
+          <img src="/brand/logo-icon.svg" alt="" />
         </div>
         <div className="sidebar-brand-text">
           <strong>CollabResearch</strong>

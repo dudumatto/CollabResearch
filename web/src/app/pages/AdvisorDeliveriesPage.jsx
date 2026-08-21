@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "react-router";
 import { FolderOpen, ChevronDown, ChevronRight, Download, FileArchive, CheckCircle2, Undo2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -44,7 +45,9 @@ function Skeleton({ linhas = 4 }) {
 }
 
 export default function AdvisorDeliveriesPage() {
-  const [projectId, setProjectId] = useState(null);
+  const location = useLocation();
+  const queryProjectId = new URLSearchParams(location.search).get("projectId");
+  const [projectId, setProjectId] = useState(queryProjectId ? Number(queryProjectId) : null);
   const [filtro, setFiltro] = useState("todas");
   const [expandedIds, setExpandedIds] = useState(() => new Set());
   const [versoesPorEntrega, setVersoesPorEntrega] = useState({});
@@ -66,6 +69,9 @@ export default function AdvisorDeliveriesPage() {
   );
 
   const todosProjetos = useMemo(() => (Array.isArray(projetos) ? projetos : []), [projetos]);
+  useEffect(() => {
+    if (queryProjectId) setProjectId(Number(queryProjectId));
+  }, [queryProjectId]);
   const activeProjectId = projectId ?? todosProjetos[0]?.id ?? null;
 
   const { data: entregas, loading: loadingEntregas, error: erroEntregas, reload } = useAsyncData(

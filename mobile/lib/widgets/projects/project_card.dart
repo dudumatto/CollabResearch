@@ -49,6 +49,29 @@ class ProjectCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            if (project.advisorName?.isNotEmpty == true) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 15,
+                    foregroundImage: project.advisorAvatarUrl != null
+                        ? NetworkImage(project.advisorAvatarUrl!)
+                        : null,
+                    child: Text(project.advisorName![0].toUpperCase()),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${project.advisorName} (orientador)',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 14),
             Wrap(
               spacing: 8,

@@ -16,8 +16,8 @@ export function getUserType(user) {
 }
 
 export function getUserPhotoUrl(user) {
-  const nestedUser = user?.usuario ?? user?.user ?? user?.aluno?.usuario ?? user?.aluno;
-  return user?.fotoPerfilUrl ?? user?.avatarUrl ?? user?.photoUrl ?? nestedUser?.fotoPerfilUrl ?? nestedUser?.avatarUrl ?? nestedUser?.photoUrl ?? "";
+  const nestedUser = user?.usuario ?? user?.user ?? user?.aluno?.usuario ?? user?.aluno ?? user?.orientador?.usuario ?? user?.orientador;
+  return user?.fotoPerfilUrl ?? user?.fotoUrl ?? user?.avatarUrl ?? user?.photoUrl ?? user?.pictureUrl ?? user?.imagemPerfilUrl ?? nestedUser?.fotoPerfilUrl ?? nestedUser?.fotoUrl ?? nestedUser?.avatarUrl ?? nestedUser?.photoUrl ?? nestedUser?.pictureUrl ?? nestedUser?.imagemPerfilUrl ?? "";
 }
 
 export function getUserId(user) {
@@ -143,9 +143,19 @@ export function mapProject(project) {
   const orientadorId = project?.orientadorId ?? orientadorUsuario?.id ?? null;
   const orientadorNome = project?.orientadorNome ?? getUserName(orientadorUsuario) ?? null;
   const orientadorEmail = project?.orientadorEmail ?? getUserEmail(orientadorUsuario) ?? null;
+  const orientadorFotoPerfilUrl =
+    project?.orientadorFotoPerfilUrl ||
+    project?.orientadorFotoUrl ||
+    getUserPhotoUrl(project?.orientador) ||
+    getUserPhotoUrl(orientadorUsuario);
 
   const alunoCriadorId = project?.alunoCriadorId ?? alunoCriadorUsuario?.id ?? null;
   const alunoCriadorNome = project?.alunoCriadorNome ?? getUserName(alunoCriadorUsuario) ?? null;
+  const alunoCriadorFotoPerfilUrl =
+    project?.alunoCriadorFotoPerfilUrl ||
+    project?.alunoCriadorFotoUrl ||
+    getUserPhotoUrl(project?.alunoCriador) ||
+    getUserPhotoUrl(alunoCriadorUsuario);
 
   const colaboradores = getProjectCollaborators(project);
   const colaboradoresAceitos = getProjectSeatHolders({ ...project, advisorId: orientadorId }, colaboradores);
@@ -195,8 +205,8 @@ export function mapProject(project) {
           email: orientadorEmail ?? "",
           type: "ORIENTADOR",
           specialty: project?.orientador?.areaAtuacao ?? project?.areaNome ?? "",
-          fotoPerfilUrl: project?.orientadorFotoPerfilUrl ?? project?.orientador?.usuario?.fotoPerfilUrl ?? project?.orientador?.fotoPerfilUrl ?? "",
-          avatarUrl: project?.orientadorFotoPerfilUrl ?? project?.orientador?.usuario?.fotoPerfilUrl ?? project?.orientador?.fotoPerfilUrl ?? "",
+          fotoPerfilUrl: orientadorFotoPerfilUrl ?? "",
+          avatarUrl: orientadorFotoPerfilUrl ?? "",
         }
       : null,
     owner: (alunoCriadorId || alunoCriadorNome)
@@ -205,7 +215,8 @@ export function mapProject(project) {
           name: alunoCriadorNome ?? "Aluno",
           email: "",
           type: "ALUNO",
-          fotoPerfilUrl: project?.alunoCriadorFotoPerfilUrl ?? project?.alunoCriador?.usuario?.fotoPerfilUrl ?? project?.alunoCriador?.fotoPerfilUrl ?? "",
+          fotoPerfilUrl: alunoCriadorFotoPerfilUrl ?? "",
+          avatarUrl: alunoCriadorFotoPerfilUrl ?? "",
         }
       : null,
   };
