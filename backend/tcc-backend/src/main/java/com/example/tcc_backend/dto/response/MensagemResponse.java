@@ -20,6 +20,7 @@ public class MensagemResponse {
     private OffsetDateTime dataEnvio;
     private Integer remetenteId;
     private String remetenteNome;
+    private String remetenteFotoPerfilUrl;
     private Boolean editada;
     private OffsetDateTime dataEdicao;
 
@@ -31,6 +32,7 @@ public class MensagemResponse {
                 .dataEnvio(mensagem.getDataEnvio())
                 .remetenteId(mensagem.getRemetente() != null ? mensagem.getRemetente().getId() : null)
                 .remetenteNome(mensagem.getRemetente() != null ? mensagem.getRemetente().getNome() : null)
+                .remetenteFotoPerfilUrl(mensagem.getRemetente() != null ? mensagem.getRemetente().getFotoPerfilUrl() : null)
                 .editada(mensagem.getEditada())
                 .dataEdicao(mensagem.getDataEdicao())
                 .build();

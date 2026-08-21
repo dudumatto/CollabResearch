@@ -26,27 +26,36 @@ public class ConversaResponse {
     private String projetoTitulo;
     private Integer orientadorId;
     private String orientadorNome;
+    private String orientadorFotoPerfilUrl;
     private Integer alunoCriadorId;
     private String alunoCriadorNome;
+    private String alunoCriadorFotoPerfilUrl;
 
     // Campos de privada (nullable para grupos)
     private Integer outroUsuarioId;
     private String outroUsuarioNome;
+    private String outroUsuarioFotoPerfilUrl;
 
     // Nome a exibir na lista
     private String titulo;
 
-    // Última mensagem
+    // Ultima mensagem
     private String ultimaMensagem;
     private OffsetDateTime ultimaMensagemHorario;
+    private long mensagensNaoLidas;
 
     public static ConversaResponse fromEntity(Conversa conversa, Integer usuarioLogadoId) {
+        return fromEntity(conversa, usuarioLogadoId, 0);
+    }
+
+    public static ConversaResponse fromEntity(Conversa conversa, Integer usuarioLogadoId, long mensagensNaoLidas) {
         ConversaResponseBuilder builder = ConversaResponse.builder()
                 .id(conversa.getId())
                 .dataCriacao(conversa.getDataCriacao())
+                .mensagensNaoLidas(mensagensNaoLidas)
                 .tipo(conversa.getTipo().name());
 
-        // Última mensagem (lista já vem ordenada DESC pelo @OrderBy)
+        // Ultima mensagem (lista ja vem ordenada DESC pelo @OrderBy)
         if (conversa.getMensagens() != null && !conversa.getMensagens().isEmpty()) {
             Mensagem ultima = conversa.getMensagens().get(0);
             builder
@@ -63,6 +72,7 @@ public class ConversaResponse {
             builder
                     .outroUsuarioId(outro != null ? outro.getId() : null)
                     .outroUsuarioNome(outro != null ? outro.getNome() : null)
+                    .outroUsuarioFotoPerfilUrl(outro != null ? outro.getFotoPerfilUrl() : null)
                     .titulo(outro != null ? outro.getNome() : "Conversa privada");
         } else {
             builder
@@ -72,10 +82,14 @@ public class ConversaResponse {
                             ? conversa.getProjeto().getOrientador().getUsuario().getId() : null)
                     .orientadorNome(conversa.getProjeto() != null && conversa.getProjeto().getOrientador() != null
                             ? conversa.getProjeto().getOrientador().getUsuario().getNome() : null)
+                    .orientadorFotoPerfilUrl(conversa.getProjeto() != null && conversa.getProjeto().getOrientador() != null
+                            ? conversa.getProjeto().getOrientador().getUsuario().getFotoPerfilUrl() : null)
                     .alunoCriadorId(conversa.getProjeto() != null && conversa.getProjeto().getAlunoCriador() != null
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getId() : null)
                     .alunoCriadorNome(conversa.getProjeto() != null && conversa.getProjeto().getAlunoCriador() != null
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getNome() : null)
+                    .alunoCriadorFotoPerfilUrl(conversa.getProjeto() != null && conversa.getProjeto().getAlunoCriador() != null
+                            ? conversa.getProjeto().getAlunoCriador().getUsuario().getFotoPerfilUrl() : null)
                     .titulo(conversa.getProjeto() != null ? conversa.getProjeto().getTitulo() : "Grupo");
         }
 

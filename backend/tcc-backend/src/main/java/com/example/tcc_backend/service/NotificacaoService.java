@@ -84,6 +84,30 @@ public class NotificacaoService {
         notificacaoRepository.save(notificacao);
     }
 
+    public long contarMensagensNaoLidasDaConversa(Integer usuarioId, Integer conversaId) {
+        return notificacaoRepository.countByUsuarioIdAndLidaFalseAndTipoAndEntidadeRelacionadaAndEntidadeId(
+                usuarioId,
+                TipoNotificacao.MENSAGEM_RECEBIDA,
+                "CONVERSA",
+                conversaId
+        );
+    }
+
+    public void marcarMensagensDaConversaComoLidas(Integer usuarioId, Integer conversaId) {
+        List<Notificacao> notificacoes = notificacaoRepository.findByUsuarioIdAndLidaFalseAndTipoAndEntidadeRelacionadaAndEntidadeId(
+                usuarioId,
+                TipoNotificacao.MENSAGEM_RECEBIDA,
+                "CONVERSA",
+                conversaId
+        );
+
+        if (notificacoes.isEmpty()) return;
+
+        for (Notificacao notificacao : notificacoes) {
+            notificacao.setLida(true);
+        }
+        notificacaoRepository.saveAll(notificacoes);
+    }
     public long contarNaoLidas(Integer usuarioId) {
         return notificacaoRepository.countByUsuarioIdAndLidaFalse(usuarioId);
     }

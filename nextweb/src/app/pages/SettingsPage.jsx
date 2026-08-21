@@ -122,11 +122,11 @@ function SessionCard({ device, location, time, ip, current, onEnd }) {
         <span className="cfg-session-card__device">{device}</span>
         {current && <span className="cfg-session-card__badge">Atual</span>}
       </div>
-      <p className="cfg-session-card__detail">{location} Â· {time}</p>
+      <p className="cfg-session-card__detail">{location} Ãƒâ€šÃ‚Â· {time}</p>
       <p className="cfg-session-card__detail">IP: {ip}</p>
       {!current && (
         <button className="cfg-session-card__end" onClick={onEnd}>
-          Encerrar sessÃ£o
+          Encerrar sessÃƒÆ’Ã‚Â£o
         </button>
       )}
     </div>
@@ -223,11 +223,9 @@ export default function SettingsPage() {
   const { collapsed } = useSidebarContext();
   const { user, refreshUser, logout } = useAuth();
   const {
-    accentColor,
     followSystem,
     fontSize,
     isDark,
-    setAccentColor,
     setFontSize,
     setThemeMode,
     toggleTheme,
@@ -311,10 +309,10 @@ export default function SettingsPage() {
         tipoPerfil: form.tipoPerfil,
       });
       await refreshUser();
-      toast.success("ConfiguraÃ§Ãµes salvas com sucesso.");
+      toast.success("ConfiguraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes salvas com sucesso.");
       setActivePanel(null);
     } catch (err) {
-      toast.error(err.message || "NÃ£o foi possÃ­vel salvar as configuraÃ§Ãµes.");
+      toast.error(err.message || "NÃƒÆ’Ã‚Â£o foi possÃƒÆ’Ã‚Â­vel salvar as configuraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes.");
     } finally {
       setSaving(false);
     }
@@ -326,10 +324,10 @@ export default function SettingsPage() {
       return;
     }
     if (form.senhaNova !== form.confirmarSenha) {
-      toast.error("A confirmaÃ§Ã£o de senha nÃ£o confere.");
+      toast.error("A confirmaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o de senha nÃƒÆ’Ã‚Â£o confere.");
       return;
     }
-    toast.info("Backend sem rota de troca de senha â interface preparada.");
+    toast.info("Backend sem rota de troca de senha ÃƒÂ¢Ã‚â‚¬Ã‚â€ interface preparada.");
     setActivePanel(null);
   };
 
@@ -341,7 +339,7 @@ export default function SettingsPage() {
   if (loading) return <SettingsSkeleton />;
 
   if (loadError) {
-    return <StatusView title="Falha ao carregar configuraÃ§Ãµes" description={loadError.message || "NÃ£o foi possÃ­vel carregar suas configuraÃ§Ãµes."} />;
+    return <StatusView title="Falha ao carregar configuraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes" description={loadError.message || "NÃƒÆ’Ã‚Â£o foi possÃƒÆ’Ã‚Â­vel carregar suas configuraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes."} />;
   }
 
   return (
@@ -351,16 +349,16 @@ export default function SettingsPage() {
         <Avatar name={form.nome} size={52} />
         <div>
           <p className="cfg-profile-card__name">{form.nome || "\u2014"}</p>
-          <p className="cfg-profile-card__sub">{form.email} Â· {form.tipoPerfil}</p>
+          <p className="cfg-profile-card__sub">{form.email} Ãƒâ€šÃ‚Â· {form.tipoPerfil}</p>
         </div>
       </div>
 
       <div className="cfg-section">
         <SectionLabel>Conta</SectionLabel>
         <SectionGroup>
-          <NavItem icon={User} iconClass="icon-blue" title="InformaÃ§Ãµes da conta" sub="Nome, email, tipo de perfil" onClick={() => open("conta")} />
+          <NavItem icon={User} iconClass="icon-blue" title="InformaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes da conta" sub="Nome, email, tipo de perfil" onClick={() => open("conta")} />
           <NavItem icon={Lock} iconClass="icon-purple" title="Senha" sub="Alterar senha de acesso" onClick={() => open("senha")} />
-          <NavItem icon={Laptop} iconClass="icon-teal" title="SessÃµes ativas" sub="Dispositivos conectados" onClick={() => open("sessoes")} />
+          <NavItem icon={Laptop} iconClass="icon-teal" title="SessÃƒÆ’Ã‚Âµes ativas" sub="Dispositivos conectados" onClick={() => open("sessoes")} />
         </SectionGroup>
       </div>
 
@@ -369,21 +367,21 @@ export default function SettingsPage() {
         <SectionGroup>
           <NavItem icon={Shield} iconClass="icon-green" title="Privacidade da conta" sub="Visibilidade do perfil" onClick={() => open("privacidade")} />
           <NavItem icon={MessageCircle} iconClass="icon-blue" title="Quem pode me enviar mensagens" sub="Qualquer um, pessoas do projeto..." onClick={() => open("mensagens")} />
-          <NavItem icon={Ban} iconClass="icon-red" title="UsuÃ¡rios bloqueados" sub="Gerenciar bloqueios" onClick={() => open("bloqueados")} />
+          <NavItem icon={Ban} iconClass="icon-red" title="UsuÃƒÆ’Ã‚Â¡rios bloqueados" sub="Gerenciar bloqueios" onClick={() => open("bloqueados")} />
         </SectionGroup>
       </div>
 
       <div className="cfg-section">
-        <SectionLabel>NotificaÃ§Ãµes</SectionLabel>
+        <SectionLabel>NotificaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes</SectionLabel>
         <SectionGroup>
-          <NavItem icon={Bell} iconClass="icon-yellow" title="NotificaÃ§Ãµes" sub="Alertas, menÃ§Ãµes, projetos" onClick={() => open("notificacoes")} />
+          <NavItem icon={Bell} iconClass="icon-yellow" title="NotificaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes" sub="Alertas, menÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes, projetos" onClick={() => open("notificacoes")} />
         </SectionGroup>
       </div>
 
       <div className="cfg-section">
-        <SectionLabel>AparÃªncia</SectionLabel>
+        <SectionLabel>AparÃƒÆ’Ã‚Âªncia</SectionLabel>
         <SectionGroup>
-          <NavItem icon={Palette} iconClass="icon-pink" title="AparÃªncia" sub="Tema, modo escuro" onClick={() => open("aparencia")} />
+          <NavItem icon={Palette} iconClass="icon-pink" title="Aparencia" sub="Tema e tamanho da fonte" onClick={() => open("aparencia")} />
         </SectionGroup>
       </div>
 
@@ -391,7 +389,7 @@ export default function SettingsPage() {
         <SectionLabel>Suporte</SectionLabel>
         <SectionGroup>
           <NavItem icon={HelpCircle} iconClass="icon-teal" title="Ajuda" sub="Central de ajuda, reportar problema" onClick={() => open("ajuda")} />
-          <NavItem icon={Info} iconClass="icon-gray" title="Sobre o app" sub="VersÃ£o, termos, licenÃ§as" onClick={() => open("sobre")} />
+          <NavItem icon={Info} iconClass="icon-gray" title="Sobre o app" sub="VersÃƒÆ’Ã‚Â£o, termos, licenÃƒÆ’Ã‚Â§as" onClick={() => open("sobre")} />
         </SectionGroup>
       </div>
 
@@ -406,7 +404,7 @@ export default function SettingsPage() {
         </SectionGroup>
       </div>
 
-      <Panel panelId="conta" title="InformaÃ§Ãµes da conta" {...panelProps}>
+      <Panel panelId="conta" title="InformaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes da conta" {...panelProps}>
         <div className="cfg-panel-avatar-row">
           <Avatar name={form.nome} size={64} />
           <div>
@@ -420,7 +418,7 @@ export default function SettingsPage() {
         <FormGroup label="Email">
           <Input value={form.email} onChange={(e) => handleInput("email", e.target.value)} />
         </FormGroup>
-        <FormGroup label="MatrÃ­cula">
+        <FormGroup label="MatrÃƒÆ’Ã‚Â­cula">
           <Input value={form.matricula} onChange={(e) => handleInput("matricula", e.target.value)} />
         </FormGroup>
         <FormGroup label="Tipo de perfil">
@@ -431,98 +429,98 @@ export default function SettingsPage() {
           </Select>
         </FormGroup>
         <PrimaryBtn onClick={saveProfile} disabled={saving}>
-          {saving ? "Salvando..." : "Salvar alteraÃ§Ãµes"}
+          {saving ? "Salvando..." : "Salvar alteraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes"}
         </PrimaryBtn>
       </Panel>
 
       <Panel panelId="senha" title="Alterar senha" {...panelProps}>
         <FormGroup label="Senha atual">
-          <Input type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" value={form.senhaAtual} onChange={(e) => handleInput("senhaAtual", e.target.value)} />
+          <Input type="password" placeholder="ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢" value={form.senhaAtual} onChange={(e) => handleInput("senhaAtual", e.target.value)} />
         </FormGroup>
         <FormGroup label="Nova senha">
-          <Input type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" value={form.senhaNova} onChange={(e) => handleInput("senhaNova", e.target.value)} />
+          <Input type="password" placeholder="ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢" value={form.senhaNova} onChange={(e) => handleInput("senhaNova", e.target.value)} />
         </FormGroup>
         <FormGroup label="Confirmar nova senha">
-          <Input type="password" placeholder="â¢â¢â¢â¢â¢â¢â¢â¢" value={form.confirmarSenha} onChange={(e) => handleInput("confirmarSenha", e.target.value)} />
+          <Input type="password" placeholder="ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢ÃƒÂ¢Ã‚â‚¬Ã‚Â¢" value={form.confirmarSenha} onChange={(e) => handleInput("confirmarSenha", e.target.value)} />
         </FormGroup>
         <div className="cfg-password-hint">
           <p className="cfg-password-hint__title">A senha deve conter:</p>
-          <p>Â· MÃ­nimo 8 caracteres</p>
-          <p>Â· Letras maiÃºsculas e minÃºsculas</p>
-          <p>Â· Pelo menos um nÃºmero</p>
+          <p>Ãƒâ€šÃ‚Â· MÃƒÆ’Ã‚Â­nimo 8 caracteres</p>
+          <p>Ãƒâ€šÃ‚Â· Letras maiÃƒÆ’Ã‚Âºsculas e minÃƒÆ’Ã‚Âºsculas</p>
+          <p>Ãƒâ€šÃ‚Â· Pelo menos um nÃƒÆ’Ã‚Âºmero</p>
         </div>
         <PrimaryBtn onClick={changePassword}>Alterar senha</PrimaryBtn>
       </Panel>
 
-      <Panel panelId="sessoes" title="SessÃµes ativas" {...panelProps}>
-        <SessionCard device="Chrome Â· Windows" location="SÃ£o Paulo, BR" time="Agora" ip="187.64.xxx.xxx" current />
-        <SessionCard device="Safari Â· iPhone" location="SÃ£o Paulo, BR" time="HÃ¡ 2 dias" ip="187.64.xxx.xxx" onEnd={() => toast.success("SessÃ£o encerrada.")} />
-        <DangerBtn style={{ marginTop: 8 }} onClick={() => toast.success("Outras sessÃµes encerradas.")}>
-          Encerrar todas as outras sessÃµes
+      <Panel panelId="sessoes" title="SessÃƒÆ’Ã‚Âµes ativas" {...panelProps}>
+        <SessionCard device="Chrome Ãƒâ€šÃ‚Â· Windows" location="SÃƒÆ’Ã‚Â£o Paulo, BR" time="Agora" ip="187.64.xxx.xxx" current />
+        <SessionCard device="Safari Ãƒâ€šÃ‚Â· iPhone" location="SÃƒÆ’Ã‚Â£o Paulo, BR" time="HÃƒÆ’Ã‚Â¡ 2 dias" ip="187.64.xxx.xxx" onEnd={() => toast.success("SessÃƒÆ’Ã‚Â£o encerrada.")} />
+        <DangerBtn style={{ marginTop: 8 }} onClick={() => toast.success("Outras sessÃƒÆ’Ã‚Âµes encerradas.")}>
+          Encerrar todas as outras sessÃƒÆ’Ã‚Âµes
         </DangerBtn>
       </Panel>
 
       <Panel panelId="privacidade" title="Privacidade da conta" {...panelProps}>
-        <p className="cfg-panel-desc">Controle quem pode ver seu perfil e suas informaÃ§Ãµes.</p>
+        <p className="cfg-panel-desc">Controle quem pode ver seu perfil e suas informaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes.</p>
         <SectionLabel>Visibilidade do perfil</SectionLabel>
         <RadioGroup
           value={priv.visibilidade}
           onChange={(v) => setPriv((p) => ({ ...p, visibilidade: v }))}
           options={[
-            { value: "publico", label: "PÃºblico", sub: "Qualquer usuÃ¡rio pode ver seu perfil" },
-            { value: "projetos", label: "Apenas projetos", sub: "SÃ³ membros dos seus projetos" },
-            { value: "privado", label: "Privado", sub: "Somente vocÃª" },
+            { value: "publico", label: "PÃƒÆ’Ã‚Âºblico", sub: "Qualquer usuÃƒÆ’Ã‚Â¡rio pode ver seu perfil" },
+            { value: "projetos", label: "Apenas projetos", sub: "SÃƒÆ’Ã‚Â³ membros dos seus projetos" },
+            { value: "privado", label: "Privado", sub: "Somente vocÃƒÆ’Ã‚Âª" },
           ]}
         />
-        <SectionLabel>InformaÃ§Ãµes visÃ­veis</SectionLabel>
+        <SectionLabel>InformaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes visÃƒÆ’Ã‚Â­veis</SectionLabel>
         <SectionGroup>
           <ToggleRow title="Mostrar email" on={priv.mostrarEmail} onToggle={() => setPriv((p) => ({ ...p, mostrarEmail: !p.mostrarEmail }))} />
-          <ToggleRow title="Mostrar matrÃ­cula" on={priv.mostrarMatricula} onToggle={() => setPriv((p) => ({ ...p, mostrarMatricula: !p.mostrarMatricula }))} />
+          <ToggleRow title="Mostrar matrÃƒÆ’Ã‚Â­cula" on={priv.mostrarMatricula} onToggle={() => setPriv((p) => ({ ...p, mostrarMatricula: !p.mostrarMatricula }))} />
           <ToggleRow title="Mostrar projetos" on={priv.mostrarProjetos} onToggle={() => setPriv((p) => ({ ...p, mostrarProjetos: !p.mostrarProjetos }))} />
         </SectionGroup>
-        <PrimaryBtn style={{ marginTop: 16 }} onClick={() => toast.success("PreferÃªncias salvas.")}>
-          Salvar preferÃªncias
+        <PrimaryBtn style={{ marginTop: 16 }} onClick={() => toast.success("PreferÃƒÆ’Ã‚Âªncias salvas.")}>
+          Salvar preferÃƒÆ’Ã‚Âªncias
         </PrimaryBtn>
       </Panel>
 
       <Panel panelId="mensagens" title="Quem pode me enviar mensagens" {...panelProps}>
-        <p className="cfg-panel-desc">Escolha quem tem permissÃ£o para iniciar uma conversa com vocÃª.</p>
+        <p className="cfg-panel-desc">Escolha quem tem permissÃƒÆ’Ã‚Â£o para iniciar uma conversa com vocÃƒÆ’Ã‚Âª.</p>
         <RadioGroup
           value={mensagensPermissao}
           onChange={setMensagensPermissao}
           options={[
-            { value: "todos", label: "Qualquer pessoa", sub: "Qualquer usuÃ¡rio da plataforma" },
+            { value: "todos", label: "Qualquer pessoa", sub: "Qualquer usuÃƒÆ’Ã‚Â¡rio da plataforma" },
             { value: "projetos", label: "Pessoas do projeto", sub: "Apenas membros dos seus projetos" },
-            { value: "seguindo", label: "Pessoas que sigo", sub: "Apenas quem vocÃª segue" },
-            { value: "ninguem", label: "NinguÃ©m", sub: "Desativar mensagens diretas" },
+            { value: "seguindo", label: "Pessoas que sigo", sub: "Apenas quem vocÃƒÆ’Ã‚Âª segue" },
+            { value: "ninguem", label: "NinguÃƒÆ’Ã‚Â©m", sub: "Desativar mensagens diretas" },
           ]}
         />
-        <PrimaryBtn style={{ marginTop: 16 }} onClick={() => toast.success("PreferÃªncia salva.")}>
+        <PrimaryBtn style={{ marginTop: 16 }} onClick={() => toast.success("PreferÃƒÆ’Ã‚Âªncia salva.")}>
           Salvar
         </PrimaryBtn>
       </Panel>
 
-      <Panel panelId="bloqueados" title="UsuÃ¡rios bloqueados" {...panelProps}>
+      <Panel panelId="bloqueados" title="UsuÃƒÆ’Ã‚Â¡rios bloqueados" {...panelProps}>
         <div className="cfg-empty-state">
           <Ban size={36} className="cfg-empty-state__icon" />
-          <p className="cfg-empty-state__title">Nenhum usuÃ¡rio bloqueado</p>
-          <p className="cfg-empty-state__sub">UsuÃ¡rios bloqueados nÃ£o conseguem ver seu perfil ou enviar mensagens</p>
+          <p className="cfg-empty-state__title">Nenhum usuÃƒÆ’Ã‚Â¡rio bloqueado</p>
+          <p className="cfg-empty-state__sub">UsuÃƒÆ’Ã‚Â¡rios bloqueados nÃƒÆ’Ã‚Â£o conseguem ver seu perfil ou enviar mensagens</p>
         </div>
       </Panel>
 
-      <Panel panelId="notificacoes" title="NotificaÃ§Ãµes" {...panelProps}>
+      <Panel panelId="notificacoes" title="NotificaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes" {...panelProps}>
         <SectionLabel>Geral</SectionLabel>
         <SectionGroup>
-          <ToggleRow title="Ativar notificaÃ§Ãµes" sub="Todas as notificaÃ§Ãµes do app" on={notif.geral} onToggle={() => setNotif((n) => ({ ...n, geral: !n.geral }))} />
+          <ToggleRow title="Ativar notificaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes" sub="Todas as notificaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes do app" on={notif.geral} onToggle={() => setNotif((n) => ({ ...n, geral: !n.geral }))} />
           <ToggleRow title="Sons" on={notif.sons} onToggle={() => setNotif((n) => ({ ...n, sons: !n.sons }))} />
-          <ToggleRow title="VibraÃ§Ã£o" on={notif.vibracao} onToggle={() => setNotif((n) => ({ ...n, vibracao: !n.vibracao }))} />
+          <ToggleRow title="VibraÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o" on={notif.vibracao} onToggle={() => setNotif((n) => ({ ...n, vibracao: !n.vibracao }))} />
         </SectionGroup>
         <SectionLabel>Atividade</SectionLabel>
         <SectionGroup>
           <ToggleRow title="Mensagens diretas" on={notif.mensagens} onToggle={() => setNotif((n) => ({ ...n, mensagens: !n.mensagens }))} />
-          <ToggleRow title="MenÃ§Ãµes" on={notif.mencoes} onToggle={() => setNotif((n) => ({ ...n, mencoes: !n.mencoes }))} />
-          <ToggleRow title="AtualizaÃ§Ãµes de projetos" on={notif.projetos} onToggle={() => setNotif((n) => ({ ...n, projetos: !n.projetos }))} />
-          <ToggleRow title="ComentÃ¡rios" on={notif.comentarios} onToggle={() => setNotif((n) => ({ ...n, comentarios: !n.comentarios }))} />
+          <ToggleRow title="MenÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes" on={notif.mencoes} onToggle={() => setNotif((n) => ({ ...n, mencoes: !n.mencoes }))} />
+          <ToggleRow title="AtualizaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes de projetos" on={notif.projetos} onToggle={() => setNotif((n) => ({ ...n, projetos: !n.projetos }))} />
+          <ToggleRow title="ComentÃƒÆ’Ã‚Â¡rios" on={notif.comentarios} onToggle={() => setNotif((n) => ({ ...n, comentarios: !n.comentarios }))} />
           <ToggleRow title="Prazos e lembretes" on={notif.prazos} onToggle={() => setNotif((n) => ({ ...n, prazos: !n.prazos }))} />
         </SectionGroup>
         <SectionLabel>Email</SectionLabel>
@@ -532,45 +530,33 @@ export default function SettingsPage() {
         </SectionGroup>
       </Panel>
 
-      <Panel panelId="aparencia" title="AparÃªncia" {...panelProps}>
+      <Panel panelId="aparencia" title="AparÃƒÆ’Ã‚Âªncia" {...panelProps}>
         <SectionLabel>Tema</SectionLabel>
         <SectionGroup>
-          <ToggleRow title="Modo escuro" sub={followSystem ? "Seguindo preferência do dispositivo" : "Salvo no navegador"} on={isDark} onToggle={toggleTheme} />
-          <ToggleRow title="Seguir sistema" sub="Usar preferência do dispositivo" on={followSystem} onToggle={() => setThemeMode(followSystem ? (isDark ? "dark" : "light") : "system")} />
+          <ToggleRow title="Modo escuro" sub={followSystem ? "Seguindo preferÃƒÂªncia do dispositivo" : "Salvo no navegador"} on={isDark} onToggle={toggleTheme} />
+          <ToggleRow title="Seguir sistema" sub="Usar preferÃƒÂªncia do dispositivo" on={followSystem} onToggle={() => setThemeMode(followSystem ? (isDark ? "dark" : "light") : "system")} />
         </SectionGroup>
-        <SectionLabel>Cor de destaque</SectionLabel>
-        <ChipGroup
-          options={[
-            { value: "azul", label: "Azul" },
-            { value: "verde", label: "Verde" },
-            { value: "roxo", label: "Roxo" },
-            { value: "laranja", label: "Laranja" },
-            { value: "rosa", label: "Rosa" },
-          ]}
-          value={accentColor}
-          onChange={setAccentColor}
-        />
         <SectionLabel>Tamanho da fonte</SectionLabel>
         <ChipGroup
           options={[
             { value: "pequena", label: "Pequena" },
-            { value: "media", label: "Média" },
+            { value: "media", label: "MÃƒÂ©dia" },
             { value: "grande", label: "Grande" },
           ]}
           value={fontSize}
           onChange={setFontSize}
         />
-        <PrimaryBtn style={{ marginTop: 20 }} onClick={() => toast.success("PreferÃªncias salvas.")}>
-          Salvar preferÃªncias
+        <PrimaryBtn style={{ marginTop: 20 }} onClick={() => toast.success("PreferÃƒÆ’Ã‚Âªncias salvas.")}>
+          Salvar preferÃƒÆ’Ã‚Âªncias
         </PrimaryBtn>
       </Panel>
 
       <Panel panelId="ajuda" title="Ajuda" {...panelProps}>
         <SectionGroup>
           {[
-            { title: "Central de ajuda", sub: "Tutoriais e documentaÃ§Ã£o" },
+            { title: "Central de ajuda", sub: "Tutoriais e documentaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o" },
             { title: "Reportar um problema", sub: "Nos ajude a melhorar" },
-            { title: "Avaliar o app", sub: "Sua opiniÃ£o importa" },
+            { title: "Avaliar o app", sub: "Sua opiniÃƒÆ’Ã‚Â£o importa" },
             { title: "Falar com suporte", sub: "suporte@universidade.edu.br" },
           ].map((item) => (
             <button key={item.title} className="cfg-help-item">
@@ -588,11 +574,11 @@ export default function SettingsPage() {
         <div className="cfg-about-header">
           <div className="cfg-about-logo"><Info size={28} /></div>
           <p className="cfg-about-name">CollabResearch</p>
-          <p className="cfg-about-version">VersÃ£o 1.0.0 Â· Build 2026.06</p>
-          <p className="cfg-about-desc">Plataforma colaborativa universitÃ¡ria para gestÃ£o de projetos de iniciaÃ§Ã£o cientÃ­fica.</p>
+          <p className="cfg-about-version">VersÃƒÆ’Ã‚Â£o 1.0.0 Ãƒâ€šÃ‚Â· Build 2026.06</p>
+          <p className="cfg-about-desc">Plataforma colaborativa universitÃƒÆ’Ã‚Â¡ria para gestÃƒÆ’Ã‚Â£o de projetos de iniciaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o cientÃƒÆ’Ã‚Â­fica.</p>
         </div>
         <SectionGroup>
-          {["Termos de uso", "PolÃ­tica de privacidade", "LicenÃ§as de cÃ³digo aberto"].map((item) => (
+          {["Termos de uso", "PolÃƒÆ’Ã‚Â­tica de privacidade", "LicenÃƒÆ’Ã‚Â§as de cÃƒÆ’Ã‚Â³digo aberto"].map((item) => (
             <button key={item} className="cfg-help-item">
               <span className="cfg-help-item__text">
                 <span className="cfg-help-item__title">{item}</span>
@@ -602,7 +588,7 @@ export default function SettingsPage() {
           ))}
           <div className="cfg-help-item cfg-help-item--info">
             <span className="cfg-help-item__text">
-              <span className="cfg-help-item__title">Ãltima atualizaÃ§Ã£o</span>
+              <span className="cfg-help-item__title">ÃƒÆ’Ã‚Å¡ltima atualizaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o</span>
             </span>
             <span className="cfg-help-item__value">07/06/2026</span>
           </div>
@@ -614,9 +600,9 @@ export default function SettingsPage() {
           <div className="cfg-logout-confirm__icon"><LogOut size={28} /></div>
           <p className="cfg-logout-confirm__title">Sair da conta?</p>
           <p className="cfg-logout-confirm__desc">
-            VocÃª precisarÃ¡ fazer login novamente para acessar a plataforma.
+            VocÃƒÆ’Ã‚Âª precisarÃƒÆ’Ã‚Â¡ fazer login novamente para acessar a plataforma.
           </p>
-          <DangerBtn onClick={async () => { await logout(); router.push("/login"); }}>Confirmar saÃ­da</DangerBtn>
+          <DangerBtn onClick={async () => { await logout(); router.push("/login"); }}>Confirmar saÃƒÆ’Ã‚Â­da</DangerBtn>
           <button className="cfg-logout-confirm__cancel" onClick={close}>Cancelar</button>
         </div>
       </Panel>

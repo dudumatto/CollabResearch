@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/utils/user_role.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/empty_state.dart';
@@ -59,12 +61,22 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final advisor = isAdvisor(context.watch<AuthProvider>().currentUser);
+    final title = advisor ? 'Orientacoes' : 'Projetos';
+    final description = advisor
+        ? 'Acompanhe os projetos vinculados a voce e as pendencias de orientacao.'
+        : 'Encontre projetos, filtre por area e acompanhe oportunidades.';
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Projetos')),
+      appBar: AppBar(title: Text(title)),
       body: Consumer<ProjectProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.projects.isEmpty) {
-            return const LoadingIndicator(label: 'Carregando projetos...');
+            return LoadingIndicator(
+              label: advisor
+                  ? 'Carregando orientacoes...'
+                  : 'Carregando projetos...',
+            );
           }
 
           return RefreshIndicator(
@@ -78,15 +90,22 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          description,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 14),
                         AppCard(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextField(
                                 controller: _searchController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Buscar projetos',
-                                  prefixIcon: Icon(Icons.search),
+                                decoration: InputDecoration(
+                                  labelText: advisor
+                                      ? 'Buscar orientacoes'
+                                      : 'Buscar projetos',
+                                  prefixIcon: const Icon(Icons.search),
                                 ),
                                 onSubmitted: (_) => _loadProjects(provider),
                               ),
@@ -117,12 +136,15 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                             ),
                           ),
                         if (provider.projects.isEmpty)
-                          const SizedBox(
+                          SizedBox(
                             height: 280,
                             child: EmptyState(
-                              title: 'Nenhum projeto encontrado',
-                              subtitle:
-                                  'Puxe para atualizar ou ajuste a busca.',
+                              title: advisor
+                                  ? 'Nenhuma orientacao encontrada'
+                                  : 'Nenhum projeto encontrado',
+                              subtitle: advisor
+                                  ? 'Quando houver projetos vinculados a voce, eles aparecerao aqui.'
+                                  : 'Puxe para atualizar ou ajuste a busca.',
                             ),
                           )
                         else

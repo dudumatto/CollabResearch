@@ -24,16 +24,24 @@ import java.util.List;
 @RestController
 @RequestMapping({"/api/conversas", "/api/chat/conversations"})
 @RequiredArgsConstructor
-@Tag(name = "Conversas", description = "Endpoints de mensagens e comunicação entre usuários")
+@Tag(name = "Conversas", description = "Endpoints de mensagens e comunicaÃ§Ã£o entre usuÃ¡rios")
 public class ConversaController {
 
     private final ConversaService conversaService;
     private final AuthHelper authHelper;
 
+    private ConversaResponse toResponse(com.example.tcc_backend.model.Conversa conversa, Integer usuarioId) {
+        return ConversaResponse.fromEntity(
+                conversa,
+                usuarioId,
+                conversaService.contarMensagensNaoLidas(conversa.getId(), usuarioId)
+        );
+    }
+
     @Operation(summary = "Criar conversa", description = "Cria uma nova conversa vinculada a um projeto.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Conversa criada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "400", description = "Dados invÃ¡lidos")
     })
     @PostMapping
     public ResponseEntity<ConversaResponse> criar(@RequestBody @Valid ConversaRequest dto) {
@@ -65,7 +73,7 @@ public class ConversaController {
     @Operation(summary = "Abrir ou criar conversa privada")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Conversa privada retornada ou criada com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+            @ApiResponse(responseCode = "404", description = "UsuÃ¡rio nÃ£o encontrado")
     })
     @PostMapping("/privada/{outroUsuarioId}")
     public ResponseEntity<ConversaResponse> abrirPrivada(@PathVariable Integer outroUsuarioId) {
@@ -75,13 +83,13 @@ public class ConversaController {
         ));
     }
 
-    @Operation(summary = "Listar conversas do usuário (apenas grupo)")
+    @Operation(summary = "Listar conversas do usuÃ¡rio (apenas grupo)")
     @GetMapping("/{usuarioId}")
     public ResponseEntity<List<ConversaResponse>> listarConversas(@PathVariable Integer usuarioId) {
         Integer logadoId = authHelper.getCurrentUser().getId();
         return ResponseEntity.ok(
                 conversaService.listarConversasDoUsuario(usuarioId)
-                        .stream().map(c -> ConversaResponse.fromEntity(c, logadoId)).toList()
+                        .stream().map(c -> toResponse(c, logadoId)).toList()
         );
     }
 
@@ -91,7 +99,7 @@ public class ConversaController {
         Integer logadoId = authHelper.getCurrentUser().getId();
         return ResponseEntity.ok(
                 conversaService.listarTodasConversasDoUsuario(logadoId)
-                        .stream().map(c -> ConversaResponse.fromEntity(c, logadoId)).toList()
+                        .stream().map(c -> toResponse(c, logadoId)).toList()
         );
     }
 
@@ -101,7 +109,7 @@ public class ConversaController {
         Integer logadoId = authHelper.getCurrentUser().getId();
         return ResponseEntity.ok(
                 conversaService.listarTodasConversasDoUsuario(usuarioId)
-                        .stream().map(c -> ConversaResponse.fromEntity(c, logadoId)).toList()
+                        .stream().map(c -> toResponse(c, logadoId)).toList()
         );
     }
 
@@ -120,7 +128,7 @@ public class ConversaController {
                         conversaService.listarConversasDoUsuario(
                                 usuarioId,
                                 PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort))
-                        ).map(c -> ConversaResponse.fromEntity(c, logadoId))
+                        ).map(c -> toResponse(c, logadoId))
                 )
         );
     }
@@ -164,11 +172,18 @@ public class ConversaController {
                 ));
     }
 
-    @Operation(summary = "Editar mensagem", description = "Edita o conteúdo de uma mensagem. Apenas o remetente pode editar.")
+
+    @Operation(summary = "Marcar conversa como lida")
+    @PostMapping("/{id}/lida")
+    public ResponseEntity<Void> marcarComoLida(@PathVariable Integer id) {
+        conversaService.marcarComoLida(id);
+        return ResponseEntity.noContent().build();
+    }
+    @Operation(summary = "Editar mensagem", description = "Edita o conteÃºdo de uma mensagem. Apenas o remetente pode editar.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Mensagem editada com sucesso"),
-            @ApiResponse(responseCode = "403", description = "Sem permissão"),
-            @ApiResponse(responseCode = "404", description = "Mensagem não encontrada")
+            @ApiResponse(responseCode = "403", description = "Sem permissÃ£o"),
+            @ApiResponse(responseCode = "404", description = "Mensagem nÃ£o encontrada")
     })
     @PutMapping("/mensagem/{mensagemId}")
     public ResponseEntity<MensagemResponse> editarMensagem(
@@ -181,9 +196,9 @@ public class ConversaController {
 
     @Operation(summary = "Excluir mensagem", description = "Exclui uma mensagem. Apenas o remetente pode excluir.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Mensagem excluída com sucesso"),
-            @ApiResponse(responseCode = "403", description = "Sem permissão"),
-            @ApiResponse(responseCode = "404", description = "Mensagem não encontrada")
+            @ApiResponse(responseCode = "204", description = "Mensagem excluÃ­da com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Sem permissÃ£o"),
+            @ApiResponse(responseCode = "404", description = "Mensagem nÃ£o encontrada")
     })
     @DeleteMapping("/mensagem/{mensagemId}")
     public ResponseEntity<Void> excluirMensagem(@PathVariable Integer mensagemId) {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/project_status.dart';
+import '../../core/utils/user_role.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/dashboard/activity_chart.dart';
@@ -27,10 +29,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<ProjectProvider, NotificationProvider>(
-      builder: (context, projectsProvider, notificationProvider, _) {
+    return Consumer3<ProjectProvider, NotificationProvider, AuthProvider>(
+      builder: (context, projectsProvider, notificationProvider, auth, _) {
         final projects = projectsProvider.projects;
         final notifications = notificationProvider.notifications;
+        final advisor = isAdvisor(auth.currentUser);
         final progress = projects.isEmpty
             ? 0
             : (projects
@@ -42,6 +45,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final inProgress = projects
             .where((project) => project.status.toUpperCase() == 'EM_ANDAMENTO')
             .length;
+        final pendingAdvisor = projects
+            .where((project) =>
+                project.status.toUpperCase() == 'PENDENTE_ORIENTADOR')
+            .length;
+        final collaborators = projects.fold<int>(
+          0,
+          (total, project) => total + project.collaborators,
+        );
 
         return Scaffold(
           body: RefreshIndicator(
@@ -71,34 +82,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Dashboard',
+                              advisor
+                                  ? 'Painel do orientador'
+                                  : 'Painel do aluno',
                               style: Theme.of(context).textTheme.headlineMedium,
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Resumo dos seus projetos, conversas e alertas.',
+                              advisor
+                                  ? 'Acompanhe orientacoes, pendencias e mensagens dos projetos.'
+                                  : 'Resumo dos seus projetos, conversas e alertas.',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             const SizedBox(height: 18),
                             _StatsGrid(
                               children: [
                                 StatsCard(
-                                  title: 'Projetos',
+                                  title: advisor ? 'Orientacoes' : 'Projetos',
                                   value: '${projects.length}',
+                                  icon: advisor
+                                      ? Icons.school_outlined
+                                      : Icons.folder_open_outlined,
                                 ),
                                 StatsCard(
-                                  title: 'Progresso',
-                                  value: '$progress%',
-                                  icon: Icons.trending_up,
-                                ),
-                                StatsCard(
-                                  title: 'Nao lidas',
+                                  title: advisor ? 'Orientandos' : 'Progresso',
                                   value:
-                                      '${notificationProvider.unreadCount}',
+                                      advisor ? '$collaborators' : '$progress%',
+                                  icon: advisor
+                                      ? Icons.groups_outlined
+                                      : Icons.trending_up,
+                                ),
+                                StatsCard(
+                                  title: advisor ? 'Pendentes' : 'Nao lidas',
+                                  value: advisor
+                                      ? '$pendingAdvisor'
+                                      : '${notificationProvider.unreadCount}',
+                                  icon: advisor
+                                      ? Icons.pending_actions_outlined
+                                      : Icons.mark_chat_unread_outlined,
                                 ),
                                 StatsCard(
                                   title: 'Atividades',
                                   value: '${notifications.length}',
+                                  icon: Icons.notifications_none,
                                 ),
                               ],
                             ),

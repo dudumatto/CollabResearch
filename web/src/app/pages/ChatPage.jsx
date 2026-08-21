@@ -14,6 +14,51 @@ function getInitials(name) {
   return name.split(" ").slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
 }
 
+function getConversationPhotoUrl(conversation) {
+  if (conversation?.tipo === "PRIVADA") {
+    return conversation?.outroUsuarioFotoPerfilUrl ?? conversation?.fotoPerfilUrl ?? "";
+  }
+
+  return conversation?.fotoPerfilUrl ?? conversation?.orientadorFotoPerfilUrl ?? conversation?.alunoCriadorFotoPerfilUrl ?? "";
+}
+
+function getMessagePhotoUrl(message) {
+  return message?.remetenteFotoPerfilUrl ?? message?.fotoPerfilUrl ?? message?.avatarUrl ?? "";
+}
+
+function ChatAvatar({ className, photoUrl, name, label }) {
+  const [showPhoto, setShowPhoto] = useState(Boolean(photoUrl));
+
+  useEffect(() => {
+    setShowPhoto(Boolean(photoUrl));
+  }, [photoUrl]);
+
+  return (
+    <div className={className}>
+      {showPhoto ? (
+        <img
+          src={photoUrl}
+          alt={label ?? (name ? `Foto de ${name}` : "Foto de perfil")}
+          className={`${className}-foto`}
+          onError={() => setShowPhoto(false)}
+        />
+      ) : (
+        <span className={`${className}-iniciais`}>{getInitials(name)}</span>
+      )}
+    </div>
+  );
+}
+
+
+function getConversationSortTime(conversation) {
+  const value = conversation?.ultimaMensagemHorario ?? conversation?.lastMessageAt ?? conversation?.dataCriacao;
+  const parsed = value ? new Date(value).getTime() : 0;
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+function getUnreadCount(conversation) {
+  const count = Number(conversation?.mensagensNaoLidas ?? conversation?.unreadCount ?? 0);
+  return Number.isFinite(count) ? count : 0;
+}
 function formatarHora(data) {
   if (!data) return "";
 
@@ -145,16 +190,32 @@ export default function ChatPage() {
   const [abrindoPrivada, setAbrindoPrivada] = useState(null);
   const [targetMessageId, setTargetMessageId] = useState(null);
 
+  const clearUnreadCount = (conversationId) => {
+    setConversations((prev) =>
+      prev.map((conversation) =>
+        Number(conversation.id) === Number(conversationId)
+          ? { ...conversation, mensagensNaoLidas: 0, unreadCount: 0 }
+          : conversation
+      )
+    );
+  };
+
+  const marcarConversaComoLida = (conversationId) => {
+    if (!conversationId) return;
+    clearUnreadCount(conversationId);
+    conversationService.markAsRead(conversationId).catch(() => {});
+  };
+
   const abrirPerfil = (usuarioId) => {
     if (!usuarioId) return;
     navigate(`/app/users/${usuarioId}`);
   };
 
-  // Modal de edição
+  // Modal de edicao
   const [modalEdicao, setModalEdicao] = useState(null); // { id, conteudo }
   const [editandoTexto, setEditandoTexto] = useState("");
 
-  // Modal de confirmação de exclusão
+  // Modal de confirmacao de exclusao
   const [modalExclusao, setModalExclusao] = useState(null); // { id }
 
   const loadConversations = async () => {
@@ -211,7 +272,11 @@ export default function ChatPage() {
     setLoadingMessages(true);
     conversationService
       .listMessages(selectedConversation.id)
-      .then((res) => setMessages(Array.isArray(res) ? res : []))
+      .then((res) => {
+        setMessages(Array.isArray(res) ? res : []);
+        marcarConversaComoLida(selectedConversation.id);
+        clearUnreadCount(selectedConversation.id);
+      })
       .catch(() => setMessages([]))
       .finally(() => setLoadingMessages(false));
   }, [selectedConversation?.id]);
@@ -222,7 +287,16 @@ export default function ChatPage() {
     const atualizarConversas = () => {
       conversationService
         .listByUser(user.id)
-        .then((res) => setConversations(Array.isArray(res) ? res : []))
+        .then((res) => {
+          const next = Array.isArray(res) ? res : [];
+          setConversations(
+            next.map((item) =>
+              Number(item.id) === Number(selectedConversation.id)
+                ? { ...item, mensagensNaoLidas: 0, unreadCount: 0 }
+                : item
+            )
+          );
+        })
         .catch(() => {});
     };
 
@@ -280,9 +354,11 @@ export default function ChatPage() {
   }, [messages, targetMessageId]);
 
   const filtered = useMemo(() =>
-    conversations.filter((c) =>
-      (c?.titulo ?? "").toLowerCase().includes(search.toLowerCase())
-    ), [conversations, search]);
+    conversations
+      .filter((c) =>
+        (c?.titulo ?? "").toLowerCase().includes(search.toLowerCase())
+      )
+      .sort((a, b) => getConversationSortTime(b) - getConversationSortTime(a)), [conversations, search]);
 
   const sendMessage = async () => {
     if (!input.trim() || !selectedConversation?.id) return;
@@ -328,7 +404,7 @@ export default function ChatPage() {
     }
   };
 
-  // Edição via modal
+  // Edicao via modal
   const abrirModalEdicao = (m) => {
     setModalEdicao(m);
     setEditandoTexto(m.conteudo);
@@ -350,7 +426,7 @@ export default function ChatPage() {
     }
   };
 
-  // Exclusão via modal de confirmação
+  // Exclusao via modal de confirmacao
   const abrirModalExclusao = (m) => {
     setModalExclusao(m);
   };
@@ -407,15 +483,21 @@ export default function ChatPage() {
         </div>
 
         <div className="pagina-chat__rolagem-conversas">
-          {filtered.map((c) => (
-            <motion.button
+          {filtered.map((c) => {
+            const unreadCount = getUnreadCount(c);
+
+            return (
+              <motion.button
               key={c.id}
-              onClick={() => { setSelectedConversation(c); setShowMobileList(false); }}
-              className={`conversa-item ${selectedConversation?.id === c.id ? "conversa-item--selecionada" : ""}`}
+              onClick={() => { setSelectedConversation(c); setShowMobileList(false); marcarConversaComoLida(c.id); }}
+              className={`conversa-item ${selectedConversation?.id === c.id ? "conversa-item--selecionada" : ""} ${unreadCount > 0 ? "conversa-item--nao-lida" : ""}`}
             >
-              <div className="conversa-item__avatar">
-                <span className="conversa-item__iniciais">{getInitials(c?.titulo)}</span>
-              </div>
+              <ChatAvatar
+                  className="conversa-item__avatar"
+                  photoUrl={getConversationPhotoUrl(c)}
+                  name={c?.titulo}
+                  label={c?.titulo ? `Foto de ${c.titulo}` : "Foto da conversa"}
+                />
               <div className="conversa-item__info">
                 <div className="conversa-item__header">
                   <p className="conversa-item__nome">{c?.titulo ?? "Conversa"}</p>
@@ -425,13 +507,18 @@ export default function ChatPage() {
                 </div>
                 <div className="conversa-item__rodape">
                   <p className="conversa-item__preview">{c?.ultimaMensagem ?? "Nenhuma mensagem ainda"}</p>
-                  {c?.ultimaMensagemHorario && (
+                  {unreadCount > 0 ? (
+                    <span className="conversa-item__contador" aria-label={`${unreadCount} mensagens nao lidas`}>
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  ) : c?.ultimaMensagemHorario ? (
                     <span className="conversa-item__horario">{formatarHora(c.ultimaMensagemHorario)}</span>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </motion.button>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -515,6 +602,15 @@ export default function ChatPage() {
                             </div>
                           )}
 
+                          {!mine && (
+                            <ChatAvatar
+                              className="mensagem-avatar"
+                              photoUrl={getMessagePhotoUrl(m)}
+                              name={m?.remetenteNome}
+                              label={m?.remetenteNome ? `Foto de ${m.remetenteNome}` : "Foto do remetente"}
+                            />
+                          )}
+
                           <div className="bolha-mensagem">
                             {!mine && (
                               <button
@@ -567,13 +663,13 @@ export default function ChatPage() {
         ) : (
           <div className="pagina-chat__estado-vazio">
             <p style={{ color: "#888" }}>
-              {conversations.length === 0 ? "Você ainda não tem nenhuma conversa." : "Selecione uma conversa"}
+              {conversations.length === 0 ? "Voce ainda nao tem nenhuma conversa." : "Selecione uma conversa"}
             </p>
           </div>
         )}
       </div>
 
-      {/* MODAL EDIÇÃO */}
+      {/* MODAL EDICAO */}
       {modalEdicao && (
         <div className="modal-overlay" onClick={fecharModalEdicao}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -606,7 +702,7 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* MODAL CONFIRMAÇÃO EXCLUSÃO */}
+      {/* MODAL CONFIRMACAO EXCLUSAO */}
       {modalExclusao && (
         <div className="modal-overlay" onClick={fecharModalExclusao}>
           <div className="modal modal--pequeno" onClick={(e) => e.stopPropagation()}>
@@ -614,7 +710,7 @@ export default function ChatPage() {
               <h3 className="modal__titulo">Excluir mensagem</h3>
             </div>
             <div className="modal__corpo">
-              <p className="modal__texto">Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.</p>
+              <p className="modal__texto">Tem certeza que deseja excluir esta mensagem? Esta acao nao pode ser desfeita.</p>
             </div>
             <div className="modal__rodape">
               <button className="modal__btn modal__btn--cancelar" onClick={fecharModalExclusao}>

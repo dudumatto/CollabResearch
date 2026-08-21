@@ -120,9 +120,19 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
-.conversa-item__iniciais {
+.conversa-item__avatar-foto,
+.mensagem-avatar-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.conversa-item__avatar-iniciais,
+.mensagem-avatar-iniciais {
   color: #fff;
   font-size: 12px;
   font-weight: bold;
@@ -178,6 +188,27 @@
   flex-shrink: 0;
 }
 
+
+.conversa-item--nao-lida .conversa-item__nome,
+.conversa-item--nao-lida .conversa-item__preview {
+  font-weight: 700;
+}
+
+.conversa-item__contador {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #1f7a5a;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
 .conversa-item__badge {
   font-size: 10px;
   font-weight: 600;
@@ -208,7 +239,7 @@
 }
 
 /* =========================
-   Área da conversa
+   Area da conversa
    ========================= */
 .pagina-chat__area-conversa {
   flex: 1;
@@ -266,6 +297,8 @@
 
 .mensagem-linha--contato {
   justify-content: flex-start;
+  align-items: flex-end;
+  gap: 8px;
 }
 
 .mensagem-linha--temporaria .bolha-mensagem {
@@ -274,6 +307,23 @@
 
 .mensagem-alvo .bolha-mensagem {
   animation: destacarMensagem 1.8s ease both;
+}
+
+.mensagem-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #1f7a5a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+.mensagem-avatar-iniciais {
+  font-size: 10px;
 }
 
 @keyframes destacarMensagem {
@@ -570,7 +620,7 @@
 }
 
 /* =========================
-   Botão voltar (mobile)
+   Botao voltar (mobile)
    ========================= */
 .pagina-chat__botao-voltar {
   display: none;
@@ -635,8 +685,7 @@
   .conversa-item__rodape {
     min-width: 0;
   }
-
-  .conversa-item__badge {
+.conversa-item__badge {
     font-size: 9px;
     padding: 2px 5px;
   }
@@ -711,7 +760,7 @@
 }
 
 /* =========================
-   Ações de mensagem (hover)
+   Acoes de mensagem (hover)
    ========================= */
 .mensagem-acoes {
   display: none;

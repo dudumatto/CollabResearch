@@ -18,15 +18,24 @@ class AppButton extends StatelessWidget {
       width: double.infinity,
       child: FilledButton(
         onPressed: isLoading ? null : onPressed,
-        child: isLoading
-            ? const SizedBox(
-                height: 18,
-                width: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Text(label),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 160),
+          child: isLoading
+              ? const SizedBox(
+                  key: ValueKey('loading'),
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Text(
+                  label,
+                  key: const ValueKey('label'),
+                ),
+        ),
       ),
     );
   }
 }
-

@@ -104,9 +104,9 @@ public class ConversaService {
             projetos.add(i.getProjeto());
         }
 
-        return conversaRepository.findByProjetoIdIn(
+        return ordenarPorUltimaMensagem(conversaRepository.findByProjetoIdIn(
                 projetos.stream().map(Projeto::getId).toList()
-        );
+        ));
     }
 
     public Page<Conversa> listarConversasDoUsuario(Integer usuarioId, Pageable pageable) {
@@ -127,7 +127,7 @@ public class ConversaService {
         todas.addAll(listarConversasDoUsuario(usuarioId));
         todas.addAll(conversaRepository.findPrivadasDoUsuario(usuarioId));
 
-        return todas;
+        return ordenarPorUltimaMensagem(todas);
     }
 
     public List<Mensagem> listarMensagens(Integer conversaId) {
@@ -135,6 +135,7 @@ public class ConversaService {
         Conversa conversa = conversaRepository.findById(conversaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversa nao encontrada"));
         validarParticipacao(conversa, usuarioLogado.getId());
+        notificacaoService.marcarMensagensDaConversaComoLidas(usuarioLogado.getId(), conversaId);
         return mensagemRepository.findByConversaIdOrderByDataEnvioAsc(conversaId);
     }
 
@@ -210,6 +211,31 @@ public class ConversaService {
         return salva;
     }
 
+
+    private List<Conversa> ordenarPorUltimaMensagem(List<Conversa> conversas) {
+        return conversas.stream()
+                .sorted(Comparator.comparing(this::dataOrdenacaoConversa).reversed())
+                .toList();
+    }
+
+    private OffsetDateTime dataOrdenacaoConversa(Conversa conversa) {
+        if (conversa.getMensagens() != null && !conversa.getMensagens().isEmpty()) {
+            Mensagem ultima = conversa.getMensagens().get(0);
+            if (ultima.getDataEnvio() != null) return ultima.getDataEnvio();
+        }
+        return conversa.getDataCriacao() != null ? conversa.getDataCriacao() : OffsetDateTime.MIN;
+    }
+    public long contarMensagensNaoLidas(Integer conversaId, Integer usuarioId) {
+        return notificacaoService.contarMensagensNaoLidasDaConversa(usuarioId, conversaId);
+    }
+
+    public void marcarComoLida(Integer conversaId) {
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        Conversa conversa = conversaRepository.findById(conversaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversa nao encontrada"));
+        validarParticipacao(conversa, usuarioLogado.getId());
+        notificacaoService.marcarMensagensDaConversaComoLidas(usuarioLogado.getId(), conversaId);
+    }
     private void validarParticipacao(Conversa conversa, Integer usuarioId) {
         if (conversa.getTipo() == TipoConversa.PRIVADA) {
             boolean participa = conversa.getParticipantes()

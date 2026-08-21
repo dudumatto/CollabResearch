@@ -1,15 +1,15 @@
 import { api } from "./api";
 
 export const WS_DESTINATIONS = {
-  enviarMensagem:  (id) => `/app/conversa/${id}/mensagem`,
-  editarMensagem:  (id) => `/app/conversa/${id}/editar`,
+  enviarMensagem: (id) => `/app/conversa/${id}/mensagem`,
+  editarMensagem: (id) => `/app/conversa/${id}/editar`,
   excluirMensagem: (id) => `/app/conversa/${id}/excluir`,
 };
 
 export const WS_TOPICS = {
-  mensagens:    (id) => `/topic/conversa/${id}`,
+  mensagens: (id) => `/topic/conversa/${id}`,
   atualizacoes: (id) => `/topic/conversa/${id}/atualiza`,
-  notificacoes: ()   => `/user/queue/notificacoes`,
+  notificacoes: () => `/user/queue/notificacoes`,
 };
 
 export const conversationService = {
@@ -24,9 +24,15 @@ export const conversationService = {
   listMessages(conversationId) {
     return api.get(`/api/conversas/${conversationId}/mensagens`);
   },
+
+  markAsRead(conversationId) {
+    return api.post(`/api/conversas/${conversationId}/lida`);
+  },
+
   abrirOuCriarPorProjeto(projetoId) {
     return api.post(`/api/conversas/projeto/${projetoId}/abrir`);
   },
+
   sendMessage(conversationId, conteudo) {
     return api.post(`/api/conversas/${conversationId}/mensagem`, { conteudo });
   },
