@@ -24,6 +24,14 @@ const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
   <div className="skeleton" style={{ width: w, height: h, borderRadius: r, marginBottom: mb || undefined }} />
 );
 
+function formatToday() {
+  return new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date());
+}
+
 function AdvisorDashboardSkeleton() {
   return (
     <div className="advisor-pagina">
@@ -201,27 +209,42 @@ function DashboardHero({ name, metricas, onNavigate }) {
     (metricas.etapasAtrasadas ?? 0);
 
   return (
-    <section className="advisor-dashboard-hero">
+    <section className="advisor-dashboard-hero" aria-label="Resumo do painel">
+      <div className="advisor-dashboard-hero__decoration" aria-hidden="true">
+        <img src="/brand/logo-icon.svg" width={320} height={320} alt="" />
+      </div>
       <div className="advisor-dashboard-hero__texto">
-        <span className="advisor-dashboard-hero__eyebrow">Painel do orientador</span>
-        <h2 className="advisor-dashboard-hero__titulo">Olá, {name}.</h2>
+        <p className="advisor-dashboard-hero__data">{formatToday()}</p>
+        <h2 className="advisor-dashboard-hero__titulo">Olá, <span>{name}</span></h2>
         <p className="advisor-dashboard-hero__descricao">
           {pendingTotal > 0
-            ? `${pendingTotal} pontos precisam de atenção antes de seguir a rotina.`
-            : "Nenhuma pendência crítica no momento."}
+            ? <>Você tem <strong>{pendingTotal} pendências</strong> para revisar antes de seguir a rotina.</>
+            : <>Nenhuma <strong>pendência crítica</strong> no momento.</>}
         </p>
-      </div>
 
-      <div className="advisor-dashboard-hero__acoes">
-        <button type="button" onClick={() => onNavigate("/app/applications")}>
-          <Users size={15} /> Inscrições
-        </button>
-        <button type="button" onClick={() => onNavigate("/app/deliveries")}>
-          <ClipboardCheck size={15} /> Entregas
-        </button>
-        <button type="button" onClick={() => onNavigate("/app/progress")}>
-          <AlertTriangle size={15} /> Progresso
-        </button>
+        <div className="advisor-dashboard-hero__acoes">
+          <button
+            type="button"
+            className="advisor-dashboard-hero__botao advisor-dashboard-hero__botao--primario"
+            onClick={() => onNavigate("/app/applications")}
+          >
+            <Users size={16} /> Inscrições
+          </button>
+          <button
+            type="button"
+            className="advisor-dashboard-hero__botao advisor-dashboard-hero__botao--secundario"
+            onClick={() => onNavigate("/app/deliveries")}
+          >
+            <ClipboardCheck size={16} /> Entregas
+          </button>
+          <button
+            type="button"
+            className="advisor-dashboard-hero__botao advisor-dashboard-hero__botao--secundario"
+            onClick={() => onNavigate("/app/progress")}
+          >
+            <AlertTriangle size={16} /> Progresso
+          </button>
+        </div>
       </div>
     </section>
   );
