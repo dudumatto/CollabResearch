@@ -1,7 +1,6 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -374,9 +373,6 @@ export default function DashboardPage() {
         className="painel"
       >
         <Card variant="highlight" padding="none" className="painel__banner-boas-vindas">
-          <div className="painel__decoracao-banner" aria-hidden="true">
-            <Image src="/brand/logo-icon.svg" width={280} height={280} alt="" priority />
-          </div>
           <div className="painel__conteudo-banner">
             <div className="painel__banner-meta">
               <Badge tone="brand" size="sm" icon={<CheckCircle2 size={12} />}>
@@ -648,4 +644,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
 

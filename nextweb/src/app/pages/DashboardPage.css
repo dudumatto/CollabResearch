@@ -39,29 +39,11 @@
   opacity: 0.55;
 }
 
-.painel__decoracao-banner {
-  position: absolute;
-  inset: 0 0 0 auto;
-  width: 36%;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  overflow: hidden;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.58));
-}
-
-.painel__decoracao-banner img {
-  width: clamp(12rem, 19vw, 18rem);
-  height: auto;
-  margin-right: -2.3rem;
-  opacity: 0.38;
-}
 
 .painel__conteudo-banner {
   position: relative;
   z-index: 1;
-  width: min(68%, 47rem);
+  width: min(100%, 47rem);
   padding: var(--espaco-6);
 }
 
@@ -690,14 +672,7 @@
     font-size: 1.6rem;
   }
 
-  .painel__decoracao-banner {
-    width: 46%;
-  }
 
-  .painel__decoracao-banner img {
-    margin-right: -3rem;
-    opacity: 0.2;
-  }
 
   .painel__conteudo-banner {
     width: 78%;
@@ -720,10 +695,6 @@
     padding: var(--espaco-4);
   }
 
-  .painel__decoracao-banner {
-    width: 55%;
-    opacity: 0.55;
-  }
 
   .painel__titulo-banner {
     font-size: 1.45rem;
@@ -820,9 +791,6 @@
     linear-gradient(90deg, rgba(126, 160, 106, 0.06) 1px, transparent 1px);
 }
 
-.dark .painel__decoracao-banner {
-  background: linear-gradient(90deg, transparent, rgba(15, 26, 20, 0.3));
-}
 
 .dark .cartao-resumo {
   background: var(--cor-superficie-clay);
@@ -887,3 +855,39 @@
 }
 
 
+
+
+.dark .notificacao-resumo {
+  background: rgba(18, 28, 22, 0.92);
+  border-color: rgba(126, 160, 106, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.dark .notificacao-resumo--nao-lida {
+  background: linear-gradient(135deg, rgba(31, 122, 90, 0.18), rgba(18, 28, 22, 0.96));
+  border-color: rgba(126, 160, 106, 0.24);
+}
+
+.dark .notificacao-resumo:hover {
+  background: rgba(24, 36, 28, 0.98);
+  border-color: rgba(126, 160, 106, 0.22);
+}
+
+.dark .notificacao-resumo__icone-area {
+  background: rgba(126, 160, 106, 0.14);
+  color: var(--cor-primaria-texto);
+  border: 1px solid rgba(126, 160, 106, 0.18);
+}
+
+.dark .notificacao-resumo__titulo {
+  color: var(--cor-texto);
+}
+
+.dark .notificacao-resumo__data {
+  color: var(--cor-texto-fraco);
+}
+
+.dark .notificacao-resumo__ponto-nao-lido {
+  background: var(--cor-primaria);
+  box-shadow: 0 0 0 3px rgba(126, 160, 106, 0.18);
+}
