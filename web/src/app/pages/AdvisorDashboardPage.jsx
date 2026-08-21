@@ -125,15 +125,6 @@ function buildMetricCards(metricas) {
       href: "/app/deliveries",
       priority: "action",
     },
-    {
-      label: "Avaliações aguardando ciência",
-      value: metricas.avaliacoesAguardandoCiencia,
-      icon: Star,
-      areaClass: "advisor-metrica__icone-area--violeta",
-      iconClass: "advisor-metrica__icone--violeta",
-      href: "/app/avaliacoes",
-      priority: "normal",
-    },
   ];
 }
 
@@ -272,6 +263,17 @@ export default function AdvisorDashboardPage() {
   const metricCards = buildMetricCards(metricas);
   const actionMetricCards = metricCards.filter((card) => card.priority === "action" || card.priority === "risk");
   const overviewMetricCards = metricCards.filter((card) => card.priority === "normal");
+  const walletMetricCards = [
+    ...overviewMetricCards,
+    {
+      label: "Avaliações aguardando ciência",
+      value: metricas.avaliacoesAguardandoCiencia,
+      icon: Star,
+      areaClass: "advisor-metrica__icone-area--violeta",
+      iconClass: "advisor-metrica__icone--violeta",
+      href: "/app/avaliacoes",
+    },
+  ];
   const highPriorityQueues = filasConfig.filter((config) =>
     ["solicitacoesOrientacao", "inscricoesPendentes", "entregasAguardandoRevisao", "etapasAtrasadas"].includes(config.key),
   );
@@ -317,20 +319,37 @@ export default function AdvisorDashboardPage() {
       </div>
 
       <div className="advisor-dashboard-layout">
-        <AdvisorSection title="Prioridades" description="Pendências que bloqueiam inscrição, entrega ou avanço.">
-          <div className="advisor-grade-filas advisor-grade-filas--prioridade">
-            {highPriorityQueues.map((config) => (
-              <QueueCard
-                key={config.key}
-                title={config.title}
-                icon={config.icon}
-                kind={config.kind}
-                items={filas[config.key] ?? []}
-                onNavigate={handleNavigate}
-              />
-            ))}
-          </div>
-        </AdvisorSection>
+        <div className="advisor-dashboard-principal">
+          <AdvisorSection title="Prioridades" description="Pendências que bloqueiam inscrição, entrega ou avanço.">
+            <div className="advisor-grade-filas advisor-grade-filas--prioridade">
+              {highPriorityQueues.map((config) => (
+                <QueueCard
+                  key={config.key}
+                  title={config.title}
+                  icon={config.icon}
+                  kind={config.kind}
+                  items={filas[config.key] ?? []}
+                  onNavigate={handleNavigate}
+                />
+              ))}
+            </div>
+          </AdvisorSection>
+
+          <AdvisorSection title="Acompanhamento" description="Projetos, orientandos e avaliações em andamento.">
+            <div className="advisor-grade-filas advisor-grade-filas--acompanhamento">
+              {followUpQueues.map((config) => (
+                <QueueCard
+                  key={config.key}
+                  title={config.title}
+                  icon={config.icon}
+                  kind={config.kind}
+                  items={filas[config.key] ?? []}
+                  onNavigate={handleNavigate}
+                />
+              ))}
+            </div>
+          </AdvisorSection>
+        </div>
 
         <aside className="advisor-dashboard-lateral">
           <AdvisorSection title="Ações rápidas">
@@ -356,7 +375,7 @@ export default function AdvisorDashboardPage() {
 
           <AdvisorSection title="Carteira">
             <div className="advisor-grade-metricas advisor-grade-metricas--resumo">
-              {overviewMetricCards.map((card) => (
+              {walletMetricCards.map((card) => (
                 <button
                   key={card.label}
                   type="button"
@@ -376,21 +395,6 @@ export default function AdvisorDashboardPage() {
           </AdvisorSection>
         </aside>
       </div>
-
-      <AdvisorSection title="Acompanhamento" description="Projetos, orientandos e avaliações em andamento.">
-        <div className="advisor-grade-filas advisor-grade-filas--acompanhamento">
-          {followUpQueues.map((config) => (
-            <QueueCard
-              key={config.key}
-              title={config.title}
-              icon={config.icon}
-              kind={config.kind}
-              items={filas[config.key] ?? []}
-              onNavigate={handleNavigate}
-            />
-          ))}
-        </div>
-      </AdvisorSection>
     </motion.div>
   );
 }

@@ -30,7 +30,6 @@ const navItems = [
   { path: "/app/applications", label: "Inscrições", icon: FileText },
   { path: "/app/chat", label: "Conversas", icon: MessageSquare },
   { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
-  { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck, roles: ["ALUNO"] },
   { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
   { path: "/app/feedback", label: "Feedbacks", icon: Star },
   { path: "/app/deadlines", label: "Prazos", icon: CalendarClock, roles: ["ALUNO"] },

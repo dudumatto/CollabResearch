@@ -49,8 +49,15 @@
 
 @media (min-width: 1180px) {
   .advisor-dashboard-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 21rem);
   }
+}
+
+.advisor-dashboard-principal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  min-width: 0;
 }
 
 .advisor-dashboard-lateral {
@@ -381,7 +388,7 @@
 
 @media (min-width: 1280px) {
   .advisor-grade-filas--acompanhamento {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
