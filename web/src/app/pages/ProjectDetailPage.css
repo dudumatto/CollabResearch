@@ -119,6 +119,30 @@
   background-color: var(--cor-fundo-leve);
 }
 
+.detalhe-card__foto-projeto-vazia {
+  width: calc(100% + (var(--espaco-6) * 2));
+  min-height: 6rem;
+  margin: calc(var(--espaco-6) * -1) calc(var(--espaco-6) * -1) var(--espaco-5);
+  border: 0;
+  border-bottom: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-grande) var(--raio-grande) 0 0;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--cor-primaria-clara) 68%, white), var(--cor-fundo-leve));
+  color: var(--cor-primaria);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  font-family: var(--fonte-principal);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.detalhe-card__foto-projeto-vazia:hover {
+  background-color: var(--cor-primaria-clara);
+}
+
 .detalhe-card__titulo-secao {
   font-weight: var(--peso-semi);
   font-size: var(--tamanho-grande);

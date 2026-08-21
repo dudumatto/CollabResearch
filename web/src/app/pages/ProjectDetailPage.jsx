@@ -491,8 +491,17 @@ export default function ProjectDetailPage() {
         {/* ── Conteúdo principal ── */}
         <div className="pagina-detalhe-projeto__conteudo-principal">
           <div className="detalhe-card">
-            {project.coverUrl && (
+            {project.coverUrl ? (
               <img className="detalhe-card__foto-projeto" src={project.coverUrl} alt={`Foto do projeto ${project.title}`} />
+            ) : canEditProject && (
+              <button
+                type="button"
+                onClick={() => navigate(`/app/projects/${id}/edit`)}
+                className="detalhe-card__foto-projeto-vazia"
+              >
+                <BookOpen size={18} />
+                <span>Adicionar foto do projeto</span>
+              </button>
             )}
             <div className="detalhe-card__topo">
               <div className="detalhe-card__badges">

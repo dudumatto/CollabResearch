@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { conversationService } from "../services/conversationService";
 import { chatRealtimeService } from "../services/chatRealtimeService";
+import { projectService } from "../services/projectService";
 import { StatusView } from "../components/StatusView";
+import { getUserPhotoUrl, mapProject } from "../utils/adapters";
 import "./ChatPage.css";
 import { useLocation, useNavigate } from "react-router";
 
@@ -21,6 +23,44 @@ function ChatAvatar({ name, src, className }) {
       {src && !failed ? <img src={src} alt={`Foto de perfil de ${name}`} onError={() => setFailed(true)} /> : <span>{getInitials(name)}</span>}
     </div>
   );
+}
+
+async function hydrateConversationPhotos(items, currentUser) {
+  const conversations = Array.isArray(items) ? items : [];
+
+  return Promise.all(conversations.map(async (conversation) => {
+    const explicitPhoto =
+      conversation?.fotoPerfilUrl ??
+      conversation?.fotoProjetoUrl ??
+      conversation?.projectPhotoUrl ??
+      conversation?.avatarUrl ??
+      "";
+
+    if (explicitPhoto) {
+      return { ...conversation, fotoPerfilUrl: explicitPhoto };
+    }
+
+    if (conversation?.tipo !== "GRUPO" || !conversation?.projetoId) {
+      return conversation;
+    }
+
+    try {
+      const project = mapProject(await projectService.getById(conversation.projetoId));
+      const fallbackPhoto =
+        project.coverUrl ||
+        getUserPhotoUrl(project.advisor) ||
+        getUserPhotoUrl(currentUser);
+
+      return fallbackPhoto
+        ? { ...conversation, fotoPerfilUrl: fallbackPhoto }
+        : conversation;
+    } catch {
+      const fallbackPhoto = getUserPhotoUrl(currentUser);
+      return fallbackPhoto
+        ? { ...conversation, fotoPerfilUrl: fallbackPhoto }
+        : conversation;
+    }
+  }));
 }
 
 function formatarHora(data) {
@@ -170,7 +210,7 @@ export default function ChatPage() {
     try {
       setLoading(true);
       const result = await conversationService.listByUser(user.id);
-      setConversations(Array.isArray(result) ? result : []);
+      setConversations(await hydrateConversationPhotos(result, user));
     } catch (err) {
       setError(err);
     } finally {
@@ -216,6 +256,14 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!selectedConversation?.id) return;
+    const updated = conversations.find((conversation) => Number(conversation.id) === Number(selectedConversation.id));
+    if (updated && updated.fotoPerfilUrl !== selectedConversation.fotoPerfilUrl) {
+      setSelectedConversation(updated);
+    }
+  }, [conversations, selectedConversation?.id, selectedConversation?.fotoPerfilUrl]);
+
+  useEffect(() => {
+    if (!selectedConversation?.id) return;
     setMessages([]);
     setLoadingMessages(true);
     conversationService
@@ -231,7 +279,8 @@ export default function ChatPage() {
     const atualizarConversas = () => {
       conversationService
         .listByUser(user.id)
-        .then((res) => setConversations(Array.isArray(res) ? res : []))
+        .then((res) => hydrateConversationPhotos(res, user))
+        .then(setConversations)
         .catch(() => {});
     };
 
@@ -320,7 +369,7 @@ export default function ChatPage() {
         conversationService.listByUser(user.id),
       ]);
       setMessages(Array.isArray(updated) ? updated : []);
-      setConversations(Array.isArray(conversasAtualizadas) ? conversasAtualizadas : []);
+      setConversations(await hydrateConversationPhotos(conversasAtualizadas, user));
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== temp.id));
       setInput(conteudo);
@@ -383,7 +432,10 @@ export default function ChatPage() {
     if (remetenteId === user?.id || abrindoPrivada === remetenteId) return;
     try {
       setAbrindoPrivada(remetenteId);
-      const conversa = await conversationService.openPrivate(remetenteId);
+      const [conversa] = await hydrateConversationPhotos(
+        [await conversationService.openPrivate(remetenteId)],
+        user,
+      );
       setConversations((prev) => prev.some((c) => c.id === conversa.id) ? prev : [conversa, ...prev]);
       setSelectedConversation(conversa);
       setShowMobileList(false);

@@ -18,7 +18,6 @@ import { mapOrientadorDashboard } from "../utils/adapters";
 import { formatProjectStatus, formatApplicationStatus, formatEntregaStatus } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
-import { WelcomeBanner } from "../components/WelcomeBanner";
 import "./AdvisorWorkspace.css";
 
 const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
@@ -28,38 +27,35 @@ const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
 function AdvisorDashboardSkeleton() {
   return (
     <div className="advisor-pagina">
-      <Sk w="100%" h={132} r="var(--raio-grande)" mb={20} />
-      <div className="advisor-grade-metricas">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", padding: "var(--espaco-5)", border: "1px solid var(--cor-borda-clara)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--espaco-4)" }}>
-              <Sk w={36} h={36} r="var(--raio-medio)" />
-              <Sk w={14} h={14} />
+      <Sk w="100%" h={128} r="var(--raio-grande)" mb={16} />
+      <div className="advisor-dashboard-overview">
+        {[1, 2, 3, 4, 5, 6, 7].map((item) => (
+          <div key={item} className="advisor-metrica advisor-metrica--overview">
+            <Sk w={34} h={34} r="var(--raio-medio)" />
+            <div style={{ flex: 1 }}>
+              <Sk w={28} h={22} mb={6} />
+              <Sk w="70%" h={12} />
             </div>
-            <Sk w="40%" h={26} mb={8} />
-            <Sk w="65%" h={13} />
           </div>
         ))}
       </div>
-      <div className="advisor-grade-filas">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", overflow: "hidden" }}>
-            <div style={{ padding: "var(--espaco-4)", borderBottom: "1px solid var(--cor-fundo)" }}>
-              <Sk w={130} h={15} />
+      <div className="advisor-dashboard-layout">
+        <div className="advisor-grade-filas advisor-grade-filas--prioridade">
+          {[1, 2, 3, 4].map((item) => (
+            <div key={item} className="advisor-card">
+              <div className="advisor-card__cabecalho">
+                <Sk w={140} h={15} />
+                <Sk w={24} h={24} r="var(--raio-completo)" />
+              </div>
+              <div className="advisor-card__corpo">
+                <Sk w="100%" h={46} r="var(--raio-medio)" />
+              </div>
             </div>
-            <div style={{ padding: "0 var(--espaco-4)" }}>
-              {[1, 2, 3].map((j) => (
-                <div key={j} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--cor-borda-clara)" }}>
-                  <Sk w={28} h={28} r="var(--raio-pequeno)" />
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
-                    <Sk w="60%" h={13} />
-                    <Sk w="40%" h={11} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        <div className="advisor-dashboard-lateral">
+          <Sk w="100%" h={150} r="var(--raio-grande)" />
+        </div>
       </div>
     </div>
   );
@@ -153,7 +149,7 @@ const filasConfig = [
 
 function QueueCard({ title, icon: Icon, items, kind, onNavigate }) {
   return (
-    <div className="advisor-card">
+    <div className={`advisor-card ${items.length === 0 ? "advisor-card--sem-itens" : ""}`}>
       <div className="advisor-card__cabecalho">
         <span className="advisor-card__titulo">{title}</span>
         <span className="advisor-card__contador">{items.length}</span>
@@ -161,8 +157,8 @@ function QueueCard({ title, icon: Icon, items, kind, onNavigate }) {
       <div className="advisor-card__corpo">
         {items.length === 0 ? (
           <div className="advisor-card__vazio">
-            <CheckCircle2 size={18} />
-            <div>Nada pendente por aqui.</div>
+            <CheckCircle2 size={17} />
+            <span>Nada pendente por aqui.</span>
           </div>
         ) : (
           items.map((item, index) => (
@@ -206,6 +202,40 @@ function AdvisorSection({ title, description, children }) {
   );
 }
 
+function DashboardHero({ name, metricas, onNavigate }) {
+  const pendingTotal =
+    (metricas.solicitacoesOrientacao ?? 0) +
+    (metricas.inscricoesPendentes ?? 0) +
+    (metricas.entregasAguardandoRevisao ?? 0) +
+    (metricas.etapasAtrasadas ?? 0);
+
+  return (
+    <section className="advisor-dashboard-hero">
+      <div className="advisor-dashboard-hero__texto">
+        <span className="advisor-dashboard-hero__eyebrow">Painel do orientador</span>
+        <h2 className="advisor-dashboard-hero__titulo">Olá, {name}.</h2>
+        <p className="advisor-dashboard-hero__descricao">
+          {pendingTotal > 0
+            ? `${pendingTotal} pontos precisam de atenção antes de seguir a rotina.`
+            : "Nenhuma pendência crítica no momento."}
+        </p>
+      </div>
+
+      <div className="advisor-dashboard-hero__acoes">
+        <button type="button" onClick={() => onNavigate("/app/applications")}>
+          <Users size={15} /> Inscrições
+        </button>
+        <button type="button" onClick={() => onNavigate("/app/deliveries")}>
+          <ClipboardCheck size={15} /> Entregas
+        </button>
+        <button type="button" onClick={() => onNavigate("/app/progress")}>
+          <AlertTriangle size={15} /> Progresso
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export default function AdvisorDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -243,10 +273,10 @@ export default function AdvisorDashboardPage() {
   const actionMetricCards = metricCards.filter((card) => card.priority === "action" || card.priority === "risk");
   const overviewMetricCards = metricCards.filter((card) => card.priority === "normal");
   const highPriorityQueues = filasConfig.filter((config) =>
-    ["inscricoesPendentes", "entregasAguardandoRevisao", "etapasAtrasadas"].includes(config.key),
+    ["solicitacoesOrientacao", "inscricoesPendentes", "entregasAguardandoRevisao", "etapasAtrasadas"].includes(config.key),
   );
   const followUpQueues = filasConfig.filter((config) =>
-    !["inscricoesPendentes", "entregasAguardandoRevisao", "etapasAtrasadas"].includes(config.key),
+    !["solicitacoesOrientacao", "inscricoesPendentes", "entregasAguardandoRevisao", "etapasAtrasadas"].includes(config.key),
   );
 
   const handleNavigate = (destino) => navigate(destino);
@@ -258,43 +288,36 @@ export default function AdvisorDashboardPage() {
       transition={{ duration: 0.3 }}
       className="advisor-pagina"
     >
-      <WelcomeBanner
+      <DashboardHero
         name={user?.nome?.split(" ")[0] ?? "professor(a)"}
-        summary={<>
-          Você tem <strong>{metricas.inscricoesPendentes} inscrições</strong> aguardando análise, <strong>{metricas.entregasAguardandoRevisao} entregas</strong> para revisar e <strong>{metricas.etapasAtrasadas} etapas atrasadas</strong>.
-        </>}
-        primaryAction={{ label: "Ver inscrições", onClick: () => handleNavigate("/app/applications") }}
-        secondaryAction={{ label: "Ver progresso", onClick: () => handleNavigate("/app/progress") }}
+        metricas={metricas}
+        onNavigate={handleNavigate}
       />
 
-      <AdvisorSection title="Atenção do dia" description="Itens que tendem a bloquear alunos ou etapas do projeto.">
-        <div className="advisor-grade-metricas advisor-grade-metricas--prioridade">
-          {actionMetricCards.map((card, index) => (
-            <motion.button
-              key={card.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.04 }}
-              whileHover={{ scale: 1.02, boxShadow: "0 16px 30px rgba(31,122,90,0.16)" }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleNavigate(card.href)}
-              className={`advisor-metrica advisor-metrica--${card.priority}`}
-            >
-              <div className="advisor-metrica__cabecalho">
-                <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
-                  <card.icon size={18} className={card.iconClass} />
-                </div>
-                <ChevronRight size={14} className="advisor-metrica__seta" />
-              </div>
+      <div className="advisor-dashboard-overview">
+        {metricCards.map((card, index) => (
+          <motion.button
+            key={card.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: index * 0.025 }}
+            onClick={() => handleNavigate(card.href)}
+            className={`advisor-metrica advisor-metrica--overview advisor-metrica--${card.priority}`}
+          >
+            <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
+              <card.icon size={16} className={card.iconClass} />
+            </div>
+            <div className="advisor-metrica__conteudo">
               <p className="advisor-metrica__valor">{card.value}</p>
               <p className="advisor-metrica__rotulo">{card.label}</p>
-            </motion.button>
-          ))}
-        </div>
-      </AdvisorSection>
+            </div>
+            <ChevronRight size={14} className="advisor-metrica__seta" />
+          </motion.button>
+        ))}
+      </div>
 
       <div className="advisor-dashboard-layout">
-        <AdvisorSection title="Filas prioritárias" description="Revise primeiro inscrições, entregas e atrasos.">
+        <AdvisorSection title="Prioridades" description="Pendências que bloqueiam inscrição, entrega ou avanço.">
           <div className="advisor-grade-filas advisor-grade-filas--prioridade">
             {highPriorityQueues.map((config) => (
               <QueueCard
@@ -310,7 +333,28 @@ export default function AdvisorDashboardPage() {
         </AdvisorSection>
 
         <aside className="advisor-dashboard-lateral">
-          <AdvisorSection title="Resumo da carteira">
+          <AdvisorSection title="Ações rápidas">
+            <div className="advisor-grade-metricas advisor-grade-metricas--resumo">
+              {actionMetricCards.map((card) => (
+                <button
+                  key={card.label}
+                  type="button"
+                  onClick={() => handleNavigate(card.href)}
+                  className={`advisor-metrica advisor-metrica--compacta advisor-metrica--${card.priority}`}
+                >
+                  <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
+                    <card.icon size={16} className={card.iconClass} />
+                  </div>
+                  <div>
+                    <p className="advisor-metrica__valor">{card.value}</p>
+                    <p className="advisor-metrica__rotulo">{card.label}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </AdvisorSection>
+
+          <AdvisorSection title="Carteira">
             <div className="advisor-grade-metricas advisor-grade-metricas--resumo">
               {overviewMetricCards.map((card) => (
                 <button
@@ -330,11 +374,10 @@ export default function AdvisorDashboardPage() {
               ))}
             </div>
           </AdvisorSection>
-
         </aside>
       </div>
 
-      <AdvisorSection title="Acompanhamento" description="Visão geral para manter projetos, orientandos e avaliações em dia.">
+      <AdvisorSection title="Acompanhamento" description="Projetos, orientandos e avaliações em andamento.">
         <div className="advisor-grade-filas advisor-grade-filas--acompanhamento">
           {followUpQueues.map((config) => (
             <QueueCard
