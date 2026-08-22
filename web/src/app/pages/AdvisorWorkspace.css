@@ -49,7 +49,7 @@
 
 @media (min-width: 1180px) {
   .advisor-dashboard-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 21rem);
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -238,19 +238,19 @@
     overflow: hidden;
   }
 
-  .advisor-pagina--dashboard .advisor-dashboard-hero {
+  .advisor-pagina--dashboard .welcome-banner {
     min-height: 7.25rem;
     padding: var(--espaco-3) var(--espaco-5);
   }
 
-  .advisor-pagina--dashboard .advisor-dashboard-hero__descricao {
+  .advisor-pagina--dashboard .welcome-banner__summary {
     max-width: 34rem;
     margin-top: var(--espaco-1);
     font-size: var(--tamanho-base);
     line-height: 1.4;
   }
 
-  .advisor-pagina--dashboard .advisor-dashboard-hero__acoes {
+  .advisor-pagina--dashboard .welcome-banner__actions {
     margin-top: var(--espaco-3);
   }
 
@@ -267,14 +267,13 @@
   .advisor-pagina--dashboard .advisor-dashboard-layout {
     flex: 1;
     min-height: 0;
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 20rem);
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--espaco-3);
     align-items: start;
     overflow: hidden;
   }
 
-  .advisor-pagina--dashboard .advisor-dashboard-principal,
-  .advisor-pagina--dashboard .advisor-dashboard-lateral {
+  .advisor-pagina--dashboard .advisor-dashboard-principal {
     min-height: 0;
     gap: var(--espaco-3);
     overflow: hidden;
@@ -307,10 +306,6 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .advisor-pagina--dashboard .advisor-grade-metricas--resumo {
-    gap: var(--espaco-2);
-  }
-
   .advisor-pagina--dashboard .advisor-card__cabecalho {
     padding: var(--espaco-2) var(--espaco-3);
   }
@@ -334,17 +329,6 @@
   .advisor-pagina--dashboard .advisor-fila-item__icone {
     width: 1.55rem;
     height: 1.55rem;
-  }
-
-  .advisor-pagina--dashboard .advisor-metrica--compacta {
-    grid-template-columns: 2rem minmax(0, 1fr);
-    min-height: 3.55rem;
-    padding: var(--espaco-2);
-  }
-
-  .advisor-pagina--dashboard .advisor-metrica--compacta .advisor-metrica__icone-area {
-    width: 2rem;
-    height: 2rem;
   }
 }
 
@@ -496,13 +480,17 @@
   justify-content: center;
 }
 
-.advisor-metrica__icone-area--padrao {
-  background-color: var(--cor-primaria-clara);
-}
+.advisor-metrica__icone-area--azul    { background-color: var(--cor-primaria-clara); }
+.advisor-metrica__icone-area--violeta { background-color: var(--cor-secundaria-clara); }
+.advisor-metrica__icone-area--verde   { background-color: var(--cor-esmeralda-clara); }
+.advisor-metrica__icone-area--laranja { background-color: var(--cor-laranja-clara); }
+.advisor-metrica__icone-area--erro    { background-color: var(--cor-erro-clara); }
 
-.advisor-metrica__icone--padrao {
-  color: var(--cor-primaria);
-}
+.advisor-metrica__icone--azul    { color: var(--cor-primaria); }
+.advisor-metrica__icone--violeta { color: var(--cor-secundaria); }
+.advisor-metrica__icone--verde   { color: var(--cor-esmeralda); }
+.advisor-metrica__icone--laranja { color: var(--cor-laranja); }
+.advisor-metrica__icone--erro    { color: var(--cor-erro); }
 .advisor-metrica__valor {
   font-size: var(--tamanho-titulo);
   font-weight: var(--peso-negrito);
