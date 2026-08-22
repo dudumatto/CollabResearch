@@ -385,8 +385,6 @@ export default function DashboardPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: index * 0.05 }}
-                      whileHover={{ scale: 1.03, boxShadow: "0 10px 24px rgba(37,99,235,0.12)" }}
-                      whileTap={{ scale: 0.97 }}
                       onClick={() => navigate(`/app/projects/${project.id}`)}
                       className="projeto-sugerido"
                     >

@@ -421,12 +421,12 @@
    Projeto em andamento
    ================================================================ */
 .projeto-andamento__corpo {
-  padding: var(--espaco-4);
+  padding: 0;
 }
 
 @media (min-width: 768px) {
   .projeto-andamento__corpo {
-    padding: var(--espaco-6);
+    padding: 0;
   }
 }
 
@@ -527,18 +527,24 @@
    ================================================================ */
 .painel__card-projetos-sugeridos .projeto-sugerido {
   width: 100%;
-  padding: var(--espaco-3);
-  border-radius: var(--raio-medio);
+  padding: var(--espaco-4);
+  border-radius: 0;
   text-align: left;
-  background: none;
-  border: 1px solid transparent;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--cor-fundo);
   cursor: pointer;
   transition: var(--transicao-normal);
 }
 
 .painel__card-projetos-sugeridos .projeto-sugerido:hover {
-  background-color: var(--cor-primaria-clara);
-  border-color: var(--cor-primaria-leve);
+  background-color: var(--cor-fundo);
+}
+
+@media (min-width: 640px) {
+  .painel__card-projetos-sugeridos .projeto-sugerido {
+    padding: var(--espaco-4) var(--espaco-6);
+  }
 }
 
 .projeto-sugerido__linha {
@@ -612,7 +618,7 @@
 }
 
 .notificacao-resumo--nao-lida {
-  background-color: rgba(239, 245, 236, 0.45);
+  background-color: var(--cor-superficie);
 }
 
 .notificacao-resumo__icone-area {
@@ -661,10 +667,10 @@
    Espaçamento interno dos cards sugeridos e notificações
    ================================================================ */
 .painel__card-lista {
-  padding: var(--espaco-3);
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-2);
+  gap: 0;
 }
 
 /* ================================================================
