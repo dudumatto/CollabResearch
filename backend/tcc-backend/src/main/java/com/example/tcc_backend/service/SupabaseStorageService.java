@@ -132,16 +132,30 @@ public class SupabaseStorageService {
 
             JsonNode json = objectMapper.readTree(response.body());
             String signedPath = json.path("signedURL").asText(null);
-            if (signedPath == null || signedPath.isBlank()) {
-                return null;
-            }
-            return normalizedUrl() + "/storage/v1/object/sign/" + signedPath;
+            return buildSignedUrl(signedPath);
         } catch (IOException | InterruptedException ex) {
             if (ex instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
             return null;
         }
+    }
+
+    private String buildSignedUrl(String signedPath) {
+        if (isBlank(signedPath)) {
+            return null;
+        }
+
+        String trimmed = signedPath.trim();
+        if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+            return trimmed;
+        }
+
+        String relativePath = trimmed.startsWith("/") ? trimmed : "/" + trimmed;
+        if (relativePath.startsWith("/storage/v1/")) {
+            return normalizedUrl() + relativePath;
+        }
+        return normalizedUrl() + "/storage/v1" + relativePath;
     }
 
     private StorageObjectRef parsePublicStorageUrl(String publicUrl) {
