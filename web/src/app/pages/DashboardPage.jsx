@@ -211,7 +211,6 @@ export default function DashboardPage() {
       icon: FolderOpen,
       areaClass: "cartao-resumo__icone-area--azul",
       iconClass: "cartao-resumo__icone--azul",
-      bordaClass: "cartao-resumo--borda-azul",
       href: "/app/projects",
     },
     {
@@ -220,7 +219,6 @@ export default function DashboardPage() {
       icon: FileText,
       areaClass: "cartao-resumo__icone-area--violeta",
       iconClass: "cartao-resumo__icone--violeta",
-      bordaClass: "cartao-resumo--borda-violeta",
       href: "/app/applications",
     },
     {
@@ -229,7 +227,6 @@ export default function DashboardPage() {
       icon: Bell,
       areaClass: "cartao-resumo__icone-area--laranja",
       iconClass: "cartao-resumo__icone--laranja",
-      bordaClass: "cartao-resumo--borda-laranja",
       href: "/app/notifications",
     },
     {
@@ -238,7 +235,6 @@ export default function DashboardPage() {
       icon: TrendingUp,
       areaClass: "cartao-resumo__icone-area--verde",
       iconClass: "cartao-resumo__icone--verde",
-      bordaClass: "cartao-resumo--borda-verde",
       href: "/app/progress",
       variant: "progress",
     },
@@ -273,11 +269,11 @@ export default function DashboardPage() {
               whileHover={{ scale: 1.03, boxShadow: "0 16px 30px rgba(37,99,235,0.18)" }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(card.href)}
-              className={`cartao-resumo ${card.bordaClass} ${card.variant === "progress" ? "cartao-resumo--progresso" : ""}`}
+              className={`cartao-resumo ${card.variant === "progress" ? "cartao-resumo--progresso" : ""}`}
             >
               <div className="cartao-resumo__cabecalho">
                 <div className={`cartao-resumo__icone-area ${card.areaClass}`}>
-                  <card.icon size={18} className={card.iconClass} />
+                  <card.icon size={16} className={card.iconClass} />
                 </div>
                 <ChevronRight size={14} className="cartao-resumo__seta" />
               </div>

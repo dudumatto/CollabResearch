@@ -16,7 +16,6 @@ const pageTitles = {
   "/app/applications": { title: "Minhas Inscrições", subtitle: "Acompanhe o status das suas candidaturas" },
   "/app/chat": { title: "Mensagens", subtitle: "Conversas com orientadores" },
   "/app/progress": { title: "Minhas etapas", subtitle: "Acompanhe o andamento da sua pesquisa" },
-  "/app/feedback": { title: "Feedbacks", subtitle: "Avaliações e comentários" },
   "/app/profile": { title: "Meu Perfil", subtitle: "Gerencie suas informações pessoais" },
   "/app/documents": { title: "Documentos", subtitle: "Seus arquivos enviados" },
   "/app/notifications": { title: "Notificações", subtitle: "Suas atualizações recentes" },

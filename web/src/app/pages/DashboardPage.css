@@ -169,6 +169,32 @@
   }
 }
 
+/* ---- Dashboard do aluno sem rolagem (desktop) ---- */
+@media (min-width: 1024px) {
+  .painel {
+    height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
+    overflow: hidden;
+  }
+
+  .painel__grade-principal {
+    flex: 1;
+    min-height: 0;
+    gap: var(--espaco-4);
+  }
+
+  .painel__coluna-esquerda,
+  .painel__coluna-direita {
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding-right: var(--espaco-1);
+  }
+
+  .painel__banner-boas-vindas {
+    padding: var(--espaco-4) var(--espaco-5);
+  }
+}
+
 /* ================================================================
    Grade de cartões de resumo
    ================================================================ */
@@ -196,6 +222,10 @@
   cursor: pointer;
   transition: var(--transicao-normal);
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  min-height: 7.5rem;
 }
 
 .cartao-resumo:hover {
@@ -207,7 +237,6 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: var(--espaco-2);
 }
 
 .cartao-resumo__icone-area {
@@ -229,11 +258,6 @@
 .cartao-resumo__icone--verde   { color: var(--cor-esmeralda); }
 .cartao-resumo__icone--laranja { color: var(--cor-laranja); }
 
-.cartao-resumo--borda-azul    { border-color: var(--cor-primaria-leve); }
-.cartao-resumo--borda-violeta { border-color: var(--cor-secundaria-leve); }
-.cartao-resumo--borda-verde   { border-color: var(--cor-sucesso-leve); }
-.cartao-resumo--borda-laranja { border-color: var(--cor-laranja-leve); }
-
 .cartao-resumo__seta {
   color: var(--cor-borda-media);
   transition: var(--transicao-normal);
@@ -248,7 +272,7 @@
   font-size: var(--tamanho-titulo);
   font-weight: var(--peso-negrito);
   color: var(--cor-texto);
-  margin-bottom: var(--espaco-1);
+  line-height: 1.1;
 }
 
 .cartao-resumo__descricao {
@@ -288,7 +312,7 @@
   align-items: end;
   justify-content: space-between;
   gap: var(--espaco-3);
-  margin-top: var(--espaco-4);
+  margin-top: auto;
 }
 
 .cartao-resumo__mini-barras {

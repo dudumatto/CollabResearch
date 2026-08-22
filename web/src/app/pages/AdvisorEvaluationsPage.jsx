@@ -258,7 +258,6 @@ export default function AdvisorEvaluationsPage() {
           </select>
         </div>
         <button type="button" className="advisor-botao advisor-botao--primario" onClick={() => abrirModal()}>
-          <Star size={16} />
           Nova avaliação
         </button>
       </div>

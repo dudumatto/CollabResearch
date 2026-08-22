@@ -13,7 +13,6 @@ import ProjectApplicationsPage from "./pages/ProjectApplicationsPage";
 import ApplicationsPage from "./pages/ApplicationsPage";
 import ChatPage from "./pages/ChatPage";
 import ProgressPage from "./pages/ProgressPage";
-import FeedbackPage from "./pages/FeedbackPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -175,10 +174,6 @@ export const router = createBrowserRouter([
       {
         path: "deadlines",
         Component: StudentDeadlinesPage,
-      },
-      {
-        path: "feedback",
-        element: <StudentOnly><FeedbackPage /></StudentOnly>,
       },
       {
         path: "profile",
