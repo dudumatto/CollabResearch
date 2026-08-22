@@ -10,6 +10,6 @@ export const documentsService = {
     apiClient.patch<DocumentItem>(`/admin/documentos/${id}/status`, { status, observacao }),
   remove: (id: number) => apiClient.delete(`/admin/documentos/${id}`),
   previewUrl: (_document: DocumentItem) => undefined,
-  preview: (document: DocumentItem) => apiClient.blob(fallbackPath(document.previewUrl)),
+  preview: (document: DocumentItem) => apiClient.blob(fallbackPath(document.downloadUrl)),
   download: (document: DocumentItem) => apiClient.blob(fallbackPath(document.downloadUrl)),
 }

@@ -203,12 +203,12 @@ export default function DocumentsPage() {
     setSavingMetadata(false);
     try {
       const uploaded = await uploadDocumentoStorage(file, `usuarios/${user.id}/${tipoDocumento.toLowerCase()}`);
-      if (!uploaded?.publicUrl) {
+      if (!uploaded?.path) {
         throw new Error(storageError || "Não foi possível enviar o documento para a nuvem.");
       }
 
       setSavingMetadata(true);
-      await documentService.upload(user.id, tipoDocumento, file.name, uploaded.publicUrl);
+      await documentService.upload(user.id, tipoDocumento, file.name, uploaded.path);
       toast.success(`${tipoDocumento === "HISTORICO" ? "Histórico" : "Currículo"} enviado com sucesso.`);
       await reload();
     } catch (uploadError) {

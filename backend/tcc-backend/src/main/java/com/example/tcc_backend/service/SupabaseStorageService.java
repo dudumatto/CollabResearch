@@ -93,17 +93,25 @@ public class SupabaseStorageService {
         return createSignedUrl(projectDocumentsBucket, caminho);
     }
 
-    public String createSignedUserDocumentUrlFromPublicUrl(String publicUrl) {
-        StorageObjectRef ref = parsePublicStorageUrl(publicUrl);
+    public String createSignedUserDocumentUrl(String documentReference) {
+        StorageObjectRef ref = parseUserDocumentReference(documentReference);
         if (ref == null || !ref.bucket().equals(userDocumentsBucket)) {
             return null;
         }
         return createSignedUrl(ref.bucket(), ref.path());
     }
 
-    public boolean isUserDocumentPublicUrl(String publicUrl) {
-        StorageObjectRef ref = parsePublicStorageUrl(publicUrl);
+    public String createSignedUserDocumentUrlFromPublicUrl(String publicUrl) {
+        return createSignedUserDocumentUrl(publicUrl);
+    }
+
+    public boolean isUserDocumentReference(String documentReference) {
+        StorageObjectRef ref = parseUserDocumentReference(documentReference);
         return ref != null && ref.bucket().equals(userDocumentsBucket);
+    }
+
+    public boolean isUserDocumentPublicUrl(String publicUrl) {
+        return isUserDocumentReference(publicUrl);
     }
 
     private String createSignedUrl(String bucket, String caminho) {
@@ -158,30 +166,51 @@ public class SupabaseStorageService {
         return normalizedUrl() + "/storage/v1" + relativePath;
     }
 
-    private StorageObjectRef parsePublicStorageUrl(String publicUrl) {
-        if (isBlank(publicUrl) || isBlank(supabaseUrl)) {
+    private StorageObjectRef parseUserDocumentReference(String documentReference) {
+        if (isBlank(documentReference)) {
             return null;
         }
+
+        String trimmed = documentReference.trim();
+        if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+            String cleanPath = trimmed.replaceAll("^/+", "");
+            if (cleanPath.isBlank() || cleanPath.contains("..") || cleanPath.contains(":") || cleanPath.contains("\\") || cleanPath.startsWith("object/") || cleanPath.startsWith("storage/")) {
+                return null;
+            }
+            return new StorageObjectRef(userDocumentsBucket, cleanPath);
+        }
+
+        if (isBlank(supabaseUrl)) {
+            return null;
+        }
+
         try {
             URI base = URI.create(normalizedUrl());
-            URI uri = URI.create(publicUrl.trim());
+            URI uri = URI.create(trimmed);
             if (uri.getHost() == null || !uri.getHost().equalsIgnoreCase(base.getHost())) {
                 return null;
             }
-            String marker = "/storage/v1/object/public/";
+
             String path = uri.getPath();
-            int markerIndex = path.indexOf(marker);
-            if (markerIndex < 0) {
-                return null;
+            String[] markers = {
+                    "/storage/v1/object/public/",
+                    "/storage/v1/object/sign/"
+            };
+            for (String marker : markers) {
+                int markerIndex = path.indexOf(marker);
+                if (markerIndex < 0) {
+                    continue;
+                }
+                String remainder = path.substring(markerIndex + marker.length());
+                int slashIndex = remainder.indexOf('/');
+                if (slashIndex <= 0 || slashIndex == remainder.length() - 1) {
+                    return null;
+                }
+                String bucket = URLDecoder.decode(remainder.substring(0, slashIndex), StandardCharsets.UTF_8);
+                String objectPath = URLDecoder.decode(remainder.substring(slashIndex + 1), StandardCharsets.UTF_8);
+                return new StorageObjectRef(bucket, objectPath);
             }
-            String remainder = path.substring(markerIndex + marker.length());
-            int slashIndex = remainder.indexOf('/');
-            if (slashIndex <= 0 || slashIndex == remainder.length() - 1) {
-                return null;
-            }
-            String bucket = URLDecoder.decode(remainder.substring(0, slashIndex), StandardCharsets.UTF_8);
-            String objectPath = URLDecoder.decode(remainder.substring(slashIndex + 1), StandardCharsets.UTF_8);
-            return new StorageObjectRef(bucket, objectPath);
+            return null;
         } catch (IllegalArgumentException ex) {
             return null;
         }

@@ -17,7 +17,7 @@ function buildBackendUrl(path) {
   return `${baseUrl}${normalizedPath}`;
 }
 
-async function saveDocumentoMetadata({ usuarioId, tipo, publicUrl, fileName }) {
+async function saveDocumentoMetadata({ usuarioId, tipo, storagePath, fileName }) {
   const token = getStoredToken();
   const headers = new Headers({
     "Content-Type": "application/json",
@@ -35,7 +35,7 @@ async function saveDocumentoMetadata({ usuarioId, tipo, publicUrl, fileName }) {
       usuarioId,
       tipo: tipo?.toUpperCase(),
       nomeArquivo: fileName,
-      url: publicUrl,
+      url: storagePath,
     }),
   });
 
@@ -66,12 +66,12 @@ function UploadDocumento({ candidatoId, usuarioId, tipo }) {
 
       const result = await upload(file, `usuarios/${ownerId}/${tipo?.toLowerCase() || "documento"}`);
 
-      if (!result?.publicUrl) return;
+      if (!result?.path) return;
 
       await saveDocumentoMetadata({
         usuarioId: ownerId,
         tipo,
-        publicUrl: result.publicUrl,
+        storagePath: result.path,
         fileName: file.name,
       });
 

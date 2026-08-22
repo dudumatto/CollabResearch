@@ -205,19 +205,18 @@ public class DocumentoService {
 
     public String obterUrlDocumento(Integer id) {
         Documento documento = buscarDocumentoDoUsuario(id);
-        String url = documento.getCaminho();
-        if (!isRemoteUrl(url)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL do documento nao encontrada");
-        }
-
-        String signedUrl = supabaseStorageService.createSignedUserDocumentUrlFromPublicUrl(url);
+        String referencia = documento.getCaminho();
+        String signedUrl = supabaseStorageService.createSignedUserDocumentUrl(referencia);
         if (signedUrl != null) {
             return signedUrl;
         }
-        if (supabaseStorageService.isUserDocumentPublicUrl(url)) {
+        if (supabaseStorageService.isUserDocumentReference(referencia)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Arquivo do documento nao encontrado");
         }
-        return url;
+        if (isRemoteUrl(referencia)) {
+            return referencia;
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL do documento nao encontrada");
     }
 
     private String salvarArquivo(Usuario usuario, MultipartFile arquivo) {
@@ -308,6 +307,14 @@ public class DocumentoService {
         String cleaned = url.trim();
         if (cleaned.length() > 1000) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "url muito longa");
+        }
+
+        if (!cleaned.startsWith("http://") && !cleaned.startsWith("https://")) {
+            String path = cleaned.replaceAll("^/+", "");
+            if (path.isBlank() || path.contains("..") || path.contains(":") || path.contains("\\") || path.startsWith("object/") || path.startsWith("storage/")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "caminho do documento invalido");
+            }
+            return path;
         }
 
         URI uri;

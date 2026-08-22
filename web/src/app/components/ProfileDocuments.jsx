@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Eye, FileText, Plus, Trash2, Upload } from "lucide-react";
+import { Download, FileText, Plus, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useUploadDocumento } from "../../hooks/useUploadDocumento";
 import { documentService } from "../services/documentService";
@@ -34,12 +34,12 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
 
     try {
       const uploaded = await upload(file, `usuarios/${userId}/curriculo`);
-      if (!uploaded?.publicUrl) {
+      if (!uploaded?.path) {
         throw new Error("Nao foi possivel enviar o curriculo.");
       }
 
       setSavingMetadata(true);
-      await documentService.upload(userId, "CURRICULO", file.name, uploaded.publicUrl);
+      await documentService.upload(userId, "CURRICULO", file.name, uploaded.path);
       toast.success("Curriculo enviado com sucesso.");
       await onUploaded?.();
     } catch (err) {
@@ -52,14 +52,19 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
     }
   };
 
-  const handlePreview = async (doc) => {
+  const handleDownload = async (doc) => {
     try {
-      const blob = await api.getBlob(`/api/documentos/${doc.id}/preview`);
+      const blob = await api.getBlob(`/api/documentos/${doc.id}/download`);
       const objectUrl = URL.createObjectURL(blob);
-      window.open(objectUrl, "_blank", "noopener,noreferrer");
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = doc.name || "documento";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
     } catch (err) {
-      toast.error(err.message || "Nao foi possivel abrir o documento.");
+      toast.error(err.message || "Nao foi possivel baixar o documento.");
     }
   };
 
@@ -128,11 +133,11 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
               <div className="perfil-documentos__acoes">
                 <button
                   type="button"
-                  onClick={() => handlePreview(doc)}
+                  onClick={() => handleDownload(doc)}
                   className="perfil-documentos__acao"
-                  title="Visualizar documento"
+                  title="Baixar documento"
                 >
-                  <Eye size={15} />
+                  <Download size={15} />
                 </button>
                 {editable && (
                   <button

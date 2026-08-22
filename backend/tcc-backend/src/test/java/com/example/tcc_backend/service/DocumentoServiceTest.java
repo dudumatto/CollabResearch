@@ -38,6 +38,8 @@ class DocumentoServiceTest {
     private UsuarioRepository usuarioRepository;
     @Mock
     private AuthHelper authHelper;
+    @Mock
+    private SupabaseStorageService supabaseStorageService;
 
     @InjectMocks
     private DocumentoService documentoService;
@@ -89,6 +91,26 @@ class DocumentoServiceTest {
         assertThat(documento.getTipo()).isEqualTo(TipoDocumento.CURRICULO);
         assertThat(documento.getNomeArquivo()).isEqualTo("curriculo.pdf");
         assertThat(documento.getCaminho()).isEqualTo(url);
+
+        verify(documentoRepository).save(any());
+    }
+
+
+    @Test
+    void uploadComCaminhoInternoDeveSalvarMetadadosSemUrlPublica() {
+        Usuario usuario = TestDataFactory.usuarioAluno(1);
+        String caminho = "usuarios/1/curriculo/curriculo.pdf";
+
+        when(authHelper.getCurrentUser()).thenReturn(usuario);
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
+        when(documentoRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Documento documento = documentoService.upload(1, TipoDocumento.CURRICULO, "curriculo.pdf", caminho);
+
+        assertThat(documento.getUsuario()).isEqualTo(usuario);
+        assertThat(documento.getTipo()).isEqualTo(TipoDocumento.CURRICULO);
+        assertThat(documento.getNomeArquivo()).isEqualTo("curriculo.pdf");
+        assertThat(documento.getCaminho()).isEqualTo(caminho);
 
         verify(documentoRepository).save(any());
     }
