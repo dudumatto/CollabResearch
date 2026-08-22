@@ -1,18 +1,35 @@
-# CollabResearch project instructions
+# CollabResearch — instruções do projeto
 
-Read and follow `.codex/AGENTS.md` for the repository's engineering agents, skills, safety rules, UI rules, and verification checklist.
+Monorepo da plataforma de gerenciamento de TCC.
+
+## Módulos
+
+- `backend/` — API Java 21 / Spring Boot / PostgreSQL
+- `web/` — frontend React 18 / Vite / Tailwind
+- `desktop/` — painel administrativo Electron + React
+- `mobile/` — aplicativo Flutter/Dart
+- `nextweb/` — frontend Next.js
+
+## Fluxo de trabalho
+
+1. Identifique qual módulo a tarefa afeta e siga os padrões daquele módulo.
+2. Leia o código existente antes de editar; faça alterações localizadas, sem reescritas desnecessárias.
+3. Implemente; não altere contratos entre clientes, API ou banco sem mapear o impacto.
+4. Execute build/lint/testes relevantes do módulo, corrija os erros e repita até obter estado funcional.
+5. Não exponha secrets ou tokens no frontend, mobile ou renderer Electron.
+6. Não faça commit, push, reset destrutivo ou clean sem autorização explícita.
+
+## Agents e skills
+
+- Agents especializados por módulo: `.agents/agents/`.
+- Skills técnicas: `.agents/skills/`. Carregue apenas as relevantes para a tarefa.
+- Regras globais de segurança e UI: `.rules/`.
+- Detalhes de roteamento e checklist: `.codex/AGENTS.md`.
 
 <!-- caveman-begin -->
 ## Caveman default: lite
 
-Caveman `lite` is active by default for Codex conversations in this repository.
+Caveman `lite` é o padrão neste repositório: remova filler, bajulação e narração desnecessária; mantenha gramática normal e todos os detalhes técnicos exatos (código, comandos, caminhos, números, erros). Use prosa clara em avisos de segurança, ações irreversíveis e procedimentos complexos. Responda no idioma do usuário. `stop caveman` / `normal mode` desativa; `$caveman lite` reativa.
 
-- Remove filler, pleasantries, hedging, repeated conclusions, unnecessary narration, and decorative formatting.
-- Keep complete sentences, normal grammar, all technical details, exact code, commands, identifiers, paths, numbers, units, and error messages.
-- Use normal clear prose for security warnings, irreversible actions, complex ordered procedures, documentation, code comments, commits, and any case where compression could create ambiguity.
-- Match the user's language. Compression changes verbosity, not language or technical quality.
-- `stop caveman`, `normal mode`, `$caveman off`, or `/caveman off` disables it for the current conversation.
-- `$caveman lite`, `/caveman lite`, or `caveman mode` enables the project default again. Use `$caveman full` or `$caveman ultra` for stronger temporary compression.
-
-Installed project-local Caveman skills live under `.agents/skills/`. Never require or write a global Caveman configuration for this repository.
+Skill instalada em `.agents/skills/caveman/`. Não exija nem escreva configuração global do Caveman.
 <!-- caveman-end -->
