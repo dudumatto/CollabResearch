@@ -109,10 +109,7 @@ export default function RegisterPage() {
       <div className="pagina-cadastro__container">
         <div className="pagina-cadastro__cabecalho">
           <Link to="/" className="pagina-cadastro__logo-link">
-            <div className="pagina-cadastro__logo-icone">
-              <FlaskConical size={18} style={{ color: "white" }} />
-            </div>
-            <span className="pagina-cadastro__logo-nome">CollabResearch</span>
+            <img className="pagina-cadastro__logo-full" src="/brand/logo-full.svg" alt="CollabResearch" />
           </Link>
           <h1 className="pagina-cadastro__titulo">Criar sua conta</h1>
           <p className="pagina-cadastro__subtitulo">Junte-se à plataforma de iniciação científica</p>

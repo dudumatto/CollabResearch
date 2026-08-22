@@ -30,7 +30,7 @@ function pageInfoFor(location, user) {
   if (location.pathname === "/app/projects") return { title: "Meus projetos", subtitle: "Acompanhe seus projetos de pesquisa" };
   if (location.pathname === "/app/progress" && user?.tipo === "ORIENTADOR") return { title: "Progresso", subtitle: "Gerencie etapas e acompanhe os projetos" };
   if (location.pathname === "/app/deliveries" && user?.tipo === "ORIENTADOR") return { title: "Entregas para revisar", subtitle: "Arquivos enviados pelos alunos" };
-  if (location.pathname === "/app/deadlines") return { title: "Prazos", subtitle: "Próximos compromissos do projeto" };
+  if (location.pathname === "/app/deadlines") return { title: "Calendário", subtitle: "Prazos e datas de entrega dos projetos" };
   if (location.pathname === "/app/applications" && user?.tipo === "ORIENTADOR") {
     return { title: "Inscrições recebidas", subtitle: "Candidaturas aguardando análise" };
   }

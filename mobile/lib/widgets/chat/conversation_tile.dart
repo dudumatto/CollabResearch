@@ -13,7 +13,10 @@ class ConversationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: onTap,
-      leading: const CircleAvatar(child: Icon(Icons.person)),
+      leading: CircleAvatar(
+        foregroundImage: conversation.avatarUrl != null ? NetworkImage(conversation.avatarUrl!) : null,
+        child: Text(conversation.title.isNotEmpty ? conversation.title[0].toUpperCase() : '?'),
+      ),
       title: Text(conversation.title),
       subtitle: Text(conversation.lastMessage, maxLines: 1, overflow: TextOverflow.ellipsis),
       trailing: Column(

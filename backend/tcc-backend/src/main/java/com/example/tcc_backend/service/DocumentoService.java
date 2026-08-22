@@ -42,6 +42,7 @@ public class DocumentoService {
     private final DocumentoRepository documentoRepository;
     private final UsuarioRepository usuarioRepository;
     private final AuthHelper authHelper;
+    private final SupabaseStorageService supabaseStorageService;
 
     public Documento upload(Integer usuarioId, TipoDocumento tipo, MultipartFile arquivo) {
         if (usuarioId == null) {
@@ -207,6 +208,14 @@ public class DocumentoService {
         String url = documento.getCaminho();
         if (!isRemoteUrl(url)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL do documento nao encontrada");
+        }
+
+        String signedUrl = supabaseStorageService.createSignedUserDocumentUrlFromPublicUrl(url);
+        if (signedUrl != null) {
+            return signedUrl;
+        }
+        if (supabaseStorageService.isUserDocumentPublicUrl(url)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Arquivo do documento nao encontrado");
         }
         return url;
     }

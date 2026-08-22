@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { ArrowLeft, Mail, BookOpen, Building2, GraduationCap, Award, Calendar, MessageSquare } from "lucide-react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -18,6 +18,7 @@ function getInitials(name) {
 export default function UserProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
 
   const { data, loading, error } = useAsyncData(async () => {
     const [profile, projects, documents] = await Promise.all([
@@ -31,6 +32,10 @@ export default function UserProfilePage() {
       documents: Array.isArray(documents) ? documents : [],
     };
   }, [id], { initialData: { profile: null, projects: [], documents: [] } });
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [data?.profile?.fotoPerfilUrl]);
 
   const handleEnviarMensagem = async () => {
     try {
@@ -63,6 +68,7 @@ export default function UserProfilePage() {
   }
 
   const { profile, projects } = data;
+  const showProfilePhoto = Boolean(profile.fotoPerfilUrl) && !avatarLoadFailed;
 
   return (
     <div className="pagina-perfil">
@@ -80,10 +86,11 @@ export default function UserProfilePage() {
           <div className="cartao-perfil__corpo">
             <div className="cartao-perfil__avatar-wrapper">
               <div className="cartao-perfil__avatar">
-                {profile.fotoPerfilUrl ? (
+                {showProfilePhoto ? (
                   <img
                     src={profile.fotoPerfilUrl}
                     alt={profile.nome ?? "Foto de perfil"}
+                    onError={() => setAvatarLoadFailed(true)}
                     style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
                   />
                 ) : (

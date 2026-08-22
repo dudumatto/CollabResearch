@@ -1,7 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../models/message.dart';
 
 class MessageBubble extends StatelessWidget {
@@ -22,10 +21,12 @@ class MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMine = message.isMine || message.senderId == currentUserId;
     final alignment = isMine ? Alignment.centerRight : Alignment.centerLeft;
-    final background = isMine ? AppColors.primary : AppColors.surfaceTint;
-    final foreground = isMine ? Colors.white : AppColors.text;
-    final metadataColor =
-        isMine ? Colors.white.withValues(alpha: 0.75) : AppColors.muted;
+    final colorScheme = Theme.of(context).colorScheme;
+    final background =
+        isMine ? colorScheme.primary : colorScheme.primaryContainer;
+    final foreground =
+        isMine ? colorScheme.onPrimary : colorScheme.onPrimaryContainer;
+    final metadataColor = foreground.withValues(alpha: 0.72);
 
     return Align(
       alignment: alignment,
@@ -96,8 +97,8 @@ class MessageBubble extends StatelessWidget {
                 if (!isMine && message.senderName != null) ...[
                   Text(
                     message.senderName!,
-                    style: const TextStyle(
-                      color: AppColors.primaryDark,
+                    style: TextStyle(
+                      color: colorScheme.primary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),

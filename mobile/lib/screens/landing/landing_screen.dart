@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../widgets/common/app_button.dart';
+import '../../widgets/common/collab_logo.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -30,6 +31,7 @@ class LandingScreen extends StatelessWidget {
                     children: [
                       Align(
                         alignment: Alignment.centerLeft,
+<<<<<<< HEAD
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -52,6 +54,9 @@ class LandingScreen extends StatelessWidget {
                             ),
                           ),
                         ),
+=======
+                        child: const CollabLogo(full: false, height: 36),
+>>>>>>> origin/main
                       ),
                       const SizedBox(height: 24),
                       Text(

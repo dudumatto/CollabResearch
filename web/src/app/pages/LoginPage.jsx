@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router";
-import { FlaskConical, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import "./LoginPage.css";
 
@@ -36,10 +36,7 @@ export default function LoginPage() {
           <div className="pagina-login__decoracao-circulo-base" />
         </div>
         <Link to="/" className="pagina-login__logo-esquerda">
-          <div className="pagina-login__logo-icone-area">
-            <FlaskConical size={18} style={{ color: "var(--cor-branco)" }} />
-          </div>
-          <span className="pagina-login__logo-nome">CollabResearch</span>
+          <img className="pagina-login__logo-full" src="/brand/logo-full.svg" alt="CollabResearch" />
         </Link>
         <div className="pagina-login__conteudo-esquerdo">
           <h2 className="pagina-login__titulo-esquerdo">
@@ -65,10 +62,7 @@ export default function LoginPage() {
       <div className="pagina-login__painel-direito">
         <div className="pagina-login__formulario-area">
           <Link to="/" className="pagina-login__logo-mobile">
-            <div className="pagina-login__logo-icone-mobile">
-              <FlaskConical size={18} style={{ color: "var(--cor-branco)" }} />
-            </div>
-            <span className="pagina-login__logo-nome-mobile">CollabResearch</span>
+            <img className="pagina-login__logo-full-mobile" src="/brand/logo-full.svg" alt="CollabResearch" />
           </Link>
 
           <div className="pagina-login__cabecalho">

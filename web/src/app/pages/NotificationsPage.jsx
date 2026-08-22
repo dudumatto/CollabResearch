@@ -26,6 +26,26 @@ const typeConfig = {
   INSCRICAO_REJEITADA: { icon: XCircle, iconeAreaClass: "notificacao-item__icone-area--erro", iconColor: "var(--cor-erro)" },
 };
 
+const notificationUpdateEvents = ["notifications-updated", "notificationsUpdated"];
+
+function notifyNotificationsUpdated() {
+  notificationUpdateEvents.forEach((eventName) => {
+    window.dispatchEvent(new Event(eventName));
+  });
+}
+
+function readHiddenNotificationIds() {
+  try {
+    return JSON.parse(window.sessionStorage.getItem("collabresearch:hidden-notifications") ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function storeHiddenNotificationIds(ids) {
+  window.sessionStorage.setItem("collabresearch:hidden-notifications", JSON.stringify(ids));
+}
+
 function NotificationsSkeleton() {
   const Sk = ({ w = "100%", h = 14, r = "0.5rem", className = "", style }) => (
     <div className={`skeleton ${className}`.trim()} style={{ width: w, height: h, borderRadius: r, ...style }} />
@@ -124,26 +144,45 @@ export default function NotificationsPage() {
   );
   const initialNotifications = Array.isArray(data) ? data : [];
   const [filter, setFilter] = useState("all");
-
-  const unreadCount = useMemo(
-    () => initialNotifications.filter((item) => !item.read).length,
-    [initialNotifications],
+  const [hiddenIds, setHiddenIds] = useState(() => new Set(readHiddenNotificationIds()));
+  const visibleNotifications = useMemo(
+    () => initialNotifications.filter((item) => !hiddenIds.has(String(item.id))),
+    [initialNotifications, hiddenIds],
   );
 
+<<<<<<< HEAD
   const notificarAtualizacaoGlobal = () => {
     window.dispatchEvent(new Event("notifications-updated"));
+=======
+  const unreadCount = useMemo(
+    () => visibleNotifications.filter((item) => !item.read).length,
+    [visibleNotifications],
+  );
+
+  const hideNotificationsLocally = (ids) => {
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      ids.map(String).forEach((id) => next.add(id));
+      storeHiddenNotificationIds([...next]);
+      return next;
+    });
+>>>>>>> origin/main
   };
 
   const filtered = useMemo(
-    () => (filter === "all" ? initialNotifications : initialNotifications.filter((item) => item.type === filter)),
-    [filter, initialNotifications],
+    () => (filter === "all" ? visibleNotifications : visibleNotifications.filter((item) => item.type === filter)),
+    [filter, visibleNotifications],
   );
 
   const markAsRead = async (id) => {
     try {
       await notificationService.markAsRead(id);
       await reload();
+<<<<<<< HEAD
       notificarAtualizacaoGlobal();
+=======
+      notifyNotificationsUpdated();
+>>>>>>> origin/main
     } catch (err) {
       toast.error(err.message || "Não foi possível marcar como lida.");
     }
@@ -153,16 +192,21 @@ export default function NotificationsPage() {
     try {
       await notificationService.markAllAsRead();
       await reload();
+<<<<<<< HEAD
       notificarAtualizacaoGlobal();
+=======
+      notifyNotificationsUpdated();
+>>>>>>> origin/main
     } catch (err) {
       toast.error(err.message || "Não foi possível marcar todas como lidas.");
     }
   };
 
   const removeLocally = (id) => {
-    setData((prev) => prev.filter((item) => item.id !== id));
+    hideNotificationsLocally([id]);
   };
 
+<<<<<<< HEAD
   const clearAll = async () => {
     try {
       if (initialNotifications.length > 0) await notificationService.markAllAsRead();
@@ -173,6 +217,12 @@ export default function NotificationsPage() {
     } catch (err) {
       toast.error(err.message || "Não foi possível limpar as notificações.");
     }
+=======
+  const clearAll = () => {
+    if (visibleNotifications.length === 0) return;
+    hideNotificationsLocally(visibleNotifications.map((item) => item.id));
+    toast.success("Vista local limpa.");
+>>>>>>> origin/main
   };
 
   const handleOpenNotification = async (notification) => {
@@ -186,7 +236,11 @@ export default function NotificationsPage() {
         setData((prev) =>
           prev.map((item) => (item.id === notification.id ? { ...item, read: true } : item)),
         );
+<<<<<<< HEAD
         notificarAtualizacaoGlobal();
+=======
+        notifyNotificationsUpdated();
+>>>>>>> origin/main
       } catch (err) {
         toast.error(err.message || "Não foi possível marcar como lida.");
         return;
@@ -221,7 +275,7 @@ export default function NotificationsPage() {
     return <StatusView title="Falha ao carregar notificações" description={error.message} />;
   }
 
-  const filters = ["all", ...new Set(initialNotifications.map((item) => item.type))];
+  const filters = ["all", ...new Set(visibleNotifications.map((item) => item.type))];
 
   return (
     <div className="pagina-notificacoes">
@@ -253,7 +307,7 @@ export default function NotificationsPage() {
           >
             {type === "all" ? "Todas" : formatNotificationType(type)}
             <span className="pagina-notificacoes__chip-contagem">
-              {type === "all" ? initialNotifications.length : initialNotifications.filter((item) => item.type === type).length}
+              {type === "all" ? visibleNotifications.length : visibleNotifications.filter((item) => item.type === type).length}
             </span>
           </button>
         ))}

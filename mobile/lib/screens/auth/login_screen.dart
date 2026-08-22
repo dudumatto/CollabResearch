@@ -10,6 +10,7 @@ import '../../providers/auth_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_text_field.dart';
+import '../../widgets/common/collab_logo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -189,6 +190,7 @@ class _LoginBrandPanel extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+<<<<<<< HEAD
             DecoratedBox(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -204,6 +206,9 @@ class _LoginBrandPanel extends StatelessWidget {
                 ),
               ),
             ),
+=======
+            const CollabLogo(full: false, height: 36, inverted: true),
+>>>>>>> origin/main
             const SizedBox(height: 28),
             Text(
               'CollabResearch',

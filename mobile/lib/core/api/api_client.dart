@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../config/env.dart';
 import '../navigation/navigation_service.dart';
+import 'api_endpoints.dart';
 
 class ApiClient {
   ApiClient._() {
@@ -31,9 +32,10 @@ class ApiClient {
               '-> ${error.response?.statusCode}: ${error.response?.data}',
             );
           }
-          if (error.response?.statusCode == 401) {
+          if (error.response?.statusCode == 401 && !_isLoginRequest(error)) {
             await clearToken();
-            final navigatorState = NavigationService.rootNavigatorKey.currentState;
+            final navigatorState =
+                NavigationService.rootNavigatorKey.currentState;
             if (navigatorState != null && navigatorState.mounted) {
               navigatorState.context.go('/login');
             }
@@ -78,17 +80,27 @@ class ApiClient {
 
   String friendlyError(DioException error) {
     final status = error.response?.statusCode;
+    if (_isLoginRequest(error) && (status == 400 || status == 401)) {
+      return 'Credenciais invalidas.';
+    }
     if (status == 400) return 'Dados invalidos. Verifique os campos.';
     if (status == 401) return 'Sessao expirada. Entre novamente.';
     if (status == 403) return 'Voce nao tem permissao para esta acao.';
     if (status == 404) return 'Recurso nao encontrado.';
     if (status == 409) return 'Ja existe um registro com esses dados.';
-    if (status != null && status >= 500) return 'Erro no servidor. Tente novamente.';
+    if (status != null && status >= 500) {
+      return 'Erro no servidor. Tente novamente.';
+    }
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.sendTimeout ||
         error.type == DioExceptionType.receiveTimeout) {
       return 'Tempo limite excedido. Verifique sua conexao.';
     }
     return 'Nao foi possivel concluir a operacao.';
+  }
+
+  bool _isLoginRequest(DioException error) {
+    final path = error.requestOptions.path;
+    return path == ApiEndpoints.login || path.endsWith(ApiEndpoints.login);
   }
 }

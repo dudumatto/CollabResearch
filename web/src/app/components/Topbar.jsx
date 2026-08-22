@@ -36,6 +36,10 @@ export function Topbar({ onMenuClick, title, subtitle }) {
 
   const notifications = Array.isArray(data) ? data : [];
   const unreadCount = notifications.filter((item) => !item.read).length;
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const avatarUrl = user?.fotoPerfilUrl || user?.avatarUrl || "";
+
+  useEffect(() => setAvatarFailed(false), [avatarUrl]);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -118,8 +122,13 @@ export function Topbar({ onMenuClick, title, subtitle }) {
             aria-label="Abrir menu de perfil"
           >
             <div className="barra-topo__avatar">
+<<<<<<< HEAD
               {user?.fotoPerfilUrl ? (
                 <img className="barra-topo__foto-avatar" src={user.fotoPerfilUrl} alt={user?.nome ? `Foto de ${user.nome}` : "Foto de perfil"} />
+=======
+              {avatarUrl && !avatarFailed ? (
+                <img src={avatarUrl} alt="Foto de perfil" onError={() => setAvatarFailed(true)} />
+>>>>>>> origin/main
               ) : (
                 <span className="barra-topo__iniciais-avatar">{getInitials(user?.nome)}</span>
               )}

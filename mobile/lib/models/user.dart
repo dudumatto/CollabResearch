@@ -39,7 +39,7 @@ class User {
       name: '${payload['name'] ?? payload['fullName'] ?? ''}',
       email: '${payload['email'] ?? ''}',
       course: payload['course'] as String?,
-      avatarUrl: payload['avatarUrl'] as String?,
+      avatarUrl: (payload['avatarUrl'] ?? payload['fotoPerfilUrl']) as String?,
       type: payload['tipo'] as String?,
       roles: (payload['roles'] as List?)?.map((e) => '$e').toList() ??
           const <String>[],
@@ -52,10 +52,10 @@ class User {
       name: '${json['name'] ?? json['nome'] ?? ''}',
       email: '${json['email'] ?? ''}',
       course: (json['course'] ?? json['cursoNome']) as String?,
-      avatarUrl: json['avatarUrl'] as String?,
+      avatarUrl: (json['avatarUrl'] ?? json['fotoPerfilUrl']) as String?,
       institution: (json['institution'] ?? json['instituicao']) as String?,
       bio: json['bio'] as String?,
-      theme: json['tema'] as String?,
+      theme: (json['tema'] ?? json['theme']) as String?,
       notificationsEnabled: json['notificacoesAtivas'] != false,
       semester: (json['semester'] as num?)?.toInt() ??
           (json['semestre'] as num?)?.toInt(),

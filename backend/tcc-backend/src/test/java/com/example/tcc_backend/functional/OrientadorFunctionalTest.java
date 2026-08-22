@@ -287,5 +287,8 @@ class OrientadorFunctionalTest extends FunctionalTestSupport {
         mockMvc.perform(get("/api/orientador/dashboard")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/orientador/inscricoes")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/orientador/orientandos")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/orientadores/dashboard")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/orientadores/inscricoes")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/orientadores/orientandos")).andExpect(status().isUnauthorized());
     }
 }

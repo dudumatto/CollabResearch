@@ -93,19 +93,27 @@ button { min-height: 44px; }
 }
 .sidebar-logo {
   align-items: center;
+<<<<<<< HEAD
   background: rgba(255, 255, 255, 0.96);
   border-radius: 10px;
+=======
+>>>>>>> origin/main
   display: inline-flex;
   flex: none;
   height: 34px;
   justify-content: center;
+<<<<<<< HEAD
   width: 34px;
 }
 .sidebar-logo img {
   display: block;
   height: 22px;
   width: 22px;
+=======
+  width: 32px;
+>>>>>>> origin/main
 }
+.sidebar-logo img { display: block; height: 28px; width: 28px; }
 .sidebar-brand-text { min-width: 0; }
 .sidebar-brand-text strong { display: block; color: #e8edf2; font-size: .88rem; font-weight: 600; letter-spacing: -.01em; }
 .sidebar-brand-text span { color: #6b7f8e; display: block; font-size: .7rem; margin-top: 1px; }
@@ -168,50 +176,11 @@ button { min-height: 44px; }
   display: flex;
   min-height: 56px;
   gap: 16px;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 0 clamp(16px, 2.4vw, 28px);
   position: sticky;
   top: 0;
   z-index: 10;
-}
-.topbar-search {
-  align-items: center;
-  background: #f0f3ee;
-  border-radius: 8px;
-  display: flex;
-  flex: 1;
-  gap: 8px;
-  margin: 0 auto;
-  max-width: 420px;
-  min-height: 36px;
-  padding: 0 12px;
-  position: relative;
-  transition: background .15s ease, box-shadow .15s ease;
-}
-.topbar-search:focus-within {
-  background: white;
-  box-shadow: 0 0 0 2px rgba(35, 138, 100, 0.25);
-}
-.topbar-search-icon { color: #7a8b7e; flex: none; }
-.topbar-search input {
-  background: transparent;
-  border: 0;
-  color: #17251d;
-  flex: 1;
-  font-size: .84rem;
-  min-height: 34px;
-  outline: 0;
-  padding: 0;
-}
-.topbar-search input::placeholder { color: #8a9b8e; }
-.topbar-search-hint {
-  color: #a0b0a4;
-  font-size: .7rem;
-  font-weight: 600;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 4px;
-  padding: 2px 5px;
-  flex: none;
 }
 .topbar-actions { align-items: center; display: flex; gap: 12px; flex: none; }
 .topbar-user {
@@ -334,6 +303,44 @@ button { min-height: 44px; }
   height: 12px;
   width: 1px;
 }
+<<<<<<< HEAD
+=======
+.welcome-progress { margin-top: 16px; max-width: 320px; }
+.welcome-progress-info {
+  align-items: center;
+  display: flex;
+  font-size: .72rem;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.55);
+}
+.welcome-progress-info span:last-child { color: rgba(255, 255, 255, 0.75); font-weight: 500; }
+.welcome-progress-bar {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  height: 4px;
+  overflow: hidden;
+}
+.welcome-progress-fill {
+  background: linear-gradient(90deg, #238a64, #35a878);
+  border-radius: inherit;
+  height: 100%;
+  transition: width .6s ease;
+}
+.welcome-banner-visual { flex: none; margin-left: 24px; }
+.welcome-banner-icon {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.3);
+  display: flex;
+  height: 72px;
+  justify-content: center;
+  width: 72px;
+}
+.welcome-banner-icon img { display: block; height: 42px; width: 42px; }
+>>>>>>> origin/main
 
 
 .page-content {
@@ -686,8 +693,14 @@ button { min-height: 44px; }
   place-content: center;
   padding: clamp(24px, 5vw, 72px);
 }
+<<<<<<< HEAD
 .login-brand { align-self: center; color: rgba(255, 255, 255, 0.78); max-width: 560px; padding: 0; }
 .login-brand .eyebrow { color: #ffffff; }
+=======
+.login-brand { align-self: center; color: white; max-width: 560px; padding: 0; }
+.login-brand .eyebrow { color: white; }
+.login-brand-logo { display: block; filter: brightness(0) invert(1); height: 28px; margin-bottom: 22px; width: auto; }
+>>>>>>> origin/main
 .login-brand h1 { color: white; font-size: clamp(2.2rem, 4vw, 3.4rem); margin-bottom: 20px; }
 .login-brand p:last-child { color: rgba(255, 255, 255, 0.82); font-size: 1.08rem; line-height: 1.65; max-width: 520px; }
 .login-card {
@@ -780,10 +793,8 @@ button { min-height: 44px; }
   .report-cover { grid-template-columns: 1fr; padding: 20px; }
   .report-document { padding: 16px; }
   .topbar { gap: 8px; padding: 8px 12px; min-height: 48px; }
-  .topbar-search { max-width: none; }
   .topbar-user-info { display: none; }
   .topbar-chevron { display: none; }
-  .topbar-search-hint { display: none; }
   .welcome-greeting { font-size: .82rem; }
   .welcome-title { font-size: 1.15rem; }
   .welcome-subtitle { font-size: .8rem; }

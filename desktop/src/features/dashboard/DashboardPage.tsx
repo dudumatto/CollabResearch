@@ -46,6 +46,23 @@ export function DashboardPage() {
               <span className="welcome-metrics-sep" />
               <span><strong>{data.totalAlunos}</strong> alunos matriculados</span>
             </div>
+<<<<<<< HEAD
+=======
+            <div className="welcome-progress">
+              <div className="welcome-progress-info">
+                <span>Semestre 2026.1</span>
+                <span>67% concluído</span>
+              </div>
+              <div className="welcome-progress-bar">
+                <div className="welcome-progress-fill" style={{ width: '67%' }} />
+              </div>
+            </div>
+          </div>
+          <div className="welcome-banner-visual">
+            <div className="welcome-banner-icon">
+              <img src="/brand/logo-icon.svg" alt="" />
+            </div>
+>>>>>>> origin/main
           </div>
         </div>
       </section>

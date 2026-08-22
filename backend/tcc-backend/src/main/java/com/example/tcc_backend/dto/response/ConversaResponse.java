@@ -38,6 +38,7 @@ public class ConversaResponse {
 
     // Nome a exibir na lista
     private String titulo;
+    private String fotoPerfilUrl;
 
     // Ultima mensagem
     private String ultimaMensagem;
@@ -72,7 +73,11 @@ public class ConversaResponse {
             builder
                     .outroUsuarioId(outro != null ? outro.getId() : null)
                     .outroUsuarioNome(outro != null ? outro.getNome() : null)
+<<<<<<< HEAD
                     .outroUsuarioFotoPerfilUrl(outro != null ? outro.getFotoPerfilUrl() : null)
+=======
+                    .fotoPerfilUrl(outro != null ? outro.getFotoPerfilUrl() : null)
+>>>>>>> origin/main
                     .titulo(outro != null ? outro.getNome() : "Conversa privada");
         } else {
             builder
@@ -88,8 +93,16 @@ public class ConversaResponse {
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getId() : null)
                     .alunoCriadorNome(conversa.getProjeto() != null && conversa.getProjeto().getAlunoCriador() != null
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getNome() : null)
+<<<<<<< HEAD
                     .alunoCriadorFotoPerfilUrl(conversa.getProjeto() != null && conversa.getProjeto().getAlunoCriador() != null
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getFotoPerfilUrl() : null)
+=======
+                    .fotoPerfilUrl(conversa.getProjeto() != null && conversa.getProjeto().getFotoProjetoUrl() != null
+                            ? conversa.getProjeto().getFotoProjetoUrl()
+                            : conversa.getProjeto() != null && conversa.getProjeto().getOrientador() != null
+                                    ? conversa.getProjeto().getOrientador().getUsuario().getFotoPerfilUrl()
+                                    : null)
+>>>>>>> origin/main
                     .titulo(conversa.getProjeto() != null ? conversa.getProjeto().getTitulo() : "Grupo");
         }
 

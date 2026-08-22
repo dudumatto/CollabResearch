@@ -1,6 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+<<<<<<< HEAD
 import { LogOut, ChevronDown } from 'lucide-react'
+=======
+import { Bell, LogOut, ChevronDown } from 'lucide-react'
+>>>>>>> origin/main
 import { authService } from '../../features/auth/authService'
 import { authStore, useAuthStore } from '../../features/auth/authStore'
 
@@ -25,6 +29,13 @@ export function Topbar() {
   return (
     <header className="topbar">
       <div className="topbar-actions">
+<<<<<<< HEAD
+=======
+        <button className="topbar-notification" aria-label="Notificacoes">
+          <Bell size={18} strokeWidth={1.8} />
+          <span className="topbar-notification-dot" />
+        </button>
+>>>>>>> origin/main
 
         <div className="topbar-user" onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 200)} tabIndex={0}>
           <div className="topbar-avatar">{initials}</div>

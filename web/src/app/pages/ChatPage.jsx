@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Send, Search, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { ArrowUp, Search, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { conversationService } from "../services/conversationService";
 import { chatRealtimeService } from "../services/chatRealtimeService";
+import { projectService } from "../services/projectService";
 import { StatusView } from "../components/StatusView";
+import { getUserPhotoUrl, mapProject } from "../utils/adapters";
 import "./ChatPage.css";
 import { useLocation, useNavigate } from "react-router";
 
@@ -14,6 +16,7 @@ function getInitials(name) {
   return name.split(" ").slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
 }
 
+<<<<<<< HEAD
 function getConversationPhotoUrl(conversation) {
   if (conversation?.tipo === "PRIVADA") {
     return conversation?.outroUsuarioFotoPerfilUrl ?? conversation?.fotoPerfilUrl ?? "";
@@ -45,10 +48,18 @@ function ChatAvatar({ className, photoUrl, name, label }) {
       ) : (
         <span className={`${className}-iniciais`}>{getInitials(name)}</span>
       )}
+=======
+function ChatAvatar({ name, src, className }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className={className}>
+      {src && !failed ? <img src={src} alt={`Foto de perfil de ${name}`} onError={() => setFailed(true)} /> : <span>{getInitials(name)}</span>}
+>>>>>>> origin/main
     </div>
   );
 }
 
+<<<<<<< HEAD
 
 function getConversationSortTime(conversation) {
   const value = conversation?.ultimaMensagemHorario ?? conversation?.lastMessageAt ?? conversation?.dataCriacao;
@@ -59,6 +70,61 @@ function getUnreadCount(conversation) {
   const count = Number(conversation?.mensagensNaoLidas ?? conversation?.unreadCount ?? 0);
   return Number.isFinite(count) ? count : 0;
 }
+=======
+function getMessagePhotoUrl(message, currentUser, mine) {
+  if (mine) return getUserPhotoUrl(currentUser);
+  return (
+    message?.remetenteFotoPerfilUrl ||
+    message?.remetenteAvatarUrl ||
+    message?.fotoPerfilUrl ||
+    getUserPhotoUrl(message?.remetente) ||
+    getUserPhotoUrl(message?.usuario) ||
+    ""
+  );
+}
+
+async function hydrateConversationPhotos(items, currentUser) {
+  const conversations = Array.isArray(items) ? items : [];
+
+  return Promise.all(conversations.map(async (conversation) => {
+    const explicitPhoto =
+      conversation?.fotoPerfilUrl ||
+      conversation?.fotoProjetoUrl ||
+      conversation?.projectPhotoUrl ||
+      conversation?.avatarUrl ||
+      getUserPhotoUrl(conversation?.participant) ||
+      getUserPhotoUrl(conversation?.participante) ||
+      getUserPhotoUrl(conversation?.outroUsuario) ||
+      "";
+
+    if (explicitPhoto) {
+      return { ...conversation, fotoPerfilUrl: explicitPhoto };
+    }
+
+    if (conversation?.tipo !== "GRUPO" || !conversation?.projetoId) {
+      return conversation;
+    }
+
+    try {
+      const project = mapProject(await projectService.getById(conversation.projetoId));
+      const fallbackPhoto =
+        project.coverUrl ||
+        getUserPhotoUrl(project.advisor) ||
+        getUserPhotoUrl(currentUser);
+
+      return fallbackPhoto
+        ? { ...conversation, fotoPerfilUrl: fallbackPhoto }
+        : conversation;
+    } catch {
+      const fallbackPhoto = getUserPhotoUrl(currentUser);
+      return fallbackPhoto
+        ? { ...conversation, fotoPerfilUrl: fallbackPhoto }
+        : conversation;
+    }
+  }));
+}
+
+>>>>>>> origin/main
 function formatarHora(data) {
   if (!data) return "";
 
@@ -222,7 +288,7 @@ export default function ChatPage() {
     try {
       setLoading(true);
       const result = await conversationService.listByUser(user.id);
-      setConversations(Array.isArray(result) ? result : []);
+      setConversations(await hydrateConversationPhotos(result, user));
     } catch (err) {
       setError(err);
     } finally {
@@ -268,6 +334,14 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!selectedConversation?.id) return;
+    const updated = conversations.find((conversation) => Number(conversation.id) === Number(selectedConversation.id));
+    if (updated && updated.fotoPerfilUrl !== selectedConversation.fotoPerfilUrl) {
+      setSelectedConversation(updated);
+    }
+  }, [conversations, selectedConversation?.id, selectedConversation?.fotoPerfilUrl]);
+
+  useEffect(() => {
+    if (!selectedConversation?.id) return;
     setMessages([]);
     setLoadingMessages(true);
     conversationService
@@ -287,6 +361,7 @@ export default function ChatPage() {
     const atualizarConversas = () => {
       conversationService
         .listByUser(user.id)
+<<<<<<< HEAD
         .then((res) => {
           const next = Array.isArray(res) ? res : [];
           setConversations(
@@ -297,6 +372,10 @@ export default function ChatPage() {
             )
           );
         })
+=======
+        .then((res) => hydrateConversationPhotos(res, user))
+        .then(setConversations)
+>>>>>>> origin/main
         .catch(() => {});
     };
 
@@ -387,7 +466,7 @@ export default function ChatPage() {
         conversationService.listByUser(user.id),
       ]);
       setMessages(Array.isArray(updated) ? updated : []);
-      setConversations(Array.isArray(conversasAtualizadas) ? conversasAtualizadas : []);
+      setConversations(await hydrateConversationPhotos(conversasAtualizadas, user));
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== temp.id));
       setInput(conteudo);
@@ -450,7 +529,10 @@ export default function ChatPage() {
     if (remetenteId === user?.id || abrindoPrivada === remetenteId) return;
     try {
       setAbrindoPrivada(remetenteId);
-      const conversa = await conversationService.openPrivate(remetenteId);
+      const [conversa] = await hydrateConversationPhotos(
+        [await conversationService.openPrivate(remetenteId)],
+        user,
+      );
       setConversations((prev) => prev.some((c) => c.id === conversa.id) ? prev : [conversa, ...prev]);
       setSelectedConversation(conversa);
       setShowMobileList(false);
@@ -492,12 +574,16 @@ export default function ChatPage() {
               onClick={() => { setSelectedConversation(c); setShowMobileList(false); marcarConversaComoLida(c.id); }}
               className={`conversa-item ${selectedConversation?.id === c.id ? "conversa-item--selecionada" : ""} ${unreadCount > 0 ? "conversa-item--nao-lida" : ""}`}
             >
+<<<<<<< HEAD
               <ChatAvatar
                   className="conversa-item__avatar"
                   photoUrl={getConversationPhotoUrl(c)}
                   name={c?.titulo}
                   label={c?.titulo ? `Foto de ${c.titulo}` : "Foto da conversa"}
                 />
+=======
+              <ChatAvatar name={c?.titulo} src={c?.fotoPerfilUrl} className="conversa-item__avatar" />
+>>>>>>> origin/main
               <div className="conversa-item__info">
                 <div className="conversa-item__header">
                   <p className="conversa-item__nome">{c?.titulo ?? "Conversa"}</p>
@@ -535,6 +621,7 @@ export default function ChatPage() {
               >
                 <ArrowLeft size={16} />
               </button>
+              <ChatAvatar name={selectedConversation?.titulo} src={selectedConversation?.fotoPerfilUrl} className="pagina-chat__avatar-contato" />
               <div>
                 <p className="pagina-chat__nome-contato">{selectedConversation?.titulo ?? "Conversa"}</p>
               </div>
@@ -604,10 +691,16 @@ export default function ChatPage() {
 
                           {!mine && (
                             <ChatAvatar
+<<<<<<< HEAD
                               className="mensagem-avatar"
                               photoUrl={getMessagePhotoUrl(m)}
                               name={m?.remetenteNome}
                               label={m?.remetenteNome ? `Foto de ${m.remetenteNome}` : "Foto do remetente"}
+=======
+                              name={m?.remetenteNome}
+                              src={getMessagePhotoUrl(m, user, mine)}
+                              className="mensagem-avatar"
+>>>>>>> origin/main
                             />
                           )}
 
@@ -634,6 +727,14 @@ export default function ChatPage() {
                               </div>
                             </div>
                           </div>
+
+                          {mine && (
+                            <ChatAvatar
+                              name={user?.nome}
+                              src={getMessagePhotoUrl(m, user, mine)}
+                              className="mensagem-avatar mensagem-avatar--usuario"
+                            />
+                          )}
                         </div>
                       </div>
                     );
@@ -655,7 +756,7 @@ export default function ChatPage() {
                 />
                 <button onClick={sendMessage} className="pagina-chat__botao-enviar">
                   <span className="texto-enviar">Enviar Mensagem</span>
-                  <Send size={16} />
+                  <ArrowUp size={16} />
                 </button>
               </div>
             </div>

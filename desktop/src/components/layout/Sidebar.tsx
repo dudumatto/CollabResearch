@@ -50,7 +50,11 @@ export function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <div className="sidebar-logo">
+<<<<<<< HEAD
           <img src="/brand/logo-icon.svg" alt="CollabResearch" />
+=======
+          <img src="/brand/logo-icon.svg" alt="" />
+>>>>>>> origin/main
         </div>
         <div className="sidebar-brand-text">
           <strong>CollabResearch</strong>

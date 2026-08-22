@@ -6,6 +6,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/user_role.dart';
 import '../../providers/auth_provider.dart';
 
+import '../../widgets/common/collab_logo.dart';
+
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
 
@@ -113,6 +115,7 @@ class _BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -137,6 +140,13 @@ class _BrandMark extends StatelessWidget {
             semanticLabel: 'CollabResearch',
           ),
         ),
+=======
+    return const SizedBox(
+      height: 42,
+      width: 42,
+      child: Center(
+        child: CollabLogo(full: false, height: 32),
+>>>>>>> origin/main
       ),
     );
   }

@@ -7,7 +7,7 @@ import { projectService } from "../services/projectService";
 import { courseService } from "../services/courseService";
 import { StatusView } from "../components/StatusView";
 import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
-import { getProjectSeatHolders, getProjectSlotsUsage, mapProject } from "../utils/adapters";
+import { getProjectSeatHolders, getProjectSlotsUsage, getUserPhotoUrl, mapProject } from "../utils/adapters";
 import { formatProjectStatus } from "../utils/formatters";
 import "./ProjectsPage.css";
 
@@ -17,6 +17,29 @@ function normalizeValue(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+}
+
+function ProjectCover({ project }) {
+  return project.coverUrl ? (
+    <img className="projeto-card__foto" src={project.coverUrl} alt={`Foto do projeto ${project.title}`} />
+  ) : (
+    <div className="projeto-card__barra-topo" />
+  );
+}
+
+function AdvisorAvatar({ advisor }) {
+  const photoUrl = getUserPhotoUrl(advisor);
+  return (
+    <div className="projeto-card__avatar-orientador">
+      {photoUrl ? (
+        <img src={photoUrl} alt={`Foto de perfil de ${advisor?.name ?? "orientador"}`} />
+      ) : (
+        <span className="projeto-card__iniciais-orientador">
+          {(advisor?.name ?? "IC").split(" ").slice(0, 2).map((part) => part[0]).join("")}
+        </span>
+      )}
+    </div>
+  );
 }
 
 export default function ProjectsPage() {
@@ -274,7 +297,7 @@ export default function ProjectsPage() {
                 onClick={() => navigate(`/app/projects/${project.id}`)}
                 className="projeto-card"
               >
-                <div className="projeto-card__barra-topo" />
+                <ProjectCover project={project} />
                 <div className="projeto-card__corpo">
                   <div className="projeto-card__cabecalho">
                     <span className={`projeto-card__status ${statusClass}`}>
@@ -311,11 +334,7 @@ export default function ProjectsPage() {
 
                   <div className="projeto-card__orientador">
                     <div className="projeto-card__orientador-dados">
-                      <div className="projeto-card__avatar-orientador">
-                        <span className="projeto-card__iniciais-orientador">
-                          {(project.advisor?.name ?? "IC").split(" ").slice(0, 2).map((part) => part[0]).join("")}
-                        </span>
-                      </div>
+                      <AdvisorAvatar advisor={project.advisor} />
                       <span className="projeto-card__nome-orientador">
                         {project.advisor?.name ? `${project.advisor.name} (orientador)` : "Sem orientador"}
                       </span>

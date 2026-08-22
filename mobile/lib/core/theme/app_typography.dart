@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTypography {
-  static TextTheme textTheme(TextTheme base) {
+  static TextTheme textTheme(
+    TextTheme base, {
+    Color textColor = AppColors.text,
+    Color mutedColor = AppColors.muted,
+  }) {
     return GoogleFonts.interTextTheme(base).copyWith(
-      bodyMedium: GoogleFonts.inter(color: AppColors.text),
-      bodySmall: GoogleFonts.inter(color: AppColors.muted),
+      bodyMedium: GoogleFonts.inter(color: textColor),
+      bodySmall: GoogleFonts.inter(color: mutedColor),
     );
   }
 }

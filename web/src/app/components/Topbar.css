@@ -151,14 +151,19 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
+<<<<<<< HEAD
 .barra-topo__foto-avatar {
   width: 100%;
   height: 100%;
   border-radius: inherit;
   object-fit: cover;
 }
+=======
+.barra-topo__avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+>>>>>>> origin/main
 
 .barra-topo__iniciais-avatar {
   color: var(--cor-branco);

@@ -86,7 +86,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               Text('Colaboradores',
                   style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              const CollaboratorList(),
+              CollaboratorList(
+                name: project.advisorName ?? project.ownerName ?? 'Colaborador',
+                avatarUrl: project.advisorAvatarUrl ?? project.ownerAvatarUrl,
+                role: project.advisorName != null
+                    ? 'Orientador do projeto'
+                    : 'Responsavel pelo projeto',
+              ),
               const SizedBox(height: 24),
               Text('Acoes', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),

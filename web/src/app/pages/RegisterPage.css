@@ -46,6 +46,12 @@
   box-shadow: var(--sombra-primaria);
 }
 
+.pagina-cadastro__logo-full {
+  display: block;
+  height: 24px;
+  width: auto;
+}
+
 .pagina-cadastro__logo-nome {
   font-weight: var(--peso-negrito);
   font-size: var(--tamanho-subtitulo);

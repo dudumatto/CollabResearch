@@ -18,6 +18,7 @@ import {
   getProjectSlotsUsage,
   getUserId,
   getUserName,
+  getUserPhotoUrl,
   isProjectAdvisor,
   mapFeedback,
   mapProject,
@@ -436,6 +437,9 @@ export default function ProjectDetailPage() {
   const getCollaboratorId = (c) =>
     getUserId(c);
 
+  const getCollaboratorPhotoUrl = (c) =>
+    getUserPhotoUrl(c);
+
   const canRemoveCollaborator = (c) => {
     const collaboratorId = getCollaboratorId(c);
     return (
@@ -448,6 +452,9 @@ export default function ProjectDetailPage() {
 
   const getInscricaoName = (i) =>
     i?.alunoNome ?? i?.aluno?.usuario?.nome ?? i?.usuario?.nome ?? i?.nome ?? `Inscrição #${i?.id}`;
+
+  const getInscricaoPhotoUrl = (i) =>
+    getUserPhotoUrl(i?.aluno?.usuario ?? i?.aluno ?? i?.usuario ?? i);
 
   if (loading) return <ProjectDetailSkeleton />;
   if (error || !project) {
@@ -487,6 +494,18 @@ export default function ProjectDetailPage() {
         {/* ── Conteúdo principal ── */}
         <div className="pagina-detalhe-projeto__conteudo-principal">
           <div className="detalhe-card">
+            {project.coverUrl ? (
+              <img className="detalhe-card__foto-projeto" src={project.coverUrl} alt={`Foto do projeto ${project.title}`} />
+            ) : canEditProject && (
+              <button
+                type="button"
+                onClick={() => navigate(`/app/projects/${id}/edit`)}
+                className="detalhe-card__foto-projeto-vazia"
+              >
+                <BookOpen size={18} />
+                <span>Adicionar foto do projeto</span>
+              </button>
+            )}
             <div className="detalhe-card__topo">
               <div className="detalhe-card__badges">
                 <span className={`detalhe-card__badge-status ${statusClass}`}>
@@ -601,7 +620,11 @@ export default function ProjectDetailPage() {
                   {inscricoes.map((insc) => (
                     <div key={insc.id} className="detalhe-colaboradores__item">
                       <div className="detalhe-colaboradores__avatar">
-                        {getInscricaoName(insc).charAt(0).toUpperCase()}
+                        {getInscricaoPhotoUrl(insc) ? (
+                          <img src={getInscricaoPhotoUrl(insc)} alt={`Foto de perfil de ${getInscricaoName(insc)}`} />
+                        ) : (
+                          getInscricaoName(insc).charAt(0).toUpperCase()
+                        )}
                       </div>
                       <span className="detalhe-colaboradores__nome">{getInscricaoName(insc)}</span>
                       <button
@@ -666,9 +689,13 @@ export default function ProjectDetailPage() {
             <h3 className="card-orientador__titulo">Orientador do projeto</h3>
             <div className="card-orientador__cabecalho">
               <div className="card-orientador__avatar">
-                <span className="card-orientador__avatar-inicial">
-                  {(project.advisor?.name ?? "IC").split(" ").slice(0, 2).map((p) => p[0]).join("")}
-                </span>
+                {getUserPhotoUrl(project.advisor) ? (
+                  <img src={getUserPhotoUrl(project.advisor)} alt={`Foto de perfil de ${project.advisor?.name ?? "orientador"}`} />
+                ) : (
+                  <span className="card-orientador__avatar-inicial">
+                    {(project.advisor?.name ?? "IC").split(" ").slice(0, 2).map((p) => p[0]).join("")}
+                  </span>
+                )}
               </div>
               <div>
                 <p className="card-orientador__nome">{project.advisor?.name ?? "Sem orientador"}</p>
@@ -721,7 +748,11 @@ export default function ProjectDetailPage() {
                 {collaborators.map((c) => (
                   <li key={getCollaboratorId(c) ?? c} className="card-colaboradores__item">
                     <div className="card-colaboradores__avatar">
-                      {getCollaboratorName(c).charAt(0).toUpperCase()}
+                      {getCollaboratorPhotoUrl(c) ? (
+                        <img src={getCollaboratorPhotoUrl(c)} alt={`Foto de perfil de ${getCollaboratorName(c)}`} />
+                      ) : (
+                        getCollaboratorName(c).charAt(0).toUpperCase()
+                      )}
                     </div>
                     <span className="card-colaboradores__nome">
                       {getCollaboratorName(c)}  

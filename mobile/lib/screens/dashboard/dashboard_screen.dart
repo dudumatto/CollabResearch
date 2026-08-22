@@ -5,6 +5,7 @@ import '../../core/utils/project_status.dart';
 import '../../core/utils/user_role.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/dashboard/activity_chart.dart';
 import '../../widgets/dashboard/recent_activity_list.dart';
@@ -45,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final inProgress = projects
             .where((project) => project.status.toUpperCase() == 'EM_ANDAMENTO')
             .length;
+<<<<<<< HEAD
         final pendingAdvisor = projects
             .where((project) =>
                 project.status.toUpperCase() == 'PENDENTE_ORIENTADOR')
@@ -53,6 +55,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           0,
           (total, project) => total + project.collaborators,
         );
+=======
+        final user = context.watch<AuthProvider>().currentUser;
+>>>>>>> origin/main
 
         return Scaffold(
           body: RefreshIndicator(
@@ -81,6 +86,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  foregroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
+                                  child: Text(user?.name.isNotEmpty == true ? user!.name[0].toUpperCase() : 'U'),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(child: Text('Olá, ${user?.name.isNotEmpty == true ? user!.name.split(' ').first : 'pesquisador'}', style: Theme.of(context).textTheme.titleLarge)),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
                             Text(
                               advisor
                                   ? 'Painel do orientador'

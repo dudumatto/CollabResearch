@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import {
-  FlaskConical, Search, FileText, TrendingUp, MessageSquare,
+  Search, FileText, TrendingUp, MessageSquare,
   CheckCircle, ArrowRight, Star, Users, Zap, Shield,
   Globe, Menu, X, GraduationCap, Award,
 } from "lucide-react";
@@ -110,10 +110,7 @@ export default function LandingPage() {
       >
         <div className="landing__nav-interno">
           <div className="landing__logo">
-            <div className="landing__logo-icone">
-              <FlaskConical size={18} style={{ color: "white" }} />
-            </div>
-            <span className="landing__logo-nome">CollabResearch</span>
+            <img className="landing__logo-full" src="/brand/logo-full.svg" alt="CollabResearch" />
           </div>
 
           <div className="landing__nav-links">
@@ -214,7 +211,7 @@ export default function LandingPage() {
                   <div className="landing__mockup-conteudo">
                     <div className="landing__mockup-sidebar">
                       <div className="landing__mockup-logo">
-                        <FlaskConical size={12} style={{ color: "white" }} />
+                        <img src="/brand/logo-icon.svg" alt="" />
                       </div>
                       {mockupNavItems.map((item) => (
                         <div key={item.id} className={`landing__mockup-nav-item ${item.active ? "landing__mockup-nav-item--ativo" : "landing__mockup-nav-item--inativo"}`}>
@@ -453,10 +450,7 @@ export default function LandingPage() {
         <div className="landing__rodape-interno">
           <div className="landing__rodape-conteudo">
             <div className="landing__rodape-logo">
-              <div className="landing__rodape-logo-icone">
-                <FlaskConical size={15} style={{ color: "white" }} />
-              </div>
-              <span className="landing__rodape-logo-nome">CollabResearch</span>
+              <img className="landing__rodape-logo-full" src="/brand/logo-full.svg" alt="CollabResearch" />
             </div>
             <p className="landing__rodape-copyright">© 2026 CollabResearch. Plataforma de Gerenciamento de Iniciação Científica.</p>
             <div className="landing__rodape-links">

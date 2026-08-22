@@ -21,6 +21,7 @@ public class UsuarioResponse {
     private TipoUsuario tipo;
     private LocalDateTime dataCadastro;
     private Boolean ativo;
+    private String fotoPerfilUrl;
 
     public static UsuarioResponse fromEntity(Usuario usuario) {
         return UsuarioResponse.builder()
@@ -30,6 +31,7 @@ public class UsuarioResponse {
                 .tipo(usuario.getTipo())
                 .dataCadastro(usuario.getDataCadastro())
                 .ativo(usuario.getAtivo())
+                .fotoPerfilUrl(usuario.getFotoPerfilUrl())
                 .build();
     }
 }

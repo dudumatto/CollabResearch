@@ -20,6 +20,7 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { notificationService } from "../services/notificationService";
+import { mapNotification } from "../utils/adapters";
 import { features } from "../config/features";
 import "./Sidebar.css";
 
@@ -29,10 +30,9 @@ const navItems = [
   { path: "/app/applications", label: "Inscrições", icon: FileText },
   { path: "/app/chat", label: "Conversas", icon: MessageSquare },
   { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
-  { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck, roles: ["ALUNO"] },
   { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
   { path: "/app/feedback", label: "Feedbacks", icon: Star },
-  { path: "/app/deadlines", label: "Prazos", icon: CalendarClock, roles: ["ALUNO"] },
+  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
   { path: "/app/notifications", label: "Notificações", icon: Bell },
   { path: "/app/profile", label: "Meu perfil", icon: User },
 ];
@@ -44,6 +44,7 @@ const advisorNavItems = [
   { path: "/app/applications", label: "Inscrições", icon: FileText },
   { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
   { path: "/app/progress", label: "Progresso", icon: TrendingUp },
+  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
   { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
   { path: "/app/chat", label: "Conversas", icon: MessageSquare },
   { path: "/app/notifications", label: "Notificações", icon: Bell },
@@ -54,19 +55,35 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
   const { user } = useAuth();
 
   const { data, reload } = useAsyncData(
-    () => notificationService.listMine(),
+    async () => {
+      const result = await notificationService.listMine();
+      return Array.isArray(result) ? result.map(mapNotification) : [];
+    },
     [],
     { initialData: [] }
   );
 
   useEffect(() => {
     const atualizar = () => reload();
+<<<<<<< HEAD
     window.addEventListener("notifications-updated", atualizar);
     return () => window.removeEventListener("notifications-updated", atualizar);
   }, [reload]);
 
   const notifications = Array.isArray(data) ? data : [];
   const unreadCount = notifications.filter((item) => !(item.read ?? item.lida)).length;
+=======
+    window.addEventListener("notificationsUpdated", atualizar);
+    window.addEventListener("notifications-updated", atualizar);
+    return () => {
+      window.removeEventListener("notificationsUpdated", atualizar);
+      window.removeEventListener("notifications-updated", atualizar);
+    };
+  }, [reload]);
+
+  const notifications = Array.isArray(data) ? data : [];
+  const unreadCount = notifications.filter((item) => !item.read).length;
+>>>>>>> origin/main
   const isAdvisor = features.advisorWorkspaceV2 && user?.tipo === "ORIENTADOR";
   const activeNavItems = isAdvisor ? advisorNavItems : navItems;
   const visibleNavItems = activeNavItems.filter(

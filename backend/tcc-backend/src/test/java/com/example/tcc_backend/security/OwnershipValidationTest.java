@@ -40,6 +40,7 @@ class OwnershipValidationTest {
     @Mock private EtapaProgressoService etapaProgressoService;
     @Mock private EtapaProgressoRepository etapaProgressoRepository;
     @Mock private ChatRealtimeService chatRealtimeService;
+    @Mock private SupabaseStorageService supabaseStorageService;
 
     private NotificacaoService notificacaoService;
     private UsuarioService usuarioService;
@@ -60,7 +61,7 @@ class OwnershipValidationTest {
                 inscricaoRepository, alunoRepository, projetoRepository,
                 authHelper, notificacaoService, projectAccessPolicy);
         documentoService = new DocumentoService(
-                documentoRepository, usuarioRepository, authHelper);
+                documentoRepository, usuarioRepository, authHelper, supabaseStorageService);
         projetoService = new ProjetoService(
                 projetoRepository, orientadorRepository, alunoRepository,
                 inscricaoRepository, areaPesquisaRepository,
