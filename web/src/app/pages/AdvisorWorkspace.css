@@ -239,20 +239,12 @@
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-hero {
-    min-height: 8.25rem;
-    padding: var(--espaco-4) var(--espaco-5);
-  }
-
-  .advisor-pagina--dashboard .advisor-dashboard-hero__texto {
-    max-width: min(40rem, 74%);
-  }
-
-  .advisor-pagina--dashboard .advisor-dashboard-hero__titulo {
-    font-size: 1.65rem;
+    min-height: 7.25rem;
+    padding: var(--espaco-3) var(--espaco-5);
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-hero__descricao {
-    max-width: 36rem;
+    max-width: 34rem;
     margin-top: var(--espaco-1);
     font-size: var(--tamanho-base);
     line-height: 1.4;
@@ -268,24 +260,24 @@
   }
 
   .advisor-pagina--dashboard .advisor-metrica--overview {
-    min-height: 4.25rem;
-    padding: var(--espaco-3);
+    min-height: 3.6rem;
+    padding: var(--espaco-2) var(--espaco-3);
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-layout {
-    display: block;
     flex: 1;
     min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 20rem);
+    gap: var(--espaco-3);
+    align-items: start;
     overflow: hidden;
   }
 
-  .advisor-pagina--dashboard .advisor-dashboard-principal {
-    gap: var(--espaco-3);
-    min-height: 0;
-  }
-
+  .advisor-pagina--dashboard .advisor-dashboard-principal,
   .advisor-pagina--dashboard .advisor-dashboard-lateral {
-    display: none;
+    min-height: 0;
+    gap: var(--espaco-3);
+    overflow: hidden;
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-section {
@@ -315,8 +307,8 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .advisor-pagina--dashboard .advisor-card {
-    border-radius: var(--raio-medio);
+  .advisor-pagina--dashboard .advisor-grade-metricas--resumo {
+    gap: var(--espaco-2);
   }
 
   .advisor-pagina--dashboard .advisor-card__cabecalho {
@@ -329,7 +321,7 @@
   }
 
   .advisor-pagina--dashboard .advisor-card__vazio {
-    min-height: 2.75rem;
+    min-height: 2.6rem;
     padding: var(--espaco-1) var(--espaco-2);
     font-size: var(--tamanho-pequeno);
   }
@@ -340,8 +332,19 @@
   }
 
   .advisor-pagina--dashboard .advisor-fila-item__icone {
-    width: 1.6rem;
-    height: 1.6rem;
+    width: 1.55rem;
+    height: 1.55rem;
+  }
+
+  .advisor-pagina--dashboard .advisor-metrica--compacta {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    min-height: 3.55rem;
+    padding: var(--espaco-2);
+  }
+
+  .advisor-pagina--dashboard .advisor-metrica--compacta .advisor-metrica__icone-area {
+    width: 2rem;
+    height: 2rem;
   }
 }
 
