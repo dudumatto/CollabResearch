@@ -32,7 +32,7 @@ function AdvisorDashboardSkeleton() {
       <Sk w="100%" h={128} r="var(--raio-grande)" mb={16} />
       <div className="advisor-dashboard-overview">
         {[1, 2, 3, 4, 5, 6].map((item) => (
-          <div key={item} className="advisor-metrica advisor-metrica--overview">
+          <div key={item} className="advisor-metrica advisor-metrica--overview advisor-metrica--normal">
             <Sk w={34} h={34} r="var(--raio-medio)" />
             <div style={{ flex: 1 }}>
               <Sk w={28} h={22} mb={6} />
@@ -139,7 +139,7 @@ const filasConfig = [
 
 function QueueCard({ title, icon: Icon, items, kind, onNavigate }) {
   return (
-    <div className={`advisor-card ${items.length === 0 ? "advisor-card--sem-itens" : ""}`}>
+    <div className={`advisor-card advisor-card--${kind} ${items.length === 0 ? "advisor-card--sem-itens" : ""}`}>
       <div className="advisor-card__cabecalho">
         <span className="advisor-card__titulo">{title}</span>
         <span className="advisor-card__contador">{items.length}</span>
@@ -253,7 +253,7 @@ export default function AdvisorDashboardPage() {
           ? <>Você tem <strong>{pendingTotal} pendências</strong> para revisar antes de seguir a rotina.</>
           : <>Nenhuma <strong>pendência crítica</strong> no momento.</>}
         primaryAction={{ label: "Inscrições", onClick: () => handleNavigate("/app/applications") }}
-        secondaryAction={{ label: "Progresso", onClick: () => handleNavigate("/app/progress") }}
+        secondaryAction={{ label: "Ver progresso", onClick: () => handleNavigate("/app/progress") }}
       />
 
       <div className="advisor-dashboard-overview">
@@ -264,7 +264,7 @@ export default function AdvisorDashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: index * 0.025 }}
             onClick={() => handleNavigate(card.href)}
-            className="advisor-metrica advisor-metrica--overview"
+            className={`advisor-metrica advisor-metrica--overview advisor-metrica--${card.priority}`}
           >
             <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
               <card.icon size={16} className={card.iconClass} />

@@ -233,25 +233,9 @@
 /* ---- Dashboard do orientador sem rolagem (desktop) ---- */
 @media (min-width: 1180px) {
   .advisor-pagina--dashboard {
-    height: calc(100dvh - var(--altura-topbar) - var(--espaco-4) * 2);
-    gap: var(--espaco-3);
+    height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
+    gap: var(--espaco-2);
     overflow: hidden;
-  }
-
-  .advisor-pagina--dashboard .welcome-banner {
-    min-height: 7.25rem;
-    padding: var(--espaco-3) var(--espaco-5);
-  }
-
-  .advisor-pagina--dashboard .welcome-banner__summary {
-    max-width: 34rem;
-    margin-top: var(--espaco-1);
-    font-size: var(--tamanho-base);
-    line-height: 1.4;
-  }
-
-  .advisor-pagina--dashboard .welcome-banner__actions {
-    margin-top: var(--espaco-3);
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-overview {
@@ -260,28 +244,45 @@
   }
 
   .advisor-pagina--dashboard .advisor-metrica--overview {
-    min-height: 3.6rem;
-    padding: var(--espaco-2) var(--espaco-3);
+    min-height: 3.35rem;
+    padding: 0.55rem 0.75rem;
+  }
+
+  .advisor-pagina--dashboard .advisor-metrica__icone-area {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .advisor-pagina--dashboard .advisor-metrica__valor {
+    font-size: 1.1rem;
+  }
+
+  .advisor-pagina--dashboard .advisor-metrica__rotulo {
+    font-size: var(--tamanho-pequeno);
+    line-height: 1.25;
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-layout {
     flex: 1;
     min-height: 0;
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--espaco-3);
-    align-items: start;
+    gap: var(--espaco-2);
+    align-items: stretch;
     overflow: hidden;
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-principal {
+    display: grid;
+    grid-template-rows: minmax(0, 1.05fr) minmax(0, 0.95fr);
     min-height: 0;
-    gap: var(--espaco-3);
+    gap: var(--espaco-2);
     overflow: hidden;
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-section {
     gap: var(--espaco-2);
     min-height: 0;
+    overflow: hidden;
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-section__titulo {
@@ -291,11 +292,13 @@
   .advisor-pagina--dashboard .advisor-dashboard-section__descricao {
     margin-top: 0;
     font-size: var(--tamanho-pequeno);
-    line-height: 1.3;
+    line-height: 1.25;
   }
 
   .advisor-pagina--dashboard .advisor-grade-filas {
     gap: var(--espaco-2);
+    min-height: 0;
+    overflow: hidden;
   }
 
   .advisor-pagina--dashboard .advisor-grade-filas--prioridade {
@@ -306,29 +309,49 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .advisor-pagina--dashboard .advisor-card {
+    min-height: 0;
+  }
+
   .advisor-pagina--dashboard .advisor-card__cabecalho {
-    padding: var(--espaco-2) var(--espaco-3);
+    padding: 0.55rem 0.75rem;
+  }
+
+  .advisor-pagina--dashboard .advisor-card__titulo {
+    font-size: var(--tamanho-base);
+    line-height: 1.25;
+  }
+
+  .advisor-pagina--dashboard .advisor-card__contador {
+    padding: 0.15rem 0.5rem;
   }
 
   .advisor-pagina--dashboard .advisor-card__corpo {
-    padding: var(--espaco-2);
-    gap: var(--espaco-1);
+    padding: 0.5rem;
+    gap: 0.35rem;
+    overflow: hidden;
   }
 
   .advisor-pagina--dashboard .advisor-card__vazio {
-    min-height: 2.6rem;
+    min-height: 2.25rem;
     padding: var(--espaco-1) var(--espaco-2);
     font-size: var(--tamanho-pequeno);
   }
 
   .advisor-pagina--dashboard .advisor-fila-item {
     gap: var(--espaco-2);
-    padding: var(--espaco-1) var(--espaco-2);
+    min-height: 2.25rem;
+    padding: 0.3rem 0.45rem;
   }
 
   .advisor-pagina--dashboard .advisor-fila-item__icone {
-    width: 1.55rem;
-    height: 1.55rem;
+    width: 1.45rem;
+    height: 1.45rem;
+  }
+
+  .advisor-pagina--dashboard .advisor-fila-item__titulo,
+  .advisor-pagina--dashboard .advisor-fila-item__status {
+    font-size: var(--tamanho-pequeno);
   }
 }
 
@@ -491,6 +514,21 @@
 .advisor-metrica__icone--verde   { color: var(--cor-esmeralda); }
 .advisor-metrica__icone--laranja { color: var(--cor-laranja); }
 .advisor-metrica__icone--erro    { color: var(--cor-erro); }
+
+.advisor-metrica--normal {
+  background: linear-gradient(180deg, var(--cor-superficie) 0%, color-mix(in srgb, var(--cor-primaria-clara) 52%, var(--cor-superficie)) 100%);
+  border-color: var(--cor-primaria-borda);
+}
+
+.advisor-metrica--action {
+  background: linear-gradient(180deg, var(--cor-superficie) 0%, color-mix(in srgb, var(--cor-laranja-clara) 58%, var(--cor-superficie)) 100%);
+  border-color: color-mix(in srgb, var(--cor-laranja-borda) 58%, var(--cor-borda-clara));
+}
+
+.advisor-metrica--risk {
+  background: linear-gradient(180deg, var(--cor-superficie) 0%, color-mix(in srgb, var(--cor-erro-clara) 62%, var(--cor-superficie)) 100%);
+  border-color: color-mix(in srgb, var(--cor-erro-borda) 68%, var(--cor-borda-clara));
+}
 .advisor-metrica__valor {
   font-size: var(--tamanho-titulo);
   font-weight: var(--peso-negrito);
@@ -591,6 +629,47 @@
   font-size: var(--tamanho-pequeno);
   font-weight: var(--peso-semi);
   white-space: nowrap;
+}
+
+.advisor-card--project,
+.advisor-card--advisee,
+.advisor-card--evaluation {
+  border-color: var(--cor-primaria-borda);
+}
+
+.advisor-card--project .advisor-card__cabecalho,
+.advisor-card--advisee .advisor-card__cabecalho,
+.advisor-card--evaluation .advisor-card__cabecalho {
+  background: color-mix(in srgb, var(--cor-primaria-clara) 62%, var(--cor-superficie));
+}
+
+.advisor-card--application,
+.advisor-card--delivery {
+  border-color: color-mix(in srgb, var(--cor-laranja-borda) 62%, var(--cor-borda-clara));
+}
+
+.advisor-card--application .advisor-card__cabecalho,
+.advisor-card--delivery .advisor-card__cabecalho {
+  background: color-mix(in srgb, var(--cor-laranja-clara) 70%, var(--cor-superficie));
+}
+
+.advisor-card--etapa {
+  border-color: color-mix(in srgb, var(--cor-erro-borda) 72%, var(--cor-borda-clara));
+}
+
+.advisor-card--etapa .advisor-card__cabecalho {
+  background: color-mix(in srgb, var(--cor-erro-clara) 74%, var(--cor-superficie));
+}
+
+.advisor-card--application .advisor-card__contador,
+.advisor-card--delivery .advisor-card__contador {
+  background-color: var(--cor-laranja-clara);
+  color: var(--cor-laranja-escura);
+}
+
+.advisor-card--etapa .advisor-card__contador {
+  background-color: var(--cor-erro-clara);
+  color: var(--cor-erro-escura);
 }
 
 .advisor-card__corpo {
