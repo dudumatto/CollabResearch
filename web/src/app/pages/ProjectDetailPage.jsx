@@ -207,7 +207,7 @@ export default function ProjectDetailPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Colaboradores
-  const [collaborators, setCollaborators] = useState([]);
+  const [collaborators, setCollaborators] = useState(null);
   const [collabLoading, setCollabLoading] = useState(false);
   const [removingId, setRemovingId] = useState(null);
   const [collaboratorToRemove, setCollaboratorToRemove] = useState(null);
@@ -236,7 +236,7 @@ export default function ProjectDetailPage() {
   const project = data?.project;
 
   const slots = useMemo(
-    () => (project ? getProjectSlotsUsage(project, collaborators) : { total: 0, used: 0, remaining: 0 }),
+    () => (project ? getProjectSlotsUsage(project, Array.isArray(collaborators) ? collaborators : null) : { total: 0, used: 0, remaining: 0 }),
     [project, collaborators],
   );
 
@@ -264,9 +264,9 @@ export default function ProjectDetailPage() {
     setCollabLoading(true);
     try {
       const raw = await projectService.getCollaborators(id);
-      setCollaborators(Array.isArray(raw) ? raw : project?.collaborators ?? []);
+      setCollaborators(Array.isArray(raw) ? raw : null);
     } catch {
-      setCollaborators(project?.collaborators ?? []);
+      setCollaborators(null);
     } finally {
       setCollabLoading(false);
     }
@@ -699,9 +699,7 @@ export default function ProjectDetailPage() {
             </h3>
             {collabLoading ? (
               <p className="card-colaboradores__vazio">Carregando...</p>
-            ) : collaborators.length === 0 ? (
-              <p className="card-colaboradores__vazio">Nenhum colaborador ainda.</p>
-            ) : (
+            ) : Array.isArray(collaborators) && collaborators.length > 0 ? (
               <ul className="card-colaboradores__lista">
                 {collaborators.map((c) => (
                   <li key={getCollaboratorId(c) ?? c} className="card-colaboradores__item">
@@ -738,6 +736,12 @@ export default function ProjectDetailPage() {
                   </li>
                 ))}
               </ul>
+            ) : slots.used > 0 ? (
+              <p className="card-colaboradores__vazio">
+                {slots.used === 1 ? "1 colaborador aprovado." : `${slots.used} colaboradores aprovados.`}
+              </p>
+            ) : (
+              <p className="card-colaboradores__vazio">Nenhum colaborador ainda.</p>
             )}
 
             {/* Botão conversa do grupo */}

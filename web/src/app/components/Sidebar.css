@@ -20,6 +20,7 @@
   border-right: 1px solid var(--cor-separador-suave);
   z-index: 30;
   width: var(--largura-sidebar);
+  --altura-sidebar-cabecalho: 4.125rem;
   transition: var(--transicao-lenta);
   overflow: visible;
 }
@@ -38,7 +39,7 @@
 .barra-lateral__botao-recolher {
   position: absolute;
   right: -0.75rem;
-  top: 3.7rem;
+  top: calc(var(--altura-sidebar-cabecalho, 4.125rem) - 1rem);
   width: 2rem;
   height: 2rem;
   background-color: var(--cor-superficie-3);
@@ -71,8 +72,10 @@
   display: flex;
   align-items: center;
   gap: var(--espaco-3);
+  min-height: var(--altura-sidebar-cabecalho);
   padding: var(--espaco-5) var(--espaco-4);
   border-bottom: 1px solid var(--cor-separador-suave);
+  box-sizing: border-box;
 }
 
 .barra-lateral__cabecalho--centralizado {
