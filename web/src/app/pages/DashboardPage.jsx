@@ -181,7 +181,7 @@ export default function DashboardPage() {
     const unreadNotifications = notifications.filter((item) => !item.read).length;
     const recentProjects = projects.slice(0, 3);
     const recentApplications = applications.slice(0, 4);
-    const recentNotifications = notifications.slice(0, 4);
+    const recentNotifications = notifications.slice(0, 2);
     const activityData = buildActivityData(projects, applications);
     const totalActivity = activityData.reduce((acc, item) => acc + item.atividade, 0);
     const activityPeak = Math.max(1, ...activityData.map((item) => item.atividade));
@@ -299,7 +299,7 @@ export default function DashboardPage() {
         {/* Grade principal */}
         <div className="painel__grade-principal">
           <div className="painel__coluna-esquerda">
-            <div className="painel__card">
+            <div className="painel__card painel__card--recentes">
               <div className="painel__card-cabecalho">
                 <h3 className="painel__card-titulo">Projetos recentes</h3>
                 <button onClick={() => navigate("/app/projects")} className="painel__link-ver-mais">
@@ -328,7 +328,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="painel__card">
+            <div className="painel__card painel__card--inscricoes">
               <div className="painel__card-cabecalho">
                 <h3 className="painel__card-titulo">Minhas inscrições</h3>
                 <button onClick={() => navigate("/app/applications")} className="painel__link-ver-mais">
@@ -365,7 +365,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="painel__coluna-direita">
-            <div className="painel__card painel__card-projetos-sugeridos">
+            <div className="painel__card painel__card--sugeridos painel__card-projetos-sugeridos">
               <div className="painel__card-cabecalho">
                 <h3 className="painel__card-titulo">Projetos sugeridos</h3>
                 <button onClick={() => navigate("/app/projects")} className="painel__link-ver-mais">
@@ -402,7 +402,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="painel__card">
+            <div className="painel__card painel__card--notificacoes">
               <div className="painel__card-cabecalho">
                 <h3 className="painel__card-titulo">Notificações</h3>
                 <button onClick={() => navigate("/app/notifications")} className="painel__link-ver-mais">

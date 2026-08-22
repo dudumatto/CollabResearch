@@ -112,9 +112,10 @@ export default function StudentDeadlinesPage() {
     return collections.flatMap(({ project, stages }) =>
       (Array.isArray(stages) ? stages : [])
         .map(mapEtapa)
-        .filter((stage) => stage && stage.status !== "DONE")
+        .filter(Boolean)
         .map((stage) => ({
           ...stage,
+          status: String(stage.status ?? "PENDING").toUpperCase(),
           projectId: project.id,
           projectTitle: project.title,
         })),
@@ -202,6 +203,7 @@ export default function StudentDeadlinesPage() {
                   <div
                     key={key}
                     className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""} ${items.length ? "calendario-dia--com-evento" : ""}`}
+                    aria-label={items.length ? `${date.getDate()} com ${items.length} ${items.length === 1 ? "evento" : "eventos"}` : undefined}
                   >
                     <span className="calendario-dia__numero">{date.getDate()}</span>
                     <div className="calendario-dia__eventos">

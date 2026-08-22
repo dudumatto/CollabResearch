@@ -390,6 +390,7 @@
   min-width: 0;
 }
 
+
 /* ================================================================
    Cartões internos
    ================================================================ */
@@ -572,15 +573,15 @@
 
 .projeto-sugerido__linha {
   display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
+  align-items: center;
+  gap: var(--espaco-4);
 }
 
 .projeto-sugerido__icone-area {
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   background-color: var(--cor-primaria-leve);
-  border-radius: var(--raio-pequeno);
+  border-radius: var(--raio-medio);
   display: flex;
   align-items: center;
   justify-content: center;
