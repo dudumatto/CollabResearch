@@ -27,6 +27,7 @@ public class EtapaResponse {
     private EtapaResponsavel responsavel;
     private OffsetDateTime prazo;
     private Boolean obrigatoria;
+    private LocalDateTime criadaEm;
     private LocalDateTime concluidaEm;
     private Integer concluidaPorId;
     private String concluidaPorNome;
@@ -43,6 +44,7 @@ public class EtapaResponse {
                 .responsavel(etapa.getResponsavel())
                 .prazo(etapa.getPrazo())
                 .obrigatoria(etapa.getObrigatoria())
+                .criadaEm(etapa.getCriadaEm())
                 .concluidaEm(etapa.getConcluidaEm())
                 .concluidaPorId(etapa.getConcluidaPor() != null ? etapa.getConcluidaPor().getId() : null)
                 .concluidaPorNome(etapa.getConcluidaPor() != null ? etapa.getConcluidaPor().getNome() : null)

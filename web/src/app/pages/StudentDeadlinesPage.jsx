@@ -33,6 +33,16 @@ function formatLocalDate(value) {
   return date ? new Intl.DateTimeFormat("pt-BR").format(date) : "Sem data";
 }
 
+function getDisplayDate(item) {
+  return parseDate(item.prazo) ?? parseDate(item.criadaEm);
+}
+
+function formatCalendarDate(item) {
+  if (parseDate(item.prazo)) return formatLocalDate(item.prazo);
+  const criadaEm = parseDate(item.criadaEm);
+  return criadaEm ? `Sem prazo específico - cadastrada em ${formatLocalDate(item.criadaEm)}` : "Sem prazo específico";
+}
+
 function monthLabel(date) {
   return new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(date);
 }
@@ -67,7 +77,7 @@ function DeadlineItem({ item, compact = false }) {
         <p className="calendario-prazo__meta">{item.projectTitle}</p>
         {!compact && (
           <div className="calendario-prazo__detalhes">
-            <span>{formatLocalDate(item.prazo)}</span>
+            <span>{formatCalendarDate(item)}</span>
             <span>{formatEtapaResponsavel(item.responsavel)}</span>
             <span className={`advisor-etiqueta ${statusClass(item.status)}`}>{formatEtapaStatus(item.status)}</span>
           </div>
@@ -82,7 +92,7 @@ function deadlineTarget(item) {
     projectId: String(item.projectId),
     stageId: String(item.id),
   });
-  return `/app/deliveries?${params.toString()}`;
+  return `/app/progress?${params.toString()}`;
 }
 
 async function loadProjectsForUser(user) {
@@ -123,16 +133,16 @@ export default function StudentDeadlinesPage() {
   }, [user?.id, user?.tipo], { initialData: [] });
 
   const deadlines = useMemo(
-    () => (Array.isArray(data) ? data : []).sort((a, b) => (parseDate(a.prazo)?.getTime() ?? Infinity) - (parseDate(b.prazo)?.getTime() ?? Infinity)),
+    () => (Array.isArray(data) ? data : []).sort((a, b) => (getDisplayDate(a)?.getTime() ?? Infinity) - (getDisplayDate(b)?.getTime() ?? Infinity)),
     [data],
   );
 
-  const scheduled = deadlines.filter((item) => parseDate(item.prazo));
+  const scheduled = deadlines.filter((item) => getDisplayDate(item));
   const withoutDate = deadlines.filter((item) => !parseDate(item.prazo));
   const byDay = useMemo(() => {
     const map = new Map();
     scheduled.forEach((item) => {
-      const key = toDateKey(parseDate(item.prazo));
+      const key = toDateKey(getDisplayDate(item));
       map.set(key, [...(map.get(key) ?? []), item]);
     });
     return map;
@@ -141,7 +151,7 @@ export default function StudentDeadlinesPage() {
   const todayKey = toDateKey(new Date());
   const monthDays = useMemo(() => buildMonthDays(visibleMonth), [visibleMonth]);
   const monthItems = scheduled.filter((item) => {
-    const date = parseDate(item.prazo);
+    const date = getDisplayDate(item);
     return date && date.getFullYear() === visibleMonth.getFullYear() && date.getMonth() === visibleMonth.getMonth();
   });
 
@@ -168,7 +178,7 @@ export default function StudentDeadlinesPage() {
         </div>
         <div className="calendario-cabecalho__resumo">
           <strong>{scheduled.length}</strong>
-          <span>prazos agendados</span>
+          <span>itens no calendário</span>
         </div>
       </header>
 
@@ -219,7 +229,7 @@ export default function StudentDeadlinesPage() {
                           <span className="calendario-evento__tooltip" role="tooltip">
                             <strong>{item.titulo}</strong>
                             <small>{item.projectTitle}</small>
-                            <span>{formatLocalDate(item.prazo)}</span>
+                            <span>{formatCalendarDate(item)}</span>
                             <span>{formatEtapaResponsavel(item.responsavel)}</span>
                             <em>{formatEtapaStatus(item.status)}</em>
                           </span>

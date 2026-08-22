@@ -30,7 +30,7 @@ function etapaPillClass(status) {
 }
 
 function camposVazios() {
-  return { titulo: "", descricao: "", responsavel: "AMBOS", prazo: "", obrigatoria: true };
+  return { titulo: "", descricao: "", responsavel: "AMBOS", prazo: "", semData: false, obrigatoria: true };
 }
 
 function toDeliveryDatePayload(value) {
@@ -114,6 +114,7 @@ export default function AdvisorProgressPage() {
         descricao: etapa.descricao,
         responsavel: etapa.responsavel,
         prazo: etapa.prazo ? String(etapa.prazo).slice(0, 10) : "",
+        semData: !etapa.prazo,
         obrigatoria: etapa.obrigatoria,
       });
     }
@@ -132,7 +133,7 @@ export default function AdvisorProgressPage() {
       setCampoErro("Informe o título da etapa.");
       return;
     }
-    if (!campos.prazo) {
+    if (!campos.semData && !campos.prazo) {
       setCampoErro("Informe a data de entrega da etapa.");
       return;
     }
@@ -143,7 +144,7 @@ export default function AdvisorProgressPage() {
         titulo: campos.titulo.trim(),
         descricao: campos.descricao.trim(),
         responsavel: campos.responsavel,
-        prazo: toDeliveryDatePayload(campos.prazo),
+        prazo: campos.semData ? null : toDeliveryDatePayload(campos.prazo),
         obrigatoria: campos.obrigatoria,
       };
       if (modal.tipo === "nova") {
@@ -453,11 +454,12 @@ export default function AdvisorProgressPage() {
                   </select>
                 </div>
                 <div className="advisor-campo">
-                  <label className="advisor-campo__rotulo" htmlFor="etapa-prazo">Data de entrega *</label>
+                  <label className="advisor-campo__rotulo" htmlFor="etapa-prazo">Data de entrega</label>
                   <input
                     id="etapa-prazo"
                     type="date"
                     value={campos.prazo}
+                    disabled={campos.semData}
                     onChange={(e) => {
                       setCampos({ ...campos, prazo: e.target.value });
                       if (campoErro === "Informe a data de entrega da etapa.") setCampoErro("");
@@ -465,8 +467,21 @@ export default function AdvisorProgressPage() {
                     className={`advisor-campo__input ${campoErro === "Informe a data de entrega da etapa." ? "advisor-campo__input--erro" : ""}`}
                   />
                   {campoErro === "Informe a data de entrega da etapa." && <span className="advisor-campo__erro">{campoErro}</span>}
+                  <label className="advisor-checkbox advisor-checkbox--campo" htmlFor="etapa-sem-data">
+                    <input
+                      id="etapa-sem-data"
+                      type="checkbox"
+                      checked={campos.semData}
+                      onChange={(e) => {
+                        const semData = e.target.checked;
+                        setCampos({ ...campos, semData, prazo: semData ? "" : campos.prazo });
+                        if (semData && campoErro === "Informe a data de entrega da etapa.") setCampoErro("");
+                      }}
+                    />
+                    <span>Esta etapa não precisa de uma data específica agora</span>
+                  </label>
                 </div>
-                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--tamanho-base)", color: "var(--cor-texto-medio)", cursor: "pointer" }}>
+                <label className="advisor-checkbox">
                   <input
                     type="checkbox"
                     checked={campos.obrigatoria}

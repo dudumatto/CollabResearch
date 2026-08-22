@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, ChevronDown, FolderKanban, Plus, TrendingUp, Users } from "lucide-react";
+import { useLocation } from "react-router";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -140,6 +141,10 @@ function ProgressSkeleton() {
 
 export default function ProgressPage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const targetProjectId = queryParams.get("projectId");
+  const targetStageId = queryParams.get("stageId");
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [stepDisplayOrder, setStepDisplayOrder] = useState([]);
@@ -179,10 +184,14 @@ export default function ProgressPage() {
   const projects = data?.projects ?? [];
 
   useEffect(() => {
+    if (targetProjectId && projects.some((project) => String(project.id) === String(targetProjectId))) {
+      setSelectedProjectId(String(targetProjectId));
+      return;
+    }
     if (!selectedProjectId && projects[0]?.id) {
       setSelectedProjectId(String(projects[0].id));
     }
-  }, [projects, selectedProjectId]);
+  }, [projects, selectedProjectId, targetProjectId]);
 
   const selectedProject = useMemo(
     () => projects.find((project) => String(project.id) === String(selectedProjectId)) ?? projects[0] ?? null,
@@ -252,6 +261,12 @@ export default function ProgressPage() {
 
   const currentUserRole = String(user?.tipo ?? user?.type ?? "").toUpperCase();
   const acceptedCollaborators = selectedProject?.acceptedCollaborators ?? [];
+
+  useEffect(() => {
+    if (!targetStageId || progressLoading) return;
+    const element = document.getElementById(`progress-step-${targetStageId}`);
+    element?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [targetStageId, progressLoading, orderedSteps]);
 
   const handleAdvanceStep = async (stepId) => {
     try {
@@ -377,7 +392,7 @@ export default function ProgressPage() {
             </div>
             <span className="progress-page__hint">Peso por etapa</span>
           </div>
-          <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onReorderStep={handleReorderStep} />
+          <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onReorderStep={handleReorderStep} highlightedStepId={targetStageId} />
         </div>
 
         <div className="progress-page__panel">

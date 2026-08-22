@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { StepCard } from "./StepCard";
 
-export function StepperVertical({ steps = [], currentUserRole, onAdvanceStep, onReorderStep }) {
+export function StepperVertical({ steps = [], currentUserRole, onAdvanceStep, onReorderStep, highlightedStepId }) {
   const [draggingIndex, setDraggingIndex] = useState(null);
   const canReorder = currentUserRole === "ALUNO" && steps.length > 1;
 
@@ -36,6 +36,7 @@ export function StepperVertical({ steps = [], currentUserRole, onAdvanceStep, on
           displayOrder={index + 1}
           canReorder={canReorder}
           isDragging={draggingIndex === index}
+          isHighlighted={String(step.id) === String(highlightedStepId)}
           onDragStart={() => handleDragStart(index)}
           onDragEnter={() => handleDragEnter(index)}
           onDragOver={handleDragOver}

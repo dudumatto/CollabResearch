@@ -23,6 +23,7 @@ export function StepCard({
   displayOrder,
   canReorder,
   isDragging,
+  isHighlighted,
   onDragStart,
   onDragEnter,
   onDragOver,
@@ -36,7 +37,8 @@ export function StepCard({
 
   return (
     <article
-      className={`step-card step-card--${step.status.toLowerCase()}${canReorder ? " step-card--reorderable" : ""}${isDragging ? " step-card--dragging" : ""}`}
+      id={`progress-step-${step.id}`}
+      className={`step-card step-card--${step.status.toLowerCase()}${canReorder ? " step-card--reorderable" : ""}${isDragging ? " step-card--dragging" : ""}${isHighlighted ? " step-card--highlighted" : ""}`}
       draggable={canReorder}
       aria-grabbed={canReorder ? Boolean(isDragging) : undefined}
       onDragStart={onDragStart}

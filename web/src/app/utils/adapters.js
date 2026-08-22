@@ -545,6 +545,7 @@ export function mapEtapa(etapa) {
     responsavel: etapa?.responsavel ?? "AMBOS",
     prazo: etapa?.prazo ?? null,
     obrigatoria: Boolean(etapa?.obrigatoria),
+    criadaEm: etapa?.criadaEm ?? etapa?.createdAt ?? null,
     concluidaEm: etapa?.concluidaEm ?? null,
     concluidaPorId: etapa?.concluidaPorId ?? null,
     concluidaPorNome: etapa?.concluidaPorNome ?? "",

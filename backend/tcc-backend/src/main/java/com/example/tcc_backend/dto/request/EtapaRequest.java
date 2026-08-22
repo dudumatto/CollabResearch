@@ -2,7 +2,6 @@ package com.example.tcc_backend.dto.request;
 
 import com.example.tcc_backend.model.EtapaResponsavel;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -22,7 +21,6 @@ public class EtapaRequest {
 
     private EtapaResponsavel responsavel;
 
-    @NotNull(message = "Data de entrega e obrigatoria")
     private OffsetDateTime prazo;
 
     private Boolean obrigatoria;
