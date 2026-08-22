@@ -233,27 +233,107 @@
 /* ---- Dashboard do orientador sem rolagem (desktop) ---- */
 @media (min-width: 1180px) {
   .advisor-pagina--dashboard {
-    height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
+    height: calc(100dvh - var(--altura-topbar) - var(--espaco-4) * 2);
+    gap: var(--espaco-3);
     overflow: hidden;
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-hero {
-    min-height: 0;
-    padding: var(--espaco-4) var(--espaco-5);
+    min-height: 7.25rem;
+    padding: var(--espaco-3) var(--espaco-5);
+  }
+
+  .advisor-pagina--dashboard .advisor-dashboard-hero__descricao {
+    max-width: 34rem;
+    margin-top: var(--espaco-1);
+    font-size: var(--tamanho-base);
+    line-height: 1.4;
+  }
+
+  .advisor-pagina--dashboard .advisor-dashboard-hero__acoes {
+    margin-top: var(--espaco-3);
+  }
+
+  .advisor-pagina--dashboard .advisor-dashboard-overview {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--espaco-2);
+  }
+
+  .advisor-pagina--dashboard .advisor-metrica--overview {
+    min-height: 3.6rem;
+    padding: var(--espaco-2) var(--espaco-3);
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-layout {
     flex: 1;
     min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 18rem);
+    gap: var(--espaco-3);
     align-items: stretch;
+    overflow: hidden;
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-principal,
   .advisor-pagina--dashboard .advisor-dashboard-lateral {
     min-height: 0;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    padding-right: var(--espaco-1);
+    gap: var(--espaco-3);
+    overflow: hidden;
+  }
+
+  .advisor-pagina--dashboard .advisor-dashboard-section {
+    gap: var(--espaco-2);
+    min-height: 0;
+  }
+
+  .advisor-pagina--dashboard .advisor-dashboard-section__titulo {
+    font-size: var(--tamanho-normal);
+  }
+
+  .advisor-pagina--dashboard .advisor-dashboard-section__descricao {
+    margin-top: 0;
+    font-size: var(--tamanho-pequeno);
+    line-height: 1.3;
+  }
+
+  .advisor-pagina--dashboard .advisor-grade-filas {
+    gap: var(--espaco-2);
+  }
+
+  .advisor-pagina--dashboard .advisor-grade-filas--prioridade {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .advisor-pagina--dashboard .advisor-grade-filas--acompanhamento {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .advisor-pagina--dashboard .advisor-card__cabecalho {
+    padding: var(--espaco-2) var(--espaco-3);
+  }
+
+  .advisor-pagina--dashboard .advisor-card__corpo {
+    padding: var(--espaco-2);
+    gap: var(--espaco-1);
+  }
+
+  .advisor-pagina--dashboard .advisor-card__vazio {
+    min-height: 2.6rem;
+    padding: var(--espaco-1) var(--espaco-2);
+    font-size: var(--tamanho-pequeno);
+  }
+
+  .advisor-pagina--dashboard .advisor-fila-item {
+    gap: var(--espaco-2);
+    padding: var(--espaco-1) var(--espaco-2);
+  }
+
+  .advisor-pagina--dashboard .advisor-fila-item__icone {
+    width: 1.55rem;
+    height: 1.55rem;
+  }
+
+  .advisor-pagina--dashboard .advisor-metrica--compacta {
+    padding: var(--espaco-2);
   }
 }
 
