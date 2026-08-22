@@ -724,3 +724,88 @@
   background-color: var(--cor-erro-clara);
   color: var(--cor-erro-media);
 }
+
+/* ================================================================
+   Perfil do aluno no layout do orientador
+   ================================================================ */
+.student-profile-standard__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  min-width: 0;
+}
+
+.student-profile-card__avatar-wrap {
+  position: relative;
+  width: fit-content;
+}
+
+.student-profile-card__avatar-img {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--raio-grande);
+  object-fit: cover;
+  display: block;
+}
+
+.student-profile-card__avatar-button {
+  color: var(--cor-branco);
+}
+
+.student-profile-standard__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+}
+
+@media (min-width: 640px) {
+  .student-profile-standard__actions {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.student-profile-standard__form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espaco-3);
+}
+
+@media (min-width: 760px) {
+  .student-profile-standard__form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.student-profile-standard__input-wrap {
+  position: relative;
+}
+
+.student-profile-standard__input-icon {
+  position: absolute;
+  left: var(--espaco-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cor-texto-mudo);
+  pointer-events: none;
+}
+
+.student-profile-standard__input {
+  padding-left: 2.25rem;
+}
+
+.student-profile-standard .advisor-campo__input:disabled {
+  background-color: transparent;
+  color: var(--cor-texto-medio);
+  opacity: 1;
+  cursor: default;
+}
+
+.student-profile-standard .advisor-campo__input:not(:disabled) {
+  background-color: var(--cor-fundo);
+}
+
+.student-profile-standard__documents {
+  padding: var(--espaco-5);
+}

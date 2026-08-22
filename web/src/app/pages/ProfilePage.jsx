@@ -8,77 +8,48 @@ import { courseService } from "../services/courseService";
 import { userService } from "../services/userService";
 import { applicationService } from "../services/applicationService";
 import { mapApplication } from "../utils/adapters";
-import { formatApplicationStatus, formatUserType } from "../utils/formatters";
+import { formatUserType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { ProfileDocuments } from "../components/ProfileDocuments";
+import "./AdvisorWorkspace.css";
 import "./ProfilePage.css";
 
+function initials(name = "") {
+  return String(name)
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase() || "IC";
+}
+
 function ProfileSkeleton() {
-  const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
-    <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
-  );
   return (
-    <div className="pagina-perfil">
-      <div className="pagina-perfil__grade">
-        <div className="cartao-perfil">
-          <div className="cartao-perfil__capa skeleton" style={{ borderRadius: "var(--raio-grande) var(--raio-grande) 0 0" }} />
-          <div className="cartao-perfil__corpo" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-            <Sk w={80} h={80} r="50%" />
-            <Sk w="60%" h={18} />
-            <Sk w="40%" h={13} />
-            <Sk w="55%" h={13} />
-            <div style={{ display: "flex", gap: 24, margin: "8px 0" }}>
-              {[1, 2, 3].map((i) => (
-                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                  <Sk w={30} h={18} />
-                  <Sk w={50} h={11} />
-                </div>
-              ))}
-            </div>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", width: "100%" }}>
-                <Sk w={16} h={16} r="50%" />
-                <Sk w="75%" h={13} />
-              </div>
-            ))}
-          </div>
+    <div className="advisor-pagina advisor-profile-standard student-profile-standard">
+      <div className="advisor-detalhe-grade">
+        <div className="advisor-detalhe-lateral">
+          <div className="skeleton" style={{ width: "100%", height: 260, borderRadius: "var(--raio-grande)" }} />
+          <div className="skeleton" style={{ width: "100%", height: 120, borderRadius: "var(--raio-grande)" }} />
         </div>
-        <div className="pagina-perfil__conteudo-principal">
-          <div className="secao-perfil">
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--espaco-4)" }}>
-              <Sk w={180} h={16} />
-              <Sk w={100} h={32} r="var(--raio-medio)" />
-            </div>
-            <div className="secao-perfil__grade-campos">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <Sk w="35%" h={13} />
-                  <Sk w="100%" h={40} r="var(--raio-medio)" />
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "var(--espaco-4)", display: "flex", flexDirection: "column", gap: 6 }}>
-              <Sk w="20%" h={13} />
-              <Sk w="100%" h={72} r="var(--raio-medio)" />
-            </div>
-          </div>
-          <div className="secao-perfil">
-            <Sk w={160} h={16} mb={16} />
-            {[1, 2, 3].map((i) => (
-              <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--cor-borda-clara)" }}>
-                <Sk w={36} h={36} r="var(--raio-medio)" />
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-                  <Sk w="55%" h={14} />
-                  <Sk w="40%" h={12} />
-                </div>
-                <Sk w={70} h={22} r="var(--raio-completo)" />
-              </div>
-            ))}
-          </div>
+        <div className="student-profile-standard__main">
+          <div className="skeleton" style={{ width: "100%", height: 320, borderRadius: "var(--raio-grande)" }} />
+          <div className="skeleton" style={{ width: "100%", height: 220, borderRadius: "var(--raio-grande)" }} />
         </div>
       </div>
     </div>
   );
+}
+
+function resetFormFromProfile(profile) {
+  return {
+    nome: profile?.nome ?? "",
+    email: profile?.email ?? "",
+    cursoId: profile?.cursoId ? String(profile.cursoId) : "",
+    instituicao: profile?.instituicao ?? "",
+    semestre: profile?.semestre ?? "",
+    bio: profile?.bio ?? "",
+  };
 }
 
 export default function ProfilePage() {
@@ -86,7 +57,7 @@ export default function ProfilePage() {
   const avatarInputRef = useRef(null);
   const { upload: uploadAvatar, uploading: uploadingAvatar } = useUploadDocumento();
   const { data, loading, error, reload } = useAsyncData(async () => {
-    if (!user?.id) return { profile: user, applications: [], documents: [] };
+    if (!user?.id) return { profile: user, applications: [], documents: [], courses: [] };
     const [profile, applications, documents, courses] = await Promise.all([
       userService.getCurrentUser().catch(() => user),
       applicationService.listMine().catch(() => []),
@@ -101,6 +72,7 @@ export default function ProfilePage() {
       courses: Array.isArray(courses) ? courses : [],
     };
   }, [user?.id], { initialData: { profile: user, applications: [], documents: [], courses: [] } });
+
   const [editing, setEditing] = useState(false);
   const [loadingSave, setLoadingSave] = useState(false);
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
@@ -115,14 +87,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (data?.profile) {
-      setForm({
-        nome: data.profile.nome ?? "",
-        email: data.profile.email ?? "",
-        cursoId: data.profile.cursoId ? String(data.profile.cursoId) : "",
-        instituicao: data.profile.instituicao ?? "",
-        semestre: data.profile.semestre ?? "",
-        bio: data.profile.bio ?? "",
-      });
+      setForm(resetFormFromProfile(data.profile));
     }
   }, [data]);
 
@@ -198,28 +163,33 @@ export default function ProfilePage() {
   const isAluno = profile.tipo === "ALUNO";
   const courseOptions = Array.isArray(data?.courses) ? data.courses : [];
   const showProfilePhoto = Boolean(profile.fotoPerfilUrl) && !avatarLoadFailed;
+  const profileType = formatUserType(profile.tipo);
 
   return (
-    <div className="pagina-perfil">
-      <div className="pagina-perfil__grade">
-        <div className="cartao-perfil">
-          <div className="cartao-perfil__capa" />
-          <div className="cartao-perfil__corpo">
-            <div className="cartao-perfil__avatar-wrapper">
-              <div className="cartao-perfil__avatar">
-                {showProfilePhoto ? (
-                  <img
-                    src={profile.fotoPerfilUrl}
-                    alt={profile.nome ?? "Foto de perfil"}
-                    onError={() => setAvatarLoadFailed(true)}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }}
-                  />
-                ) : (
-                  <span className="cartao-perfil__avatar-inicial">
-                    {(profile.nome ?? "IC").split(" ").slice(0, 2).map((part) => part[0]).join("")}
-                  </span>
-                )}
-              </div>
+    <div className="advisor-pagina advisor-profile-standard student-profile-standard">
+      <div className="advisor-hero" style={{ padding: "var(--espaco-4)" }}>
+        <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
+          Meu perfil
+        </h2>
+        <p className="advisor-hero__subtitulo">
+          Mantenha seus dados acadêmicos, currículo e documentos atualizados.
+        </p>
+      </div>
+
+      <div className="advisor-detalhe-grade">
+        <div className="advisor-detalhe-lateral">
+          <div className="advisor-perfil-cartao student-profile-card">
+            <div className="student-profile-card__avatar-wrap">
+              {showProfilePhoto ? (
+                <img
+                  src={profile.fotoPerfilUrl}
+                  alt={profile.nome ?? "Foto de perfil"}
+                  onError={() => setAvatarLoadFailed(true)}
+                  className="student-profile-card__avatar-img"
+                />
+              ) : (
+                <div className="advisor-perfil-cartao__avatar">{initials(profile.nome)}</div>
+              )}
               {editing && (
                 <>
                   <input
@@ -231,9 +201,10 @@ export default function ProfilePage() {
                   />
                   <button
                     type="button"
-                    className="cartao-perfil__botao-avatar"
+                    className="cartao-perfil__botao-avatar student-profile-card__avatar-button"
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={uploadingAvatar}
+                    title="Alterar foto"
                   >
                     <Edit3 size={12} />
                   </button>
@@ -241,116 +212,198 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <h2 className="cartao-perfil__nome">{profile.nome}</h2>
-            <p className="cartao-perfil__tipo">{formatUserType(profile.tipo)}</p>
-            <p className="cartao-perfil__instituicao">{profile.instituicao ?? "Instituição não informada"}</p>
+            <h3 className="advisor-perfil-cartao__nome">{profile.nome}</h3>
+            <p className="advisor-perfil-cartao__meta">{profile.cursoNome || profileType}</p>
 
-            <div className="cartao-perfil__estatisticas">
-              {[
-                { label: "Projetos", value: approvedApps },
-                { label: "Inscrições", value: data.applications.length },
-                { label: "Tipo", value: formatUserType(profile.tipo) },
-              ].map((item) => (
-                <div key={item.label} className="cartao-perfil__stat">
-                  <p className="cartao-perfil__stat-valor">{item.value}</p>
-                  <p className="cartao-perfil__stat-label">{item.label}</p>
+            <div className="advisor-perfil-cartao__info">
+              {profile.email && (
+                <div className="advisor-perfil-cartao__info-item">
+                  <Mail size={14} className="advisor-perfil-cartao__info-icone" />
+                  <span>{profile.email}</span>
                 </div>
-              ))}
+              )}
+              <div className="advisor-perfil-cartao__info-item">
+                <BookOpen size={14} className="advisor-perfil-cartao__info-icone" />
+                <span>{profile.cursoNome ?? "Curso não informado"}</span>
+              </div>
+              <div className="advisor-perfil-cartao__info-item">
+                <Building2 size={14} className="advisor-perfil-cartao__info-icone" />
+                <span>{profile.instituicao ?? "Instituição não informada"}</span>
+              </div>
+              <div className="advisor-perfil-cartao__info-item">
+                <GraduationCap size={14} className="advisor-perfil-cartao__info-icone" />
+                <span>{profile.semestre ? `${profile.semestre}º semestre` : "Semestre não informado"}</span>
+              </div>
             </div>
+          </div>
 
-            <div className="cartao-perfil__info-lista">
-              {[
-                { icon: Mail, label: profile.email },
-                { icon: BookOpen, label: profile.cursoNome ?? "Curso não informado" },
-                { icon: Building2, label: profile.instituicao ?? "Instituição não informada" },
-                { icon: GraduationCap, label: profile.semestre ?? "Semestre não informado" },
-              ].map((item) => (
-                <div key={item.label} className="cartao-perfil__info-item">
-                  <item.icon size={14} className="cartao-perfil__info-icone" />
-                  <span className="cartao-perfil__info-texto">{item.label}</span>
-                </div>
-              ))}
+          <div className="advisor-card-conteudo" style={{ padding: "var(--espaco-4)" }}>
+            <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>
+              Números
+            </p>
+            <div className="advisor-notas">
+              <div className="advisor-nota">
+                <span className="advisor-nota__rotulo">Projetos</span>
+                <span className="advisor-nota__valor">{approvedApps}</span>
+              </div>
+              <div className="advisor-nota">
+                <span className="advisor-nota__rotulo">Inscrições</span>
+                <span className="advisor-nota__valor">{data.applications.length}</span>
+              </div>
+              <div className="advisor-nota">
+                <span className="advisor-nota__rotulo">Tipo</span>
+                <span className="advisor-nota__valor">{profileType}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="pagina-perfil__conteudo-principal">
-          <div className="secao-perfil">
-            <div className="secao-perfil__cabecalho">
-              <h3 className="secao-perfil__titulo">Informações do perfil</h3>
-              {!editing ? (
-                <button onClick={() => setEditing(true)} className="secao-perfil__botao-editar">
-                  <Edit3 size={14} />
-                  Editar perfil
-                </button>
-              ) : (
-                <div className="secao-perfil__acoes-edicao">
-                  <button onClick={() => setEditing(false)} className="secao-perfil__botao-cancelar">
-                    <X size={14} /> Cancelar
+        <div className="student-profile-standard__main">
+          <div className="advisor-card-conteudo">
+            <div className="advisor-modal__cabecalho">
+              <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>
+                Dados do perfil
+              </p>
+              <div className="student-profile-standard__actions">
+                <span className="advisor-etiqueta advisor-etiqueta--cinza">{profileType}</span>
+                {!editing ? (
+                  <button type="button" onClick={() => setEditing(true)} className="advisor-botao advisor-botao--secundario">
+                    <Edit3 size={16} />
+                    Editar perfil
                   </button>
-                  <button onClick={handleSave} disabled={loadingSave || uploadingAvatar} className="secao-perfil__botao-salvar">
-                    {loadingSave || uploadingAvatar ? <div className="secao-perfil__spinner" /> : <Save size={14} />}
-                    Salvar
-                  </button>
-                </div>
-              )}
+                ) : null}
+              </div>
             </div>
 
-            <div className="secao-perfil__grade-campos">
-              {[
-                { label: "Nome completo", value: form.nome, icon: User, field: "nome" },
-                { label: "E-mail", value: form.email, icon: Mail, field: "email" },
-                { label: "Curso", value: form.cursoId, icon: BookOpen, field: "cursoId" },
-                { label: "Instituição", value: form.instituicao, icon: Building2, field: "instituicao" },
-                { label: "Semestre", value: form.semestre, icon: GraduationCap, field: "semestre" },
-                { label: "Tipo", value: formatUserType(profile.tipo), icon: Award, field: null },
-              ].map((field) => (
-                <div key={field.label}>
-                  <label className="campo-perfil__label">{field.label}</label>
-                  <div className="campo-perfil__wrapper">
-                    <field.icon size={14} className="campo-perfil__icone" />
-                    {field.field === "cursoId" ? (
-                      <select
-                        value={form.cursoId}
-                        disabled={!editing}
-                        onChange={(e) => setForm((prev) => ({ ...prev, cursoId: e.target.value }))}
-                        className={`campo-perfil__input ${editing ? "campo-perfil__input--editando" : "campo-perfil__input--leitura"}`}
-                      >
-                        <option value="">Selecione o curso</option>
-                        {courseOptions.map((course) => (
-                          <option key={course.id} value={course.id}>
-                            {course.nome}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={field.value}
-                        disabled={!editing || !field.field}
-                        onChange={(e) => field.field && setForm((prev) => ({ ...prev, [field.field]: e.target.value }))}
-                        className={`campo-perfil__input ${editing && field.field ? "campo-perfil__input--editando" : "campo-perfil__input--leitura"}`}
-                      />
-                    )}
-                  </div>
+            <div className="student-profile-standard__form-grid">
+              <div className="advisor-campo">
+                <label className="advisor-campo__rotulo" htmlFor="perfil-nome">Nome *</label>
+                <div className="student-profile-standard__input-wrap">
+                  <User size={14} className="student-profile-standard__input-icon" />
+                  <input
+                    id="perfil-nome"
+                    type="text"
+                    value={form.nome}
+                    disabled={!editing}
+                    onChange={(e) => setForm((prev) => ({ ...prev, nome: e.target.value }))}
+                    className="advisor-campo__input student-profile-standard__input"
+                  />
                 </div>
-              ))}
+              </div>
+              <div className="advisor-campo">
+                <label className="advisor-campo__rotulo" htmlFor="perfil-email">E-mail *</label>
+                <div className="student-profile-standard__input-wrap">
+                  <Mail size={14} className="student-profile-standard__input-icon" />
+                  <input
+                    id="perfil-email"
+                    type="email"
+                    value={form.email}
+                    disabled={!editing}
+                    onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+                    className="advisor-campo__input student-profile-standard__input"
+                  />
+                </div>
+              </div>
+              <div className="advisor-campo">
+                <label className="advisor-campo__rotulo" htmlFor="perfil-curso">Curso</label>
+                <div className="student-profile-standard__input-wrap">
+                  <BookOpen size={14} className="student-profile-standard__input-icon" />
+                  <select
+                    id="perfil-curso"
+                    value={form.cursoId}
+                    disabled={!editing}
+                    onChange={(e) => setForm((prev) => ({ ...prev, cursoId: e.target.value }))}
+                    className="advisor-campo__input student-profile-standard__input"
+                  >
+                    <option value="">Selecione o curso</option>
+                    {courseOptions.map((course) => (
+                      <option key={course.id} value={course.id}>{course.nome}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="advisor-campo">
+                <label className="advisor-campo__rotulo" htmlFor="perfil-instituicao">Instituição</label>
+                <div className="student-profile-standard__input-wrap">
+                  <Building2 size={14} className="student-profile-standard__input-icon" />
+                  <input
+                    id="perfil-instituicao"
+                    type="text"
+                    value={form.instituicao}
+                    disabled={!editing}
+                    onChange={(e) => setForm((prev) => ({ ...prev, instituicao: e.target.value }))}
+                    className="advisor-campo__input student-profile-standard__input"
+                  />
+                </div>
+              </div>
+              <div className="advisor-campo">
+                <label className="advisor-campo__rotulo" htmlFor="perfil-semestre">Semestre</label>
+                <div className="student-profile-standard__input-wrap">
+                  <GraduationCap size={14} className="student-profile-standard__input-icon" />
+                  <input
+                    id="perfil-semestre"
+                    type="number"
+                    min="1"
+                    value={form.semestre}
+                    disabled={!editing}
+                    onChange={(e) => setForm((prev) => ({ ...prev, semestre: e.target.value }))}
+                    className="advisor-campo__input student-profile-standard__input"
+                  />
+                </div>
+              </div>
+              <div className="advisor-campo">
+                <label className="advisor-campo__rotulo" htmlFor="perfil-tipo">Tipo</label>
+                <div className="student-profile-standard__input-wrap">
+                  <Award size={14} className="student-profile-standard__input-icon" />
+                  <input
+                    id="perfil-tipo"
+                    type="text"
+                    value={profileType}
+                    disabled
+                    className="advisor-campo__input student-profile-standard__input"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div style={{ marginTop: "var(--espaco-4)" }}>
-              <label className="campo-perfil__label">Biografia</label>
+            <div className="advisor-campo">
+              <label className="advisor-campo__rotulo" htmlFor="perfil-bio">Biografia</label>
               <textarea
+                id="perfil-bio"
                 value={form.bio}
                 onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
                 disabled={!editing}
-                rows={3}
-                className={`campo-perfil__bio ${editing ? "campo-perfil__bio--editando" : "campo-perfil__bio--leitura"}`}
+                rows={5}
+                maxLength={2000}
+                className="advisor-campo__input"
+                placeholder="Conte sobre sua trajetória acadêmica, interesses e objetivos de pesquisa..."
               />
             </div>
+
+            {editing && (
+              <div className="advisor-modal__rodape" style={{ justifyContent: "flex-start" }}>
+                <button type="button" className="advisor-botao advisor-botao--primario" onClick={handleSave} disabled={loadingSave || uploadingAvatar}>
+                  {loadingSave || uploadingAvatar ? <span className="secao-perfil__spinner" /> : <Save size={16} />}
+                  Salvar alterações
+                </button>
+                <button
+                  type="button"
+                  className="advisor-botao advisor-botao--secundario"
+                  onClick={() => {
+                    setEditing(false);
+                    setForm(resetFormFromProfile(profile));
+                  }}
+                  disabled={loadingSave || uploadingAvatar}
+                >
+                  <X size={16} />
+                  Descartar alterações
+                </button>
+              </div>
+            )}
           </div>
 
           {isAluno && (
-            <div className="secao-perfil">
+            <div className="advisor-card-conteudo student-profile-standard__documents">
               <ProfileDocuments
                 userId={user.id}
                 documents={data.documents}
@@ -358,34 +411,6 @@ export default function ProfilePage() {
                 onUploaded={reload}
               />
             </div>
-          )}
-
-          {isAluno && (
-          <div className="secao-perfil">
-            <h3 className="secao-perfil__titulo">Histórico acadêmico</h3>
-            <div className="historico-academico__lista">
-              {data.applications.length === 0 ? (
-                <StatusView title="Sem histórico" description="Suas inscrições e aprovações aparecerão aqui." />
-              ) : (
-                data.applications.map((application) => (
-                  <div key={application.id} className="historico-item">
-                    <div className="historico-item__icone-area">
-                      <Award size={18} style={{ color: "var(--cor-primaria)" }} />
-                    </div>
-                    <div className="historico-item__info">
-                      <p className="historico-item__titulo">{application.project?.title ?? "Projeto"}</p>
-                      <p className="historico-item__meta">
-                        {application.appliedAt ? new Date(application.appliedAt).toLocaleDateString("pt-BR") : "-"} · {application.project?.area ?? "Área não informada"}
-                      </p>
-                    </div>
-                    <span className="historico-item__etiqueta historico-item__etiqueta--aprovado">
-                      {formatApplicationStatus(application.status)}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
           )}
         </div>
       </div>
