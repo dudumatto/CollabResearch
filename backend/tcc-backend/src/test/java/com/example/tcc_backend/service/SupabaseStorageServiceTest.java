@@ -105,6 +105,30 @@ class SupabaseStorageServiceTest {
         assertThat(signedUrl)
                 .isEqualTo("https://example.supabase.co/storage/v1/object/sign/documents/usuarios/1/curriculo.pdf?token=novo");
     }
+
+    @Test
+    void deveRecuperarUrlAssinadaDuplicadaSalvaAnteriormente() throws Exception {
+        HttpClient httpClient = mock(HttpClient.class);
+        HttpResponse<String> response = mock(HttpResponse.class);
+        when(response.statusCode()).thenReturn(200);
+        when(response.body()).thenReturn("{\"signedURL\":\"/object/sign/documents/usuarios/353/curriculo/curriculo.pdf?token=novo\"}");
+        when(httpClient.send(any(HttpRequest.class), anyStringBodyHandler())).thenReturn(response);
+        SupabaseStorageService service = new SupabaseStorageService(
+                httpClient,
+                "https://example.supabase.co/",
+                "service-role-key",
+                "project-deliveries",
+                "documents",
+                new ObjectMapper()
+        );
+
+        String signedUrl = service.createSignedUserDocumentUrl(
+                "https://example.supabase.co/storage/v1/object/sign//object/sign/documents/usuarios/353/curriculo/curriculo.pdf?token=antigo"
+        );
+
+        assertThat(signedUrl)
+                .isEqualTo("https://example.supabase.co/storage/v1/object/sign/documents/usuarios/353/curriculo/curriculo.pdf?token=novo");
+    }
     @SuppressWarnings("unchecked")
     private static HttpResponse.BodyHandler<String> anyStringBodyHandler() {
         return (HttpResponse.BodyHandler<String>) any(HttpResponse.BodyHandler.class);

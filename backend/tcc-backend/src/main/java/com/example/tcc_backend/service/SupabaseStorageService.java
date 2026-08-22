@@ -201,7 +201,7 @@ public class SupabaseStorageService {
                 if (markerIndex < 0) {
                     continue;
                 }
-                String remainder = path.substring(markerIndex + marker.length());
+                String remainder = normalizeStorageObjectRemainder(path.substring(markerIndex + marker.length()));
                 int slashIndex = remainder.indexOf('/');
                 if (slashIndex <= 0 || slashIndex == remainder.length() - 1) {
                     return null;
@@ -216,6 +216,16 @@ public class SupabaseStorageService {
         }
     }
 
+
+    private String normalizeStorageObjectRemainder(String remainder) {
+        String normalized = remainder == null ? "" : remainder.replaceAll("^/+", "");
+        while (normalized.startsWith("object/sign/") || normalized.startsWith("object/public/")) {
+            normalized = normalized
+                    .replaceFirst("^object/sign/+", "")
+                    .replaceFirst("^object/public/+", "");
+        }
+        return normalized;
+    }
     private String normalizedUrl() {
         return supabaseUrl.replaceAll("/+$", "");
     }
