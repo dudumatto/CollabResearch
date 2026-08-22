@@ -10,6 +10,7 @@ import {
   Star,
   ChevronRight,
   CheckCircle2,
+  TrendingUp,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -83,8 +84,8 @@ function buildMetricCards(metricas) {
       label: "Projetos ativos",
       value: metricas.projetosAtivos,
       icon: FolderOpen,
-      areaClass: "advisor-metrica__icone-area--azul",
-      iconClass: "advisor-metrica__icone--azul",
+      areaClass: "advisor-metrica__icone-area--padrao",
+      iconClass: "advisor-metrica__icone--padrao",
       href: "/app/projects",
       priority: "normal",
     },
@@ -92,8 +93,8 @@ function buildMetricCards(metricas) {
       label: "Solicitações de orientação",
       value: metricas.solicitacoesOrientacao,
       icon: FileText,
-      areaClass: "advisor-metrica__icone-area--violeta",
-      iconClass: "advisor-metrica__icone--violeta",
+      areaClass: "advisor-metrica__icone-area--padrao",
+      iconClass: "advisor-metrica__icone--padrao",
       href: "/app/projects",
       priority: "action",
     },
@@ -101,8 +102,8 @@ function buildMetricCards(metricas) {
       label: "Inscrições aguardando análise",
       value: metricas.inscricoesPendentes,
       icon: Users,
-      areaClass: "advisor-metrica__icone-area--laranja",
-      iconClass: "advisor-metrica__icone--laranja",
+      areaClass: "advisor-metrica__icone-area--padrao",
+      iconClass: "advisor-metrica__icone--padrao",
       href: "/app/applications",
       priority: "action",
     },
@@ -110,8 +111,8 @@ function buildMetricCards(metricas) {
       label: "Orientandos ativos",
       value: metricas.orientandosAtivos,
       icon: GraduationCap,
-      areaClass: "advisor-metrica__icone-area--verde",
-      iconClass: "advisor-metrica__icone--verde",
+      areaClass: "advisor-metrica__icone-area--padrao",
+      iconClass: "advisor-metrica__icone--padrao",
       href: "/app/advisees",
       priority: "normal",
     },
@@ -119,8 +120,8 @@ function buildMetricCards(metricas) {
       label: "Etapas atrasadas",
       value: metricas.etapasAtrasadas,
       icon: AlertTriangle,
-      areaClass: "advisor-metrica__icone-area--erro",
-      iconClass: "advisor-metrica__icone--erro",
+      areaClass: "advisor-metrica__icone-area--padrao",
+      iconClass: "advisor-metrica__icone--padrao",
       href: "/app/progress",
       priority: "risk",
     },
@@ -128,8 +129,8 @@ function buildMetricCards(metricas) {
       label: "Entregas aguardando revisão",
       value: metricas.entregasAguardandoRevisao,
       icon: ClipboardCheck,
-      areaClass: "advisor-metrica__icone-area--laranja",
-      iconClass: "advisor-metrica__icone--laranja",
+      areaClass: "advisor-metrica__icone-area--padrao",
+      iconClass: "advisor-metrica__icone--padrao",
       href: "/app/deliveries",
       priority: "action",
     },
@@ -242,7 +243,7 @@ function DashboardHero({ name, metricas, onNavigate }) {
             className="advisor-dashboard-hero__botao advisor-dashboard-hero__botao--secundario"
             onClick={() => onNavigate("/app/progress")}
           >
-            <AlertTriangle size={16} /> Progresso
+            <TrendingUp size={16} /> Progresso
           </button>
         </div>
       </div>
@@ -292,8 +293,8 @@ export default function AdvisorDashboardPage() {
       label: "Avaliações aguardando ciência",
       value: metricas.avaliacoesAguardandoCiencia,
       icon: Star,
-      areaClass: "advisor-metrica__icone-area--violeta",
-      iconClass: "advisor-metrica__icone--violeta",
+      areaClass: "advisor-metrica__icone-area--padrao",
+      iconClass: "advisor-metrica__icone--padrao",
       href: "/app/avaliacoes",
     },
   ];
@@ -311,7 +312,7 @@ export default function AdvisorDashboardPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="advisor-pagina"
+      className="advisor-pagina advisor-pagina--dashboard"
     >
       <DashboardHero
         name={user?.nome?.split(" ")[0] ?? "professor(a)"}
@@ -327,7 +328,7 @@ export default function AdvisorDashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: index * 0.025 }}
             onClick={() => handleNavigate(card.href)}
-            className={`advisor-metrica advisor-metrica--overview advisor-metrica--${card.priority}`}
+            className="advisor-metrica advisor-metrica--overview"
           >
             <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
               <card.icon size={16} className={card.iconClass} />
@@ -382,7 +383,7 @@ export default function AdvisorDashboardPage() {
                   key={card.label}
                   type="button"
                   onClick={() => handleNavigate(card.href)}
-                  className={`advisor-metrica advisor-metrica--compacta advisor-metrica--${card.priority}`}
+                  className="advisor-metrica advisor-metrica--compacta"
                 >
                   <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
                     <card.icon size={16} className={card.iconClass} />

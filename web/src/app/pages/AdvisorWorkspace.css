@@ -230,6 +230,33 @@
   gap: var(--espaco-3);
 }
 
+/* ---- Dashboard do orientador sem rolagem (desktop) ---- */
+@media (min-width: 1180px) {
+  .advisor-pagina--dashboard {
+    height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
+    overflow: hidden;
+  }
+
+  .advisor-pagina--dashboard .advisor-dashboard-hero {
+    min-height: 0;
+    padding: var(--espaco-4) var(--espaco-5);
+  }
+
+  .advisor-pagina--dashboard .advisor-dashboard-layout {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .advisor-pagina--dashboard .advisor-dashboard-principal,
+  .advisor-pagina--dashboard .advisor-dashboard-lateral {
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding-right: var(--espaco-1);
+  }
+}
+
 
 .advisor-hero {
   background:
@@ -327,15 +354,6 @@
   width: 100%;
 }
 
-.advisor-metrica--action {
-  border-color: color-mix(in srgb, var(--cor-primaria) 18%, var(--cor-borda-clara));
-}
-
-.advisor-metrica--risk {
-  border-color: color-mix(in srgb, var(--cor-erro) 22%, var(--cor-borda-clara));
-  background: color-mix(in srgb, var(--cor-erro-clara) 24%, var(--cor-superficie));
-}
-
 .advisor-metrica--compacta {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -355,20 +373,12 @@
   border-radius: var(--raio-medio);
 }
 
-.advisor-metrica--overview .advisor-metrica__valor {
-  font-size: var(--tamanho-titulo);
-}
-
 .advisor-metrica--overview .advisor-metrica__rotulo {
   margin-top: 0.05rem;
 }
 
 .advisor-metrica__conteudo {
   min-width: 0;
-}
-
-.advisor-metrica--compacta .advisor-metrica__valor {
-  font-size: var(--tamanho-titulo);
 }
 
 .advisor-metrica--compacta .advisor-metrica__rotulo {
@@ -395,20 +405,15 @@
   justify-content: center;
 }
 
-.advisor-metrica__icone-area--azul    { background-color: var(--cor-primaria-clara); }
-.advisor-metrica__icone-area--violeta { background-color: var(--cor-secundaria-clara); }
-.advisor-metrica__icone-area--verde   { background-color: var(--cor-esmeralda-clara); }
-.advisor-metrica__icone-area--laranja { background-color: var(--cor-laranja-clara); }
-.advisor-metrica__icone-area--erro    { background-color: var(--cor-erro-clara); }
+.advisor-metrica__icone-area--padrao {
+  background-color: var(--cor-primaria-clara);
+}
 
-.advisor-metrica__icone--azul    { color: var(--cor-primaria); }
-.advisor-metrica__icone--violeta { color: var(--cor-secundaria); }
-.advisor-metrica__icone--verde   { color: var(--cor-esmeralda); }
-.advisor-metrica__icone--laranja { color: var(--cor-laranja); }
-.advisor-metrica__icone--erro    { color: var(--cor-erro); }
-
+.advisor-metrica__icone--padrao {
+  color: var(--cor-primaria);
+}
 .advisor-metrica__valor {
-  font-size: 1.6rem;
+  font-size: var(--tamanho-titulo);
   font-weight: var(--peso-negrito);
   color: var(--cor-texto);
   line-height: 1.1;
