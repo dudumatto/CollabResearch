@@ -120,12 +120,15 @@ export function getProjectSeatHolders(project, people = null) {
 
 export function getProjectSlotsUsage(project, people = null) {
   const total = Math.max(getProjectSlotsTotal(project), 0);
+  const explicitUsed = getExplicitSlotsUsed(project);
   const hasPeopleSource = Array.isArray(people);
-  const used =
-    hasPeopleSource
-      ? getProjectSeatHolders(project, people).length
-      : getExplicitSlotsUsed(project) ??
-        (hasExplicitParticipants(project) ? getProjectSeatHolders(project).length : 0);
+  const peopleUsed = hasPeopleSource
+    ? getProjectSeatHolders(project, people).length
+    : null;
+  const used = hasPeopleSource
+    ? Math.max(peopleUsed, explicitUsed ?? 0)
+    : explicitUsed ??
+      (hasExplicitParticipants(project) ? getProjectSeatHolders(project).length : 0);
 
   return {
     total,

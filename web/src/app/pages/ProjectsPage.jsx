@@ -293,7 +293,7 @@ export default function ProjectsPage() {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.04 }}
-                whileHover={{ scale: 1.03, boxShadow: "0 18px 30px rgba(37,99,235,0.14)" }}
+                whileHover={{ y: -2, boxShadow: "0 18px 30px rgba(37,99,235,0.14)" }}
                 onClick={() => navigate(`/app/projects/${project.id}`)}
                 className="projeto-card"
               >
