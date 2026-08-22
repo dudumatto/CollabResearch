@@ -234,7 +234,7 @@
 @media (min-width: 1180px) {
   .advisor-pagina--dashboard {
     height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
-    gap: var(--espaco-2);
+    gap: var(--espaco-4);
     overflow: hidden;
   }
 
@@ -272,10 +272,10 @@
   }
 
   .advisor-pagina--dashboard .advisor-dashboard-principal {
-    display: grid;
-    grid-template-rows: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    display: flex;
+    flex-direction: column;
     min-height: 0;
-    gap: var(--espaco-2);
+    gap: var(--espaco-4);
     overflow: hidden;
   }
 

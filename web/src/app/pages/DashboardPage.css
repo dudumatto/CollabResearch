@@ -172,12 +172,12 @@
 /* ---- Dashboard do aluno sem rolagem (desktop) ---- */
 @media (min-width: 1024px) {
   .painel {
-    height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
-    overflow: hidden;
+    min-height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
+    overflow: visible;
   }
 
   .painel__grade-principal {
-    flex: 1;
+    flex: 1 0 auto;
     min-height: 0;
     gap: var(--espaco-4);
   }
@@ -185,9 +185,8 @@
   .painel__coluna-esquerda,
   .painel__coluna-direita {
     min-height: 0;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    padding-right: var(--espaco-1);
+    overflow: visible;
+    padding-right: 0;
   }
 
   .painel__banner-boas-vindas {
