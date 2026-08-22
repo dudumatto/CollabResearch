@@ -212,9 +212,6 @@ export default function AdvisorEvaluationsPage() {
     return (
       <div className="advisor-pagina">
         <div className="advisor-estado-vazio">
-          <div className="advisor-estado-vazio__icone">
-            <Star size={22} />
-          </div>
           <h3 className="advisor-estado-vazio__titulo">Nenhum projeto vinculado</h3>
           <p className="advisor-estado-vazio__descricao">
             As avaliações acadêmicas dos seus projetos aparecerão aqui.
@@ -270,9 +267,6 @@ export default function AdvisorEvaluationsPage() {
 
       {!loadingAvaliacoes && !normErroAvaliacoes && listaAvaliacoes.length === 0 && (
         <div className="advisor-estado-vazio">
-          <div className="advisor-estado-vazio__icone">
-            <Star size={22} />
-          </div>
           <h3 className="advisor-estado-vazio__titulo">Nenhuma avaliação registrada</h3>
           <p className="advisor-estado-vazio__descricao">
             Avalie os estudantes em etapas concluídas para acompanhar o desempenho.

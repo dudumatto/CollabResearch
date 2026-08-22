@@ -3,7 +3,7 @@ import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   ArrowLeft, Users, Clock, BookOpen, Send, Mail, MessageSquare,
-  Share2, Bookmark, BarChart2, Eye, CheckCircle, Pencil, Trash2,
+  Share2, Bookmark, BarChart2, CheckCircle, Pencil, Trash2,
   UserPlus, UserMinus, Loader2, AlertTriangle,
   XCircle,
 } from "lucide-react";
@@ -12,7 +12,6 @@ import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useAuth } from "../hooks/useAuth";
 import { projectService } from "../services/projectService";
 import { applicationService } from "../services/applicationService";
-import { feedbackService } from "../services/feedbackService";
 import { StatusView } from "../components/StatusView";
 import {
   getProjectSlotsUsage,
@@ -20,7 +19,6 @@ import {
   getUserName,
   getUserPhotoUrl,
   isProjectAdvisor,
-  mapFeedback,
   mapProject,
   mapProgressItem,
 } from "../utils/adapters";
@@ -219,19 +217,17 @@ export default function ProjectDetailPage() {
   const [recrutandoId, setRecrutandoId] = useState(null);
 
   const { data, loading, error, reload } = useAsyncData(async () => {
-    const [project, progress, feedbacks, projectCollaborators] = await Promise.all([
+    const [project, progress, projectCollaborators] = await Promise.all([
       projectService.getById(id),
       projectService.getProgress(id).catch(() => []),
-      feedbackService.listByProject(id).catch(() => []),
       projectService.getCollaborators(id).catch(() => null),
     ]);
     return {
       project: mapProject(project),
       progress: Array.isArray(progress) ? progress.map(mapProgressItem) : [],
-      feedbacks: Array.isArray(feedbacks) ? feedbacks.map(mapFeedback) : [],
       collaborators: Array.isArray(projectCollaborators) ? projectCollaborators : null,
     };
-  }, [id], { initialData: { project: null, progress: [], feedbacks: [] } });
+  }, [id], { initialData: { project: null, progress: [] } });
 
   const project = data?.project;
 
@@ -293,11 +289,6 @@ export default function ProjectDetailPage() {
     }
   }, [loading, project, data?.collaborators, isAdvisorOwner, loadCollaborators, loadInscricoes]);
 
-  const feedbackAverage = useMemo(() => {
-    const ratings = data?.feedbacks ?? [];
-    if (!ratings.length) return "0.0";
-    return (ratings.reduce((acc, item) => acc + item.rating, 0) / ratings.length).toFixed(1);
-  }, [data]);
 
   const statusClass = project?.status === "FINALIZADO"
     ? "detalhe-card__badge-status--encerrado"
@@ -522,7 +513,6 @@ export default function ProjectDetailPage() {
             )}
 
             <div className="detalhe-card__estatisticas">
-              <div className="detalhe-card__stat-item"><Eye size={14} />{data.feedbacks.length} feedbacks</div>
               <div className="detalhe-card__stat-item"><BarChart2 size={14} />{data.progress.length} atualizações</div>
               <div className="detalhe-card__stat-item">
                 <Clock size={14} />
@@ -673,10 +663,6 @@ export default function ProjectDetailPage() {
               <div className="card-orientador__info-linha">
                 <span className="card-orientador__info-label">Email</span>
                 <span className="card-orientador__info-valor">{project.advisor?.email ?? "-"}</span>
-              </div>
-              <div className="card-orientador__info-linha">
-                <span className="card-orientador__info-label">Feedback médio</span>
-                <span className="card-orientador__info-valor">{feedbackAverage}</span>
               </div>
               <div className="card-orientador__info-linha">
                 <span className="card-orientador__info-label">Atualizações</span>

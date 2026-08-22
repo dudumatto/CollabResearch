@@ -1954,3 +1954,16 @@
 .advisor-profile-standard .advisor-notas {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+.student-evaluations-page__comment span {
+  gap: 0;
+}
+
+.student-evaluations-page__acknowledged {
+  align-self: flex-start;
+  margin-top: var(--espaco-2);
+}
+
+.student-evaluations-page__actions {
+  gap: var(--espaco-4);
+  margin-top: var(--espaco-2);
+}
