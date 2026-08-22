@@ -93,6 +93,10 @@ public class ProjetoService {
         return spec;
     }
 
+    public int contarVagasOcupadas(Integer projetoId) {
+        return Math.toIntExact(inscricaoRepository.countByProjetoIdAndStatus(projetoId, StatusInscricao.APROVADO));
+    }
+
     public List<Projeto> findAll() {
         return projetoRepository.findAll();
     }

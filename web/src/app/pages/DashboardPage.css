@@ -5,7 +5,7 @@
 .painel {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-6);
+  gap: var(--espaco-4);
   overflow-x: hidden;
   width: 100%;
   min-width: 0;
@@ -174,24 +174,24 @@
    ================================================================ */
 .painel__grade-resumos {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--espaco-4);
+  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+  gap: var(--espaco-3);
   width: 100%;
   max-width: 100%;
 }
 
 @media (min-width: 1024px) {
   .painel__grade-resumos {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 /* ---- Cartão de resumo ---- */
 .cartao-resumo {
   background-color: var(--cor-superficie);
-  border-radius: var(--raio-grande);
-  padding: var(--espaco-5);
-  border: 1px solid;
+  border-radius: var(--raio-medio);
+  padding: var(--espaco-3);
+  border: 1px solid var(--cor-borda-clara);
   text-align: left;
   cursor: pointer;
   transition: var(--transicao-normal);
@@ -199,7 +199,7 @@
 }
 
 .cartao-resumo:hover {
-  box-shadow: var(--sombra-grande);
+  box-shadow: var(--sombra-media);
   transform: translateY(-2px);
 }
 
@@ -207,12 +207,12 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: var(--espaco-4);
+  margin-bottom: var(--espaco-2);
 }
 
 .cartao-resumo__icone-area {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: var(--raio-medio);
   display: flex;
   align-items: center;
@@ -245,7 +245,7 @@
 }
 
 .cartao-resumo__valor {
-  font-size: 1.8rem;
+  font-size: var(--tamanho-titulo);
   font-weight: var(--peso-negrito);
   color: var(--cor-texto);
   margin-bottom: var(--espaco-1);
@@ -349,7 +349,7 @@
 
 @media (min-width: 1024px) {
   .painel__grade-principal {
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 21rem);
   }
 }
 

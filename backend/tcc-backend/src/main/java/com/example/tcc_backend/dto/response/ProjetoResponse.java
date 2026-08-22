@@ -37,6 +37,7 @@ public class ProjetoResponse {
     private Integer alunoCriadorId;
     private String alunoCriadorNome;
     private String alunoCriadorFotoPerfilUrl;
+    private Integer vagasOcupadas;
 
     public static ProjetoResponse fromEntity(Projeto projeto) {
         return ProjetoResponse.builder()
@@ -62,5 +63,11 @@ public class ProjetoResponse {
                 .alunoCriadorNome(projeto.getAlunoCriador() != null ? projeto.getAlunoCriador().getUsuario().getNome() : null)
                 .alunoCriadorFotoPerfilUrl(projeto.getAlunoCriador() != null ? projeto.getAlunoCriador().getUsuario().getFotoPerfilUrl() : null)
                 .build();
+    }
+
+    public static ProjetoResponse fromEntity(Projeto projeto, Integer vagasOcupadas) {
+        ProjetoResponse response = fromEntity(projeto);
+        response.setVagasOcupadas(vagasOcupadas);
+        return response;
     }
 }

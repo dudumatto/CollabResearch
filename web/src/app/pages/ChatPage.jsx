@@ -37,15 +37,36 @@ function getMessagePhotoUrl(message, currentUser, mine) {
   );
 }
 
+function getConversationTimestamp(conversation) {
+  const value =
+    conversation?.ultimaMensagemHorario ||
+    conversation?.updatedAt ||
+    conversation?.dataAtualizacao ||
+    conversation?.createdAt ||
+    conversation?.dataCriacao ||
+    0;
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function sortConversations(items) {
+  return [...(Array.isArray(items) ? items : [])].sort(
+    (a, b) => getConversationTimestamp(b) - getConversationTimestamp(a),
+  );
+}
+
 async function hydrateConversationPhotos(items, currentUser) {
   const conversations = Array.isArray(items) ? items : [];
 
-  return Promise.all(conversations.map(async (conversation) => {
+  const hydrated = await Promise.all(conversations.map(async (conversation) => {
     const explicitPhoto =
       conversation?.fotoPerfilUrl ||
       conversation?.fotoProjetoUrl ||
       conversation?.projectPhotoUrl ||
       conversation?.avatarUrl ||
+      conversation?.outroUsuarioFotoPerfilUrl ||
+      conversation?.participanteFotoPerfilUrl ||
+      conversation?.ultimoRemetenteFotoPerfilUrl ||
       getUserPhotoUrl(conversation?.participant) ||
       getUserPhotoUrl(conversation?.participante) ||
       getUserPhotoUrl(conversation?.outroUsuario) ||
@@ -76,6 +97,8 @@ async function hydrateConversationPhotos(items, currentUser) {
         : conversation;
     }
   }));
+
+  return sortConversations(hydrated);
 }
 
 function formatarHora(data) {
@@ -451,7 +474,7 @@ export default function ChatPage() {
         [await conversationService.openPrivate(remetenteId)],
         user,
       );
-      setConversations((prev) => prev.some((c) => c.id === conversa.id) ? prev : [conversa, ...prev]);
+      setConversations((prev) => sortConversations(prev.some((c) => c.id === conversa.id) ? prev : [conversa, ...prev]));
       setSelectedConversation(conversa);
       setShowMobileList(false);
     } catch {

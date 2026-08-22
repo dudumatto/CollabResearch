@@ -1704,3 +1704,90 @@
     padding: 0.15rem 0.25rem;
   }
 }
+
+
+.advisor-avaliacao__comentario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3);
+  border: 1px solid var(--cor-primaria-borda);
+  border-radius: var(--raio-medio);
+  background: var(--cor-primaria-clara);
+}
+
+.advisor-avaliacao__comentario span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--cor-primaria-texto);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+}
+
+.advisor-avaliacao__comentario p {
+  color: var(--cor-texto-medio);
+  font-size: var(--tamanho-base);
+  line-height: 1.6;
+}
+
+.advisor-avaliacao__ciencia {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--espaco-3);
+  align-items: center;
+  margin-top: var(--espaco-2);
+}
+
+@media (max-width: 640px) {
+  .advisor-avaliacao__ciencia {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.advisor-profile-standard {
+  gap: var(--espaco-5);
+}
+
+.advisor-profile-standard .advisor-hero {
+  display: none;
+}
+
+.advisor-profile-standard .advisor-detalhe-grade {
+  gap: var(--espaco-6);
+}
+
+@media (min-width: 1024px) {
+  .advisor-profile-standard .advisor-detalhe-grade {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+.advisor-profile-standard .advisor-perfil-cartao,
+.advisor-profile-standard .advisor-card-conteudo {
+  border-radius: var(--raio-grande);
+  background-color: var(--cor-superficie);
+}
+
+.advisor-profile-standard .advisor-perfil-cartao {
+  align-items: flex-start;
+  text-align: left;
+  padding: var(--espaco-5);
+}
+
+.advisor-profile-standard .advisor-perfil-cartao__avatar,
+.advisor-profile-standard .advisor-perfil-cartao img {
+  width: 4rem !important;
+  height: 4rem !important;
+  border-radius: var(--raio-grande) !important;
+}
+
+.advisor-profile-standard .advisor-perfil-cartao__info-item {
+  width: 100%;
+  min-width: 0;
+}
+
+.advisor-profile-standard .advisor-notas {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}

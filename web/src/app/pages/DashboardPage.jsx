@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import {
@@ -9,7 +9,6 @@ import {
   ArrowRight,
   ChevronRight,
 } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { projectService } from "../services/projectService";
@@ -121,7 +120,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data, loading, error } = useAsyncData(async () => {
+  const { data, loading, error, reload, setData } = useAsyncData(async () => {
     const [projects, applications, notifications] = await Promise.all([
       projectService.list(),
       applicationService.listMine().catch(() => []),
@@ -150,6 +149,26 @@ export default function DashboardPage() {
       notifications: Array.isArray(notifications) ? notifications.map(mapNotification) : [],
     };
   }, [], { initialData: { projects: [], applications: [], notifications: [] } });
+
+  useEffect(() => {
+    const syncNotifications = () => {
+      notificationService.listMine()
+        .then((items) => {
+          setData((current) => ({
+            ...(current ?? { projects: [], applications: [] }),
+            notifications: Array.isArray(items) ? items.map(mapNotification) : [],
+          }));
+        })
+        .catch(() => reload());
+    };
+
+    window.addEventListener("notificationsUpdated", syncNotifications);
+    window.addEventListener("notifications-updated", syncNotifications);
+    return () => {
+      window.removeEventListener("notificationsUpdated", syncNotifications);
+      window.removeEventListener("notifications-updated", syncNotifications);
+    };
+  }, [reload, setData]);
 
   const derived = useMemo(() => {
     const projects = data?.projects ?? [];
@@ -346,29 +365,6 @@ export default function DashboardPage() {
                   ))
                 )}
               </div>
-            </div>
-
-            <div className="painel__card-grafico">
-              <div className="painel__grafico-cabecalho">
-                <h3 className="painel__card-titulo">Atividade recente</h3>
-              </div>
-              <ResponsiveContainer width="100%" height={120}>
-                <AreaChart data={derived.activityData}>
-                  <defs>
-                    <linearGradient id="colorAtiv" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#1f7a5a" stopOpacity={0.15} />
-                      <stop offset="95%" stopColor="#1f7a5a" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#9ca3af" }} />
-                  <YAxis hide />
-                  <Tooltip
-                    contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 24px rgba(0,0,0,0.1)", fontSize: "0.8rem" }}
-                    labelStyle={{ fontWeight: 600, color: "#374151" }}
-                  />
-                  <Area type="monotone" dataKey="atividade" stroke="#1f7a5a" strokeWidth={2} fill="url(#colorAtiv)" dot={{ fill: "#1f7a5a", strokeWidth: 2, r: 3 }} />
-                </AreaChart>
-              </ResponsiveContainer>
             </div>
           </div>
 

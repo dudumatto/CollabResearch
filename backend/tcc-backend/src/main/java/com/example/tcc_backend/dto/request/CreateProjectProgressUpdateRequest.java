@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class CreateProjectProgressUpdateRequest {
 
@@ -25,4 +27,6 @@ public class CreateProjectProgressUpdateRequest {
     @Min(value = 0, message = "Contribuicao deve ser entre 0 e 100")
     @Max(value = 100, message = "Contribuicao deve ser entre 0 e 100")
     private Integer etapaContribuicao;
+
+    private LocalDateTime dataRegistro;
 }

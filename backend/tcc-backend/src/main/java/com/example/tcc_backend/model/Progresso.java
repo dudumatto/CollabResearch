@@ -63,7 +63,9 @@ public class Progresso {
 
     @PrePersist
     public void prePersist() {
-        this.dataRegistro = LocalDateTime.now();
+        if (this.dataRegistro == null) {
+            this.dataRegistro = LocalDateTime.now();
+        }
         if (this.tipo == null) {
             this.tipo = TipoProgresso.ATUALIZACAO;
         }

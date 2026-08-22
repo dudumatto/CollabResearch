@@ -177,6 +177,34 @@
   --cor-separador-suave:  var(--cor-borda-clara);
 }
 
+:root[data-font-size="small"] {
+  --tamanho-minimo:    0.56rem;
+  --tamanho-xs:        0.61rem;
+  --tamanho-pequeno:   0.68rem;
+  --tamanho-base:      0.76rem;
+  --tamanho-medio:     0.82rem;
+  --tamanho-normal:    0.9rem;
+  --tamanho-grande:    0.96rem;
+  --tamanho-subtitulo: 1.04rem;
+  --tamanho-titulo:    1.14rem;
+  --tamanho-display:   1.32rem;
+  --tamanho-heroi:     1.52rem;
+}
+
+:root[data-font-size="large"] {
+  --tamanho-minimo:    0.64rem;
+  --tamanho-xs:        0.7rem;
+  --tamanho-pequeno:   0.78rem;
+  --tamanho-base:      0.86rem;
+  --tamanho-medio:     0.94rem;
+  --tamanho-normal:    1.02rem;
+  --tamanho-grande:    1.08rem;
+  --tamanho-subtitulo: 1.18rem;
+  --tamanho-titulo:    1.3rem;
+  --tamanho-display:   1.52rem;
+  --tamanho-heroi:     1.72rem;
+}
+
 .dark {
   --cor-fundo:          #101a14;
   --cor-branco:         #17251d;

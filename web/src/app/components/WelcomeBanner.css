@@ -6,7 +6,6 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--raio-grande);
   background: #185e46;
-  box-shadow: var(--sombra-primaria);
   color: #f8fafc;
 }
 

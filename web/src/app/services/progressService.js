@@ -132,7 +132,10 @@ export const progressService = {
         descricao: payload?.descricao,
         tipo: payload?.category === "milestone" ? "MARCO" : payload?.category === "problem" ? "BLOQUEIO" : "ATUALIZACAO",
         fase: payload?.stepId ? "Etapa vinculada" : null,
-        metadataJson: payload?.stepId ? JSON.stringify({ stepId: payload.stepId, stepContribution: payload.stepContribution ?? 0 }) : null,
+        metadataJson: JSON.stringify({
+          ...(payload?.stepId ? { stepId: payload.stepId, stepContribution: payload.stepContribution ?? 0 } : {}),
+          ...(payload?.dataRegistro ? { dataRegistro: payload.dataRegistro } : {}),
+        }),
       };
 
       const response = await api.post(`/api/projetos/${projectId}/progresso`, legacyPayload);
@@ -145,7 +148,7 @@ export const progressService = {
         stepTitle: payload?.stepName ?? null,
         stepContribution: payload?.stepContribution ?? 0,
         createdBy: response?.autor ? { id: response.autorId, nome: response.autorNome } : null,
-        createdAt: response?.dataRegistro,
+        createdAt: response?.dataRegistro ?? payload?.dataRegistro,
       });
     }
   },

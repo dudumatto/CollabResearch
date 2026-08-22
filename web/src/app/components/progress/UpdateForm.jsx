@@ -19,6 +19,7 @@ export function UpdateForm({ steps = [], onSubmit }) {
     defaultValues: {
       titulo: "",
       categoria: "progress",
+      dataRegistro: new Date().toISOString().slice(0, 10),
       etapaId: "",
       etapaContribuicao: 0,
       descricao: "",
@@ -32,6 +33,7 @@ export function UpdateForm({ steps = [], onSubmit }) {
     const payload = {
       titulo: values.titulo.trim(),
       categoria: values.categoria,
+      dataRegistro: values.dataRegistro ? `${values.dataRegistro}T00:00:00` : null,
       descricao: values.descricao?.trim() || "",
       etapaId: values.etapaId ? Number(values.etapaId) : null,
       etapaContribuicao: values.etapaId ? Number(values.etapaContribuicao ?? 0) : 0,
@@ -63,6 +65,15 @@ export function UpdateForm({ steps = [], onSubmit }) {
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="update-form__field">
+          <span>Data da etapa</span>
+          <input
+            type="date"
+            {...register("dataRegistro", { required: "Informe a data da etapa" })}
+          />
+          {errors.dataRegistro ? <small>{errors.dataRegistro.message}</small> : null}
         </label>
 
         <label className="update-form__field">

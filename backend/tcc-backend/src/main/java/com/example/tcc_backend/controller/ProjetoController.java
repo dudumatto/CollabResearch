@@ -36,6 +36,10 @@ public class ProjetoController {
 
     private final ProjetoService projetoService;
 
+    private ProjetoResponse toResponse(com.example.tcc_backend.model.Projeto projeto) {
+        return ProjetoResponse.fromEntity(projeto, projetoService.contarVagasOcupadas(projeto.getId()));
+    }
+
     @Operation(
             summary = "Listar projetos",
             description = "Retorna uma lista de projetos com possibilidade de filtros por status, área, curso ou busca textual."
@@ -57,7 +61,7 @@ public class ProjetoController {
         return ResponseEntity.ok(
                 projetoService.findAll(status, areaId, area, cursoFiltro, busca)
                         .stream()
-                        .map(ProjetoResponse::fromEntity)
+                        .map(this::toResponse)
                         .toList()
         );
     }
@@ -90,12 +94,12 @@ public class ProjetoController {
         String buscaFiltro = busca != null ? busca : search;
 
         if (Boolean.TRUE.equals(meusProjetos)) {
-            return ResponseEntity.ok(PageResponse.from(projetoService.findMeusProjetos(pageable).map(ProjetoResponse::fromEntity)));
+            return ResponseEntity.ok(PageResponse.from(projetoService.findMeusProjetos(pageable).map(this::toResponse)));
         }
 
         return ResponseEntity.ok(PageResponse.from(
                 projetoService.findAll(status, areaId, area, cursoFiltro, buscaFiltro, pageable)
-                        .map(ProjetoResponse::fromEntity)
+                        .map(this::toResponse)
         ));
     }
 
@@ -109,7 +113,7 @@ public class ProjetoController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ProjetoResponse> findById(@PathVariable Integer id) {
-        return ResponseEntity.ok(ProjetoResponse.fromEntity(projetoService.findById(id)));
+        return ResponseEntity.ok(toResponse(projetoService.findById(id)));
     }
 
     @Operation(
@@ -123,7 +127,7 @@ public class ProjetoController {
     @PostMapping
     public ResponseEntity<ProjetoResponse> create(@RequestBody @Valid ProjetoRequest dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ProjetoResponse.fromEntity(projetoService.create(dto)));
+                .body(toResponse(projetoService.create(dto)));
     }
 
     @Operation(
@@ -140,7 +144,7 @@ public class ProjetoController {
 @PutMapping("/{id}")
     public ResponseEntity<ProjetoResponse> update(@PathVariable Integer id,
                                                   @RequestBody @Valid ProjetoRequest dto) {
-        return ResponseEntity.ok(ProjetoResponse.fromEntity(projetoService.update(id, dto)));
+        return ResponseEntity.ok(toResponse(projetoService.update(id, dto)));
     }
 
     @Operation(summary = "Alterar status do projeto", description = "Inicia ou finaliza projeto pelo orientador responsavel.")
@@ -153,7 +157,7 @@ public class ProjetoController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ProjetoResponse> updateStatus(@PathVariable Integer id,
                                                         @RequestBody @Valid ProjetoStatusRequest dto) {
-        return ResponseEntity.ok(ProjetoResponse.fromEntity(projetoService.updateStatus(id, dto.getStatus())));
+        return ResponseEntity.ok(toResponse(projetoService.updateStatus(id, dto.getStatus())));
     }
 
     @Operation(
@@ -168,7 +172,7 @@ public class ProjetoController {
     })
     @PutMapping("/{id}/aceitar-orientacao")
     public ResponseEntity<ProjetoResponse> aceitarOrientacao(@PathVariable Integer id) {
-        return ResponseEntity.ok(ProjetoResponse.fromEntity(projetoService.aceitarOrientacao(id)));
+        return ResponseEntity.ok(toResponse(projetoService.aceitarOrientacao(id)));
     }
 
     @Operation(
@@ -183,7 +187,7 @@ public class ProjetoController {
     })
     @PutMapping("/{id}/rejeitar-orientacao")
     public ResponseEntity<ProjetoResponse> rejeitarOrientacao(@PathVariable Integer id) {
-        return ResponseEntity.ok(ProjetoResponse.fromEntity(projetoService.rejeitarOrientacao(id)));
+        return ResponseEntity.ok(toResponse(projetoService.rejeitarOrientacao(id)));
     }
 
     @Operation(

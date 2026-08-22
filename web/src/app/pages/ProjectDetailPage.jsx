@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import {
   ArrowLeft, Users, Clock, BookOpen, Send, Mail, MessageSquare,
   Share2, Bookmark, BarChart2, Eye, CheckCircle, Pencil, Trash2,
-  UserPlus, UserMinus, Loader2, AlertTriangle, Star,
+  UserPlus, UserMinus, Loader2, AlertTriangle,
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -202,11 +202,6 @@ export default function ProjectDetailPage() {
   const [loadingApply, setLoadingApply] = useState(false);
   const [orientationActionLoading, setOrientationActionLoading] = useState(null);
 
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [feedbackRating, setFeedbackRating] = useState(0);
-  const [feedbackComment, setFeedbackComment] = useState("");
-  const [feedbackLoading, setFeedbackLoading] = useState(false);
-
   // Delete
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -224,15 +219,17 @@ export default function ProjectDetailPage() {
   const [recrutandoId, setRecrutandoId] = useState(null);
 
   const { data, loading, error, reload } = useAsyncData(async () => {
-    const [project, progress, feedbacks] = await Promise.all([
+    const [project, progress, feedbacks, projectCollaborators] = await Promise.all([
       projectService.getById(id),
       projectService.getProgress(id).catch(() => []),
       feedbackService.listByProject(id).catch(() => []),
+      projectService.getCollaborators(id).catch(() => null),
     ]);
     return {
       project: mapProject(project),
       progress: Array.isArray(progress) ? progress.map(mapProgressItem) : [],
       feedbacks: Array.isArray(feedbacks) ? feedbacks.map(mapFeedback) : [],
+      collaborators: Array.isArray(projectCollaborators) ? projectCollaborators : null,
     };
   }, [id], { initialData: { project: null, progress: [], feedbacks: [] } });
 
@@ -267,13 +264,13 @@ export default function ProjectDetailPage() {
     setCollabLoading(true);
     try {
       const raw = await projectService.getCollaborators(id);
-      setCollaborators(Array.isArray(raw) ? raw : []);
+      setCollaborators(Array.isArray(raw) ? raw : project?.collaborators ?? []);
     } catch {
-      setCollaborators([]);
+      setCollaborators(project?.collaborators ?? []);
     } finally {
       setCollabLoading(false);
     }
-  }, [id]);
+  }, [id, project?.collaborators]);
 
   const loadInscricoes = useCallback(async () => {
     try {
@@ -287,10 +284,14 @@ export default function ProjectDetailPage() {
 
   useEffect(() => {
     if (!loading && project) {
-      loadCollaborators();
+      if (Array.isArray(data?.collaborators)) {
+        setCollaborators(data.collaborators);
+      } else {
+        loadCollaborators();
+      }
       if (isAdvisorOwner) loadInscricoes();
     }
-  }, [loading, project, isAdvisorOwner, loadCollaborators, loadInscricoes]);
+  }, [loading, project, data?.collaborators, isAdvisorOwner, loadCollaborators, loadInscricoes]);
 
   const feedbackAverage = useMemo(() => {
     const ratings = data?.feedbacks ?? [];
@@ -343,31 +344,6 @@ export default function ProjectDetailPage() {
     setShowModal(false);
     setMotivation("");
   };
-
-  const handleProjectFeedback = async () => {
-    if (!feedbackRating) {
-      toast.error("Selecione uma nota para avaliar o projeto.");
-      return;
-    }
-    setFeedbackLoading(true);
-    try {
-      await feedbackService.create({
-        projetoId: Number(id),
-        nota: feedbackRating,
-        comentario: feedbackComment.trim() || undefined,
-      });
-      toast.success("Avaliação enviada com sucesso.");
-      setShowFeedbackModal(false);
-      setFeedbackRating(0);
-      setFeedbackComment("");
-      await reload();
-    } catch (err) {
-      toast.error(err.message || "Não foi possível enviar a avaliação.");
-    } finally {
-      setFeedbackLoading(false);
-    }
-  };
-
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
@@ -496,16 +472,7 @@ export default function ProjectDetailPage() {
           <div className="detalhe-card">
             {project.coverUrl ? (
               <img className="detalhe-card__foto-projeto" src={project.coverUrl} alt={`Foto do projeto ${project.title}`} />
-            ) : canEditProject && (
-              <button
-                type="button"
-                onClick={() => navigate(`/app/projects/${id}/edit`)}
-                className="detalhe-card__foto-projeto-vazia"
-              >
-                <BookOpen size={18} />
-                <span>Adicionar foto do projeto</span>
-              </button>
-            )}
+            ) : null}
             <div className="detalhe-card__topo">
               <div className="detalhe-card__badges">
                 <span className={`detalhe-card__badge-status ${statusClass}`}>
@@ -723,15 +690,6 @@ export default function ProjectDetailPage() {
             >
               <Mail size={14} /> Enviar mensagem
             </button>
-            {user?.tipo === "ALUNO" && !isStudentCreator && project.status === "FINALIZADO" && (
-              <button
-                type="button"
-                onClick={() => setShowFeedbackModal(true)}
-                className="card-orientador__botao-mensagem card-orientador__botao-avaliar"
-              >
-                <Star size={14} /> Avaliar projeto
-              </button>
-            )}
           </div>
 
           {/* Card colaboradores */}
@@ -831,53 +789,6 @@ export default function ProjectDetailPage() {
           </div>
         </div>
       )}
-
-      {showFeedbackModal && (
-        <div className="modal-inscricao__sobreposicao" role="presentation" onClick={(e) => e.target === e.currentTarget && !feedbackLoading && setShowFeedbackModal(false)}>
-          <div className="modal-inscricao__painel">
-            <div className="modal-inscricao__cabecalho">
-              <h3 className="modal-inscricao__titulo">Avaliar projeto</h3>
-              <p className="modal-inscricao__subtitulo">{project.title}</p>
-            </div>
-            <div className="modal-inscricao__corpo">
-              <div className="modal-avaliacao__estrelas">
-                {[1, 2, 3, 4, 5].map((score) => (
-                  <button
-                    key={score}
-                    type="button"
-                    onClick={() => setFeedbackRating(score)}
-                    className={`modal-avaliacao__estrela ${score <= feedbackRating ? "modal-avaliacao__estrela--ativa" : ""}`}
-                    aria-label={`Nota ${score}`}
-                  >
-                    <Star size={22} fill={score <= feedbackRating ? "currentColor" : "none"} />
-                  </button>
-                ))}
-              </div>
-              <div>
-                <label className="modal-inscricao__label">Comentário</label>
-                <textarea
-                  value={feedbackComment}
-                  onChange={(e) => setFeedbackComment(e.target.value)}
-                  rows={4}
-                  maxLength={1000}
-                  className="modal-inscricao__textarea"
-                  placeholder="Conte como foi sua experiencia no projeto..."
-                />
-                <p className="modal-inscricao__contador">{feedbackComment.length}/1000 caracteres</p>
-              </div>
-            </div>
-            <div className="modal-inscricao__rodape">
-              <button type="button" onClick={() => setShowFeedbackModal(false)} className="modal-inscricao__botao-cancelar" disabled={feedbackLoading}>
-                Cancelar
-              </button>
-              <button type="button" onClick={handleProjectFeedback} disabled={feedbackLoading || feedbackRating === 0} className="modal-inscricao__botao-enviar">
-                {feedbackLoading ? <div className="modal-inscricao__spinner" /> : <><Send size={15} /> Enviar avaliação</>}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {collaboratorToRemove && (
         <ConfirmationDialog
           title="Remover colaborador"

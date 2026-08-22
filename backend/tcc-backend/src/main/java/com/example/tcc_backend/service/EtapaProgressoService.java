@@ -240,6 +240,7 @@ public class EtapaProgressoService {
                 .categoria(normalizarCategoria(request.getCategoria()))
                 .etapa(etapa)
                 .stepContribution(contribuicao)
+                .dataRegistro(request.getDataRegistro())
                 .tipo(mapaTipo(request.getCategoria()))
                 .build();
 

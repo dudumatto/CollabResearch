@@ -172,8 +172,9 @@ export default function NotificationsPage() {
   const markAsRead = async (id) => {
     try {
       await notificationService.markAsRead(id);
-      await reload();
+      setData((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
       notifyNotificationsUpdated();
+      await reload();
     } catch (err) {
       toast.error(err.message || "Não foi possível marcar como lida.");
     }
@@ -182,8 +183,9 @@ export default function NotificationsPage() {
   const markAllAsRead = async () => {
     try {
       await notificationService.markAllAsRead();
-      await reload();
+      setData((prev) => prev.map((item) => ({ ...item, read: true })));
       notifyNotificationsUpdated();
+      await reload();
     } catch (err) {
       toast.error(err.message || "Não foi possível marcar todas como lidas.");
     }
@@ -191,11 +193,13 @@ export default function NotificationsPage() {
 
   const removeLocally = (id) => {
     hideNotificationsLocally([id]);
+    notifyNotificationsUpdated();
   };
 
   const clearAll = () => {
     if (visibleNotifications.length === 0) return;
     hideNotificationsLocally(visibleNotifications.map((item) => item.id));
+    notifyNotificationsUpdated();
     toast.success("Vista local limpa.");
   };
 
