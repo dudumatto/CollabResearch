@@ -89,16 +89,14 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             isCollapsed ? "barra-lateral__cabecalho--centralizado" : ""
           }`}
         >
-          <div className="barra-lateral__marca-lockup" aria-label="Collab">
+          <div className="barra-lateral__marca-lockup" aria-label="CollabResearch">
             <img
-              className="barra-lateral__marca barra-lateral__marca--icone"
-              src="/brand/logo-icon.svg"
-              width={28}
-              height={28}
-              alt=""
-              aria-hidden="true"
+              className="barra-lateral__marca barra-lateral__marca--completa"
+              src="/brand/logo-full.svg"
+              width={101}
+              height={20}
+              alt="CollabResearch"
             />
-            <span className="barra-lateral__marca-texto">Collab</span>
           </div>
         </div>
 
@@ -130,22 +128,18 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
                         : "barra-lateral__icone-nav"
                     }
                   />
-                  {!isCollapsed && (
-                    <span
-                      className={
-                        isActive
-                          ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo"
-                          : "barra-lateral__rotulo-nav"
-                      }
-                    >
-                      {item.label}
-                    </span>
+                  <span
+                    className={
+                      isActive
+                        ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo"
+                        : "barra-lateral__rotulo-nav"
+                    }
+                  >
+                    {item.label}
+                  </span>
+                  {item.path === "/app/notifications" && unreadCount > 0 && (
+                    <span className="barra-lateral__contador">{unreadCount}</span>
                   )}
-                  {!isCollapsed &&
-                    item.path === "/app/notifications" &&
-                    unreadCount > 0 && (
-                      <span className="barra-lateral__contador">{unreadCount}</span>
-                    )}
                 </>
               )}
             </NavLink>
@@ -171,11 +165,9 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
                   size={18}
                   className={isActive ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo" : "barra-lateral__icone-nav"}
                 />
-                {!isCollapsed && (
-                  <span className={isActive ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo" : "barra-lateral__rotulo-nav"}>
-                    Configuracoes
-                  </span>
-                )}
+                <span className={isActive ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo" : "barra-lateral__rotulo-nav"}>
+                  Configuracoes
+                </span>
               </>
             )}
           </NavLink>
