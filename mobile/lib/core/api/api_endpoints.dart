@@ -11,6 +11,7 @@ class ApiEndpoints {
   static const String researchAreas = '/api/areas';
   static const String advisors = '/api/usuarios/orientadores';
   static const String subscriptions = '/api/inscricoes';
+  static const String feedback = '/api/feedback';
   static const String notifications = '/api/notificacoes';
   static const String chatConversations = '/api/conversas';
 
@@ -19,6 +20,11 @@ class ApiEndpoints {
       '${project(id)}/aceitar-orientacao';
   static String rejectProjectOrientation(String id) =>
       '${project(id)}/rejeitar-orientacao';
+  static String projectProgress(String id) => '${project(id)}/progresso';
+  static String projectFeedback(String id) => '$feedback/projeto/$id';
+  static String approveSubscription(String id) => '$subscriptions/$id/aprovar';
+  static String rejectSubscription(String id) => '$subscriptions/$id/rejeitar';
+  static String cancelSubscription(String id) => '$subscriptions/$id/cancelar';
   static String conversationMessages(String conversationId) =>
       '$chatConversations/$conversationId/mensagens';
   static String sendConversationMessage(String conversationId) =>

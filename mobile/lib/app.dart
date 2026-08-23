@@ -4,8 +4,11 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/chat_provider.dart';
+import 'providers/dashboard_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/project_provider.dart';
+import 'providers/research_activity_provider.dart';
+import 'providers/subscription_provider.dart';
 import 'router/app_router.dart';
 
 class TccMobileApp extends StatefulWidget {
@@ -34,6 +37,15 @@ class _TccMobileAppState extends State<TccMobileApp> {
         ),
         ChangeNotifierProvider<NotificationProvider>(
           create: (_) => NotificationProvider(),
+        ),
+        ChangeNotifierProvider<DashboardProvider>(
+          create: (_) => DashboardProvider(),
+        ),
+        ChangeNotifierProvider<SubscriptionProvider>(
+          create: (_) => SubscriptionProvider(),
+        ),
+        ChangeNotifierProvider<ResearchActivityProvider>(
+          create: (_) => ResearchActivityProvider(),
         ),
       ],
       child: MaterialApp.router(

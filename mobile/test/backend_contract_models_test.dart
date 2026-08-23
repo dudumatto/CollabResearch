@@ -1,8 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tcc_mobile/models/app_notification.dart';
 import 'package:tcc_mobile/models/conversation.dart';
+import 'package:tcc_mobile/models/dashboard_summary.dart';
+import 'package:tcc_mobile/models/feedback_entry.dart';
 import 'package:tcc_mobile/models/message.dart';
+import 'package:tcc_mobile/models/progress_entry.dart';
 import 'package:tcc_mobile/models/project.dart';
+import 'package:tcc_mobile/models/subscription.dart';
 import 'package:tcc_mobile/models/user.dart';
 
 void main() {
@@ -37,6 +41,53 @@ void main() {
 
     expect(option.id, 3);
     expect(option.name, 'Tecnologia');
+  });
+
+  test('DashboardSummary aceita metricas reais do backend', () {
+    final summary = DashboardSummary.fromJson({
+      'meusProjetos': 2,
+      'minhasInscricoes': 3,
+      'inscricoesPendentes': 1,
+      'notificacoesNaoLidas': 4,
+      'conversasAtivas': 5,
+    });
+
+    expect(summary.myProjects, 2);
+    expect(summary.mySubscriptions, 3);
+    expect(summary.pendingSubscriptions, 1);
+    expect(summary.unreadNotifications, 4);
+    expect(summary.activeConversations, 5);
+  });
+
+  test('inscricao, progresso e feedback aceitam payloads do backend', () {
+    final subscription = Subscription.fromJson({
+      'id': 8,
+      'status': 'PENDENTE',
+      'projetoId': 4,
+      'projetoTitulo': 'Projeto TCC',
+      'alunoNome': 'Aluno Teste',
+    });
+    final progress = ProgressEntry.fromJson({
+      'id': 9,
+      'projetoId': 4,
+      'tipo': 'MARCO',
+      'descricao': 'Primeira entrega',
+      'autorNome': 'Aluno Teste',
+    });
+    final feedback = FeedbackEntry.fromJson({
+      'id': 10,
+      'projetoId': 4,
+      'nota': 5,
+      'comentario': 'Excelente',
+      'avaliadorNome': 'Aluno Teste',
+    });
+
+    expect(subscription.projectId, '4');
+    expect(subscription.studentName, 'Aluno Teste');
+    expect(progress.type, 'MARCO');
+    expect(progress.description, 'Primeira entrega');
+    expect(feedback.rating, 5);
+    expect(feedback.reviewerName, 'Aluno Teste');
   });
 
   test('Conversation aceita payload do backend em portugues', () {

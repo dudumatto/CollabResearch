@@ -181,6 +181,37 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   'Nenhuma acao disponivel para o seu perfil.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
+              if (canEdit) ...[
+                const SizedBox(height: 24),
+                Text(
+                  'Acompanhamento',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () =>
+                          context.go('/progress?projectId=${project.id}'),
+                      icon: const Icon(Icons.trending_up),
+                      label: const Text('Progresso'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () =>
+                          context.go('/feedback?projectId=${project.id}'),
+                      icon: const Icon(Icons.star_outline),
+                      label: const Text('Feedback'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () => context.go('/subscriptions'),
+                      icon: const Icon(Icons.assignment_outlined),
+                      label: const Text('Inscricoes'),
+                    ),
+                  ],
+                ),
+              ],
             ],
           );
         },

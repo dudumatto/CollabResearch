@@ -10,6 +10,7 @@ void main() {
     expect(ApiEndpoints.researchAreas, '/api/areas');
     expect(ApiEndpoints.advisors, '/api/usuarios/orientadores');
     expect(ApiEndpoints.subscriptions, '/api/inscricoes');
+    expect(ApiEndpoints.feedback, '/api/feedback');
     expect(ApiEndpoints.notifications, '/api/notificacoes');
     expect(ApiEndpoints.chatConversations, '/api/conversas');
   });
@@ -29,6 +30,16 @@ void main() {
     expect(
       ApiEndpoints.rejectProjectOrientation('4'),
       '/api/projetos/4/rejeitar-orientacao',
+    );
+    expect(ApiEndpoints.projectProgress('4'), '/api/projetos/4/progresso');
+    expect(ApiEndpoints.projectFeedback('4'), '/api/feedback/projeto/4');
+    expect(
+      ApiEndpoints.approveSubscription('8'),
+      '/api/inscricoes/8/aprovar',
+    );
+    expect(
+      ApiEndpoints.cancelSubscription('8'),
+      '/api/inscricoes/8/cancelar',
     );
   });
 }

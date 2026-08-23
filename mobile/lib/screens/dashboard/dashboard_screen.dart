@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/project_status.dart';
-import '../../providers/notification_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/project_provider.dart';
+import '../../providers/dashboard_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/dashboard/activity_chart.dart';
 import '../../widgets/dashboard/recent_activity_list.dart';
 import '../../widgets/dashboard/stats_card.dart';
@@ -21,35 +22,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProjectProvider>().loadProjects();
+      context.read<DashboardProvider>().load();
       context.read<NotificationProvider>().loadNotifications();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<ProjectProvider, NotificationProvider>(
-      builder: (context, projectsProvider, notificationProvider, _) {
-        final projects = projectsProvider.projects;
+    return Consumer2<DashboardProvider, NotificationProvider>(
+      builder: (context, dashboardProvider, notificationProvider, _) {
+        final summary = dashboardProvider.summary;
         final notifications = notificationProvider.notifications;
-        final progress = projects.isEmpty
-            ? 0
-            : (projects
-                        .map((project) =>
-                            estimatedProjectProgress(project.status))
-                        .reduce((left, right) => left + right) /
-                    projects.length)
-                .round();
-        final inProgress = projects
-            .where((project) => project.status.toUpperCase() == 'EM_ANDAMENTO')
-            .length;
         final user = context.watch<AuthProvider>().currentUser;
+
+        if (dashboardProvider.isLoading && summary == null) {
+          return const Scaffold(
+            body: LoadingIndicator(label: 'Carregando dashboard...'),
+          );
+        }
 
         return Scaffold(
           body: RefreshIndicator(
             onRefresh: () async {
               await Future.wait([
-                projectsProvider.loadProjects(),
+                dashboardProvider.load(),
                 notificationProvider.loadNotifications(),
               ]);
             },
@@ -75,11 +71,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Row(
                               children: [
                                 CircleAvatar(
-                                  foregroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
-                                  child: Text(user?.name.isNotEmpty == true ? user!.name[0].toUpperCase() : 'U'),
+                                  foregroundImage: user?.avatarUrl != null
+                                      ? NetworkImage(user!.avatarUrl!)
+                                      : null,
+                                  child: Text(user?.name.isNotEmpty == true
+                                      ? user!.name[0].toUpperCase()
+                                      : 'U'),
                                 ),
                                 const SizedBox(width: 12),
-                                Expanded(child: Text('Olá, ${user?.name.isNotEmpty == true ? user!.name.split(' ').first : 'pesquisador'}', style: Theme.of(context).textTheme.titleLarge)),
+                                Expanded(
+                                    child: Text(
+                                        'Olá, ${user?.name.isNotEmpty == true ? user!.name.split(' ').first : 'pesquisador'}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge)),
                               ],
                             ),
                             const SizedBox(height: 18),
@@ -93,25 +98,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             const SizedBox(height: 18),
+                            if (dashboardProvider.errorMessage != null) ...[
+                              Text(
+                                dashboardProvider.errorMessage!,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
                             _StatsGrid(
                               children: [
                                 StatsCard(
                                   title: 'Projetos',
-                                  value: '${projects.length}',
+                                  value: '${summary?.myProjects ?? 0}',
                                 ),
                                 StatsCard(
-                                  title: 'Progresso',
-                                  value: '$progress%',
-                                  icon: Icons.trending_up,
+                                  title: 'Inscricoes',
+                                  value: '${summary?.mySubscriptions ?? 0}',
+                                  icon: Icons.assignment_outlined,
+                                ),
+                                StatsCard(
+                                  title: 'Pendentes',
+                                  value:
+                                      '${summary?.pendingSubscriptions ?? 0}',
+                                  icon: Icons.pending_actions_outlined,
                                 ),
                                 StatsCard(
                                   title: 'Nao lidas',
                                   value:
-                                      '${notificationProvider.unreadCount}',
+                                      '${summary?.unreadNotifications ?? notificationProvider.unreadCount}',
+                                  icon: Icons.notifications_none,
                                 ),
-                                StatsCard(
-                                  title: 'Atividades',
-                                  value: '${notifications.length}',
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                OutlinedButton.icon(
+                                  onPressed: () => context.go('/subscriptions'),
+                                  icon: const Icon(Icons.assignment_outlined),
+                                  label: const Text('Inscricoes'),
+                                ),
+                                OutlinedButton.icon(
+                                  onPressed: () => context.go('/progress'),
+                                  icon: const Icon(Icons.trending_up),
+                                  label: const Text('Progresso'),
+                                ),
+                                OutlinedButton.icon(
+                                  onPressed: () => context.go('/feedback'),
+                                  icon: const Icon(Icons.star_outline),
+                                  label: const Text('Feedback'),
                                 ),
                               ],
                             ),
@@ -119,9 +158,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             _DashboardContentGrid(
                               children: [
                                 ActivityChart(
-                                  projects: projects.length,
-                                  conversations: inProgress,
-                                  notifications: notifications.length,
+                                  projects: summary?.myProjects ?? 0,
+                                  conversations:
+                                      summary?.activeConversations ?? 0,
+                                  notifications:
+                                      summary?.unreadNotifications ?? 0,
                                 ),
                                 RecentActivityList(
                                   notifications: notifications,

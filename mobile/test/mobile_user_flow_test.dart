@@ -111,11 +111,14 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(1), 'senha1234');
 
     await tester.tap(find.widgetWithText(AppButton, 'Entrar'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
 
     expect(auth.loginCalls, 1);
     expect(auth.isAuthenticated, isTrue);
-    expect(find.text('Dashboard'), findsWidgets);
+    expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        0);
 
     await tester.tap(_navigationLabel('Projetos'));
     await tester.pump(const Duration(milliseconds: 300));
