@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowUp, Search, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -74,6 +74,21 @@ function applyConversationRealtimeEvent(items, event) {
 
   return sortConversations(updated);
 }
+
+function isIncomingMessage(event, currentUserId) {
+  if (event?.tipo !== "MENSAGEM_CRIADA" || !event?.mensagem?.conversaId) return false;
+  return Number(event.mensagem.remetenteId) !== Number(currentUserId);
+}
+
+function isConversationOpen(conversationId, selectedConversation, showMobileList) {
+  const selectedId = Number(selectedConversation?.id);
+  const mobileListVisible = typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 767px)").matches &&
+    showMobileList;
+
+  return Number(conversationId) === selectedId && !mobileListVisible;
+}
+
 async function hydrateConversationPhotos(items, currentUser) {
   const conversations = Array.isArray(items) ? items : [];
 
@@ -238,9 +253,12 @@ export default function ChatPage() {
   const messagesEndRef = useRef(null);
   const enviandoRef = useRef(false);
   const messageRefs = useRef({});
+  const selectedConversationRef = useRef(null);
+  const showMobileListRef = useRef(true);
 
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [unreadConversationIds, setUnreadConversationIds] = useState(() => new Set());
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
@@ -278,6 +296,24 @@ export default function ChatPage() {
   useEffect(() => { if (user?.id) loadConversations(); }, [user?.id]);
 
   useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    showMobileListRef.current = showMobileList;
+  }, [showMobileList]);
+
+  const markConversationAsRead = useCallback((conversationId) => {
+    setUnreadConversationIds((prev) => {
+      const normalizedId = Number(conversationId);
+      if (!prev.has(normalizedId)) return prev;
+      const next = new Set(prev);
+      next.delete(normalizedId);
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
     if (conversations.length === 0) return;
     const params = new URLSearchParams(location.search);
     const targetId =
@@ -293,6 +329,7 @@ export default function ChatPage() {
       : null;
     if (targetId) {
       setSelectedConversation(target ?? conversations[0]);
+      markConversationAsRead(target?.id ?? conversations[0]?.id);
       setTargetMessageId(targetMsgId ?? null);
       setShowMobileList(false);
       navigate(location.pathname, { replace: true, state: null });
@@ -301,6 +338,7 @@ export default function ChatPage() {
 
     if (selectedConversation) return;
     setSelectedConversation(conversations[0]);
+    markConversationAsRead(conversations[0]?.id);
   }, [
     conversations,
     selectedConversation,
@@ -309,6 +347,7 @@ export default function ChatPage() {
     location.search,
     location.pathname,
     navigate,
+    markConversationAsRead,
   ]);
 
   useEffect(() => {
@@ -342,6 +381,15 @@ export default function ChatPage() {
 
     return chatRealtimeService.subscribeToConversations(conversationIds, (event) => {
       setConversations((prev) => applyConversationRealtimeEvent(prev, event));
+      if (!isIncomingMessage(event, user.id)) return;
+
+      const conversationId = Number(event.mensagem.conversaId);
+      if (isConversationOpen(conversationId, selectedConversationRef.current, showMobileListRef.current)) return;
+
+      setUnreadConversationIds((prev) => {
+        if (prev.has(conversationId)) return prev;
+        return new Set(prev).add(conversationId);
+      });
     });
   }, [conversationIdsKey, user?.id]);
 
@@ -511,6 +559,7 @@ export default function ChatPage() {
       );
       setConversations((prev) => sortConversations(prev.some((c) => c.id === conversa.id) ? prev : [conversa, ...prev]));
       setSelectedConversation(conversa);
+      markConversationAsRead(conversa.id);
       setShowMobileList(false);
     } catch {
       toast.error(`Erro ao abrir conversa com ${remetenteNome}`);
@@ -544,8 +593,8 @@ export default function ChatPage() {
           {filtered.map((c) => (
             <motion.button
               key={c.id}
-              onClick={() => { setSelectedConversation(c); setShowMobileList(false); }}
-              className={`conversa-item ${selectedConversation?.id === c.id ? "conversa-item--selecionada" : ""}`}
+              onClick={() => { setSelectedConversation(c); markConversationAsRead(c.id); setShowMobileList(false); }}
+              className={`conversa-item ${selectedConversation?.id === c.id ? "conversa-item--selecionada" : ""} ${unreadConversationIds.has(Number(c.id)) ? "conversa-item--nao-lida" : ""}`}
             >
               <ChatAvatar name={c?.titulo} src={c?.fotoPerfilUrl} className="conversa-item__avatar" />
               <div className="conversa-item__info">
@@ -559,6 +608,9 @@ export default function ChatPage() {
                   <p className="conversa-item__preview">{c?.ultimaMensagem ?? "Nenhuma mensagem ainda"}</p>
                   {c?.ultimaMensagemHorario && (
                     <span className="conversa-item__horario">{formatarHora(c.ultimaMensagemHorario)}</span>
+                  )}
+                  {unreadConversationIds.has(Number(c.id)) && (
+                    <span className="conversa-item__ping" aria-label="Nova mensagem" title="Nova mensagem" />
                   )}
                 </div>
               </div>

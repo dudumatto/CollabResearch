@@ -95,6 +95,32 @@
 .conversa-item--selecionada {
   background: var(--cor-primaria-clara);
 }
+.conversa-item--nao-lida {
+  position: relative;
+  background: var(--cor-superficie);
+}
+
+.conversa-item--nao-lida::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--cor-primaria);
+  border-radius: 0 4px 4px 0;
+}
+
+.conversa-item--nao-lida .conversa-item__nome,
+.conversa-item--nao-lida .conversa-item__preview {
+  color: var(--cor-texto);
+  font-weight: 700;
+}
+
+.conversa-item--nao-lida .conversa-item__horario {
+  color: var(--cor-primaria);
+  font-weight: 700;
+}
 
 .conversa-item__avatar {
   width: 36px;
@@ -161,6 +187,36 @@
   color: var(--cor-texto-mudo);
   white-space: nowrap;
   flex-shrink: 0;
+}
+.conversa-item__ping {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--cor-primaria);
+  flex: 0 0 9px;
+  box-shadow: 0 0 0 3px rgba(31, 122, 90, 0.14);
+}
+
+.conversa-item__ping::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 1px solid rgba(31, 122, 90, 0.32);
+  border-radius: inherit;
+  animation: conversa-ping 1.5s ease-out infinite;
+}
+
+@keyframes conversa-ping {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.65);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
 }
 
 .conversa-item__badge {
@@ -839,6 +895,11 @@
   .conversa-item__badge {
     font-size: 9px;
     padding: 2px 5px;
+  }
+  .conversa-item__ping {
+    width: 8px;
+    height: 8px;
+    flex-basis: 8px;
   }
 
   .pagina-chat__topo-conversa {
