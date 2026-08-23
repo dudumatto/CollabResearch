@@ -247,7 +247,8 @@
 
 .barra-lateral__icone-nav {
   width: 18px;
-  height: 21px;
+  height: 18px;
+  display: block;
   flex-shrink: 0;
   color: var(--cor-texto-mudo);
 }

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Building2, GraduationCap, Save, X } from "lucide-react";
+import { Mail, Building2, GraduationCap, Save, X, Edit3, User } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
+import { useUploadDocumento } from "../../hooks/useUploadDocumento";
 import { advisorService } from "../services/advisorService";
 import { mapOrientadorPerfil } from "../utils/adapters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
@@ -18,6 +19,18 @@ function iniciais(nome = "") {
     .map((p) => p[0])
     .join("")
     .toUpperCase();
+}
+
+function resetFormFromPerfil(perfil) {
+  return {
+    nome: perfil?.nome ?? "",
+    email: perfil?.email ?? "",
+    instituicao: perfil?.instituicao ?? "",
+    departamento: perfil?.departamento ?? "",
+    titulacao: perfil?.titulacao ?? "",
+    bio: perfil?.bio ?? "",
+    fotoPerfilUrl: perfil?.fotoPerfilUrl ?? "",
+  };
 }
 
 function PerfilSkeleton() {
@@ -37,7 +50,9 @@ function PerfilSkeleton() {
 }
 
 export default function AdvisorProfilePage() {
-  const { refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const avatarInputRef = useRef(null);
+  const { upload: uploadAvatar, uploading: uploadingAvatar } = useUploadDocumento();
   const { data: perfil, loading, error, reload } = useAsyncData(
     async () => mapOrientadorPerfil(await advisorService.perfil()),
     [],
@@ -45,21 +60,19 @@ export default function AdvisorProfilePage() {
   );
 
   const [form, setForm] = useState(null);
+  const [editing, setEditing] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
 
   useEffect(() => {
     if (perfil && !form) {
-      setForm({
-        nome: perfil.nome ?? "",
-        email: perfil.email ?? "",
-        instituicao: perfil.instituicao ?? "",
-        departamento: perfil.departamento ?? "",
-        titulacao: perfil.titulacao ?? "",
-        bio: perfil.bio ?? "",
-        fotoPerfilUrl: perfil.fotoPerfilUrl ?? "",
-      });
+      setForm(resetFormFromPerfil(perfil));
     }
   }, [perfil, form]);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [form?.fotoPerfilUrl]);
 
   const normError = error ? normalizeError(error) : null;
 
@@ -86,22 +99,48 @@ export default function AdvisorProfilePage() {
           fotoPerfilUrl: form.fotoPerfilUrl.trim(),
         }),
       );
-      setForm({
-        nome: atualizado.nome ?? form.nome,
-        email: atualizado.email ?? form.email,
-        instituicao: atualizado.instituicao ?? form.instituicao,
-        departamento: atualizado.departamento ?? form.departamento,
-        titulacao: atualizado.titulacao ?? form.titulacao,
-        bio: atualizado.bio ?? form.bio,
-        fotoPerfilUrl: atualizado.fotoPerfilUrl ?? form.fotoPerfilUrl,
-      });
+      setForm(resetFormFromPerfil({ ...form, ...atualizado }));
       toast.success("Perfil atualizado com sucesso.");
+      setEditing(false);
       await reload();
       await refreshUser();
     } catch (err) {
       toast.error(getErrorMessage(normalizeError(err), "Não foi possível salvar o perfil."));
     } finally {
       setSalvando(false);
+    }
+  };
+
+  const handleAvatarUpload = async (event) => {
+    const file = event.target.files?.[0];
+    const userId = user?.id ?? perfil?.id;
+    if (!file || !userId || !form) return;
+
+    try {
+      const uploaded = await uploadAvatar(file, `usuarios/${userId}/foto-perfil`);
+      if (!uploaded?.publicUrl) {
+        throw new Error("Não foi possível enviar a foto de perfil.");
+      }
+
+      const atualizado = mapOrientadorPerfil(
+        await advisorService.atualizarPerfil({
+          nome: form.nome.trim(),
+          email: form.email.trim(),
+          instituicao: form.instituicao.trim(),
+          departamento: form.departamento.trim(),
+          titulacao: form.titulacao.trim(),
+          bio: form.bio.trim(),
+          fotoPerfilUrl: uploaded.publicUrl,
+        }),
+      );
+      setForm(resetFormFromPerfil({ ...form, ...atualizado, fotoPerfilUrl: uploaded.publicUrl }));
+      await reload();
+      await refreshUser();
+      toast.success("Foto de perfil atualizada.");
+    } catch (err) {
+      toast.error(err.message || "Não foi possível atualizar a foto.");
+    } finally {
+      event.target.value = "";
     }
   };
 
@@ -112,6 +151,8 @@ export default function AdvisorProfilePage() {
   }
 
   const editavel = Boolean(form);
+  const showProfilePhoto = Boolean(form?.fotoPerfilUrl) && !avatarLoadFailed;
+  const busy = salvando || uploadingAvatar;
 
   return (
     <motion.div
@@ -132,34 +173,58 @@ export default function AdvisorProfilePage() {
       <div className="advisor-detalhe-grade">
         <div className="advisor-detalhe-lateral">
           <div className="advisor-perfil-cartao">
-            {form?.fotoPerfilUrl ? (
-              <img
-                src={form.fotoPerfilUrl}
-                alt="Foto de perfil"
-                style={{ width: "4.5rem", height: "4.5rem", borderRadius: "var(--raio-completo)", objectFit: "cover" }}
-              />
-            ) : (
-              <div className="advisor-perfil-cartao__avatar">{iniciais(perfil.nome)}</div>
-            )}
+            <div className="advisor-profile-standard__avatar-wrap">
+              {showProfilePhoto ? (
+                <img
+                  src={form.fotoPerfilUrl}
+                  alt="Foto de perfil"
+                  onError={() => setAvatarLoadFailed(true)}
+                  className="advisor-profile-standard__avatar-img"
+                />
+              ) : (
+                <div className="advisor-perfil-cartao__avatar">{iniciais(perfil.nome)}</div>
+              )}
+              {editing && (
+                <>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                    onChange={handleAvatarUpload}
+                    className="advisor-profile-standard__avatar-input"
+                    disabled={busy}
+                  />
+                  <button
+                    type="button"
+                    className="cartao-perfil__botao-avatar advisor-profile-standard__avatar-button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={busy}
+                    title="Alterar foto"
+                  >
+                    <Edit3 size={12} />
+                  </button>
+                </>
+              )}
+            </div>
             <h3 className="advisor-perfil-cartao__nome">{perfil.nome}</h3>
             <p className="advisor-perfil-cartao__meta">{perfil.titulacao || "Professor/Orientador"}</p>
             <div className="advisor-perfil-cartao__info">
               {perfil.email && (
                 <div className="advisor-perfil-cartao__info-item">
                   <Mail size={14} className="advisor-perfil-cartao__info-icone" />
-                  {perfil.email}
+                  <span>{perfil.email}</span>
                 </div>
               )}
               {perfil.instituicao && (
                 <div className="advisor-perfil-cartao__info-item">
                   <Building2 size={14} className="advisor-perfil-cartao__info-icone" />
-                  {perfil.instituicao}
+                  <span>{perfil.instituicao}</span>
                 </div>
               )}
               {perfil.departamento && (
                 <div className="advisor-perfil-cartao__info-item">
                   <GraduationCap size={14} className="advisor-perfil-cartao__info-icone" />
-                  {perfil.departamento}
+                  <span>{perfil.departamento}</span>
                 </div>
               )}
             </div>
@@ -191,80 +256,93 @@ export default function AdvisorProfilePage() {
             <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>
               Dados do perfil
             </p>
-            <span className="advisor-etiqueta advisor-etiqueta--cinza">Professor/Orientador</span>
+            <div className="advisor-profile-standard__actions">
+              <span className="advisor-etiqueta advisor-etiqueta--cinza">Professor/Orientador</span>
+              {!editing && (
+                <button type="button" onClick={() => setEditing(true)} className="advisor-botao advisor-botao--secundario">
+                  <Edit3 size={16} />
+                  Editar perfil
+                </button>
+              )}
+            </div>
           </div>
 
           {!editavel && <p className="advisor-linha-card__meta">Carregando formulário...</p>}
 
           {editavel && (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--espaco-3)" }}>
+              <div className="advisor-profile-standard__form-grid">
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="perfil-nome">Nome *</label>
-                  <input
-                    id="perfil-nome"
-                    type="text"
-                    value={form.nome}
-                    onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                    className="advisor-campo__input"
-                  />
+                  <div className="advisor-profile-standard__input-wrap">
+                    <User size={14} className="advisor-profile-standard__input-icon" />
+                    <input
+                      id="perfil-nome"
+                      type="text"
+                      value={form.nome}
+                      disabled={!editing}
+                      onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                      className="advisor-campo__input advisor-profile-standard__input"
+                    />
+                  </div>
                 </div>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="perfil-email">E-mail *</label>
-                  <input
-                    id="perfil-email"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="advisor-campo__input"
-                  />
+                  <div className="advisor-profile-standard__input-wrap">
+                    <Mail size={14} className="advisor-profile-standard__input-icon" />
+                    <input
+                      id="perfil-email"
+                      type="email"
+                      value={form.email}
+                      disabled={!editing}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className="advisor-campo__input advisor-profile-standard__input"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--espaco-3)" }}>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="perfil-instituicao">Instituição</label>
-                  <input
-                    id="perfil-instituicao"
-                    type="text"
-                    value={form.instituicao}
-                    onChange={(e) => setForm({ ...form, instituicao: e.target.value })}
-                    className="advisor-campo__input"
-                  />
+                  <div className="advisor-profile-standard__input-wrap">
+                    <Building2 size={14} className="advisor-profile-standard__input-icon" />
+                    <input
+                      id="perfil-instituicao"
+                      type="text"
+                      value={form.instituicao}
+                      disabled={!editing}
+                      onChange={(e) => setForm({ ...form, instituicao: e.target.value })}
+                      className="advisor-campo__input advisor-profile-standard__input"
+                    />
+                  </div>
                 </div>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="perfil-departamento">Departamento</label>
-                  <input
-                    id="perfil-departamento"
-                    type="text"
-                    value={form.departamento}
-                    onChange={(e) => setForm({ ...form, departamento: e.target.value })}
-                    className="advisor-campo__input"
-                  />
+                  <div className="advisor-profile-standard__input-wrap">
+                    <GraduationCap size={14} className="advisor-profile-standard__input-icon" />
+                    <input
+                      id="perfil-departamento"
+                      type="text"
+                      value={form.departamento}
+                      disabled={!editing}
+                      onChange={(e) => setForm({ ...form, departamento: e.target.value })}
+                      className="advisor-campo__input advisor-profile-standard__input"
+                    />
+                  </div>
                 </div>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="perfil-titulacao">Titulação</label>
-                  <input
-                    id="perfil-titulacao"
-                    type="text"
-                    value={form.titulacao}
-                    onChange={(e) => setForm({ ...form, titulacao: e.target.value })}
-                    className="advisor-campo__input"
-                    placeholder="Ex.: Doutor em Ciência da Computação"
-                  />
+                  <div className="advisor-profile-standard__input-wrap">
+                    <GraduationCap size={14} className="advisor-profile-standard__input-icon" />
+                    <input
+                      id="perfil-titulacao"
+                      type="text"
+                      value={form.titulacao}
+                      disabled={!editing}
+                      onChange={(e) => setForm({ ...form, titulacao: e.target.value })}
+                      className="advisor-campo__input advisor-profile-standard__input"
+                      placeholder="Ex.: Doutor em Ciência da Computação"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div className="advisor-campo">
-                <label className="advisor-campo__rotulo" htmlFor="perfil-foto">URL da foto de perfil</label>
-                <input
-                  id="perfil-foto"
-                  type="text"
-                  value={form.fotoPerfilUrl}
-                  onChange={(e) => setForm({ ...form, fotoPerfilUrl: e.target.value })}
-                  className="advisor-campo__input"
-                  placeholder="https://..."
-                />
               </div>
 
               <div className="advisor-campo">
@@ -273,6 +351,7 @@ export default function AdvisorProfilePage() {
                   id="perfil-bio"
                   value={form.bio}
                   onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                  disabled={!editing}
                   rows={5}
                   maxLength={2000}
                   className="advisor-campo__input"
@@ -280,31 +359,26 @@ export default function AdvisorProfilePage() {
                 />
               </div>
 
-              <div className="advisor-modal__rodape" style={{ justifyContent: "flex-start" }}>
-                <button type="button" className="advisor-botao advisor-botao--primario" onClick={salvar} disabled={salvando}>
-                  <Save size={16} />
-                  {salvando ? "Salvando..." : "Salvar alterações"}
-                </button>
-                <button
-                  type="button"
-                  className="advisor-botao advisor-botao--secundario"
-                  onClick={() =>
-                    setForm({
-                      nome: perfil.nome ?? "",
-                      email: perfil.email ?? "",
-                      instituicao: perfil.instituicao ?? "",
-                      departamento: perfil.departamento ?? "",
-                      titulacao: perfil.titulacao ?? "",
-                      bio: perfil.bio ?? "",
-                      fotoPerfilUrl: perfil.fotoPerfilUrl ?? "",
-                    })
-                  }
-                  disabled={salvando}
-                >
-                  <X size={16} />
-                  Descartar alterações
-                </button>
-              </div>
+              {editing && (
+                <div className="advisor-modal__rodape" style={{ justifyContent: "flex-start" }}>
+                  <button type="button" className="advisor-botao advisor-botao--primario" onClick={salvar} disabled={busy}>
+                    {busy ? <span className="secao-perfil__spinner" /> : <Save size={16} />}
+                    Salvar alterações
+                  </button>
+                  <button
+                    type="button"
+                    className="advisor-botao advisor-botao--secundario"
+                    onClick={() => {
+                      setEditing(false);
+                      setForm(resetFormFromPerfil(perfil));
+                    }}
+                    disabled={busy}
+                  >
+                    <X size={16} />
+                    Descartar alterações
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>

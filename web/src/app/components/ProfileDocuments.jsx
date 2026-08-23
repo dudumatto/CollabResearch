@@ -17,7 +17,7 @@ function normalizeDocument(doc) {
 }
 
 function formatDocumentType(type) {
-  return type === "HISTORICO" ? "Historico escolar" : "Curriculo";
+  return type === "HISTORICO" ? "Histórico escolar" : "Currículo";
 }
 
 export function ProfileDocuments({ userId, documents = [], editable = false, onUploaded }) {
@@ -35,15 +35,15 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
     try {
       const uploaded = await upload(file, `usuarios/${userId}/curriculo`);
       if (!uploaded?.path) {
-        throw new Error("Nao foi possivel enviar o curriculo.");
+        throw new Error("Não foi possível enviar o currículo.");
       }
 
       setSavingMetadata(true);
       await documentService.upload(userId, "CURRICULO", file.name, uploaded.path);
-      toast.success("Curriculo enviado com sucesso.");
+      toast.success("Currículo enviado com sucesso.");
       await onUploaded?.();
     } catch (err) {
-      toast.error(err.message || "Nao foi possivel enviar o curriculo.");
+      toast.error(err.message || "Não foi possível enviar o currículo.");
     } finally {
       setSavingMetadata(false);
       if (fileInputRef.current) {
@@ -64,7 +64,7 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
     } catch (err) {
-      toast.error(err.message || "Nao foi possivel baixar o documento.");
+      toast.error(err.message || "Não foi possível baixar o documento.");
     }
   };
 
@@ -75,7 +75,7 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
       toast.success("Documento removido.");
       await onUploaded?.();
     } catch (err) {
-      toast.error(err.message || "Nao foi possivel remover o documento.");
+      toast.error(err.message || "Não foi possível remover o documento.");
     } finally {
       setRemovingId(null);
     }
@@ -85,9 +85,9 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
     <div className="perfil-documentos">
       <div className="perfil-documentos__cabecalho">
         <div>
-          <h3 className="secao-perfil__titulo">Curriculo e documentos</h3>
+          <h3 className="secao-perfil__titulo">Currículo e documentos</h3>
           <p className="perfil-documentos__subtitulo">
-            Curriculos ficam disponiveis para usuarios autenticados.
+            Currículos ficam disponíveis para usuários autenticados.
           </p>
         </div>
         {editable && (
@@ -107,14 +107,14 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
               className="perfil-documentos__botao"
             >
               {busy ? <Upload size={14} /> : <Plus size={14} />}
-              {busy ? `Enviando ${progresso}%` : "Adicionar curriculo"}
+              {busy ? `Enviando ${progresso}%` : "Adicionar currículo"}
             </button>
           </>
         )}
       </div>
 
       {docs.length === 0 ? (
-        <StatusView title="Nenhum documento" description="Nenhum curriculo foi enviado ate o momento." />
+        <StatusView title="Nenhum documento" description="Nenhum currículo foi enviado até o momento." />
       ) : (
         <div className="perfil-documentos__lista">
           {docs.map((doc) => (

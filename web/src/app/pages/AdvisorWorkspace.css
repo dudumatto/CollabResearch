@@ -2331,3 +2331,108 @@
   gap: var(--espaco-4);
   margin-top: var(--espaco-2);
 }
+
+.advisor-profile-standard__avatar-wrap {
+  position: relative;
+  width: fit-content;
+}
+
+.advisor-profile-standard__avatar-img {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--raio-grande);
+  object-fit: cover;
+  display: block;
+}
+
+.advisor-profile-standard__avatar-input {
+  display: none;
+}
+
+.advisor-profile-standard__avatar-button {
+  position: absolute;
+  right: -0.25rem;
+  bottom: -0.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--cor-branco);
+  border-radius: var(--raio-completo);
+  background-color: var(--cor-primaria);
+  color: var(--cor-branco);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.advisor-profile-standard__avatar-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.advisor-profile-standard__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+}
+
+@media (min-width: 640px) {
+  .advisor-profile-standard__actions {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.advisor-profile-standard__form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espaco-3);
+}
+
+@media (min-width: 760px) {
+  .advisor-profile-standard__form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.advisor-profile-standard__input-wrap {
+  position: relative;
+}
+
+.advisor-profile-standard__input-icon {
+  position: absolute;
+  left: var(--espaco-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cor-texto-mudo);
+  pointer-events: none;
+}
+
+.advisor-profile-standard__input {
+  padding-left: 2.25rem;
+}
+
+.advisor-profile-standard .advisor-campo__input:disabled {
+  background-color: transparent;
+  color: var(--cor-texto-medio);
+  opacity: 1;
+  cursor: default;
+}
+
+.advisor-profile-standard .advisor-campo__input:not(:disabled) {
+  background-color: var(--cor-fundo);
+}
+
+.secao-perfil__spinner {
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--cor-branco);
+  border-radius: var(--raio-completo);
+  animation: girar-perfil 0.7s linear infinite;
+}
+
+@keyframes girar-perfil {
+  to { transform: rotate(360deg); }
+}
