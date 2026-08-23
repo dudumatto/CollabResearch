@@ -6,13 +6,11 @@ import {
   Telescope,
   ShieldCheck,
   FolderKanban,
-  Sparkles,
   FileText,
   BookOpen,
   File,
   BarChart3,
   ScrollText,
-  Settings,
 } from 'lucide-react'
 
 const sections = [
@@ -33,7 +31,6 @@ const sections = [
     label: 'Pesquisa',
     items: [
       { to: '/projetos', label: 'Projetos', icon: FolderKanban },
-      { to: '/oportunidades', label: 'Oportunidades', icon: Sparkles },
       { to: '/inscricoes', label: 'Inscrições', icon: FileText },
       { to: '/areas', label: 'Áreas de pesquisa', icon: BookOpen },
       { to: '/documentos', label: 'Documentos', icon: File },
@@ -44,7 +41,6 @@ const sections = [
     items: [
       { to: '/relatorios', label: 'Relatórios', icon: BarChart3 },
       { to: '/auditoria', label: 'Auditoria', icon: ScrollText },
-      { to: '/configuracoes', label: 'Configurações', icon: Settings },
     ],
   },
 ]

@@ -8,13 +8,11 @@ import { StudentsPage } from '../features/students/StudentsPage'
 import { AdvisorsPage } from '../features/advisors/AdvisorsPage'
 import { AdminsPage } from '../features/admins/AdminsPage'
 import { ProjectsPage } from '../features/projects/ProjectsPage'
-import { OpportunitiesPage } from '../features/opportunities/OpportunitiesPage'
 import { ApplicationsPage } from '../features/applications/ApplicationsPage'
 import { AreasPage } from '../features/areas/AreasPage'
 import { DocumentsPage } from '../features/documents/DocumentsPage'
 import { ReportsPage } from '../features/reports/ReportsPage'
 import { AuditLogsPage } from '../features/audit/AuditLogsPage'
-import { SettingsPage } from '../features/settings/SettingsPage'
 
 export const router = createHashRouter([
   { path: '/login', element: <LoginPage /> },
@@ -29,13 +27,11 @@ export const router = createHashRouter([
         { path: '/orientadores', element: <AdvisorsPage /> },
         { path: '/administradores', element: <AdminsPage /> },
         { path: '/projetos', element: <ProjectsPage /> },
-        { path: '/oportunidades', element: <OpportunitiesPage /> },
         { path: '/inscricoes', element: <ApplicationsPage /> },
         { path: '/areas', element: <AreasPage /> },
         { path: '/documentos', element: <DocumentsPage /> },
         { path: '/relatorios', element: <ReportsPage /> },
         { path: '/auditoria', element: <AuditLogsPage /> },
-        { path: '/configuracoes', element: <SettingsPage /> },
       ],
     }],
   },
