@@ -1139,27 +1139,6 @@
   font-size: 1rem;
 }
 
-.step-card__weight {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.1rem;
-  padding: 0.38rem 0.62rem;
-  border: 1px solid var(--progress-border-soft);
-  border-radius: 14px;
-  background: var(--progress-surface-strong);
-  color: var(--progress-text-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1.1;
-  white-space: nowrap;
-}
-
-.step-card__weight strong {
-  color: var(--progress-accent);
-  font-size: 0.98rem;
-  font-weight: 800;
-}
 
 .step-card__description {
   margin: 0.6rem 0 0;
@@ -1291,15 +1270,6 @@
   grid-column: 1 / -1;
 }
 
-.update-form__field--slider input[type="range"] {
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-
-.update-form__field--slider strong {
-  color: var(--progress-accent);
-}
 
 .update-form__actions {
   margin-top: 1rem;
@@ -1423,7 +1393,6 @@
 }
 
 .update-feed__step,
-.update-feed__contribution,
 .update-feed__date {
   display: inline-flex;
   align-items: center;

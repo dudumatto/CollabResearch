@@ -38,7 +38,6 @@ function normalizeUpdate(update) {
     category: String(update.category ?? update.categoria ?? "progress").toLowerCase(),
     stepId: update.stepId ?? update.etapaId ?? null,
     stepTitle: update.stepTitle ?? update.etapaTitle ?? update.etapaTitulo ?? null,
-    stepContribution: Number(update.stepContribution ?? update.etapaContribuicao ?? 0),
     createdBy,
     createdAt: update.createdAt ?? update.dataRegistro ?? null,
   };
@@ -134,7 +133,7 @@ export const progressService = {
         tipo: payload?.category === "milestone" ? "MARCO" : payload?.category === "problem" ? "BLOQUEIO" : "ATUALIZACAO",
         fase: payload?.stepId ? "Etapa vinculada" : null,
         metadataJson: JSON.stringify({
-          ...(payload?.stepId ? { stepId: payload.stepId, stepContribution: payload.stepContribution ?? 0 } : {}),
+          ...(payload?.stepId ? { stepId: payload.stepId } : {}),
           ...(payload?.dataRegistro ? { dataRegistro: payload.dataRegistro } : {}),
         }),
       };
@@ -147,7 +146,6 @@ export const progressService = {
         category: payload?.category ?? "progress",
         stepId: payload?.stepId ?? null,
         stepTitle: payload?.stepName ?? null,
-        stepContribution: payload?.stepContribution ?? 0,
         createdBy: response?.autor ? { id: response.autorId, nome: response.autorNome } : null,
         createdAt: response?.dataRegistro ?? payload?.dataRegistro,
       });

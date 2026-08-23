@@ -25,14 +25,12 @@ export function UpdateForm({ steps = [], onSubmit }) {
       dataRegistro: new Date().toISOString().slice(0, 10),
       semData: false,
       etapaId: "",
-      etapaContribuicao: 0,
       descricao: "",
     },
   });
 
   const selectedStepId = watch("etapaId");
   const semData = watch("semData");
-  const hasStepSelected = Boolean(selectedStepId);
 
   useEffect(() => {
     if (!semData) return;
@@ -48,7 +46,6 @@ export function UpdateForm({ steps = [], onSubmit }) {
       semData: Boolean(values.semData),
       descricao: values.descricao?.trim() || "",
       etapaId: values.etapaId ? Number(values.etapaId) : null,
-      etapaContribuicao: values.etapaId ? Number(values.etapaContribuicao ?? 0) : 0,
     };
 
     await onSubmit?.(payload);
@@ -109,20 +106,6 @@ export function UpdateForm({ steps = [], onSubmit }) {
             ))}
           </select>
         </label>
-
-        {hasStepSelected ? (
-          <label className="update-form__field update-form__field--slider">
-            <span>Contribuição na etapa</span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              {...register("etapaContribuicao", { valueAsNumber: true })}
-            />
-            <strong>{watch("etapaContribuicao")}%</strong>
-          </label>
-        ) : null}
 
         <label className="update-form__field update-form__field--full">
           <span>Descrição</span>

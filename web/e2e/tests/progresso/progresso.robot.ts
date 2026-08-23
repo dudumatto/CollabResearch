@@ -86,7 +86,7 @@ export async function loginAndOpenProgress(page: Page, user: { email: string; se
   await expect(page.getByText(/minhas etapas|progresso|acompanhamento estruturado/i).first()).toBeVisible();
 }
 
-export async function publishUpdate(page: Page, payload: { title: string; category: string; description?: string; stepName?: string; contribution?: number; withoutDate?: boolean }) {
+export async function publishUpdate(page: Page, payload: { title: string; category: string; description?: string; stepName?: string; withoutDate?: boolean }) {
   if (!(await page.getByLabel("Título").isVisible().catch(() => false))) {
     await page.getByRole("button", { name: /nova atualização/i }).click();
   }
@@ -99,14 +99,6 @@ export async function publishUpdate(page: Page, payload: { title: string; catego
 
   if (payload.stepName) {
     await page.getByLabel("Etapa relacionada").selectOption({ label: payload.stepName });
-    if (typeof payload.contribution === "number") {
-      await page.getByRole("slider").evaluate((element, value) => {
-        const input = element as HTMLInputElement;
-        input.value = String(value);
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-        input.dispatchEvent(new Event("change", { bubbles: true }));
-      }, payload.contribution);
-    }
   }
 
   if (payload.description) {

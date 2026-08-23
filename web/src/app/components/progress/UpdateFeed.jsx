@@ -73,9 +73,6 @@ export function UpdateFeed({ updates = [] }) {
               {update.stepTitle ? (
                 <span className="update-feed__step">Etapa: {update.stepTitle}</span>
               ) : null}
-              {update.stepContribution != null ? (
-                <span className="update-feed__contribution">+{update.stepContribution}% dentro da etapa</span>
-              ) : null}
               <span className="update-feed__date">
                 <Clock3 size={13} /> {formatDate(update.createdAt)}
               </span>

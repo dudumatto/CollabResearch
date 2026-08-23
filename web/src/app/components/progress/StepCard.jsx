@@ -33,7 +33,6 @@ export function StepCard({
   const isDone = step.status === "DONE";
   const isActive = step.status === "ACTIVE";
   const canAdvance = isActive && canCompleteStep(step, currentUserRole);
-  const weight = Number.isFinite(Number(step.weight)) ? Number(step.weight) : 0;
   const responsibleLabel = formatUserType(step.responsible ?? currentUserRole) || "participante";
 
   return (
@@ -64,10 +63,6 @@ export function StepCard({
             <p className="step-card__eyebrow">Progresso {displayOrder ?? step.stepOrder}</p>
             <h4 className="step-card__title">{step.title}</h4>
           </div>
-          <span className="step-card__weight" title="Participação desta etapa no progresso total">
-            <span>Peso calculado</span>
-            <strong>{weight}%</strong>
-          </span>
         </div>
 
         {step.description ? <p className="step-card__description">{step.description}</p> : null}
