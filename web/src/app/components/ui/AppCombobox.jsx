@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dropdown } from "antd";
 import { ChevronDown } from "lucide-react";
 import "./AppCombobox.css";
@@ -16,6 +16,7 @@ export function AppCombobox({
   value = "",
 }) {
   const [open, setOpen] = useState(false);
+  const buttonRef = useRef(null);
   const normalizedValue = value == null ? "" : String(value);
   const normalizedOptions = options.map((option) => ({
     ...option,
@@ -32,6 +33,28 @@ export function AppCombobox({
       }))
     : [{ key: "__empty", label: emptyLabel, disabled: true }];
 
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handlePointerDown = (event) => {
+      const target = event.target;
+      if (buttonRef.current?.contains(target) || target.closest?.(".app-combobox__dropdown")) return;
+      setOpen(false);
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("keydown", handleEscape, true);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+      document.removeEventListener("keydown", handleEscape, true);
+    };
+  }, [open]);
+
   const handleSelect = ({ key }) => {
     if (key === "__empty" || key === normalizedValue) {
       setOpen(false);
@@ -41,28 +64,28 @@ export function AppCombobox({
     setOpen(false);
   };
 
-  const openMenu = () => {
-    if (!isDisabled) setOpen(true);
+  const toggleMenu = () => {
+    if (!isDisabled) setOpen((current) => !current);
   };
 
   const handleKeyDown = (event) => {
     if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      openMenu();
+      setOpen(true);
     }
   };
 
   return (
     <Dropdown
       menu={{ items: menuItems, selectable: true, selectedKeys: normalizedValue ? [normalizedValue] : [], onClick: handleSelect }}
-      trigger={["click"]}
+      trigger={[]}
       disabled={isDisabled}
       placement="bottomLeft"
       overlayClassName="app-combobox__dropdown"
       open={open}
-      onOpenChange={setOpen}
     >
       <button
+        ref={buttonRef}
         type="button"
         id={id}
         name={name}
@@ -73,7 +96,7 @@ export function AppCombobox({
         aria-expanded={open}
         aria-disabled={isDisabled || undefined}
         disabled={isDisabled}
-        onClick={openMenu}
+        onClick={toggleMenu}
         onKeyDown={handleKeyDown}
       >
         <span className="app-combobox__label">{label}</span>
