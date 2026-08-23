@@ -1535,14 +1535,18 @@
 /* ---- Calendario de prazos ---- */
 .calendario-pagina {
   width: 100%;
-  max-width: 68rem;
+  max-width: 76rem;
+  height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-4);
+  gap: var(--espaco-3);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .calendario-cabecalho {
+  flex: 0 0 auto;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -1597,13 +1601,15 @@
 .calendario-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--espaco-4);
+  gap: var(--espaco-3);
   align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 @media (min-width: 1120px) {
   .calendario-layout {
-    grid-template-columns: minmax(0, 48rem) minmax(17rem, 21rem);
+    grid-template-columns: minmax(0, 2.35fr) minmax(15rem, 0.9fr);
     justify-content: center;
   }
 }
@@ -1614,6 +1620,7 @@
   background: var(--cor-superficie);
   padding: var(--espaco-3);
   min-width: 0;
+  max-height: 100%;
 }
 
 .calendario-card--principal,
@@ -1623,20 +1630,27 @@
   min-height: 0;
 }
 
+.calendario-card--principal {
+  overflow: visible;
+}
+
 .calendario-card--lateral {
+  height: 100%;
   overflow: hidden;
 }
 
 .calendario-card__topo {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--espaco-3);
-  margin-bottom: var(--espaco-3);
+  margin-bottom: var(--espaco-2);
 }
 
 .calendario-card__topo h2,
 .calendario-card__titulo {
+  flex: 0 0 auto;
   margin: 0;
   color: var(--cor-texto-forte);
   font-size: var(--tamanho-normal);
@@ -1663,7 +1677,14 @@
   gap: 0.45rem;
 }
 
+.calendario-card--principal > .calendario-grade:not(.calendario-grade--semana) {
+  flex: 1 1 auto;
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  min-height: 0;
+}
+
 .calendario-grade--semana {
+  flex: 0 0 auto;
   margin-bottom: var(--espaco-2);
 }
 
@@ -1675,15 +1696,16 @@
 }
 
 .calendario-dia {
-  min-height: 4.85rem;
-  padding: 0.5rem;
+  min-height: 0;
+  padding: 0.45rem;
   border: 1px solid var(--cor-borda-clara);
   border-radius: var(--raio-medio);
   background: var(--cor-fundo-leve);
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.25rem;
   min-width: 0;
+  overflow: visible;
   position: relative;
 }
 
@@ -1711,6 +1733,7 @@
   flex-direction: column;
   gap: 0.25rem;
   min-width: 0;
+  overflow: hidden;
 }
 
 .calendario-evento,
@@ -1883,10 +1906,11 @@
 }
 
 .calendario-lista--rolagem {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
   padding-right: 0.15rem;
+  scrollbar-gutter: stable;
 }
 
 .calendario-vazio {
@@ -1953,6 +1977,7 @@
 }
 
 .calendario-alerta__topo {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: var(--espaco-2);
@@ -1966,6 +1991,27 @@
   font-weight: var(--peso-semi);
 }
 
+@media (max-width: 1119px) {
+  .calendario-pagina {
+    height: auto;
+    overflow: visible;
+  }
+
+  .calendario-layout {
+    overflow: visible;
+  }
+
+  .calendario-lateral {
+    grid-template-rows: none;
+    height: auto;
+    overflow: visible;
+  }
+
+  .calendario-card--lateral {
+    height: auto;
+    max-height: 22rem;
+  }
+}
 @media (max-width: 720px) {
   .calendario-card {
     padding: var(--espaco-3);
@@ -2189,3 +2235,4 @@
 @keyframes girar-perfil {
   to { transform: rotate(360deg); }
 }
+
