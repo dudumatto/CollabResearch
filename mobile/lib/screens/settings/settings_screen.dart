@@ -17,7 +17,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _notificationsEnabled = true;
-  String _theme = 'sistema';
+  String _theme = 'claro';
   bool _savingPassword = false;
 
   @override
@@ -25,7 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     final user = context.read<AuthProvider>().currentUser;
     _notificationsEnabled = user?.notificationsEnabled ?? true;
-    _theme = user?.theme?.isNotEmpty == true ? user!.theme! : 'sistema';
+    _theme = user?.theme?.toLowerCase() == 'escuro' ? 'escuro' : 'claro';
   }
 
   @override
@@ -148,7 +148,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     prefixIcon: Icon(Icons.palette_outlined),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'sistema', child: Text('Sistema')),
                     DropdownMenuItem(value: 'claro', child: Text('Claro')),
                     DropdownMenuItem(value: 'escuro', child: Text('Escuro')),
                   ],

@@ -29,9 +29,9 @@ class LandingScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Align(
+                      const Align(
                         alignment: Alignment.centerLeft,
-                        child: const CollabLogo(full: false, height: 36),
+                        child: CollabLogo(full: false, height: 36),
                       ),
                       const SizedBox(height: 24),
                       Text(

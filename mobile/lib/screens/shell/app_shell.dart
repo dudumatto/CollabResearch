@@ -56,15 +56,44 @@ class AppShell extends StatelessWidget {
                   selectedIndex: navigationShell.currentIndex,
                   onDestinationSelected: navigationShell.goBranch,
                   destinations: [
-                    for (final destination in _destinations)
+                    for (var index = 0; index < _destinations.length; index++)
                       NavigationDestination(
-                        icon: Icon(destination.icon),
-                        label: destination.label,
+                        icon: _AnimatedNavigationIcon(
+                          icon: _destinations[index].icon,
+                          selected: navigationShell.currentIndex == index,
+                        ),
+                        label: _destinations[index].label,
                       ),
                   ],
                 ),
         );
       },
+    );
+  }
+}
+
+class _AnimatedNavigationIcon extends StatelessWidget {
+  const _AnimatedNavigationIcon({
+    required this.icon,
+    required this.selected,
+  });
+
+  final IconData icon;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    const duration = Duration(milliseconds: 180);
+    return AnimatedSlide(
+      duration: duration,
+      curve: Curves.easeOutCubic,
+      offset: selected ? const Offset(0, -0.08) : Offset.zero,
+      child: AnimatedScale(
+        duration: duration,
+        curve: Curves.easeOutBack,
+        scale: selected ? 1.12 : 1,
+        child: Icon(icon),
+      ),
     );
   }
 }

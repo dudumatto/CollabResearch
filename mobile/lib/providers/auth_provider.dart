@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../core/api/api_client.dart';
@@ -9,6 +8,7 @@ import '../services/auth_service.dart';
 class AuthProvider extends ChangeNotifier {
   AuthProvider() : _repository = AuthRepository() {
     _apiClient = ApiClient.instance;
+    _apiClient.onUnauthorized = _handleUnauthorized;
   }
 
   late final ApiClient _apiClient;
@@ -28,7 +28,7 @@ class AuthProvider extends ChangeNotifier {
       case 'escuro':
         return ThemeMode.dark;
       default:
-        return ThemeMode.system;
+        return ThemeMode.light;
     }
   }
 
@@ -158,11 +158,17 @@ class AuthProvider extends ChangeNotifier {
 
   void setPendingRedirect(String location) {
     pendingRedirectLocation = location;
-    notifyListeners();
   }
 
   void clearPendingRedirect() {
     pendingRedirectLocation = null;
+  }
+
+  Future<void> _handleUnauthorized() async {
+    token = null;
+    currentUser = null;
+    pendingRedirectLocation = null;
+    notifyListeners();
   }
 
   User _userFromToken(String tokenValue) {

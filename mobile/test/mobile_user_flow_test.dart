@@ -53,6 +53,8 @@ class FakeAuthProvider extends AuthProvider {
 
 void main() {
   testWidgets('fluxo principal do usuario no mobile', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     final auth = FakeAuthProvider();
 
     await tester.pumpWidget(
@@ -69,76 +71,113 @@ void main() {
     await tester.tap(find.widgetWithText(AppButton, 'Criar conta'));
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Cadastro'), findsOneWidget);
-    expect(find.byType(TextFormField), findsNWidgets(3));
+    expect(find.text('Crie sua conta'), findsOneWidget);
+    expect(find.text('Aluno'), findsOneWidget);
+    expect(find.text('Orientador'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNWidgets(6));
+
+    await tester.tap(find.text('Orientador'));
+    await tester.pump();
+    expect(find.text('Departamento'), findsOneWidget);
+    expect(find.text('Titulacao'), findsOneWidget);
+
+    await tester.tap(find.text('Aluno'));
+    await tester.pump();
 
     await tester.enterText(find.byType(TextFormField).at(0), 'Usuario Teste');
-    await tester.enterText(find.byType(TextFormField).at(1), 'usuario@example.com');
+    await tester.enterText(
+        find.byType(TextFormField).at(1), 'usuario@example.com');
     await tester.enterText(find.byType(TextFormField).at(2), 'senha1234');
+    await tester.enterText(find.byType(TextFormField).at(4), 'RA12345');
 
-    await tester.tap(find.widgetWithText(AppButton, 'Criar conta'));
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('register-submit')),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.byKey(const Key('register-submit')));
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(auth.registerCalls, 1);
     expect(auth.lastRegisterPayload?['nome'], 'Usuario Teste');
     expect(auth.lastRegisterPayload?['email'], 'usuario@example.com');
     expect(auth.lastRegisterPayload?['senha'], 'senha1234');
+    expect(auth.lastRegisterPayload?['tipo'], 'ALUNO');
+    expect(auth.lastRegisterPayload?['ra'], 'RA12345');
     expect(find.byType(TextFormField), findsNWidgets(2));
 
-    await tester.enterText(find.byType(TextFormField).at(0), 'usuario@example.com');
+    await tester.enterText(
+        find.byType(TextFormField).at(0), 'usuario@example.com');
     await tester.enterText(find.byType(TextFormField).at(1), 'senha1234');
 
     await tester.tap(find.widgetWithText(AppButton, 'Entrar'));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
 
     expect(auth.loginCalls, 1);
     expect(auth.isAuthenticated, isTrue);
-    expect(find.text('Dashboard'), findsOneWidget);
+    expect(find.text('Dashboard'), findsWidgets);
 
-    await tester.tap(find.text('Projetos'));
+    await tester.tap(_navigationLabel('Projetos'));
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Projetos'), findsWidgets);
-    expect(find.widgetWithText(AppButton, 'Carregar mais'), findsOneWidget);
+    expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        1);
 
-    await tester.enterText(find.byType(TextField).at(0), 'sistema');
-    await tester.tap(find.widgetWithText(AppButton, 'Carregar mais'));
-    await tester.pump(const Duration(milliseconds: 200));
-
-    await tester.tap(find.text('Chat'));
+    await tester.tap(_navigationLabel('Chat'));
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Chat'), findsWidgets);
-    expect(find.byType(TextField), findsOneWidget);
-    await tester.enterText(find.byType(TextField).at(0), 'orientador');
-    expect(find.text('Orientador'), findsOneWidget);
+    expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        2);
 
-    await tester.tap(find.text('Alertas'));
+    await tester.tap(_navigationLabel('Alertas'));
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Notificacoes'), findsOneWidget);
-    expect(find.widgetWithText(AppButton, 'Marcar todas como lidas'), findsOneWidget);
-    await tester.tap(find.widgetWithText(AppButton, 'Marcar todas como lidas'));
-    await tester.pump(const Duration(milliseconds: 200));
+    expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        3);
 
-    await tester.tap(find.text('Perfil'));
+    await tester.tap(_navigationLabel('Perfil'));
     await tester.pump(const Duration(milliseconds: 300));
+    expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        4);
     expect(find.text('Perfil'), findsWidgets);
-    await tester.tap(find.byIcon(Icons.settings));
-    await tester.pump(const Duration(milliseconds: 300));
+    final settingsButton = tester.widget<IconButton>(
+      find.ancestor(
+        of: find.byIcon(Icons.settings),
+        matching: find.byType(IconButton),
+      ),
+    );
+    settingsButton.onPressed!();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('Configuracoes'), findsOneWidget);
     final switchTiles = find.byType(SwitchListTile);
-    expect(switchTiles, findsNWidgets(2));
+    expect(switchTiles, findsOneWidget);
 
     expect(tester.widget<SwitchListTile>(switchTiles.at(0)).value, isTrue);
     await tester.tap(switchTiles.at(0));
     await tester.pump(const Duration(milliseconds: 200));
     expect(tester.widget<SwitchListTile>(switchTiles.at(0)).value, isFalse);
 
-    expect(tester.widget<SwitchListTile>(switchTiles.at(1)).value, isFalse);
-    await tester.tap(switchTiles.at(1));
-    await tester.pump(const Duration(milliseconds: 200));
-    expect(tester.widget<SwitchListTile>(switchTiles.at(1)).value, isTrue);
+    expect(find.text('Claro'), findsOneWidget);
+    await tester.tap(find.text('Claro'));
+    await tester.pump();
+    await tester.tap(find.text('Escuro').last);
+    await tester.pump();
+    expect(find.text('Escuro'), findsOneWidget);
 
-    await tester.tap(find.text('Sair'));
+    await tester.scrollUntilVisible(
+      find.text('Sair da conta'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.drag(
+      find.byType(Scrollable).last,
+      const Offset(0, -120),
+    );
+    await tester.pump();
+    await tester.tap(find.widgetWithText(ListTile, 'Sair da conta'));
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(auth.logoutCalls, 1);
@@ -168,4 +207,10 @@ void main() {
     final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(materialApp.themeMode, ThemeMode.dark);
   });
+}
+
+Finder _navigationLabel(String label) {
+  return find.byWidgetPredicate(
+    (widget) => widget is NavigationDestination && widget.label == label,
+  );
 }

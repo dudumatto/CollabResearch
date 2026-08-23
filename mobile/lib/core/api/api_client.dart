@@ -34,6 +34,7 @@ class ApiClient {
           }
           if (error.response?.statusCode == 401 && !_isLoginRequest(error)) {
             await clearToken();
+            await onUnauthorized?.call();
             final navigatorState =
                 NavigationService.rootNavigatorKey.currentState;
             if (navigatorState != null && navigatorState.mounted) {
@@ -61,6 +62,8 @@ class ApiClient {
   late final Dio _dio;
   String? _cachedToken;
 
+  Future<void> Function()? onUnauthorized;
+
   Dio get dio => _dio;
 
   Future<void> saveToken(String token) async {
@@ -83,11 +86,17 @@ class ApiClient {
     if (_isLoginRequest(error) && (status == 400 || status == 401)) {
       return 'Credenciais invalidas.';
     }
-    if (status == 400) return 'Dados invalidos. Verifique os campos.';
+    if (status == 400) {
+      return _backendMessage(error.response?.data) ??
+          'Dados invalidos. Verifique os campos.';
+    }
     if (status == 401) return 'Sessao expirada. Entre novamente.';
     if (status == 403) return 'Voce nao tem permissao para esta acao.';
     if (status == 404) return 'Recurso nao encontrado.';
-    if (status == 409) return 'Ja existe um registro com esses dados.';
+    if (status == 409) {
+      return _backendMessage(error.response?.data) ??
+          'Ja existe um registro com esses dados.';
+    }
     if (status != null && status >= 500) {
       return 'Erro no servidor. Tente novamente.';
     }
@@ -97,6 +106,30 @@ class ApiClient {
       return 'Tempo limite excedido. Verifique sua conexao.';
     }
     return 'Nao foi possivel concluir a operacao.';
+  }
+
+  String? _backendMessage(dynamic data) {
+    if (data is String && data.trim().isNotEmpty) return data.trim();
+    if (data is! Map) return null;
+
+    final errors = data['errors'] ?? data['erros'];
+    if (errors is Map && errors.isNotEmpty) {
+      return errors.values.map((value) => '$value').join('\n');
+    }
+    if (errors is List && errors.isNotEmpty) {
+      return errors.map((value) {
+        if (value is Map) {
+          return value['message'] ?? value['mensagem'] ?? '$value';
+        }
+        return '$value';
+      }).join('\n');
+    }
+
+    final message = data['message'] ?? data['mensagem'] ?? data['erro'];
+    if (message is String && message.trim().isNotEmpty) {
+      return message.trim();
+    }
+    return null;
   }
 
   bool _isLoginRequest(DioException error) {

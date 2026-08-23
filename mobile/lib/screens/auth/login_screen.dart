@@ -34,18 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    if (auth.isAuthenticated) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!context.mounted) return;
-        final navigator = Navigator.of(context, rootNavigator: true);
-        while (navigator.canPop()) {
-          navigator.pop();
-        }
-        context.go('/dashboard');
-      });
-      return const SizedBox.shrink();
-    }
-
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(
@@ -75,14 +63,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       AppTextField(
                         label: 'Email',
                         controller: _emailController,
+                        prefixIcon: Icons.mail_outline,
                         keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
                         validator: Validators.email,
                       ),
                       const SizedBox(height: 16),
                       AppTextField(
                         label: 'Senha',
                         controller: _passwordController,
+                        prefixIcon: Icons.lock_outline,
                         obscureText: true,
+                        textInputAction: TextInputAction.done,
                         validator: (value) => Validators.requiredField(
                           value,
                           label: 'Senha',
@@ -97,31 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           try {
                             await context.read<AuthProvider>().login(
                                   _emailController.text.trim(),
-                                  _passwordController.text.trim(),
+                                  _passwordController.text,
                                 );
-                            if (context.mounted &&
-                                context
-                                    .read<AuthProvider>()
-                                    .isAuthenticated) {
-                              final redirect = context
-                                  .read<AuthProvider>()
-                                  .pendingRedirectLocation;
-                              if (redirect != null && redirect.isNotEmpty) {
-                                context.go(redirect);
-                                context
-                                    .read<AuthProvider>()
-                                    .clearPendingRedirect();
-                              } else {
-                                final navigator = Navigator.of(
-                                  context,
-                                  rootNavigator: true,
-                                );
-                                while (navigator.canPop()) {
-                                  navigator.pop();
-                                }
-                                context.go('/dashboard');
-                              }
-                            }
                           } on DioException catch (error) {
                             if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -149,26 +118,89 @@ class _LoginScreenState extends State<LoginScreen> {
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.fromLTRB(20, 24, 20, 24 + bottomInset),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight - 48),
+                constraints:
+                    BoxConstraints(minHeight: constraints.maxHeight - 48),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 940),
-                    child: isWide
-                        ? Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Expanded(child: _LoginBrandPanel()),
-                              const SizedBox(width: 20),
-                              formCard,
-                            ],
-                          )
-                        : formCard,
-                          ),
+                    child: _AuthEntrance(
+                      child: isWide
+                          ? Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Expanded(child: _LoginBrandPanel()),
+                                const SizedBox(width: 20),
+                                formCard,
+                              ],
+                            )
+                          : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const _MobileLoginHeader(),
+                                formCard,
+                              ],
+                            ),
+                    ),
+                  ),
                 ),
               ),
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class _AuthEntrance extends StatelessWidget {
+  const _AuthEntrance({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 420),
+      curve: Curves.easeOutCubic,
+      tween: Tween(begin: 0, end: 1),
+      builder: (context, value, animatedChild) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 16 * (1 - value)),
+            child: animatedChild,
+          ),
+        );
+      },
+      child: child,
+    );
+  }
+}
+
+class _MobileLoginHeader extends StatelessWidget {
+  const _MobileLoginHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        children: [
+          const CollabLogo(height: 34),
+          const SizedBox(height: 18),
+          Text(
+            'Bem-vindo de volta',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Continue acompanhando sua pesquisa.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
       ),
     );
   }
