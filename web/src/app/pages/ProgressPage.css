@@ -1252,6 +1252,35 @@
   min-height: 120px;
 }
 
+.update-form__field input:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.update-form__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  max-width: 100%;
+  color: var(--progress-text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.update-form__checkbox input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  padding: 0;
+  border-radius: 4px;
+  accent-color: var(--progress-accent);
+}
+
+.update-form__checkbox span {
+  font-size: inherit;
+}
 .update-form__field small {
   color: var(--progress-danger-text);
   font-size: 0.78rem;

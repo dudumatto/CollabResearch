@@ -14,12 +14,15 @@ export function UpdateForm({ steps = [], onSubmit }) {
     handleSubmit,
     watch,
     reset,
+    setValue,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
       titulo: "",
       categoria: "progress",
       dataRegistro: new Date().toISOString().slice(0, 10),
+      semData: false,
       etapaId: "",
       etapaContribuicao: 0,
       descricao: "",
@@ -27,13 +30,15 @@ export function UpdateForm({ steps = [], onSubmit }) {
   });
 
   const selectedStepId = watch("etapaId");
+  const semData = watch("semData");
   const hasStepSelected = Boolean(selectedStepId);
 
   const submit = async (values) => {
     const payload = {
       titulo: values.titulo.trim(),
       categoria: values.categoria,
-      dataRegistro: values.dataRegistro ? `${values.dataRegistro}T00:00:00` : null,
+      dataRegistro: values.semData ? null : values.dataRegistro ? `${values.dataRegistro}T00:00:00` : null,
+      semData: Boolean(values.semData),
       descricao: values.descricao?.trim() || "",
       etapaId: values.etapaId ? Number(values.etapaId) : null,
       etapaContribuicao: values.etapaId ? Number(values.etapaContribuicao ?? 0) : 0,
@@ -67,14 +72,34 @@ export function UpdateForm({ steps = [], onSubmit }) {
           </select>
         </label>
 
-        <label className="update-form__field">
-          <span>Data da etapa</span>
+        <div className="update-form__field">
+          <label htmlFor="dataRegistro">
+            <span>Data da etapa</span>
+          </label>
           <input
+            id="dataRegistro"
             type="date"
-            {...register("dataRegistro", { required: "Informe a data da etapa" })}
+            disabled={semData}
+            {...register("dataRegistro", {
+              validate: (value) => semData || Boolean(value) || "Informe a data da etapa",
+            })}
           />
+          <label className="update-form__checkbox">
+            <input
+              type="checkbox"
+              {...register("semData", {
+                onChange: (event) => {
+                  if (event.target.checked) {
+                    setValue("dataRegistro", "", { shouldDirty: true, shouldValidate: true });
+                    clearErrors("dataRegistro");
+                  }
+                },
+              })}
+            />
+            <span>Registrar atualização sem data</span>
+          </label>
           {errors.dataRegistro ? <small>{errors.dataRegistro.message}</small> : null}
-        </label>
+        </div>
 
         <label className="update-form__field">
           <span>Etapa relacionada</span>

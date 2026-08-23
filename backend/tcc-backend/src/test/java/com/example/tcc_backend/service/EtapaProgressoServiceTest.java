@@ -114,6 +114,28 @@ class EtapaProgressoServiceTest {
     }
 
     @Test
+    void criarAtualizacaoDevePermitirDataNulaQuandoMarcadaSemData() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));
+        EtapaProgresso etapa = TestDataFactory.etapaProgresso(2, projeto, null, 2, 15, EtapaProgressoStatus.ACTIVE);
+
+        CreateProjectProgressUpdateRequest request = new CreateProjectProgressUpdateRequest();
+        request.setTitulo("Atualizacao sem data");
+        request.setCategoria("progress");
+        request.setEtapaId(2);
+        request.setSemData(true);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(etapaProgressoRepository.findByProjetoIdAndId(10, 2)).thenReturn(Optional.of(etapa));
+        when(progressoRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = etapaProgressoService.criarAtualizacao(10, request);
+
+        assertThat(response.getCreatedAt()).isNull();
+        verify(progressoRepository).save(any());
+    }
+    @Test
     void criarEtapaDeveExigirOrientadorResponsavel() {
         Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(2);
         Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(1, orientadorUsuario));

@@ -232,6 +232,10 @@ public class EtapaProgressoService {
             contribuicao = 0;
         }
 
+        LocalDateTime dataRegistro = Boolean.TRUE.equals(request.getSemData())
+                ? null
+                : Optional.ofNullable(request.getDataRegistro()).orElse(LocalDateTime.now());
+
         Progresso progresso = Progresso.builder()
                 .projeto(projeto)
                 .autor(usuarioLogado)
@@ -240,7 +244,7 @@ public class EtapaProgressoService {
                 .categoria(normalizarCategoria(request.getCategoria()))
                 .etapa(etapa)
                 .stepContribution(contribuicao)
-                .dataRegistro(request.getDataRegistro())
+                .dataRegistro(dataRegistro)
                 .tipo(mapaTipo(request.getCategoria()))
                 .build();
 

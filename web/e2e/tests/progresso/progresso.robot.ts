@@ -86,12 +86,16 @@ export async function loginAndOpenProgress(page: Page, user: { email: string; se
   await expect(page.getByText(/minhas etapas|progresso|acompanhamento estruturado/i).first()).toBeVisible();
 }
 
-export async function publishUpdate(page: Page, payload: { title: string; category: string; description?: string; stepName?: string; contribution?: number }) {
+export async function publishUpdate(page: Page, payload: { title: string; category: string; description?: string; stepName?: string; contribution?: number; withoutDate?: boolean }) {
   if (!(await page.getByLabel("Título").isVisible().catch(() => false))) {
     await page.getByRole("button", { name: /nova atualização/i }).click();
   }
   await page.getByLabel("Título").fill(payload.title);
   await page.getByLabel("Categoria").selectOption(payload.category);
+
+  if (payload.withoutDate) {
+    await page.getByLabel("Registrar atualização sem data").check();
+  }
 
   if (payload.stepName) {
     await page.getByLabel("Etapa relacionada").selectOption({ label: payload.stepName });
@@ -129,6 +133,7 @@ export async function assertProgressApi(request: APIRequestContext, token: strin
     ? payload.updates.some((item) => String(item?.title ?? "").includes(title))
     : false;
   expect(found).toBeTruthy();
+  return payload.updates.find((item) => String(item?.title ?? "").includes(title));
 }
 
 export async function reloadProgressAndAssert(page: Page, text: string) {

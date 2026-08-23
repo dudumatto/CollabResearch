@@ -67,13 +67,15 @@ test.describe("progresso estruturado", () => {
       title,
       category: "meeting",
       description: "Reunião de alinhamento do andamento do projeto.",
+      withoutDate: true,
     });
 
     const login = await request.post(`${API_URL}/api/auth/login`, {
       data: { email: ctx.aluno.email, senha: ctx.aluno.senha },
     });
     const auth = await login.json();
-    await assertProgressApi(request, auth.token, ctx.projectId, title);
+    const update = await assertProgressApi(request, auth.token, ctx.projectId, title);
+    expect(update.createdAt).toBeNull();
     await expect(page.getByText(/feed de atualizações/i)).toHaveCount(0);
   });
 });

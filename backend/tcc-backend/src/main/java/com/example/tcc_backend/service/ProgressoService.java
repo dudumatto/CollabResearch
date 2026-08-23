@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -37,6 +38,7 @@ public class ProgressoService {
                 .fase(normalizarTexto(dto.getFase()))
                 .descricao(dto.getDescricao().trim())
                 .metadataJson(normalizarTexto(dto.getMetadataJson()))
+                .dataRegistro(LocalDateTime.now())
                 .build();
         Progresso salvo = progressoRepository.save(progresso);
 

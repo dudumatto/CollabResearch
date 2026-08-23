@@ -29,4 +29,6 @@ public class CreateProjectProgressUpdateRequest {
     private Integer etapaContribuicao;
 
     private LocalDateTime dataRegistro;
+
+    private Boolean semData;
 }
