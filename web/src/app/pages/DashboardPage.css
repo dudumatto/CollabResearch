@@ -235,8 +235,16 @@
 
 .cartao-resumo__cabecalho {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  gap: var(--espaco-3);
+}
+
+.cartao-resumo__rotulo {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
 }
 
 .cartao-resumo__icone-area {
@@ -273,11 +281,15 @@
   font-weight: var(--peso-negrito);
   color: var(--cor-texto);
   line-height: 1.1;
+  margin-top: var(--espaco-2);
 }
 
 .cartao-resumo__descricao {
   font-size: var(--tamanho-base);
   color: var(--cor-texto-fraco);
+  line-height: 1.3;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .cartao-resumo--progresso {
@@ -363,18 +375,6 @@
   border: 1px solid var(--cor-borda-clara);
   overflow: hidden;
 }
-.painel__card--inscricoes,
-.painel__card--notificacoes {
-  min-height: 17.5rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.painel__card--inscricoes > div:last-child,
-.painel__card--notificacoes > div:last-child {
-  flex: 1;
-}
-
 .painel__card-cabecalho {
   padding: var(--espaco-4);
   border-bottom: 1px solid var(--cor-fundo);
