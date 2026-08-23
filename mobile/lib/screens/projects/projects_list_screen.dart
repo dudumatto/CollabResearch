@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/empty_state.dart';
@@ -59,8 +60,20 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().currentUser;
+    final userType = user?.type?.toUpperCase() ??
+        (user?.roles.isNotEmpty == true ? user!.roles.first.toUpperCase() : '');
+    final canCreate = userType == 'ALUNO' || userType == 'ORIENTADOR';
+
     return Scaffold(
       appBar: AppBar(title: const Text('Projetos')),
+      floatingActionButton: canCreate
+          ? FloatingActionButton.extended(
+              onPressed: () => context.go('/projects/create'),
+              icon: const Icon(Icons.add),
+              label: const Text('Criar projeto'),
+            )
+          : null,
       body: Consumer<ProjectProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.projects.isEmpty) {

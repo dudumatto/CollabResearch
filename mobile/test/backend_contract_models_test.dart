@@ -14,7 +14,11 @@ void main() {
       'cursoNome': 'ADS',
       'status': 'ABERTO',
       'vagas': 3,
+      'vagasOcupadas': 2,
       'descricao': 'Descricao',
+      'areaId': 5,
+      'orientadorId': 7,
+      'alunoCriadorId': 9,
     });
 
     expect(project.id, '10');
@@ -22,6 +26,17 @@ void main() {
     expect(project.area, 'Tecnologia');
     expect(project.course, 'ADS');
     expect(project.vacancies, 3);
+    expect(project.collaborators, 2);
+    expect(project.areaId, 5);
+    expect(project.advisorId, '7');
+    expect(project.ownerId, '9');
+  });
+
+  test('ProjectOption aceita catalogos do backend', () {
+    final option = ProjectOption.fromJson({'id': 3, 'nome': 'Tecnologia'});
+
+    expect(option.id, 3);
+    expect(option.name, 'Tecnologia');
   });
 
   test('Conversation aceita payload do backend em portugues', () {

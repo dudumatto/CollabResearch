@@ -8,11 +8,17 @@ class ApiEndpoints {
   static const String dashboardStats = '$dashboard/stats';
   static const String dashboardActivity = '$dashboard/activity';
   static const String projects = '/api/projetos';
+  static const String researchAreas = '/api/areas';
+  static const String advisors = '/api/usuarios/orientadores';
   static const String subscriptions = '/api/inscricoes';
   static const String notifications = '/api/notificacoes';
   static const String chatConversations = '/api/conversas';
 
   static String project(String id) => '$projects/$id';
+  static String acceptProjectOrientation(String id) =>
+      '${project(id)}/aceitar-orientacao';
+  static String rejectProjectOrientation(String id) =>
+      '${project(id)}/rejeitar-orientacao';
   static String conversationMessages(String conversationId) =>
       '$chatConversations/$conversationId/mensagens';
   static String sendConversationMessage(String conversationId) =>

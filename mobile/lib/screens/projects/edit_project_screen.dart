@@ -3,10 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/validators.dart';
+import '../../models/project.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/common/app_button.dart';
-import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_text_field.dart';
+import '../../widgets/common/empty_state.dart';
+import '../../widgets/common/loading_indicator.dart';
 
 class EditProjectScreen extends StatefulWidget {
   const EditProjectScreen({super.key, required this.projectId});
@@ -19,86 +23,199 @@ class EditProjectScreen extends StatefulWidget {
 
 class _EditProjectScreenState extends State<EditProjectScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _titleController;
-  late final TextEditingController _descriptionController;
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _vacanciesController = TextEditingController();
+  Project? _project;
+  int? _selectedAreaId;
   bool _initialized = false;
+
+  bool get _isAdvisor {
+    final user = context.read<AuthProvider>().currentUser;
+    final type =
+        user?.type ?? (user?.roles.isNotEmpty == true ? user!.roles.first : '');
+    return type.toUpperCase() == 'ORIENTADOR';
+  }
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController();
-    _descriptionController = TextEditingController();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final project = await context.read<ProjectProvider>().loadProject(widget.projectId);
-      if (!mounted || project == null) return;
-      _titleController.text = project.title;
-      _descriptionController.text = project.description ?? '';
-      setState(() => _initialized = true);
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _vacanciesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _load() async {
+    final provider = context.read<ProjectProvider>();
+    final project = await provider.loadProject(widget.projectId);
+    await provider.loadFormOptions(includeAdvisors: false);
+    if (!mounted || project == null) return;
+
+    final matchingArea = provider.areas.where(
+      (area) => area.name.toLowerCase() == project.area.toLowerCase(),
+    );
+    final projectAreaAvailable = provider.areas.any(
+      (area) => area.id == project.areaId,
+    );
+    setState(() {
+      _project = project;
+      _titleController.text = project.title;
+      _descriptionController.text = project.description ?? '';
+      _vacanciesController.text = '${project.vacancies}';
+      _selectedAreaId = (projectAreaAvailable ? project.areaId : null) ??
+          (matchingArea.isEmpty ? null : matchingArea.first.id);
+      _initialized = true;
+    });
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final project = await context.read<ProjectProvider>().updateProject(widget.projectId, {
-      'title': _titleController.text.trim(),
-      'description': _descriptionController.text.trim(),
-    });
+    final areaId = _selectedAreaId;
+    if (areaId == null) return;
+
+    final project = await context.read<ProjectProvider>().updateProject(
+      widget.projectId,
+      {
+        'titulo': _titleController.text.trim(),
+        'descricao': _descriptionController.text.trim(),
+        'areaId': areaId,
+        if (_isAdvisor) 'vagas': int.parse(_vacanciesController.text.trim()),
+      },
+    );
     if (!mounted || project == null) return;
     context.go('/projects/${project.id}');
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<ProjectProvider>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Editar projeto')),
-      body: Consumer<ProjectProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading && !_initialized) {
-            return const LoadingIndicator(label: 'Carregando projeto...');
-          }
-
-          return Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                if (provider.errorMessage != null) ...[
-                  Text(
-                    provider.errorMessage!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-            AppTextField(
-              label: 'Titulo',
-              controller: _titleController,
-              validator: (value) => Validators.requiredField(value, label: 'Titulo'),
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              label: 'Descricao',
-              controller: _descriptionController,
-              maxLines: 4,
-              validator: (value) => Validators.requiredField(value, label: 'Descricao'),
-            ),
-            const SizedBox(height: 24),
-            AppButton(
-              label: 'Atualizar projeto',
-              isLoading: provider.isLoading,
-              onPressed: _save,
-            ),
-              ],
-            ),
-          );
-        },
-      ),
+      body: !_initialized && (provider.isLoading || provider.isFormLoading)
+          ? const LoadingIndicator(label: 'Carregando projeto...')
+          : _project == null
+              ? EmptyState(
+                  title: 'Projeto nao encontrado',
+                  subtitle: provider.errorMessage,
+                )
+              : ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 720),
+                        child: AppCard(
+                          padding: const EdgeInsets.all(24),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  'Informacoes do projeto',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                ),
+                                if (provider.errorMessage != null) ...[
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    provider.errorMessage!,
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 24),
+                                AppTextField(
+                                  label: 'Titulo',
+                                  controller: _titleController,
+                                  prefixIcon: Icons.title,
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) =>
+                                      Validators.requiredField(
+                                    value,
+                                    label: 'Titulo',
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                AppTextField(
+                                  label: 'Descricao',
+                                  controller: _descriptionController,
+                                  prefixIcon: Icons.notes_outlined,
+                                  maxLines: 4,
+                                  validator: (value) =>
+                                      Validators.requiredField(
+                                    value,
+                                    label: 'Descricao',
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                DropdownButtonFormField<int>(
+                                  initialValue: _selectedAreaId,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Area de pesquisa',
+                                    prefixIcon: Icon(Icons.category_outlined),
+                                  ),
+                                  items: [
+                                    for (final area in provider.areas)
+                                      DropdownMenuItem(
+                                        value: area.id,
+                                        child: Text(area.name),
+                                      ),
+                                  ],
+                                  onChanged: (value) => setState(
+                                    () => _selectedAreaId = value,
+                                  ),
+                                  validator: (value) => value == null
+                                      ? 'Area de pesquisa obrigatoria'
+                                      : null,
+                                ),
+                                if (_isAdvisor) ...[
+                                  const SizedBox(height: 16),
+                                  AppTextField(
+                                    label: 'Numero de vagas',
+                                    controller: _vacanciesController,
+                                    prefixIcon: Icons.groups_outlined,
+                                    keyboardType: TextInputType.number,
+                                    textInputAction: TextInputAction.done,
+                                    validator: (value) {
+                                      final required = Validators.requiredField(
+                                        value,
+                                        label: 'Vagas',
+                                      );
+                                      return required ??
+                                          Validators.positiveInteger(
+                                            value,
+                                            label: 'Vagas',
+                                          );
+                                    },
+                                  ),
+                                ],
+                                const SizedBox(height: 24),
+                                AppButton(
+                                  label: 'Atualizar projeto',
+                                  isLoading: provider.isLoading,
+                                  onPressed:
+                                      provider.areas.isEmpty ? null : _save,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
     );
   }
 }

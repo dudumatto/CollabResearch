@@ -34,12 +34,38 @@ class ProjectService {
   }
 
   Future<Project> create(Map<String, dynamic> data) async {
-    final response = await _dio.post<dynamic>(ApiEndpoints.projects, data: data);
+    final response =
+        await _dio.post<dynamic>(ApiEndpoints.projects, data: data);
     return Project.fromJson(parseObjectPayload(response.data));
   }
 
   Future<Project> update(String id, Map<String, dynamic> data) async {
-    final response = await _dio.put<dynamic>(ApiEndpoints.project(id), data: data);
+    final response =
+        await _dio.put<dynamic>(ApiEndpoints.project(id), data: data);
+    return Project.fromJson(parseObjectPayload(response.data));
+  }
+
+  Future<List<ProjectOption>> listAreas() async {
+    final response = await _dio.get<dynamic>(ApiEndpoints.researchAreas);
+    return parseListPayload(response.data).map(ProjectOption.fromJson).toList();
+  }
+
+  Future<List<ProjectOption>> listAdvisors() async {
+    final response = await _dio.get<dynamic>(ApiEndpoints.advisors);
+    return parseListPayload(response.data).map(ProjectOption.fromJson).toList();
+  }
+
+  Future<Project> acceptOrientation(String id) async {
+    final response = await _dio.put<dynamic>(
+      ApiEndpoints.acceptProjectOrientation(id),
+    );
+    return Project.fromJson(parseObjectPayload(response.data));
+  }
+
+  Future<Project> rejectOrientation(String id) async {
+    final response = await _dio.put<dynamic>(
+      ApiEndpoints.rejectProjectOrientation(id),
+    );
     return Project.fromJson(parseObjectPayload(response.data));
   }
 }

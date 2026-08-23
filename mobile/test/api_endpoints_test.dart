@@ -7,6 +7,8 @@ void main() {
     expect(ApiEndpoints.dashboardStats, '/api/dashboard/stats');
     expect(ApiEndpoints.dashboardActivity, '/api/dashboard/activity');
     expect(ApiEndpoints.projects, '/api/projetos');
+    expect(ApiEndpoints.researchAreas, '/api/areas');
+    expect(ApiEndpoints.advisors, '/api/usuarios/orientadores');
     expect(ApiEndpoints.subscriptions, '/api/inscricoes');
     expect(ApiEndpoints.notifications, '/api/notificacoes');
     expect(ApiEndpoints.chatConversations, '/api/conversas');
@@ -20,5 +22,13 @@ void main() {
     expect(ApiEndpoints.conversationMessage('9'), '/api/conversas/mensagem/9');
     expect(ApiEndpoints.readAllNotifications(), '/api/notificacoes/ler-todas');
     expect(ApiEndpoints.userPreferences(), '/api/usuarios/me/preferencias');
+    expect(
+      ApiEndpoints.acceptProjectOrientation('4'),
+      '/api/projetos/4/aceitar-orientacao',
+    );
+    expect(
+      ApiEndpoints.rejectProjectOrientation('4'),
+      '/api/projetos/4/rejeitar-orientacao',
+    );
   });
 }

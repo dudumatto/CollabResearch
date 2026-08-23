@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/project_status.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/common/app_badge.dart';
 import '../../widgets/common/app_button.dart';
@@ -42,6 +43,28 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
+  Future<void> _reviewOrientation(
+    ProjectProvider provider,
+    String projectId, {
+    required bool accept,
+  }) async {
+    final success = accept
+        ? await provider.acceptOrientation(projectId)
+        : await provider.rejectOrientation(projectId);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? accept
+                  ? 'Orientacao aceita.'
+                  : 'Orientacao recusada.'
+              : provider.errorMessage ?? 'Nao foi possivel analisar o projeto.',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,6 +83,22 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               subtitle: provider.errorMessage,
             );
           }
+
+          final user = context.watch<AuthProvider>().currentUser;
+          final userType = (user?.type ??
+                  (user?.roles.isNotEmpty == true ? user!.roles.first : ''))
+              .toUpperCase();
+          final isOwner = project.ownerId == user?.id;
+          final isResponsibleAdvisor = project.advisorId == user?.id;
+          final isPending =
+              project.status.toUpperCase() == 'PENDENTE_ORIENTADOR';
+          final canReview =
+              userType == 'ORIENTADOR' && isResponsibleAdvisor && isPending;
+          final canSubscribe = userType == 'ALUNO' &&
+              !isOwner &&
+              project.status.toUpperCase() == 'ABERTO' &&
+              project.collaborators < project.vacancies;
+          final canEdit = isOwner || isResponsibleAdvisor;
 
           return ListView(
             padding: const EdgeInsets.all(24),
@@ -81,7 +120,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   ? project.description!
                   : 'Sem descricao cadastrada.'),
               const SizedBox(height: 16),
-              Text('${project.area} - ${project.course}'),
+              Text(
+                [project.area, project.course]
+                    .where((value) => value.trim().isNotEmpty)
+                    .join(' - '),
+              ),
               const SizedBox(height: 24),
               Text('Colaboradores',
                   style: Theme.of(context).textTheme.titleMedium),
@@ -96,16 +139,48 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               const SizedBox(height: 24),
               Text('Acoes', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
-              AppButton(
-                label: 'Inscrever-se',
-                isLoading: provider.isLoading,
-                onPressed: () => _subscribe(provider, project.id),
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                onPressed: () => context.go('/projects/${project.id}/edit'),
-                child: const Text('Editar projeto'),
-              ),
+              if (canReview) ...[
+                AppButton(
+                  label: 'Aceitar orientacao',
+                  isLoading: provider.isLoading,
+                  onPressed: () => _reviewOrientation(
+                    provider,
+                    project.id,
+                    accept: true,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: provider.isLoading
+                      ? null
+                      : () => _reviewOrientation(
+                            provider,
+                            project.id,
+                            accept: false,
+                          ),
+                  child: const Text('Recusar orientacao'),
+                ),
+              ],
+              if (canSubscribe) ...[
+                AppButton(
+                  label: 'Inscrever-se',
+                  isLoading: provider.isLoading,
+                  onPressed: () => _subscribe(provider, project.id),
+                ),
+              ],
+              if (canEdit) ...[
+                if (canReview || canSubscribe) const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () => context.go('/projects/${project.id}/edit'),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Editar projeto'),
+                ),
+              ],
+              if (!canReview && !canSubscribe && !canEdit)
+                Text(
+                  'Nenhuma acao disponivel para o seu perfil.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
             ],
           );
         },
