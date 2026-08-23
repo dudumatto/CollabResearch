@@ -1806,6 +1806,12 @@
   z-index: 40;
 }
 
+.calendario-dia--tooltip-acima .calendario-dia__tooltip {
+  bottom: 100%;
+  top: auto;
+  transform: translateY(0.15rem);
+}
+
 .calendario-dia__tooltip::before {
   content: "";
   position: absolute;
@@ -1813,6 +1819,11 @@
   right: 0;
   bottom: 100%;
   height: 0.4rem;
+}
+
+.calendario-dia--tooltip-acima .calendario-dia__tooltip::before {
+  bottom: auto;
+  top: 100%;
 }
 .calendario-dia:nth-child(7n) .calendario-dia__tooltip,
 .calendario-dia:nth-child(7n - 1) .calendario-dia__tooltip {
@@ -1825,6 +1836,11 @@
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0.25rem);
+}
+
+.calendario-dia--tooltip-acima:hover .calendario-dia__tooltip,
+.calendario-dia--tooltip-acima:focus-within .calendario-dia__tooltip {
+  transform: translateY(-0.25rem);
 }
 
 .calendario-dia__tooltip-topo {

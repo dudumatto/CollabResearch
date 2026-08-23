@@ -107,6 +107,7 @@ async function loadProjectsForUser(user) {
 export default function StudentDeadlinesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [tooltipDirections, setTooltipDirections] = useState({});
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
@@ -163,6 +164,22 @@ export default function StudentDeadlinesPage() {
     navigate(deadlineTarget(item), { state: { projectId: item.projectId, stageId: item.id } });
   };
 
+  const updateTooltipDirection = (event, key) => {
+    const dayRect = event.currentTarget.getBoundingClientRect();
+    const tooltip = event.currentTarget.querySelector(".calendario-dia__tooltip");
+    if (!tooltip) return;
+
+    const gap = 10;
+    const tooltipHeight = tooltip.scrollHeight;
+    const spaceBelow = window.innerHeight - dayRect.bottom;
+    const spaceAbove = dayRect.top;
+    const direction = spaceBelow < tooltipHeight + gap && spaceAbove > spaceBelow ? "acima" : "abaixo";
+
+    setTooltipDirections((current) => (
+      current[key] === direction ? current : { ...current, [key]: direction }
+    ));
+  };
+
   if (loading) return <div className="skeleton" style={{ width: "100%", height: 360, borderRadius: "var(--raio-grande)" }} />;
   if (error) return <StatusView title="Falha ao carregar calendário" description="Não foi possível carregar as etapas dos seus projetos." />;
 
@@ -212,8 +229,10 @@ export default function StudentDeadlinesPage() {
                 return (
                   <div
                     key={key}
-                    className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""} ${items.length ? "calendario-dia--com-evento" : ""}`}
+                    className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""} ${items.length ? "calendario-dia--com-evento" : ""} ${tooltipDirections[key] === "acima" ? "calendario-dia--tooltip-acima" : ""}`}
                     aria-label={items.length ? `${date.getDate()} com ${items.length} ${items.length === 1 ? "evento" : "eventos"}` : undefined}
+                    onMouseEnter={items.length ? (event) => updateTooltipDirection(event, key) : undefined}
+                    onFocus={items.length ? (event) => updateTooltipDirection(event, key) : undefined}
                   >
                     <span className="calendario-dia__numero">{date.getDate()}</span>
                     <div className="calendario-dia__eventos">
@@ -291,3 +310,4 @@ export default function StudentDeadlinesPage() {
     </div>
   );
 }
+
