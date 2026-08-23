@@ -106,14 +106,18 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
     return (
       <div className="barra-lateral__conteudo-interno">
         <div className={`barra-lateral__cabecalho ${isCollapsed ? "barra-lateral__cabecalho--centralizado" : ""}`}>
-          <Image
-            className={isCollapsed ? "barra-lateral__marca barra-lateral__marca--icone" : "barra-lateral__marca barra-lateral__marca--completa"}
-            src={isCollapsed ? "/brand/logo-icon.svg" : "/brand/logo-full.svg"}
-            width={isCollapsed ? 28 : 101}
-            height={isCollapsed ? 28 : 20}
-            alt="Collab"
-            priority
-          />
+          <div className="barra-lateral__marca-lockup" aria-label="Collab">
+            <Image
+              className="barra-lateral__marca barra-lateral__marca--icone"
+              src="/brand/logo-icon.svg"
+              width={28}
+              height={28}
+              alt=""
+              aria-hidden="true"
+              priority
+            />
+            <span className="barra-lateral__marca-texto">Collab</span>
+          </div>
         </div>
 
         <div className="barra-lateral__pesquisa">

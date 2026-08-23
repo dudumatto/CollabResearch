@@ -228,8 +228,9 @@
 }
 
 .cartao-resumo:hover {
-  box-shadow: var(--sombra-media);
-  transform: translateY(-2px);
+  border-color: var(--cor-borda-media);
+  box-shadow: var(--sombra-pequena);
+  background-color: var(--cor-fundo-leve);
 }
 
 .cartao-resumo__cabecalho {
@@ -306,40 +307,6 @@
   box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.18);
 }
 
-.cartao-resumo__progresso-extra {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: var(--espaco-3);
-  margin-top: auto;
-}
-
-.cartao-resumo__mini-barras {
-  display: flex;
-  align-items: end;
-  gap: 0.25rem;
-  height: 2.2rem;
-}
-
-.cartao-resumo__mini-barras span {
-  width: 0.45rem;
-  min-height: 0.4rem;
-  border-radius: var(--raio-completo);
-  background: linear-gradient(180deg, #7ea06a, #1f7a5a);
-  box-shadow: 0 6px 14px rgba(34, 197, 94, 0.22);
-}
-
-.cartao-resumo__progresso-cta {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.35rem 0.6rem;
-  border-radius: var(--raio-completo);
-  background-color: rgba(16, 185, 129, 0.12);
-  color: var(--cor-esmeralda);
-  font-size: var(--tamanho-xs);
-  font-weight: var(--peso-semi);
-  white-space: nowrap;
-}
 
 .dark .cartao-resumo--progresso {
   border-color: rgba(74, 222, 128, 0.26);
@@ -348,10 +315,6 @@
     linear-gradient(135deg, rgba(15, 23, 42, 0.94), rgba(17, 24, 39, 0.9));
 }
 
-.dark .cartao-resumo__progresso-cta {
-  background-color: rgba(34, 197, 94, 0.14);
-  color: #86efac;
-}
 
 /* ================================================================
    Grade principal (colunas centrais)
@@ -399,6 +362,17 @@
   border-radius: var(--raio-grande);
   border: 1px solid var(--cor-borda-clara);
   overflow: hidden;
+}
+.painel__card--inscricoes,
+.painel__card--notificacoes {
+  min-height: 17.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.painel__card--inscricoes > div:last-child,
+.painel__card--notificacoes > div:last-child {
+  flex: 1;
 }
 
 .painel__card-cabecalho {

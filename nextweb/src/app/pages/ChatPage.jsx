@@ -33,6 +33,43 @@ function formatarDia(data) {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+function getConversationTimestamp(conversation) {
+  const value =
+    conversation?.ultimaMensagemHorario ||
+    conversation?.updatedAt ||
+    conversation?.dataAtualizacao ||
+    conversation?.createdAt ||
+    conversation?.dataCriacao ||
+    0;
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function sortConversations(items) {
+  return [...(Array.isArray(items) ? items : [])].sort(
+    (a, b) => getConversationTimestamp(b) - getConversationTimestamp(a),
+  );
+}
+
+function applyConversationRealtimeEvent(items, event) {
+  if (event?.tipo !== "MENSAGEM_CRIADA" || !event?.mensagem?.conversaId) {
+    return sortConversations(items);
+  }
+
+  const conversationId = Number(event.mensagem.conversaId);
+  const updated = (Array.isArray(items) ? items : []).map((conversation) => {
+    if (Number(conversation.id) !== conversationId) return conversation;
+
+    return {
+      ...conversation,
+      ultimaMensagem: event.mensagem.conteudo,
+      ultimaMensagemHorario: event.mensagem.dataEnvio,
+      updatedAt: event.mensagem.dataEnvio,
+    };
+  });
+
+  return sortConversations(updated);
+}
 function ChatPageSkeleton() {
   return (
     <div className="pagina-chat" aria-busy="true">
@@ -122,7 +159,7 @@ export default function ChatPage() {
       .listByUser(user.id)
       .then((result) => {
         if (cancelled) return;
-        setConversations(Array.isArray(result) ? result : []);
+        setConversations(sortConversations(result));
       })
       .catch((err) => {
         if (cancelled) return;
@@ -172,13 +209,29 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, targetMessageId]);
 
+  const conversationIdsKey = useMemo(
+    () => conversations.map((conversation) => conversation.id).filter(Boolean).sort((a, b) => Number(a) - Number(b)).join(","),
+    [conversations],
+  );
+
+  useEffect(() => {
+    if (!conversationIdsKey || !user?.id) return undefined;
+
+    const conversationIds = conversationIdsKey.split(",").map(Number).filter(Number.isFinite);
+
+    return chatRealtimeService.subscribeToConversations(conversationIds, (event) => {
+      setConversations((prev) => applyConversationRealtimeEvent(prev, event));
+    });
+  }, [conversationIdsKey, user?.id]);
+
+
   useEffect(() => {
     if (!selectedConversation?.id || !user?.id) return undefined;
 
     const atualizarConversas = () => {
       conversationService
         .listByUser(user.id)
-        .then((res) => setConversations(Array.isArray(res) ? res : []))
+        .then((res) => setConversations(sortConversations(res)))
         .catch(() => {});
     };
 
@@ -287,7 +340,7 @@ export default function ChatPage() {
         conversationService.listByUser(user.id),
       ]);
       setMessages(Array.isArray(updated) ? updated : []);
-      setConversations(Array.isArray(conversasAtualizadas) ? conversasAtualizadas : []);
+      setConversations(sortConversations(conversasAtualizadas));
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== temp.id));
       setNewMessage(conteudo);

@@ -48,7 +48,7 @@ export async function sendChatMessage(page: Page) {
   if (!(await input.isVisible())) return null;
   await input.fill(message);
   await page.locator(".pagina-chat__botao-enviar").click();
-  await expect(page.getByText(message)).toBeVisible();
+  await expect(page.locator(".mensagem-texto", { hasText: message })).toBeVisible();
   return message;
 }
 
@@ -81,8 +81,9 @@ export async function assertRealtimeMessageDelivery(browser: Browser, request: A
     await senderPage.getByPlaceholder("Digite uma mensagem").fill(message);
     await senderPage.locator(".pagina-chat__botao-enviar").click();
 
-    await expect(senderPage.getByText(message)).toBeVisible();
-    await expect(receiverPage.getByText(message)).toBeVisible({ timeout: 15_000 });
+    await expect(senderPage.locator(".mensagem-texto", { hasText: message })).toBeVisible();
+    await expect(receiverPage.locator(".mensagem-texto", { hasText: message })).toBeVisible({ timeout: 15_000 });
+    await expect(receiverPage.locator(".conversa-item").first().locator(".conversa-item__preview")).toContainText(message);
   } finally {
     await senderContext.close();
     await receiverContext.close();

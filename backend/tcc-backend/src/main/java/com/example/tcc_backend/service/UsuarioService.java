@@ -25,7 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -154,7 +157,11 @@ public class UsuarioService {
     public List<Projeto> findProjetosByUsuario(Integer id) {
         Usuario usuario = findById(id);
         if (usuario.getTipo() == TipoUsuario.ALUNO) {
-            return projetoRepository.findRelacionadosAoUsuario(id);
+            Set<Projeto> projetos = new LinkedHashSet<>(projetoRepository.findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(id, id));
+            inscricaoRepository.findByAlunoUsuarioId(id).stream()
+                    .map(Inscricao::getProjeto)
+                    .forEach(projetos::add);
+            return new ArrayList<>(projetos);
         }
         return projetoRepository.findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(id, id);
     }

@@ -16,9 +16,13 @@ class ChatRealtimeService {
     this.client = null;
   }
 
-  subscribeToConversation(conversationId, onEvent) {
+  subscribeToConversations(conversationIds, onEvent) {
     const token = getStoredToken();
-    if (!conversationId || !token) {
+    const uniqueIds = [...new Set((Array.isArray(conversationIds) ? conversationIds : [])
+      .map((id) => Number(id))
+      .filter((id) => Number.isFinite(id)))];
+
+    if (uniqueIds.length === 0 || !token) {
       return () => {};
     }
 
@@ -30,28 +34,30 @@ class ChatRealtimeService {
       reconnectDelay: 5000,
       debug: () => {},
       onConnect: () => {
-        client.subscribe(`/topic/conversa/${conversationId}`, (message) => {
-          if (!message.body) return;
-          try {
-            onEvent(JSON.parse(message.body));
-          } catch {
-            // Ignore malformed realtime payloads and keep the socket alive.
-          }
-        }, {
-          Authorization: `Bearer ${token}`,
+        uniqueIds.forEach((conversationId) => {
+          client.subscribe(`/topic/conversa/${conversationId}`, (message) => {
+            if (!message.body) return;
+            try {
+              onEvent(JSON.parse(message.body));
+            } catch {
+              // Ignore malformed realtime payloads and keep the socket alive.
+            }
+          }, {
+            Authorization: `Bearer ${token}`,
+          });
         });
       },
     });
 
-    this.client = client;
     client.activate();
 
     return () => {
-      if (this.client === client) {
-        this.client = null;
-      }
       client.deactivate();
     };
+  }
+
+  subscribeToConversation(conversationId, onEvent) {
+    return this.subscribeToConversations([conversationId], onEvent);
   }
 }
 

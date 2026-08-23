@@ -221,7 +221,8 @@ class UsuarioServiceTest {
         Usuario alvo = TestDataFactory.usuarioAluno(1);
         when(authHelper.getCurrentUser()).thenReturn(orientador);
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(alvo));
-        when(projetoRepository.findRelacionadosAoUsuario(1)).thenReturn(List.of());
+        when(projetoRepository.findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(1, 1)).thenReturn(List.of());
+        when(inscricaoRepository.findByAlunoUsuarioId(1)).thenReturn(List.of());
 
         List<?> projetos = usuarioService.findProjetosByUsuario(1);
 

@@ -2,6 +2,7 @@ package com.example.tcc_backend.dto.response;
 
 import com.example.tcc_backend.model.EtapaProgresso;
 import com.example.tcc_backend.model.EtapaProgressoStatus;
+import com.example.tcc_backend.model.EtapaResponsavel;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,6 +17,7 @@ public class ProgressStepResponse {
     private Integer weight;
     private Integer stepOrder;
     private EtapaProgressoStatus status;
+    private EtapaResponsavel responsavel;
     private LocalDateTime completedAt;
     private ProjectProgressUserResponse completedBy;
 
@@ -27,6 +29,7 @@ public class ProgressStepResponse {
                 .weight(etapa.getPeso())
                 .stepOrder(etapa.getOrdem())
                 .status(etapa.getStatus())
+                .responsavel(etapa.getResponsavel())
                 .completedAt(etapa.getConcluidaEm())
                 .completedBy(ProjectProgressUserResponse.fromEntity(etapa.getConcluidaPor()))
                 .build();

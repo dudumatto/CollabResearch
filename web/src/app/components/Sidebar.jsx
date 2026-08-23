@@ -89,17 +89,17 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             isCollapsed ? "barra-lateral__cabecalho--centralizado" : ""
           }`}
         >
-          <img
-            className={
-              isCollapsed
-                ? "barra-lateral__marca barra-lateral__marca--icone"
-                : "barra-lateral__marca barra-lateral__marca--completa"
-            }
-            src={isCollapsed ? "/brand/logo-icon.svg" : "/brand/logo-full.svg"}
-            width={isCollapsed ? 28 : 101}
-            height={isCollapsed ? 28 : 20}
-            alt="Collab"
-          />
+          <div className="barra-lateral__marca-lockup" aria-label="Collab">
+            <img
+              className="barra-lateral__marca barra-lateral__marca--icone"
+              src="/brand/logo-icon.svg"
+              width={28}
+              height={28}
+              alt=""
+              aria-hidden="true"
+            />
+            <span className="barra-lateral__marca-texto">Collab</span>
+          </div>
         </div>
 
         <nav className="barra-lateral__navegacao">

@@ -110,11 +110,11 @@ export async function publishUpdate(page: Page, payload: { title: string; catego
   }
 
   await page.getByRole("button", { name: /publicar/i }).click();
-  await expect(page.getByText(payload.title).first()).toBeVisible();
+  await expect(page.getByText(/formulário está recolhido/i)).toBeVisible();
 }
 
 export async function advanceActiveStep(page: Page) {
-  const button = page.getByRole("button", { name: /concluir etapa/i }).first();
+  const button = page.getByRole("button", { name: /^concluir(?: etapa)?$/i }).first();
   await expect(button).toBeVisible();
   await button.click();
 }

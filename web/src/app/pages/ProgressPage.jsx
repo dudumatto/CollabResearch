@@ -12,7 +12,6 @@ import { formatDate, formatProjectStatus, formatUserType } from "../utils/format
 import { StatusView } from "../components/StatusView";
 import { ProgressDonut } from "../components/progress/ProgressDonut";
 import { StepperVertical } from "../components/progress/StepperVertical";
-import { UpdateFeed } from "../components/progress/UpdateFeed";
 import { UpdateForm } from "../components/progress/UpdateForm";
 import "./ProgressPage.css";
 
@@ -108,31 +107,6 @@ function ProgressSkeleton() {
           <div className="progress-page__collapsed-form">
             <Sk w="80%" h={14} style={{ maxWidth: 480 }} />
           </div>
-        </div>
-      </section>
-
-      <section className="progress-page__panel progress-page__panel--feed">
-        <div className="progress-page__panel-header">
-          <div style={{ flex: 1 }}>
-            <Sk w={190} h={20} />
-            <Sk w="68%" h={13} style={{ maxWidth: 460, marginTop: 10 }} />
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gap: 12, marginTop: 18 }}>
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="update-feed__item">
-              <div className="update-feed__header">
-                <div style={{ flex: 1 }}>
-                  <Sk w="52%" h={16} style={{ maxWidth: 260 }} />
-                  <Sk w="38%" h={12} style={{ maxWidth: 190, marginTop: 9 }} />
-                </div>
-                <Sk w={86} h={26} r={999} />
-              </div>
-              <Sk w="90%" h={13} style={{ maxWidth: 720, marginTop: 14 }} />
-              <Sk w="62%" h={13} style={{ maxWidth: 520, marginTop: 8 }} />
-            </div>
-          ))}
         </div>
       </section>
     </div>
@@ -311,8 +285,7 @@ export default function ProgressPage() {
           <span className="progress-page__eyebrow">Acompanhamento estruturado</span>
           <h1 className="progress-page__title">Progresso do projeto</h1>
           <p className="progress-page__lead">
-            Progresso com peso calculado automaticamente, atualizações com título e categoria e um feed que conecta cada
-            movimento ao avanço real do projeto.
+            Progresso com peso calculado automaticamente, etapas organizadas por peso e atualizações vinculadas ao avanço real do projeto.
           </p>
         </div>
 
@@ -419,17 +392,6 @@ export default function ProgressPage() {
             </div>
           )}
         </div>
-      </section>
-
-      <section className="progress-page__panel progress-page__panel--feed">
-        <div className="progress-page__panel-header">
-          <div>
-            <h2>Feed de atualizações</h2>
-            <p>Cada item mostra a categoria, a etapa relacionada e a contribuição dentro da etapa.</p>
-          </div>
-        </div>
-
-        <UpdateFeed updates={updates} />
       </section>
     </div>
   );

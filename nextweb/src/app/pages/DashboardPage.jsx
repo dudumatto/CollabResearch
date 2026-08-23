@@ -174,7 +174,6 @@ function MetricButton({ card, index, onNavigate, activityData, activityPeak }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
-      whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onNavigate(card.href)}
       className={`cartao-resumo cartao-resumo--${card.tone} ${card.variant === "progress" ? "cartao-resumo--progresso" : ""}`}
@@ -191,21 +190,7 @@ function MetricButton({ card, index, onNavigate, activityData, activityPeak }) {
         <p className="cartao-resumo__descricao">{card.label}</p>
         <span>{card.helper}</span>
       </div>
-      {card.variant === "progress" ? (
-        <div className="cartao-resumo__progresso-extra" aria-hidden="true">
-          <div className="cartao-resumo__mini-barras">
-            {(activityData.length ? activityData.slice(-5) : [{ month: "-", atividade: 0 }]).map((item, barIndex) => (
-              <span
-                key={`${item.month}-${barIndex}`}
-                style={{ height: `${Math.max(18, (item.atividade / activityPeak) * 100)}%` }}
-              />
-            ))}
-          </div>
-          <Badge tone="success" size="sm">Abrir</Badge>
-        </div>
-      ) : (
-        <Badge tone={card.badgeTone} size="sm">Abrir</Badge>
-      )}
+      <Badge tone={card.badgeTone} size="sm">Abrir</Badge>
     </motion.button>
   );
 }
@@ -475,7 +460,7 @@ export default function DashboardPage() {
               </div>
             </Card>
 
-            <Card variant="default" padding="none" className="painel__card">
+            <Card variant="default" padding="none" className="painel__card painel__card--inscricoes">
               <PanelHeader
                 title="Minhas inscrições"
                 description="Acompanhe as candidaturas mais recentes do seu perfil."
@@ -600,7 +585,7 @@ export default function DashboardPage() {
               </div>
             </Card>
 
-            <Card variant="default" padding="none" className="painel__card">
+            <Card variant="default" padding="none" className="painel__card painel__card--notificacoes">
               <PanelHeader
                 title="Notificações"
                 description="Atualizações recentes do sistema e dos seus fluxos."

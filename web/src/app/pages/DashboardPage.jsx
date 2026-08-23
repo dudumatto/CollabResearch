@@ -266,7 +266,6 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              whileHover={{ scale: 1.03, boxShadow: "0 16px 30px rgba(37,99,235,0.18)" }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(card.href)}
               className={`cartao-resumo ${card.variant === "progress" ? "cartao-resumo--progresso" : ""}`}
@@ -279,19 +278,6 @@ export default function DashboardPage() {
               </div>
               <p className="cartao-resumo__valor">{card.value}</p>
               <p className="cartao-resumo__descricao">{card.label}</p>
-              {card.variant === "progress" ? (
-                <div className="cartao-resumo__progresso-extra">
-                  <div className="cartao-resumo__mini-barras" aria-hidden="true">
-                    {(derived.activityData.length ? derived.activityData.slice(-5) : [{ month: "-", atividade: 0 }]).map((item, index) => (
-                      <span
-                        key={`${item.month}-${index}`}
-                        style={{ height: `${Math.max(18, (item.atividade / derived.activityPeak) * 100)}%` }}
-                      />
-                    ))}
-                  </div>
-                  <span className="cartao-resumo__progresso-cta">Abrir progresso</span>
-                </div>
-              ) : null}
             </motion.button>
           ))}
         </div>

@@ -10,7 +10,7 @@ export async function prepareOwnerLearnerAndProject(request: APIRequestContext) 
   const owner = buildLoginCandidate();
   const learner = buildLoginCandidate();
 
-  await registerUser(request, owner);
+  await registerAdvisor(request, owner);
   await registerUser(request, learner);
 
   const ownerToken = await loginByApi(request, owner);
@@ -63,6 +63,20 @@ export async function validateCanceledInApi(request: APIRequestContext, learner:
 async function registerUser(request: APIRequestContext, user: User) {
   const response = await request.post(`${API_URL}/api/auth/register`, {
     data: { nome: user.nome, email: user.email, senha: user.senha, ra: user.ra },
+  });
+  expect([200, 409]).toContain(response.status());
+}
+
+async function registerAdvisor(request: APIRequestContext, user: User) {
+  const response = await request.post(`${API_URL}/api/auth/register`, {
+    data: {
+      nome: user.nome,
+      email: user.email,
+      senha: user.senha,
+      tipo: "ORIENTADOR",
+      departamento: "Computacao",
+      titulacao: "Doutor",
+    },
   });
   expect([200, 409]).toContain(response.status());
 }

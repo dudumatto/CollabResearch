@@ -20,6 +20,7 @@ export function StepCard({ step, currentUserRole, onAdvanceStep }) {
   const isDone = step.status === "DONE";
   const isActive = step.status === "ACTIVE";
   const canAdvance = isActive && canCompleteStep(step, currentUserRole);
+  const responsibleLabel = formatUserType(step.responsible ?? currentUserRole) || "participante";
 
   return (
     <article className={`step-card step-card--${step.status.toLowerCase()}`}>
@@ -43,7 +44,7 @@ export function StepCard({ step, currentUserRole, onAdvanceStep }) {
             {isDone ? "Concluída" : isActive ? "Ativa" : "Pendente"}
           </span>
           <span className="step-card__role">
-            {isActive ? `Permite ${formatUserType(currentUserRole) || "participante"}` : ""}
+            {isActive ? `Permite ${responsibleLabel}` : ""}
           </span>
         </div>
       </div>

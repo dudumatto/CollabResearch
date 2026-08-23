@@ -48,7 +48,7 @@ test.describe("progresso estruturado", () => {
     expect(progress.ok()).toBeTruthy();
     const payload = await progress.json();
     expect(payload.overallPercent).toBeGreaterThanOrEqual(10);
-    await reloadProgressAndAssert(page, "Etapa 2");
+    await reloadProgressAndAssert(page, "Revisao bibliografica");
   });
 
   test("aluno publica atualização com categoria e vê a etapa bloqueada", async ({ page, request }) => {
@@ -56,7 +56,8 @@ test.describe("progresso estruturado", () => {
 
     await loginAndOpenProgress(page, ctx.aluno);
     await test.step("verificar bloqueio da etapa do orientador", async () => {
-      const button = page.getByRole("button", { name: /concluir etapa/i }).first();
+      await expect(page.getByText("Permite Orientador")).toBeVisible();
+      const button = page.getByRole("button", { name: /bloqueado/i }).first();
       await expect(button).toBeVisible();
       await expect(button).toBeDisabled();
     });
@@ -73,6 +74,6 @@ test.describe("progresso estruturado", () => {
     });
     const auth = await login.json();
     await assertProgressApi(request, auth.token, ctx.projectId, title);
-    await reloadProgressAndAssert(page, title);
+    await expect(page.getByText(/feed de atualizações/i)).toHaveCount(0);
   });
 });

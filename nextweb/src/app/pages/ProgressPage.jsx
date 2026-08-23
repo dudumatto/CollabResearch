@@ -7,7 +7,6 @@ import {
   ClipboardList,
   FolderKanban,
   FolderOpen,
-  MessageSquareText,
   Plus,
   TrendingUp,
   Users,
@@ -23,7 +22,6 @@ import { formatDate, formatProjectStatus, formatUserType } from "../utils/format
 import { StatusView } from "../components/StatusView";
 import { ProgressDonut } from "../components/progress/ProgressDonut";
 import { StepperVertical } from "../components/progress/StepperVertical";
-import { UpdateFeed } from "../components/progress/UpdateFeed";
 import { UpdateForm } from "../components/progress/UpdateForm";
 import "./ProgressPage.css";
 
@@ -137,37 +135,6 @@ function ProgressSkeleton() {
           </div>
         </div>
       </section>
-
-      <section className="progress-page__panel progress-page__panel--feed">
-        <div className="progress-page__panel-header">
-          <div style={{ flex: 1 }}>
-            <Sk w={160} h={18} />
-            <Sk w="60%" h={11} style={{ maxWidth: 380, marginTop: 8 }} />
-          </div>
-        </div>
-
-        <div className="update-feed">
-          {[1, 2].map((item) => (
-            <div key={item} className="update-feed__item">
-              <div className="update-feed__header">
-                <Sk w={34} h={34} r="50%" />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <Sk w="45%" h={14} style={{ maxWidth: 200 }} />
-                  <Sk w="30%" h={10} style={{ maxWidth: 140, marginTop: 6 }} />
-                </div>
-                <Sk w={72} h={22} r={999} />
-              </div>
-              <Sk w="85%" h={11} style={{ maxWidth: 560, marginTop: 12 }} />
-              <Sk w="55%" h={11} style={{ maxWidth: 380, marginTop: 6 }} />
-              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <Sk w={140} h={20} r={999} />
-                <Sk w={120} h={20} r={999} />
-                <Sk w={160} h={20} r={999} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
@@ -244,7 +211,6 @@ export default function ProgressPage() {
   const currentUserRole = user?.tipo ?? user?.type ?? "";
   const acceptedCollaborators = selectedProject?.acceptedCollaborators ?? [];
   const hasSteps = steps.length > 0;
-  const hasUpdates = updates.length > 0;
 
   const handleAdvanceStep = async (stepId) => {
     try {
@@ -304,8 +270,7 @@ export default function ProgressPage() {
           <span className="progress-page__eyebrow">Acompanhamento estruturado</span>
           <h1 className="progress-page__title">Progresso do projeto</h1>
           <p className="progress-page__lead">
-            Etapas com peso calculado automaticamente, atualizações com título e categoria e um feed que conecta cada
-            movimento ao avanço real do projeto.
+            Etapas com peso calculado automaticamente, título, categoria e vínculo direto com o avanço real do projeto.
           </p>
         </div>
 
@@ -424,25 +389,6 @@ export default function ProgressPage() {
             </div>
           )}
         </div>
-      </section>
-
-      <section className="progress-page__panel progress-page__panel--feed">
-        <div className="progress-page__panel-header">
-          <div>
-            <h2>Feed de atualizações</h2>
-            <p>Cada item mostra a categoria, a etapa relacionada e a contribuição dentro da etapa.</p>
-          </div>
-        </div>
-
-        {hasUpdates ? (
-          <UpdateFeed updates={updates} />
-        ) : (
-          <ProgressEmptyState
-            icon={MessageSquareText}
-            title="Nenhuma atualização publicada"
-            description="Quando alguém registrar uma atualização neste projeto, ela aparecerá aqui com categoria, data e relação com etapa quando houver."
-          />
-        )}
       </section>
 
       <div className="progress-page__refresh-row">

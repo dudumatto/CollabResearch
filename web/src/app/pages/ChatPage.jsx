@@ -55,6 +55,25 @@ function sortConversations(items) {
   );
 }
 
+function applyConversationRealtimeEvent(items, event) {
+  if (event?.tipo !== "MENSAGEM_CRIADA" || !event?.mensagem?.conversaId) {
+    return sortConversations(items);
+  }
+
+  const conversationId = Number(event.mensagem.conversaId);
+  const updated = (Array.isArray(items) ? items : []).map((conversation) => {
+    if (Number(conversation.id) !== conversationId) return conversation;
+
+    return {
+      ...conversation,
+      ultimaMensagem: event.mensagem.conteudo,
+      ultimaMensagemHorario: event.mensagem.dataEnvio,
+      updatedAt: event.mensagem.dataEnvio,
+    };
+  });
+
+  return sortConversations(updated);
+}
 async function hydrateConversationPhotos(items, currentUser) {
   const conversations = Array.isArray(items) ? items : [];
 
@@ -310,6 +329,22 @@ export default function ChatPage() {
       .catch(() => setMessages([]))
       .finally(() => setLoadingMessages(false));
   }, [selectedConversation?.id]);
+
+  const conversationIdsKey = useMemo(
+    () => conversations.map((conversation) => conversation.id).filter(Boolean).sort((a, b) => Number(a) - Number(b)).join(","),
+    [conversations],
+  );
+
+  useEffect(() => {
+    if (!conversationIdsKey || !user?.id) return undefined;
+
+    const conversationIds = conversationIdsKey.split(",").map(Number).filter(Number.isFinite);
+
+    return chatRealtimeService.subscribeToConversations(conversationIds, (event) => {
+      setConversations((prev) => applyConversationRealtimeEvent(prev, event));
+    });
+  }, [conversationIdsKey, user?.id]);
+
 
   useEffect(() => {
     if (!selectedConversation?.id || !user?.id) return undefined;

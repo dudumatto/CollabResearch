@@ -20,6 +20,7 @@ function normalizeStep(step) {
     weight: Number(step.weight ?? step.peso ?? 0),
     stepOrder: Number(step.stepOrder ?? step.ordem ?? 0),
     status: String(step.status ?? "PENDING").toUpperCase(),
+    responsible: String(step.responsible ?? step.responsavel ?? "AMBOS").toUpperCase(),
     completedAt: step.completedAt ?? step.concluidaEm ?? null,
     completedBy: step.completedBy ?? step.concluidaPor ?? null,
   };
