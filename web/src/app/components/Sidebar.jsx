@@ -23,30 +23,62 @@ import { mapNotification } from "../utils/adapters";
 import { features } from "../config/features";
 import "./Sidebar.css";
 
-const navItems = [
-  { path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
-  { path: "/app/applications", label: "Inscrições", icon: FileText },
-  { path: "/app/chat", label: "Conversas", icon: MessageSquare },
-  { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
-  { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
-  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
-  { path: "/app/notifications", label: "Notificações", icon: Bell },
-  { path: "/app/profile", label: "Meu perfil", icon: User },
+const studentSections = [
+  {
+    label: "Geral",
+    items: [{ path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true }],
+  },
+  {
+    label: "Pesquisa",
+    items: [
+      { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
+      { path: "/app/applications", label: "Inscrições", icon: FileText },
+      { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
+      { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
+      { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
+    ],
+  },
+  {
+    label: "Comunicação",
+    items: [
+      { path: "/app/chat", label: "Conversas", icon: MessageSquare },
+      { path: "/app/notifications", label: "Notificações", icon: Bell },
+    ],
+  },
+  {
+    label: "Conta",
+    items: [{ path: "/app/profile", label: "Meu perfil", icon: User }],
+  },
 ];
 
-const advisorNavItems = [
-  { path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
-  { path: "/app/advisees", label: "Alunos", icon: GraduationCap },
-  { path: "/app/applications", label: "Inscrições", icon: FileText },
-  { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
-  { path: "/app/progress", label: "Progresso", icon: TrendingUp },
-  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
-  { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
-  { path: "/app/chat", label: "Conversas", icon: MessageSquare },
-  { path: "/app/notifications", label: "Notificações", icon: Bell },
-  { path: "/app/profile", label: "Meu perfil", icon: User },
+const advisorSections = [
+  {
+    label: "Geral",
+    items: [{ path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true }],
+  },
+  {
+    label: "Orientação",
+    items: [
+      { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
+      { path: "/app/advisees", label: "Alunos", icon: GraduationCap },
+      { path: "/app/applications", label: "Inscrições", icon: FileText },
+      { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
+      { path: "/app/progress", label: "Progresso", icon: TrendingUp },
+      { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
+      { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
+    ],
+  },
+  {
+    label: "Comunicação",
+    items: [
+      { path: "/app/chat", label: "Conversas", icon: MessageSquare },
+      { path: "/app/notifications", label: "Notificações", icon: Bell },
+    ],
+  },
+  {
+    label: "Conta",
+    items: [{ path: "/app/profile", label: "Meu perfil", icon: User }],
+  },
 ];
 
 export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
@@ -74,10 +106,12 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
   const notifications = Array.isArray(data) ? data : [];
   const unreadCount = notifications.filter((item) => !item.read).length;
   const isAdvisor = features.advisorWorkspaceV2 && user?.tipo === "ORIENTADOR";
-  const activeNavItems = isAdvisor ? advisorNavItems : navItems;
-  const visibleNavItems = activeNavItems.filter(
-    (item) => !item.roles || item.roles.includes(user?.tipo)
-  );
+  const activeSections = (isAdvisor ? advisorSections : studentSections)
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => !item.roles || item.roles.includes(user?.tipo)),
+    }))
+    .filter((section) => section.items.length > 0);
 
   const SidebarContent = ({ forceExpanded = false } = {}) => {
     const isCollapsed = forceExpanded ? false : collapsed;
@@ -101,48 +135,56 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
         </div>
 
         <nav className="barra-lateral__navegacao">
-          {visibleNavItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.exact}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                [
-                  "barra-lateral__item-nav",
-                  isActive ? "barra-lateral__item-nav--ativo" : "",
-                  isCollapsed ? "barra-lateral__item-nav--centralizado" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && <span className="barra-lateral__indicador-ativo" />}
-                  <item.icon
-                    size={18}
-                    className={
-                      isActive
-                        ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo"
-                        : "barra-lateral__icone-nav"
-                    }
-                  />
-                  <span
-                    className={
-                      isActive
-                        ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo"
-                        : "barra-lateral__rotulo-nav"
+          {activeSections.map((section) => (
+            <div key={section.label} className="barra-lateral__setor">
+              <div className="barra-lateral__setor-marca" aria-hidden="true" />
+              <span className="barra-lateral__setor-rotulo">{section.label}</span>
+              <div className="barra-lateral__setor-itens">
+                {section.items.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.exact}
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) =>
+                      [
+                        "barra-lateral__item-nav",
+                        isActive ? "barra-lateral__item-nav--ativo" : "",
+                        isCollapsed ? "barra-lateral__item-nav--centralizado" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")
                     }
                   >
-                    {item.label}
-                  </span>
-                  {item.path === "/app/notifications" && unreadCount > 0 && (
-                    <span className="barra-lateral__contador">{unreadCount}</span>
-                  )}
-                </>
-              )}
-            </NavLink>
+                    {({ isActive }) => (
+                      <>
+                        {isActive && <span className="barra-lateral__indicador-ativo" />}
+                        <item.icon
+                          size={18}
+                          className={
+                            isActive
+                              ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo"
+                              : "barra-lateral__icone-nav"
+                          }
+                        />
+                        <span
+                          className={
+                            isActive
+                              ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo"
+                              : "barra-lateral__rotulo-nav"
+                          }
+                        >
+                          {item.label}
+                        </span>
+                        {item.path === "/app/notifications" && unreadCount > 0 && (
+                          <span className="barra-lateral__contador">{unreadCount}</span>
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
