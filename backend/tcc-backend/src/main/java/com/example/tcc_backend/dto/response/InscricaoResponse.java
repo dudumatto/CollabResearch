@@ -29,6 +29,17 @@ public class InscricaoResponse {
     private String alunoNome;
 
     public static InscricaoResponse fromEntity(Inscricao inscricao) {
+        return fromEntity(inscricao, null);
+    }
+
+    public static InscricaoResponse fromEntity(Inscricao inscricao, Integer vagasOcupadas) {
+        ProjetoResponse projeto = null;
+        if (inscricao.getProjeto() != null) {
+            projeto = vagasOcupadas != null
+                    ? ProjetoResponse.fromEntity(inscricao.getProjeto(), vagasOcupadas)
+                    : ProjetoResponse.fromEntity(inscricao.getProjeto());
+        }
+
         return InscricaoResponse.builder()
                 .id(inscricao.getId())
                 .status(inscricao.getStatus())
@@ -37,7 +48,7 @@ public class InscricaoResponse {
                 .parecerOrientador(inscricao.getParecerOrientador())
                 .projetoId(inscricao.getProjeto() != null ? inscricao.getProjeto().getId() : null)
                 .projetoTitulo(inscricao.getProjeto() != null ? inscricao.getProjeto().getTitulo() : null)
-                .projeto(inscricao.getProjeto() != null ? ProjetoResponse.fromEntity(inscricao.getProjeto()) : null)
+                .projeto(projeto)
                 .alunoId(inscricao.getAluno() != null ? inscricao.getAluno().getId() : null)
                 .alunoUsuarioId(inscricao.getAluno() != null && inscricao.getAluno().getUsuario() != null ? inscricao.getAluno().getUsuario().getId() : null)
                 .alunoNome(inscricao.getAluno() != null && inscricao.getAluno().getUsuario() != null ? inscricao.getAluno().getUsuario().getNome() : null)

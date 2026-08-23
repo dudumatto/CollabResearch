@@ -10,6 +10,7 @@ import com.example.tcc_backend.dto.response.UsuarioProfileResponse;
 import com.example.tcc_backend.dto.response.UsuarioResponse;
 import com.example.tcc_backend.service.DocumentoService;
 import com.example.tcc_backend.service.InscricaoService;
+import com.example.tcc_backend.service.ProjetoService;
 import com.example.tcc_backend.service.UsuarioService;
 
 import jakarta.validation.Valid;
@@ -34,8 +35,19 @@ import java.util.List;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final ProjetoService projetoService;
     private final DocumentoService documentoService;
     private final InscricaoService inscricaoService;
+
+    private ProjetoResponse projetoResponse(com.example.tcc_backend.model.Projeto projeto) {
+        return ProjetoResponse.fromEntity(projeto, projetoService.contarVagasOcupadas(projeto.getId()));
+    }
+
+    private InscricaoResponse inscricaoResponse(com.example.tcc_backend.model.Inscricao inscricao) {
+        Integer projetoId = inscricao.getProjeto() != null ? inscricao.getProjeto().getId() : null;
+        Integer vagasOcupadas = projetoId != null ? projetoService.contarVagasOcupadas(projetoId) : null;
+        return InscricaoResponse.fromEntity(inscricao, vagasOcupadas);
+    }
 
     @Operation(
             summary = "Listar todos os usuários",
@@ -183,7 +195,7 @@ public class UsuarioController {
     @GetMapping("/{id}/projetos")
     public ResponseEntity<List<ProjetoResponse>> findProjetosByUsuario(@PathVariable Integer id) {
         return ResponseEntity.ok(usuarioService.findProjetosByUsuario(id)
-                .stream().map(ProjetoResponse::fromEntity).toList());
+                .stream().map(this::projetoResponse).toList());
     }
 
     @Operation(
@@ -197,7 +209,7 @@ public class UsuarioController {
     @GetMapping("/{id}/inscricoes")
     public ResponseEntity<List<InscricaoResponse>> findInscricoesByUsuario(@PathVariable Integer id) {
         return ResponseEntity.ok(usuarioService.findInscricoesByUsuario(id)
-                .stream().map(InscricaoResponse::fromEntity).toList());
+                .stream().map(this::inscricaoResponse).toList());
     }
 
     @Operation(
@@ -211,7 +223,7 @@ public class UsuarioController {
     @GetMapping("/minhas-inscricoes")
     public ResponseEntity<List<InscricaoResponse>> findMinhasInscricoes() {
         return ResponseEntity.ok(inscricaoService.findByUsuarioLogado()
-                .stream().map(InscricaoResponse::fromEntity).toList());
+                .stream().map(this::inscricaoResponse).toList());
     }
 
     @Operation(

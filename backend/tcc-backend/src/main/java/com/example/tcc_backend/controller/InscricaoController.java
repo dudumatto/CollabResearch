@@ -5,6 +5,7 @@ import com.example.tcc_backend.dto.request.InscricaoRequest;
 import com.example.tcc_backend.dto.response.InscricaoResponse;
 import com.example.tcc_backend.dto.response.PageResponse;
 import com.example.tcc_backend.service.InscricaoService;
+import com.example.tcc_backend.service.ProjetoService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,13 @@ import java.util.List;
 public class InscricaoController {
 
     private final InscricaoService inscricaoService;
+    private final ProjetoService projetoService;
+
+    private InscricaoResponse toResponse(com.example.tcc_backend.model.Inscricao inscricao) {
+        Integer projetoId = inscricao.getProjeto() != null ? inscricao.getProjeto().getId() : null;
+        Integer vagasOcupadas = projetoId != null ? projetoService.contarVagasOcupadas(projetoId) : null;
+        return InscricaoResponse.fromEntity(inscricao, vagasOcupadas);
+    }
 
     @Operation(summary = "Listar inscrições", description = "Retorna inscrições visíveis ao perfil autenticado: próprias para alunos, dos projetos sob responsabilidade para orientadores e todas para administradores.")
     @ApiResponses({
@@ -38,7 +46,7 @@ public class InscricaoController {
     @GetMapping
     public ResponseEntity<List<InscricaoResponse>> findAll() {
         return ResponseEntity.ok(
-                inscricaoService.findAll().stream().map(InscricaoResponse::fromEntity).toList()
+                inscricaoService.findAll().stream().map(this::toResponse).toList()
         );
     }
 
@@ -57,7 +65,7 @@ public class InscricaoController {
                 PageResponse.from(
                         inscricaoService.findAll(
                                 PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort))
-                        ).map(InscricaoResponse::fromEntity)
+                        ).map(this::toResponse)
                 )
         );
     }
@@ -71,7 +79,7 @@ public class InscricaoController {
     @GetMapping("/{id}")
     public ResponseEntity<InscricaoResponse> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(
-                InscricaoResponse.fromEntity(inscricaoService.findById(id))
+                toResponse(inscricaoService.findById(id))
         );
     }
 
@@ -84,7 +92,7 @@ public class InscricaoController {
     public ResponseEntity<List<InscricaoResponse>> findByProjeto(@PathVariable Integer projetoId) {
         return ResponseEntity.ok(
                 inscricaoService.findByProjeto(projetoId).stream()
-                        .map(InscricaoResponse::fromEntity).toList()
+                        .map(this::toResponse).toList()
         );
     }
 
@@ -105,7 +113,7 @@ public class InscricaoController {
                         inscricaoService.findByProjeto(
                                 projetoId,
                                 PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort))
-                        ).map(InscricaoResponse::fromEntity)
+                        ).map(this::toResponse)
                 )
         );
     }
@@ -118,7 +126,7 @@ public class InscricaoController {
     @PostMapping
     public ResponseEntity<InscricaoResponse> create(@RequestBody @Valid InscricaoRequest dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(InscricaoResponse.fromEntity(inscricaoService.create(dto)));
+                .body(toResponse(inscricaoService.create(dto)));
     }
 
     @Operation(summary = "Aprovar inscrição", description = "Aprova uma inscrição.")
@@ -132,7 +140,7 @@ public class InscricaoController {
     public ResponseEntity<InscricaoResponse> aprovar(@PathVariable Integer id,
                                                      @RequestBody(required = false) @Valid InscricaoAvaliacaoRequest dto) {
         return ResponseEntity.ok(
-                InscricaoResponse.fromEntity(inscricaoService.aprovar(id, dto))
+                toResponse(inscricaoService.aprovar(id, dto))
         );
     }
 
@@ -147,7 +155,7 @@ public class InscricaoController {
     public ResponseEntity<InscricaoResponse> rejeitar(@PathVariable Integer id,
                                                       @RequestBody(required = false) @Valid InscricaoAvaliacaoRequest dto) {
         return ResponseEntity.ok(
-                InscricaoResponse.fromEntity(inscricaoService.rejeitar(id, dto))
+                toResponse(inscricaoService.rejeitar(id, dto))
         );
     }
 
@@ -180,7 +188,7 @@ public class InscricaoController {
     public ResponseEntity<InscricaoResponse> update(@PathVariable Integer id,
                                                     @RequestBody @Valid InscricaoRequest dto) {
         return ResponseEntity.ok(
-                InscricaoResponse.fromEntity(inscricaoService.update(id, dto))
+                toResponse(inscricaoService.update(id, dto))
         );
     }
 }

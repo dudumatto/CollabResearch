@@ -40,6 +40,12 @@ public class ProjetoController {
         return ProjetoResponse.fromEntity(projeto, projetoService.contarVagasOcupadas(projeto.getId()));
     }
 
+    private InscricaoResponse toInscricaoResponse(com.example.tcc_backend.model.Inscricao inscricao) {
+        Integer projetoId = inscricao.getProjeto() != null ? inscricao.getProjeto().getId() : null;
+        Integer vagasOcupadas = projetoId != null ? projetoService.contarVagasOcupadas(projetoId) : null;
+        return InscricaoResponse.fromEntity(inscricao, vagasOcupadas);
+    }
+
     @Operation(
             summary = "Listar projetos",
             description = "Retorna uma lista de projetos com possibilidade de filtros por status, área, curso ou busca textual."
@@ -220,7 +226,7 @@ public class ProjetoController {
     public ResponseEntity<InscricaoResponse> recrutar(@PathVariable Integer id,
                                                       @RequestBody @Valid RecrutarColaboradorRequest dto) {
         return ResponseEntity.ok(
-                InscricaoResponse.fromEntity(projetoService.recrutar(id, dto.getUsuarioId()))
+                toInscricaoResponse(projetoService.recrutar(id, dto.getUsuarioId()))
         );
     }
 
