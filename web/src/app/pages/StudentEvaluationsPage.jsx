@@ -8,6 +8,7 @@ import { evaluationService } from "../services/evaluationService";
 import { mapAvaliacaoAcademica, mapProject } from "../utils/adapters";
 import { formatAvaliacaoNota } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
 export default function StudentEvaluationsPage() {
@@ -50,11 +51,13 @@ export default function StudentEvaluationsPage() {
       <div className="advisor-card-conteudo">
         <h2 className="advisor-card-conteudo__titulo">Minhas avaliações</h2>
         <p>Avaliações acadêmicas são privadas entre você e seu orientador.</p>
-        <select className="advisor-select" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-          {projects.map((item) => (
-            <option key={item.id} value={item.id}>{item.title}</option>
-          ))}
-        </select>
+        <AppCombobox
+          ariaLabel="Selecionar projeto avaliado"
+          className="advisor-select"
+          value={projectId}
+          onChange={setProjectId}
+          options={projects.map((item) => ({ value: item.id, label: item.title }))}
+        />
       </div>
 
       {loading && <StatusView title="Carregando avaliações" />}

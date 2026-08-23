@@ -46,6 +46,7 @@
     "@radix-ui/react-tooltip": "1.1.8",
     "@stomp/stompjs": "^7.3.0",
     "@supabase/supabase-js": "^2.107.0",
+    "antd": "^6.6.1",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",

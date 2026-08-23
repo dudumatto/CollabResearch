@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { AppCombobox } from "../ui/AppCombobox";
 
 const CATEGORY_OPTIONS = [
   { value: "progress", label: "Progresso" },
@@ -29,6 +30,7 @@ export function UpdateForm({ steps = [], onSubmit }) {
     },
   });
 
+  const selectedCategory = watch("categoria");
   const selectedStepId = watch("etapaId");
   const semData = watch("semData");
 
@@ -67,13 +69,13 @@ export function UpdateForm({ steps = [], onSubmit }) {
 
         <label className="update-form__field">
           <span>Categoria</span>
-          <select {...register("categoria", { required: true })}>
-            {CATEGORY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <AppCombobox
+            ariaLabel="Selecionar categoria"
+            className="app-combobox--progress"
+            value={selectedCategory}
+            onChange={(nextValue) => setValue("categoria", nextValue, { shouldDirty: true, shouldValidate: true })}
+            options={CATEGORY_OPTIONS}
+          />
         </label>
 
         <div className="update-form__field">
@@ -97,14 +99,16 @@ export function UpdateForm({ steps = [], onSubmit }) {
 
         <label className="update-form__field">
           <span>Etapa relacionada</span>
-          <select {...register("etapaId")}>
-            <option value="">Sem etapa</option>
-            {steps.map((step) => (
-              <option key={step.id} value={step.id}>
-                {step.stepOrder}. {step.title}
-              </option>
-            ))}
-          </select>
+          <AppCombobox
+            ariaLabel="Selecionar etapa relacionada"
+            className="app-combobox--progress"
+            value={selectedStepId}
+            onChange={(nextValue) => setValue("etapaId", nextValue, { shouldDirty: true })}
+            options={[
+              { value: "", label: "Sem etapa" },
+              ...steps.map((step) => ({ value: step.id, label: `${step.stepOrder}. ${step.title}` })),
+            ]}
+          />
         </label>
 
         <label className="update-form__field update-form__field--full">

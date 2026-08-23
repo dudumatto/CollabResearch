@@ -819,7 +819,7 @@
   box-shadow: none;
 }
 
-.progress-page__project-picker-control svg {
+.progress-page__project-picker-control > svg {
   position: absolute;
   right: 0.95rem;
   pointer-events: none;

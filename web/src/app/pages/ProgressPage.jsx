@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronDown, FolderKanban, Plus, TrendingUp, Users } from "lucide-react";
+import { CalendarDays, FolderKanban, Plus, TrendingUp, Users } from "lucide-react";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
@@ -10,6 +10,7 @@ import { projectService } from "../services/projectService";
 import { getProjectSeatHolders, getProjectSlotsUsage, mapProject } from "../utils/adapters";
 import { formatDate, formatProjectStatus, formatUserType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import { ProgressDonut } from "../components/progress/ProgressDonut";
 import { StepperVertical } from "../components/progress/StepperVertical";
 import { UpdateForm } from "../components/progress/UpdateForm";
@@ -289,22 +290,19 @@ export default function ProgressPage() {
           </p>
         </div>
 
-        <label className="progress-page__project-picker">
+        <div className="progress-page__project-picker">
           <span>Projeto</span>
           <div className="progress-page__project-picker-control">
-            <select
+            <AppCombobox
+              ariaLabel="Selecionar projeto"
+              className="app-combobox--progress"
               value={selectedProjectId || selectedProject.id}
-              onChange={(event) => setSelectedProjectId(event.target.value)}
-            >
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.title}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={16} />
+              onChange={setSelectedProjectId}
+              options={projects.map((project) => ({ value: project.id, label: project.title }))}
+            />
           </div>
-        </label>
+        </div>
+
       </header>
 
       <section className="progress-page__overview">
