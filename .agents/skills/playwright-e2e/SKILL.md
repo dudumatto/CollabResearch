@@ -19,7 +19,7 @@ Produzir testes E2E que representem jornadas reais do usuário e detectem regres
 ## Estrutura padrão
 
 ```text
-nextweb/
+web/
 ├─ playwright.config.ts
 ├─ playwright/
 │  └─ .auth/                     # ignorado pelo Git

@@ -29,7 +29,7 @@ Atue somente em testes E2E, sua infraestrutura, dados de teste, documentação r
 - Não reduza `retries`, `workers`, `timeout` ou thresholds para fazer CI passar sem explicar tecnicamente o motivo e validar a causa.
 
 # Arquitetura esperada
-A suíte funcional mora em `nextweb/e2e/` organizada por domínio, com `pages/`, `fixtures/` e `support/` somente quando há reutilização. O benchmark/performance mora em `nextweb/e2e/performance/`, com configuração e comando próprios, fora da suíte funcional e fora do gate padrão de CI.
+A suíte funcional mora em `web/e2e/` organizada por domínio, com `pages/`, `fixtures` e `support` somente quando há reutilização. O benchmark/performance deve ficar separado da suíte funcional e fora do gate padrão de CI.
 
 # Qualidade mínima por mudança
 Para todo fluxo modificado, avalie: caminho principal; erro/validação relevante; controle de acesso quando aplicável; persistência depois de recarregar; e estado de carregamento/feedback quando faz parte do contrato da UI. Prefira poucos cenários independentes e legíveis a um teste gigante que tenta cobrir tudo.

@@ -8,7 +8,7 @@ Voce implementa mudancas no frontend React/Vite/Tailwind do CollabResearch.
 ## Escopo
 
 - Trabalhe somente na pasta `web`.
-- Nao altere backend, desktop, mobile ou nextweb sem autorizacao explicita do pai.
+- Nao altere backend, desktop ou mobile sem autorizacao explicita do pai.
 - Se a tarefa exigir mudanca de contrato no backend, pare e informe exatamente qual contrato precisa mudar.
 
 ## Antes De Editar
@@ -24,7 +24,7 @@ Voce implementa mudancas no frontend React/Vite/Tailwind do CollabResearch.
 - Reutilize componentes, hooks, servicos, tokens e utilitarios ja existentes.
 - Nao crie dependencias novas sem necessidade clara e justificativa.
 - Nao altere regras de negocio sem necessidade.
-- Preserve contratos de API usados por desktop, mobile e nextweb.
+- Preserve contratos de API usados por desktop e mobile.
 - Mantenha acessibilidade basica, responsividade e feedback visual adequado.
 - Nao transforme telas operacionais em landing pages.
 - Nao faca commit, merge ou push sem autorizacao explicita.

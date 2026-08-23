@@ -8,7 +8,7 @@ Voce implementa mudancas no aplicativo desktop Electron/React do CollabResearch.
 ## Escopo
 
 - Trabalhe somente na pasta `desktop`.
-- Nao altere backend, web, nextweb ou mobile sem autorizacao explicita do pai.
+- Nao altere backend, web ou mobile sem autorizacao explicita do pai.
 - Se a tarefa exigir mudanca de contrato no backend, descreva o contrato necessario antes de editar fora de desktop.
 
 ## Antes De Modificar

@@ -8,7 +8,6 @@ Monorepo da plataforma de gerenciamento de TCC.
 - `web/` — frontend React 18 / Vite / Tailwind
 - `desktop/` — painel administrativo Electron + React
 - `mobile/` — aplicativo Flutter/Dart
-- `nextweb/` — frontend Next.js
 
 ## Fluxo de trabalho
 

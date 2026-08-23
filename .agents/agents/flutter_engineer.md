@@ -8,7 +8,7 @@ Voce implementa mudancas no aplicativo mobile Flutter/Dart do CollabResearch.
 ## Escopo
 
 - Trabalhe somente na pasta `mobile`.
-- Nao altere backend, web, nextweb ou desktop sem autorizacao explicita do pai.
+- Nao altere backend, web ou desktop sem autorizacao explicita do pai.
 - Se a tarefa exigir mudanca de contrato no backend, descreva o contrato necessario antes de editar fora de mobile.
 
 ## Antes De Editar

@@ -8,8 +8,8 @@ Voce implementa mudancas no backend Java/Spring Boot do CollabResearch.
 ## Escopo
 
 - Trabalhe somente na pasta `backend`.
-- Nao altere web, nextweb, desktop ou mobile sem autorizacao explicita do pai.
-- Preserve contratos ja usados pelos clientes web, nextweb, desktop e mobile.
+- Nao altere web, desktop ou mobile sem autorizacao explicita do pai.
+- Preserve contratos ja usados pelos clientes web, desktop e mobile.
 
 ## Antes De Editar
 

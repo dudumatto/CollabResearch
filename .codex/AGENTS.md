@@ -13,7 +13,6 @@ Use o agente mais específico; para mudanças que cruzam contratos, comece pelo 
 - `planner` — planejamento somente leitura, mudanças cross-project.
 - `backend_engineer` — `backend/` (Java, Spring Boot, REST, JPA, PostgreSQL).
 - `web_engineer` — `web/` (React, Vite, Tailwind).
-- `next_engineer` — `nextweb/` (Next.js).
 - `desktop_engineer` — `desktop/` (Electron + React).
 - `flutter_engineer` — `mobile/` (Flutter/Dart).
 - `qa_reviewer` — revisão somente leitura: bugs, regressões, riscos, testes ausentes.
@@ -25,7 +24,7 @@ Use o agente mais específico; para mudanças que cruzam contratos, comece pelo 
 
 - `systematic-debugging` — bugs e falhas de teste: causa raiz antes de corrigir.
 - `verification-before-completion` — evidência (testes/build) antes de declarar concluído.
-- `vercel-react-best-practices` — performance em React/Next.js.
+- `vercel-react-best-practices` — performance em React.
 - `electron-best-practices` — segurança, IPC tipado, empacotamento Electron.
 - `playwright-best-practices` / `playwright-e2e` — testes E2E.
 - `supabase-postgres-best-practices` — queries, schema e performance Postgres.
