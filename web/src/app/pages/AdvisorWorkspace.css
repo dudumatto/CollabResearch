@@ -1776,13 +1776,21 @@
   padding: var(--espaco-3);
   pointer-events: none;
   position: absolute;
-  top: calc(100% + 0.45rem);
-  transform: translateY(-0.25rem);
+  top: 100%;
+  transform: translateY(-0.15rem);
   transition: opacity 0.15s ease, transform 0.15s ease;
   white-space: normal;
   z-index: 40;
 }
 
+.calendario-dia__tooltip::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 0.4rem;
+}
 .calendario-dia:nth-child(7n) .calendario-dia__tooltip,
 .calendario-dia:nth-child(7n - 1) .calendario-dia__tooltip {
   left: auto;
@@ -1793,7 +1801,7 @@
 .calendario-dia:focus-within .calendario-dia__tooltip {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: translateY(0.25rem);
 }
 
 .calendario-dia__tooltip-topo {
@@ -1869,7 +1877,9 @@
 .calendario-lateral {
   display: grid;
   grid-template-rows: repeat(2, minmax(0, 1fr));
+  height: 100%;
   min-height: 0;
+  overflow: hidden;
 }
 
 .calendario-lista--rolagem {
