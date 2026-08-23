@@ -190,7 +190,7 @@ export default function StudentDeadlinesPage() {
         </div>
       ) : (
         <div className="calendario-layout">
-          <section className="calendario-card">
+          <section className="calendario-card calendario-card--principal">
             <div className="calendario-card__topo">
               <button type="button" onClick={() => moveMonth(-1)} aria-label="Mês anterior">
                 <ChevronLeft size={17} />
@@ -226,46 +226,65 @@ export default function StudentDeadlinesPage() {
                           aria-label={`Abrir entrega ${item.titulo}`}
                         >
                           <span className="calendario-evento__rotulo">{item.titulo}</span>
-                          <span className="calendario-evento__tooltip" role="tooltip">
-                            <strong>{item.titulo}</strong>
-                            <small>{item.projectTitle}</small>
-                            <span>{formatCalendarDate(item)}</span>
-                            <span>{formatEtapaResponsavel(item.responsavel)}</span>
-                            <em>{formatEtapaStatus(item.status)}</em>
-                          </span>
                         </button>
                       ))}
-                      {items.length > 2 && <small>+{items.length - 2}</small>}
-                    </div>
+                      {items.length > 2 && <small>+{items.length - 2} etapas</small>}
+                      {items.length > 0 && (
+                        <div className="calendario-dia__tooltip" role="tooltip">
+                          <div className="calendario-dia__tooltip-topo">
+                            <strong>{items.length} {items.length === 1 ? "etapa" : "etapas"}</strong>
+                            <span>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long" }).format(date)}</span>
+                        </div>
+                          <div className="calendario-dia__tooltip-lista">
+                            {items.map((item) => (
+                              <button
+                                key={`tooltip-${item.projectId}-${item.id}`}
+                                type="button"
+                                className="calendario-dia__tooltip-item"
+                                onClick={() => openDeadline(item)}
+                              >
+                                <strong>{item.titulo}</strong>
+                                <span>{item.projectTitle}</span>
+                                <small>
+                                  {formatCalendarDate(item)} · {formatEtapaResponsavel(item.responsavel)} · {formatEtapaStatus(item.status)}
+                                </small>
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+                      )}
                   </div>
+                </div>
                 );
               })}
             </div>
           </section>
 
           <aside className="calendario-lateral">
-            <section className="calendario-card">
+            <section className="calendario-card calendario-card--lateral">
               <h2 className="calendario-card__titulo">Este mês</h2>
               {monthItems.length === 0 ? (
                 <p className="calendario-vazio">Nenhuma entrega neste mês.</p>
               ) : (
-                <div className="calendario-lista">
+                <div className="calendario-lista calendario-lista--rolagem">
                   {monthItems.map((item) => <DeadlineItem key={`${item.projectId}-${item.id}`} item={item} />)}
                 </div>
               )}
             </section>
 
-            {withoutDate.length > 0 && (
-              <section className="calendario-card calendario-card--alerta">
-                <div className="calendario-alerta__topo">
-                  <CircleAlert size={17} />
-                  <h2>Etapas sem data</h2>
-                </div>
-                <div className="calendario-lista">
+            <section className="calendario-card calendario-card--lateral calendario-card--alerta">
+              <div className="calendario-alerta__topo">
+                <CircleAlert size={17} />
+                <h2>Etapas sem data</h2>
+              </div>
+              {withoutDate.length === 0 ? (
+                <p className="calendario-vazio">Nenhuma etapa sem data.</p>
+                ) : (
+                <div className="calendario-lista calendario-lista--rolagem">
                   {withoutDate.map((item) => <DeadlineItem key={`${item.projectId}-${item.id}`} item={item} compact />)}
                 </div>
+                )}
               </section>
-            )}
           </aside>
         </div>
       )}

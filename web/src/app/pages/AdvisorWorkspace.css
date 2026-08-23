@@ -1936,7 +1936,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--espaco-4);
-  align-items: start;
+  align-items: stretch;
 }
 
 @media (min-width: 1120px) {
@@ -1952,6 +1952,17 @@
   background: var(--cor-superficie);
   padding: var(--espaco-3);
   min-width: 0;
+}
+
+.calendario-card--principal,
+.calendario-card--lateral {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.calendario-card--lateral {
+  overflow: hidden;
 }
 
 .calendario-card__topo {
@@ -2078,7 +2089,16 @@
   white-space: nowrap;
 }
 
-.calendario-evento__tooltip {
+.calendario-dia:focus-within {
+  z-index: 30;
+}
+
+.calendario-dia:hover,
+.calendario-dia:focus-within {
+  border-color: var(--cor-primaria-borda);
+}
+
+.calendario-dia__tooltip {
   background: var(--cor-superficie);
   border: 1px solid var(--cor-borda-clara);
   border-radius: var(--raio-medio);
@@ -2086,49 +2106,97 @@
   color: var(--cor-texto);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--espaco-2);
   left: 0;
-  min-width: 13rem;
+  min-width: min(18rem, calc(100vw - 2rem));
+  max-width: min(22rem, calc(100vw - 2rem));
   opacity: 0;
-  padding: 0.75rem;
+  padding: var(--espaco-3);
   pointer-events: none;
   position: absolute;
-  top: calc(100% + 0.4rem);
+  top: calc(100% + 0.45rem);
   transform: translateY(-0.25rem);
   transition: opacity 0.15s ease, transform 0.15s ease;
   white-space: normal;
-  z-index: 20;
+  z-index: 40;
 }
 
-.calendario-evento:hover .calendario-evento__tooltip,
-.calendario-evento:focus-visible .calendario-evento__tooltip {
+.calendario-dia:nth-child(7n) .calendario-dia__tooltip,
+.calendario-dia:nth-child(7n - 1) .calendario-dia__tooltip {
+  left: auto;
+  right: 0;
+}
+
+.calendario-dia:hover .calendario-dia__tooltip,
+.calendario-dia:focus-within .calendario-dia__tooltip {
   opacity: 1;
+  pointer-events: auto;
   transform: translateY(0);
 }
 
-.calendario-evento__tooltip strong {
+.calendario-dia__tooltip-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  border-bottom: 1px solid var(--cor-borda-clara);
+  padding-bottom: var(--espaco-2);
+}
+
+.calendario-dia__tooltip-topo strong {
   color: var(--cor-texto-forte);
   font-size: var(--tamanho-base);
   line-height: 1.25;
 }
 
-.calendario-evento__tooltip small,
-.calendario-evento__tooltip span {
+.calendario-dia__tooltip-topo span {
   color: var(--cor-texto-mudo);
   font-size: var(--tamanho-pequeno);
+  text-align: right;
+  text-transform: capitalize;
 }
 
-.calendario-evento__tooltip em {
-  align-self: flex-start;
+.calendario-dia__tooltip-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  max-height: 15rem;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
+.calendario-dia__tooltip-item {
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-fundo-leve);
+  color: var(--cor-texto);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: var(--espaco-2);
+  text-align: left;
+}
+
+.calendario-dia__tooltip-item:hover,
+.calendario-dia__tooltip-item:focus-visible {
+  border-color: var(--cor-primaria-borda);
   background: var(--cor-primaria-clara);
-  border-radius: var(--raio-completo);
-  color: var(--cor-primaria-texto);
-  font-size: var(--tamanho-pequeno);
-  font-style: normal;
-  font-weight: var(--peso-semi);
-  padding: 0.15rem 0.5rem;
+  outline: none;
 }
 
+.calendario-dia__tooltip-item strong {
+  color: var(--cor-texto-forte);
+  font-size: var(--tamanho-base);
+  line-height: 1.25;
+}
+
+.calendario-dia__tooltip-item span,
+.calendario-dia__tooltip-item small {
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-pequeno);
+  line-height: 1.35;
+}
 .calendario-lateral,
 .calendario-lista {
   display: flex;
@@ -2136,8 +2204,21 @@
   gap: var(--espaco-3);
 }
 
+.calendario-lateral {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  min-height: 0;
+}
+
+.calendario-lista--rolagem {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
 .calendario-vazio {
-  margin-top: var(--espaco-3);
+  margin: var(--espaco-3) 0 0;
   color: var(--cor-texto-mudo);
   font-size: var(--tamanho-base);
 }
