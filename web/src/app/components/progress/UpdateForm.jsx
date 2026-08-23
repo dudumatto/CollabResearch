@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 const CATEGORY_OPTIONS = [
@@ -32,6 +33,12 @@ export function UpdateForm({ steps = [], onSubmit }) {
   const selectedStepId = watch("etapaId");
   const semData = watch("semData");
   const hasStepSelected = Boolean(selectedStepId);
+
+  useEffect(() => {
+    if (!semData) return;
+    setValue("dataRegistro", "", { shouldDirty: true, shouldValidate: true });
+    clearErrors("dataRegistro");
+  }, [clearErrors, semData, setValue]);
 
   const submit = async (values) => {
     const payload = {
@@ -85,17 +92,7 @@ export function UpdateForm({ steps = [], onSubmit }) {
             })}
           />
           <label className="update-form__checkbox">
-            <input
-              type="checkbox"
-              {...register("semData", {
-                onChange: (event) => {
-                  if (event.target.checked) {
-                    setValue("dataRegistro", "", { shouldDirty: true, shouldValidate: true });
-                    clearErrors("dataRegistro");
-                  }
-                },
-              })}
-            />
+            <input type="checkbox" {...register("semData")} />
             <span>Registrar atualização sem data</span>
           </label>
           {errors.dataRegistro ? <small>{errors.dataRegistro.message}</small> : null}

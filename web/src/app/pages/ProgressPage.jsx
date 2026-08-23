@@ -363,7 +363,6 @@ export default function ProgressPage() {
               <h2>Progresso</h2>
               <p>{currentUserRole === "ALUNO" ? "Arraste um item para reorganizar sua visualização ou conclua a etapa ativa quando permitido." : "Conclua a etapa ativa quando o papel do usuário permitir."}</p>
             </div>
-            <span className="progress-page__hint">Peso por etapa</span>
           </div>
           <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onReorderStep={handleReorderStep} highlightedStepId={targetStageId} />
         </div>
