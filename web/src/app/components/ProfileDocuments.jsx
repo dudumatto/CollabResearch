@@ -85,7 +85,7 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
     <div className="perfil-documentos">
       <div className="perfil-documentos__cabecalho">
         <div>
-          <h3 className="secao-perfil__titulo">Currículo e documentos</h3>
+          <h3 className="secao-perfil__titulo">Currículos e documentos</h3>
           <p className="perfil-documentos__subtitulo">
             Currículos ficam disponíveis para usuários autenticados.
           </p>
