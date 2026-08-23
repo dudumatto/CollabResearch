@@ -7,6 +7,7 @@ import { feedbackService } from "../services/feedbackService";
 import { userService } from "../services/userService";
 import { mapFeedback, mapProject } from "../utils/adapters";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import "./FeedbackPage.css";
 
 function FeedbackSkeleton() {
@@ -250,12 +251,17 @@ export default function FeedbackPage() {
                 <form onSubmit={handleSubmit} className="formulario-avaliacao">
                   <div className="formulario-avaliacao__grupo">
                     <label className="formulario-avaliacao__label">Projeto</label>
-                    <select value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)} className="formulario-avaliacao__select" required>
-                      <option value="">Selecione um projeto</option>
-                      {(data.projects ?? []).map((project) => (
-                        <option key={project.id} value={project.id}>{project.title}</option>
-                      ))}
-                    </select>
+                    <AppCombobox
+                      ariaLabel="Selecionar projeto avaliado"
+                      className="formulario-avaliacao__select"
+                      value={selectedProject}
+                      placeholder="Selecione um projeto"
+                      onChange={setSelectedProject}
+                      options={[
+                        { value: "", label: "Selecione um projeto", disabled: true },
+                        ...(data.projects ?? []).map((project) => ({ value: project.id, label: project.title })),
+                      ]}
+                    />
                   </div>
 
                   <div className="formulario-avaliacao__grupo">

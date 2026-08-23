@@ -7,6 +7,7 @@ import { projectService } from "../services/projectService";
 import { userService } from "../services/userService";
 import { useAuth } from "../hooks/useAuth";
 import { validateProjectDates } from "../utils/projectFormValidation";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import "./CreateProjectPage.css";
 
 const INITIAL_FORM = {
@@ -354,19 +355,20 @@ export default function CreateProjectPage() {
               <label htmlFor="areaId" className="formulario-projeto__rotulo">
                 Área de pesquisa <span className="formulario-projeto__obrigatorio">*</span>
               </label>
-              <select
-                id="areaId" name="areaId"
-                value={form.areaId} onChange={handleChange}
+              <AppCombobox
+                id="areaId"
+                name="areaId"
+                ariaLabel="Selecionar área de pesquisa"
                 className="formulario-projeto__select"
+                value={form.areaId}
                 disabled={isDisabled || areasLoading}
-              >
-                <option value="">
-                  {areasLoading ? "Carregando..." : areasUnavailable ? "Nenhuma área cadastrada" : "Selecione uma área"}
-                </option>
-                {areas.map((a) => (
-                  <option key={a.id} value={a.id}>{a.nome}</option>
-                ))}
-              </select>
+                placeholder={areasLoading ? "Carregando..." : areasUnavailable ? "Nenhuma área cadastrada" : "Selecione uma área"}
+                onChange={(nextValue) => handleChange({ target: { name: "areaId", value: nextValue } })}
+                options={[
+                  { value: "", label: areasLoading ? "Carregando..." : areasUnavailable ? "Nenhuma área cadastrada" : "Selecione uma área", disabled: true },
+                  ...areas.map((a) => ({ value: a.id, label: a.nome })),
+                ]}
+              />
             </div>
 
             <div className="formulario-projeto__campo">
@@ -388,19 +390,20 @@ export default function CreateProjectPage() {
               <label htmlFor="orientadorId" className="formulario-projeto__rotulo">
                 Orientador <span className="formulario-projeto__obrigatorio">*</span>
               </label>
-              <select
-                id="orientadorId" name="orientadorId"
-                value={form.orientadorId} onChange={handleChange}
+              <AppCombobox
+                id="orientadorId"
+                name="orientadorId"
+                ariaLabel="Selecionar orientador"
                 className="formulario-projeto__select"
+                value={form.orientadorId}
                 disabled={isDisabled || advisorsLoading}
-              >
-                <option value="">
-                  {advisorsLoading ? "Carregando..." : advisorsUnavailable ? "Nenhum orientador cadastrado" : "Selecione um orientador"}
-                </option>
-                {advisors.map((advisor) => (
-                  <option key={advisor.id} value={advisor.id}>{advisor.nome}</option>
-                ))}
-              </select>
+                placeholder={advisorsLoading ? "Carregando..." : advisorsUnavailable ? "Nenhum orientador cadastrado" : "Selecione um orientador"}
+                onChange={(nextValue) => handleChange({ target: { name: "orientadorId", value: nextValue } })}
+                options={[
+                  { value: "", label: advisorsLoading ? "Carregando..." : advisorsUnavailable ? "Nenhum orientador cadastrado" : "Selecione um orientador", disabled: true },
+                  ...advisors.map((advisor) => ({ value: advisor.id, label: advisor.nome })),
+                ]}
+              />
             </div>
           )}
 

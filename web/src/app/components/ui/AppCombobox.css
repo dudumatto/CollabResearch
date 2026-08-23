@@ -74,3 +74,17 @@
   font-family: var(--fonte-principal, inherit);
   min-height: 2.35rem;
 }
+
+.app-combobox--with-leading-icon {
+  padding-left: 2.5rem;
+}
+
+.app-combobox__dropdown {
+  z-index: 80;
+}
+
+.app-combobox__dropdown .ant-dropdown-menu {
+  min-width: 12rem;
+  border: 1px solid var(--cor-borda-clara, #d8e1dc);
+  box-shadow: 0 14px 34px rgba(23, 47, 36, 0.14);
+}

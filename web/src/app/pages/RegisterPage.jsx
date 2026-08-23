@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import "./RegisterPage.css";
+import { AppCombobox } from "../components/ui/AppCombobox";
 
 const institutions = [
   "Universidade Federal do Brasil (UFB)",
@@ -70,6 +71,10 @@ export default function RegisterPage() {
     }
     if (userType === "student" && !form.ra.trim()) {
       setError("Informe o RA para criar sua conta.");
+      return;
+    }
+    if (!form.institution) {
+      setError("Selecione sua instituição de ensino.");
       return;
     }
     if (userType === "advisor" && (!form.department.trim() || !form.academicTitle.trim())) {
@@ -279,10 +284,17 @@ export default function RegisterPage() {
                     <label className="campo-cadastro__label">Instituição de ensino</label>
                     <div className="campo-cadastro__wrapper">
                       <Building2 size={16} className="campo-cadastro__icone-esquerda" />
-                      <select value={form.institution} onChange={(e) => update("institution", e.target.value)} className="campo-cadastro__select" required>
-                        <option value="">Selecione sua instituicao</option>
-                        {institutions.map((institution) => <option key={institution} value={institution}>{institution}</option>)}
-                      </select>
+                      <AppCombobox
+                        ariaLabel="Selecionar instituição de ensino"
+                        className="campo-cadastro__select app-combobox--with-leading-icon"
+                        value={form.institution}
+                        placeholder="Selecione sua instituicao"
+                        onChange={(nextValue) => update("institution", nextValue)}
+                        options={[
+                          { value: "", label: "Selecione sua instituicao", disabled: true },
+                          ...institutions.map((institution) => ({ value: institution, label: institution })),
+                        ]}
+                      />
                     </div>
                   </div>
 
@@ -305,12 +317,17 @@ export default function RegisterPage() {
 
                       <div className="campo-cadastro">
                         <label className="campo-cadastro__label">Titulação</label>
-                        <select value={form.academicTitle} onChange={(e) => update("academicTitle", e.target.value)} className="campo-cadastro__select--sem-icone" required>
-                          <option value="">Selecione a titulacao</option>
-                          {["Especialista", "Mestre", "Doutor", "Pos-doutor"].map((title) => (
-                            <option key={title} value={title}>{title}</option>
-                          ))}
-                        </select>
+                        <AppCombobox
+                          ariaLabel="Selecionar titulação"
+                          className="campo-cadastro__select--sem-icone"
+                          value={form.academicTitle}
+                          placeholder="Selecione a titulacao"
+                          onChange={(nextValue) => update("academicTitle", nextValue)}
+                          options={[
+                            { value: "", label: "Selecione a titulacao", disabled: true },
+                            ...["Especialista", "Mestre", "Doutor", "Pos-doutor"].map((title) => ({ value: title, label: title })),
+                          ]}
+                        />
                       </div>
                     </>
                   ) : (
@@ -323,12 +340,17 @@ export default function RegisterPage() {
 
                       <div className="campo-cadastro">
                         <label className="campo-cadastro__label">Semestre atual</label>
-                        <select value={form.semester} onChange={(e) => update("semester", e.target.value)} className="campo-cadastro__select--sem-icone">
-                          <option value="">Selecione o semestre</option>
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((semester) => (
-                            <option key={semester} value={semester}>{semester}º semestre</option>
-                          ))}
-                        </select>
+                        <AppCombobox
+                          ariaLabel="Selecionar semestre atual"
+                          className="campo-cadastro__select--sem-icone"
+                          value={form.semester}
+                          placeholder="Selecione o semestre"
+                          onChange={(nextValue) => update("semester", nextValue)}
+                          options={[
+                            { value: "", label: "Selecione o semestre" },
+                            ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((semester) => ({ value: semester, label: `${semester}º semestre` })),
+                          ]}
+                        />
                       </div>
                     </>
                   )}

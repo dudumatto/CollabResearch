@@ -6,6 +6,7 @@ import { areaService } from "../services/areaService";
 import { projectService } from "../services/projectService";
 import { StatusView } from "../components/StatusView";
 import { validateProjectDates } from "../utils/projectFormValidation";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import "./CreateProjectPage.css";
 
 export default function EditProjectPage() {
@@ -172,13 +173,20 @@ export default function EditProjectPage() {
               <label htmlFor="areaId" className="formulario-projeto__rotulo">
                 Área <span className="formulario-projeto__obrigatorio">*</span>
               </label>
-              <select id="areaId" name="areaId" value={form.areaId} onChange={handleChange}
-                className="formulario-projeto__select" disabled={isDisabled}>
-                <option value="">{areasUnavailable ? "Nenhuma área cadastrada" : "Selecione uma área"}</option>
-                {areas.map((a) => (
-                  <option key={a.id} value={a.id}>{a.nome}</option>
-                ))}
-              </select>
+              <AppCombobox
+                id="areaId"
+                name="areaId"
+                ariaLabel="Selecionar área"
+                className="formulario-projeto__select"
+                value={form.areaId}
+                disabled={isDisabled}
+                placeholder={areasUnavailable ? "Nenhuma área cadastrada" : "Selecione uma área"}
+                onChange={(nextValue) => handleChange({ target: { name: "areaId", value: nextValue } })}
+                options={[
+                  { value: "", label: areasUnavailable ? "Nenhuma área cadastrada" : "Selecione uma área", disabled: true },
+                  ...areas.map((a) => ({ value: a.id, label: a.nome })),
+                ]}
+              />
             </div>
 
             <div className="formulario-projeto__campo">

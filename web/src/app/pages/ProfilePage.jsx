@@ -10,6 +10,7 @@ import { applicationService } from "../services/applicationService";
 import { mapApplication } from "../utils/adapters";
 import { formatUserType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import { ProfileDocuments } from "../components/ProfileDocuments";
 import "./AdvisorWorkspace.css";
 import "./ProfilePage.css";
@@ -308,18 +309,18 @@ export default function ProfilePage() {
                 <label className="advisor-campo__rotulo" htmlFor="perfil-curso">Curso</label>
                 <div className="student-profile-standard__input-wrap">
                   <BookOpen size={14} className="student-profile-standard__input-icon" />
-                  <select
+                  <AppCombobox
                     id="perfil-curso"
+                    ariaLabel="Selecionar curso"
+                    className="advisor-campo__input student-profile-standard__input app-combobox--with-leading-icon"
                     value={form.cursoId}
                     disabled={!editing}
-                    onChange={(e) => setForm((prev) => ({ ...prev, cursoId: e.target.value }))}
-                    className="advisor-campo__input student-profile-standard__input"
-                  >
-                    <option value="">Selecione o curso</option>
-                    {courseOptions.map((course) => (
-                      <option key={course.id} value={course.id}>{course.nome}</option>
-                    ))}
-                  </select>
+                    onChange={(nextValue) => setForm((prev) => ({ ...prev, cursoId: nextValue }))}
+                    options={[
+                      { value: "", label: "Selecione o curso" },
+                      ...courseOptions.map((course) => ({ value: course.id, label: course.nome })),
+                    ]}
+                  />
                 </div>
               </div>
               <div className="advisor-campo">

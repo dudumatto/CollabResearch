@@ -11,6 +11,7 @@ import { mapProject, mapEntrega, mapDeliveryVersion } from "../utils/adapters";
 import { formatEntregaStatus, formatEntregaDecisao, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
 const FILTROS = [
@@ -215,19 +216,13 @@ export default function AdvisorDeliveriesPage() {
       <div className="advisor-toolbar">
         <div className="advisor-busca" style={{ maxWidth: 360 }}>
           <FolderOpen size={16} className="advisor-busca__icone" />
-          <select
+          <AppCombobox
+            ariaLabel="Selecionar projeto"
+            className="advisor-busca__input app-combobox--with-leading-icon"
             value={activeProjectId ?? ""}
-            onChange={(e) => setProjectId(Number(e.target.value))}
-            className="advisor-busca__input"
-            style={{ paddingLeft: "2.5rem" }}
-            aria-label="Selecionar projeto"
-          >
-            {todosProjetos.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
-            ))}
-          </select>
+            onChange={(nextValue) => setProjectId(Number(nextValue))}
+            options={todosProjetos.map((p) => ({ value: p.id, label: p.title }))}
+          />
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { projectService } from "../services/projectService";
 import { courseService } from "../services/courseService";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
 import { getProjectSeatHolders, getProjectSlotsUsage, getUserPhotoUrl, mapProject } from "../utils/adapters";
 import { formatProjectStatus } from "../utils/formatters";
@@ -200,17 +201,13 @@ export default function ProjectsPage() {
             <div>
               <label className="pagina-projetos__rotulo-filtro">Curso</label>
               <div className="pagina-projetos__input-filtro">
-                <select
-                  value={selectedCourse || "Todos"}
-                  onChange={(e) => setSelectedCourse(e.target.value === "Todos" ? "" : e.target.value)}
+                <AppCombobox
+                  ariaLabel="Filtrar por curso"
                   className="pagina-projetos__input-filtro-curso"
-                >
-                  {cursos.map((curso) => (
-                    <option key={curso} value={curso}>
-                      {curso}
-                    </option>
-                  ))}
-                </select>
+                  value={selectedCourse || "Todos"}
+                  onChange={(nextValue) => setSelectedCourse(nextValue === "Todos" ? "" : nextValue)}
+                  options={cursos.map((curso) => ({ value: curso, label: curso }))}
+                />
               </div>
             </div>
             <div>

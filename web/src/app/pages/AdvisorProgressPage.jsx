@@ -10,6 +10,7 @@ import { mapProject, mapEtapa } from "../utils/adapters";
 import { formatProjectStatus, formatEtapaStatus, formatEtapaResponsavel, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
 const RESPONSAVEIS = [
@@ -248,19 +249,13 @@ export default function AdvisorProgressPage() {
       <div className="advisor-toolbar">
         <div className="advisor-busca" style={{ maxWidth: 360 }}>
           <FolderOpen size={16} className="advisor-busca__icone" />
-          <select
+          <AppCombobox
+            ariaLabel="Selecionar projeto"
+            className="advisor-busca__input app-combobox--with-leading-icon"
             value={activeProjectId ?? ""}
-            onChange={(e) => setSelectedProjectId(Number(e.target.value))}
-            className="advisor-busca__input"
-            style={{ paddingLeft: "2.5rem" }}
-            aria-label="Selecionar projeto"
-          >
-            {projetosAtivos.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
-            ))}
-          </select>
+            onChange={(nextValue) => setSelectedProjectId(Number(nextValue))}
+            options={projetosAtivos.map((p) => ({ value: p.id, label: p.title }))}
+          />
         </div>
         <button type="button" className="advisor-botao advisor-botao--primario" onClick={() => abrirModal("nova")}>
           <Plus size={16} />
@@ -442,16 +437,14 @@ export default function AdvisorProgressPage() {
                 </div>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="etapa-responsavel">Responsável</label>
-                  <select
+                  <AppCombobox
                     id="etapa-responsavel"
+                    ariaLabel="Selecionar responsável"
+                    className="advisor-campo__input app-combobox--advisor-input"
                     value={campos.responsavel}
-                    onChange={(e) => setCampos({ ...campos, responsavel: e.target.value })}
-                    className="advisor-campo__input"
-                  >
-                    {RESPONSAVEIS.map((r) => (
-                      <option key={r.value} value={r.value}>{r.rotulo}</option>
-                    ))}
-                  </select>
+                    onChange={(nextValue) => setCampos({ ...campos, responsavel: nextValue })}
+                    options={RESPONSAVEIS.map((r) => ({ value: r.value, label: r.rotulo }))}
+                  />
                 </div>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="etapa-prazo">Data de entrega</label>

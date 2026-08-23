@@ -10,6 +10,7 @@ import { mapProject, mapEtapa, mapOrientando, mapAvaliacaoAcademica } from "../u
 import { formatAvaliacaoNota, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
 const CRITERIOS = [
@@ -240,19 +241,13 @@ export default function AdvisorEvaluationsPage() {
       <div className="advisor-toolbar">
         <div className="advisor-busca" style={{ maxWidth: 360 }}>
           <FolderOpen size={16} className="advisor-busca__icone" />
-          <select
+          <AppCombobox
+            ariaLabel="Selecionar projeto"
+            className="advisor-busca__input app-combobox--with-leading-icon"
             value={activeProjectId ?? ""}
-            onChange={(e) => setProjectId(Number(e.target.value))}
-            className="advisor-busca__input"
-            style={{ paddingLeft: "2.5rem" }}
-            aria-label="Selecionar projeto"
-          >
-            {todosProjetos.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
-            ))}
-          </select>
+            onChange={(nextValue) => setProjectId(Number(nextValue))}
+            options={todosProjetos.map((p) => ({ value: p.id, label: p.title }))}
+          />
         </div>
         <button type="button" className="advisor-botao advisor-botao--primario" onClick={() => abrirModal()}>
           Nova avaliação
@@ -357,36 +352,32 @@ export default function AdvisorEvaluationsPage() {
                 <>
                   <div className="advisor-campo">
                     <label className="advisor-campo__rotulo" htmlFor="avaliacao-aluno">Aluno avaliado *</label>
-                    <select
+                    <AppCombobox
                       id="avaliacao-aluno"
+                      ariaLabel="Selecionar aluno avaliado"
+                      className="advisor-campo__input app-combobox--advisor-input"
                       value={campos?.alunoId ?? ""}
-                      onChange={(e) => setCampos({ ...campos, alunoId: e.target.value })}
-                      className="advisor-campo__input"
-                    >
-                      <option value="">Selecione o aluno...</option>
-                      {opcoes.alunos.map((a) => (
-                        <option key={a.alunoId} value={a.alunoId}>
-                          {a.nome}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(nextValue) => setCampos({ ...campos, alunoId: nextValue })}
+                      options={[
+                        { value: "", label: "Selecione o aluno..." },
+                        ...opcoes.alunos.map((a) => ({ value: a.alunoId, label: a.nome })),
+                      ]}
+                    />
                   </div>
 
                   <div className="advisor-campo">
                     <label className="advisor-campo__rotulo" htmlFor="avaliacao-etapa">Etapa concluída *</label>
-                    <select
+                    <AppCombobox
                       id="avaliacao-etapa"
+                      ariaLabel="Selecionar etapa concluída"
+                      className="advisor-campo__input app-combobox--advisor-input"
                       value={campos?.etapaId ?? ""}
-                      onChange={(e) => setCampos({ ...campos, etapaId: e.target.value })}
-                      className="advisor-campo__input"
-                    >
-                      <option value="">Selecione a etapa...</option>
-                      {opcoes.etapas.map((e) => (
-                        <option key={e.id} value={e.id}>
-                          {e.titulo}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(nextValue) => setCampos({ ...campos, etapaId: nextValue })}
+                      options={[
+                        { value: "", label: "Selecione a etapa..." },
+                        ...opcoes.etapas.map((e) => ({ value: e.id, label: e.titulo })),
+                      ]}
+                    />
                     {opcoes.etapas.length === 0 && (
                       <span className="advisor-campo__erro" style={{ color: "var(--cor-texto-mudo)" }}>
                         Nenhuma etapa concluída disponível neste projeto.
