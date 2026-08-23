@@ -367,14 +367,6 @@
   }
 }
 
-.barra-lateral__navegacao {
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-
-.barra-lateral__navegacao::-webkit-scrollbar {
-  display: none;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .barra-lateral,
