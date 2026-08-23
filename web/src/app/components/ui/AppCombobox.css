@@ -80,7 +80,7 @@
 }
 
 .app-combobox__dropdown {
-  z-index: 80;
+  z-index: 1200;
 }
 
 .app-combobox__dropdown .ant-dropdown-menu {

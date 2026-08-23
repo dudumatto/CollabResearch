@@ -41,6 +41,17 @@ export function AppCombobox({
     setOpen(false);
   };
 
+  const openMenu = () => {
+    if (!isDisabled) setOpen(true);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openMenu();
+    }
+  };
+
   return (
     <Dropdown
       menu={{ items: menuItems, selectable: true, selectedKeys: normalizedValue ? [normalizedValue] : [], onClick: handleSelect }}
@@ -62,6 +73,8 @@ export function AppCombobox({
         aria-expanded={open}
         aria-disabled={isDisabled || undefined}
         disabled={isDisabled}
+        onClick={openMenu}
+        onKeyDown={handleKeyDown}
       >
         <span className="app-combobox__label">{label}</span>
         <ChevronDown size={16} aria-hidden="true" />
