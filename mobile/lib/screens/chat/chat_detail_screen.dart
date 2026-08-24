@@ -391,8 +391,7 @@ class _DateDivider extends StatelessWidget {
       child: Center(
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: colorScheme.surface,
-            border: Border.all(color: colorScheme.outlineVariant),
+            color: colorScheme.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(999),
           ),
           child: Padding(

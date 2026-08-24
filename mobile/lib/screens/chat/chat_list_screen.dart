@@ -61,6 +61,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 24,
         title: Text(
           'Conversas',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -69,11 +70,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton.filledTonal(
+            padding: const EdgeInsets.only(right: 12),
+            child: IconButton(
               onPressed: _showNewConversation,
               tooltip: 'Nova conversa',
-              icon: const Icon(Icons.edit_square),
+              color: Theme.of(context).colorScheme.onSurface,
+              icon: const Icon(Icons.edit_square, size: 26),
             ),
           ),
         ],
@@ -340,14 +342,7 @@ class _NewConversationSheetState extends State<_NewConversationSheet> {
                                       Theme.of(context).colorScheme;
 
                                   return Material(
-                                    color: colorScheme.surfaceContainerLowest,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                      side: BorderSide(
-                                        color: colorScheme.outlineVariant,
-                                      ),
-                                    ),
-                                    clipBehavior: Clip.antiAlias,
+                                    color: Colors.transparent,
                                     child: ListTile(
                                       contentPadding:
                                           const EdgeInsets.symmetric(

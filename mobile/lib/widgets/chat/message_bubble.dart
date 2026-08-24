@@ -22,7 +22,11 @@ class MessageBubble extends StatelessWidget {
     final isMine = message.isMine || message.senderId == currentUserId;
     final alignment = isMine ? Alignment.centerRight : Alignment.centerLeft;
     final colorScheme = Theme.of(context).colorScheme;
-    final background = isMine ? colorScheme.primary : colorScheme.surface;
+    final receivedBackground = Color.alphaBlend(
+      colorScheme.onSurface.withValues(alpha: 0.06),
+      colorScheme.surface,
+    );
+    final background = isMine ? colorScheme.primary : receivedBackground;
     final foreground = isMine ? colorScheme.onPrimary : colorScheme.onSurface;
     final metadataColor = foreground.withValues(alpha: 0.72);
 
@@ -86,21 +90,12 @@ class MessageBubble extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: background,
-              border:
-                  isMine ? null : Border.all(color: colorScheme.outlineVariant),
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(18),
                 topRight: const Radius.circular(18),
                 bottomLeft: Radius.circular(isMine ? 18 : 5),
                 bottomRight: Radius.circular(isMine ? 5 : 18),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.shadow.withValues(alpha: 0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

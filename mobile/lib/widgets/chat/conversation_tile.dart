@@ -18,15 +18,8 @@ class ConversationTile extends StatelessWidget {
         : conversation.lastMessage;
 
     return Material(
-      color: colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: hasUnreadMessages
-              ? colorScheme.primary.withValues(alpha: 0.35)
-              : colorScheme.outlineVariant,
-        ),
-      ),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -41,7 +34,7 @@ class ConversationTile extends StatelessWidget {
                   border: Border.all(
                     color: hasUnreadMessages
                         ? colorScheme.primary
-                        : colorScheme.outlineVariant,
+                        : Colors.transparent,
                     width: 1.5,
                   ),
                 ),
