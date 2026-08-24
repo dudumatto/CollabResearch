@@ -80,11 +80,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
-                                    child: Text(
-                                        'Olá, ${user?.name.isNotEmpty == true ? user!.name.split(' ').first : 'pesquisador'}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge)),
+                                  child: Text.rich(
+                                    TextSpan(
+                                      text: 'Olá, ',
+                                      children: [
+                                        TextSpan(
+                                          text: user?.name.isNotEmpty == true
+                                              ? user!.name.split(' ').first
+                                              : 'pesquisador',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 18),

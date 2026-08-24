@@ -89,25 +89,13 @@ class _AppShellState extends State<AppShell> {
           ),
           bottomNavigationBar: useRail
               ? null
-              : NavigationBar(
+              : _MobileNavigationBar(
+                  destinations: _destinations,
                   selectedIndex: widget.navigationShell.currentIndex,
                   onDestinationSelected: widget.navigationShell.goBranch,
-                  destinations: [
-                    for (var index = 0; index < _destinations.length; index++)
-                      NavigationDestination(
-                        icon: _AnimatedNavigationIcon(
-                          icon: _destinations[index].icon,
-                          selected:
-                              widget.navigationShell.currentIndex == index,
-                          count: _badgeCount(
-                            _destinations[index].label,
-                            chatUnreadCount,
-                            notificationUnreadCount,
-                          ),
-                        ),
-                        label: _destinations[index].label,
-                      ),
-                  ],
+                  chatUnreadCount: chatUnreadCount,
+                  notificationUnreadCount: notificationUnreadCount,
+                  badgeCount: _badgeCount,
                 ),
         );
       },
@@ -127,16 +115,118 @@ class _AppShellState extends State<AppShell> {
   }
 }
 
+class _MobileNavigationBar extends StatelessWidget {
+  const _MobileNavigationBar({
+    required this.destinations,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required this.chatUnreadCount,
+    required this.notificationUnreadCount,
+    required this.badgeCount,
+  });
+
+  final List<_ShellDestination> destinations;
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+  final int chatUnreadCount;
+  final int notificationUnreadCount;
+  final int Function(String, int, int) badgeCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isCompact = MediaQuery.sizeOf(context).width < 360;
+
+    return SafeArea(
+      minimum:
+          EdgeInsets.fromLTRB(isCompact ? 8 : 12, 0, isCompact ? 8 : 12, 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.7),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: 0.08),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: NavigationBarTheme(
+            data: NavigationBarThemeData(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              height: isCompact ? 68 : 72,
+              indicatorColor: colorScheme.primary,
+              indicatorShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                final selected = states.contains(WidgetState.selected);
+                return TextStyle(
+                  color: selected
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
+                  fontSize: isCompact ? 10 : 11,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                );
+              }),
+            ),
+            child: NavigationBar(
+              selectedIndex: selectedIndex,
+              onDestinationSelected: onDestinationSelected,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+              destinations: [
+                for (final destination in destinations)
+                  NavigationDestination(
+                    icon: _AnimatedNavigationIcon(
+                      icon: destination.icon,
+                      selected: false,
+                      count: badgeCount(
+                        destination.label,
+                        chatUnreadCount,
+                        notificationUnreadCount,
+                      ),
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    selectedIcon: _AnimatedNavigationIcon(
+                      icon: destination.icon,
+                      selected: true,
+                      count: badgeCount(
+                        destination.label,
+                        chatUnreadCount,
+                        notificationUnreadCount,
+                      ),
+                      color: colorScheme.onPrimary,
+                    ),
+                    label: destination.label,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AnimatedNavigationIcon extends StatelessWidget {
   const _AnimatedNavigationIcon({
     required this.icon,
     required this.selected,
     required this.count,
+    this.color,
   });
 
   final IconData icon;
   final bool selected;
   final int count;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -149,24 +239,29 @@ class _AnimatedNavigationIcon extends StatelessWidget {
         duration: duration,
         curve: Curves.easeOutBack,
         scale: selected ? 1.12 : 1,
-        child: _NavigationIcon(icon: icon, count: count),
+        child: _NavigationIcon(icon: icon, count: count, color: color),
       ),
     );
   }
 }
 
 class _NavigationIcon extends StatelessWidget {
-  const _NavigationIcon({required this.icon, required this.count});
+  const _NavigationIcon({
+    required this.icon,
+    required this.count,
+    this.color,
+  });
 
   final IconData icon;
   final int count;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     return Badge.count(
       count: count > 99 ? 99 : count,
       isLabelVisible: count > 0,
-      child: Icon(icon),
+      child: Icon(icon, color: color),
     );
   }
 }
