@@ -64,7 +64,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         titleSpacing: 24,
         title: Text(
           'Conversas',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
         ),

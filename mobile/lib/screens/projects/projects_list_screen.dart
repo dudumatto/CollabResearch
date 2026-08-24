@@ -22,6 +22,7 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
   final _areaController = TextEditingController();
   final _courseController = TextEditingController();
   String? _selectedStatus;
+  bool _filtersVisible = false;
 
   @override
   void initState() {
@@ -66,7 +67,15 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
     final canCreate = userType == 'ALUNO' || userType == 'ORIENTADOR';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Projetos')),
+      appBar: AppBar(
+        titleSpacing: 24,
+        title: Text(
+          'Projetos',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+      ),
       floatingActionButton: canCreate
           ? FloatingActionButton.extended(
               onPressed: () => context.go('/projects/create'),
@@ -104,16 +113,47 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                                 onSubmitted: (_) => _loadProjects(provider),
                               ),
                               const SizedBox(height: 12),
-                              ProjectFilterBar(
-                                selectedStatus: _selectedStatus,
-                                areaController: _areaController,
-                                courseController: _courseController,
-                                onStatusChanged: (value) {
-                                  setState(() => _selectedStatus = value);
-                                  _loadProjects(provider);
-                                },
-                                onApply: () => _loadProjects(provider),
-                                onClear: () => _clearFilters(provider),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () => setState(
+                                    () => _filtersVisible = !_filtersVisible,
+                                  ),
+                                  icon: Icon(
+                                    _filtersVisible
+                                        ? Icons.expand_less
+                                        : Icons.tune_rounded,
+                                  ),
+                                  label: Text(
+                                    _filtersVisible
+                                        ? 'Ocultar filtros'
+                                        : 'Filtros',
+                                  ),
+                                ),
+                              ),
+                              AnimatedSize(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeOutCubic,
+                                alignment: Alignment.topCenter,
+                                child: _filtersVisible
+                                    ? Padding(
+                                        padding: const EdgeInsets.only(top: 12),
+                                        child: ProjectFilterBar(
+                                          selectedStatus: _selectedStatus,
+                                          areaController: _areaController,
+                                          courseController: _courseController,
+                                          onStatusChanged: (value) {
+                                            setState(
+                                                () => _selectedStatus = value);
+                                            _loadProjects(provider);
+                                          },
+                                          onApply: () =>
+                                              _loadProjects(provider),
+                                          onClear: () =>
+                                              _clearFilters(provider),
+                                        ),
+                                      )
+                                    : const SizedBox.shrink(),
                               ),
                             ],
                           ),

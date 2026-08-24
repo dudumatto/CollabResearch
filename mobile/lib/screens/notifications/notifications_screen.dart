@@ -57,7 +57,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notificacoes')),
+      appBar: AppBar(
+        titleSpacing: 24,
+        title: Text(
+          'Notificações',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+      ),
       body: Consumer<NotificationProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.notifications.isEmpty) {

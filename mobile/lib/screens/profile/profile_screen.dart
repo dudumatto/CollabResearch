@@ -122,7 +122,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Perfil'),
+        titleSpacing: 24,
+        title: Text(
+          'Perfil',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
         actions: [
           IconButton(
             onPressed: () => context.go('/settings'),

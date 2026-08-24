@@ -16,7 +16,8 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends State<AppShell>
+    with SingleTickerProviderStateMixin {
   static const _destinations = [
     _ShellDestination(Icons.space_dashboard_outlined, 'Dashboard'),
     _ShellDestination(Icons.folder_open_outlined, 'Projetos'),
@@ -25,14 +26,48 @@ class _AppShellState extends State<AppShell> {
     _ShellDestination(Icons.person_outline, 'Perfil'),
   ];
 
+  late final AnimationController _pageTransitionController;
+  late final Animation<double> _pageOpacity;
+  late final Animation<Offset> _pageOffset;
+
   @override
   void initState() {
     super.initState();
+    _pageTransitionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+      value: 1,
+    );
+    final pageCurve = CurvedAnimation(
+      parent: _pageTransitionController,
+      curve: Curves.easeOutCubic,
+    );
+    _pageOpacity = Tween<double>(begin: 0.86, end: 1).animate(pageCurve);
+    _pageOffset = Tween<Offset>(
+      begin: const Offset(0.015, 0),
+      end: Offset.zero,
+    ).animate(pageCurve);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ChatProvider>().loadConversations();
       context.read<DashboardProvider>().load();
       context.read<NotificationProvider>().loadNotifications();
     });
+  }
+
+  @override
+  void dispose() {
+    _pageTransitionController.dispose();
+    super.dispose();
+  }
+
+  void _goBranch(int index) {
+    if (index == widget.navigationShell.currentIndex) {
+      widget.navigationShell.goBranch(index);
+      return;
+    }
+
+    widget.navigationShell.goBranch(index);
+    _pageTransitionController.forward(from: 0);
   }
 
   @override
@@ -52,7 +87,7 @@ class _AppShellState extends State<AppShell> {
                 SafeArea(
                   child: NavigationRail(
                     selectedIndex: widget.navigationShell.currentIndex,
-                    onDestinationSelected: widget.navigationShell.goBranch,
+                    onDestinationSelected: _goBranch,
                     labelType: NavigationRailLabelType.all,
                     minWidth: 88,
                     leading: const Padding(
@@ -84,7 +119,15 @@ class _AppShellState extends State<AppShell> {
                   ),
                 ),
               if (useRail) const VerticalDivider(width: 1),
-              Expanded(child: widget.navigationShell),
+              Expanded(
+                child: FadeTransition(
+                  opacity: _pageOpacity,
+                  child: SlideTransition(
+                    position: _pageOffset,
+                    child: widget.navigationShell,
+                  ),
+                ),
+              ),
             ],
           ),
           bottomNavigationBar: useRail
@@ -92,7 +135,7 @@ class _AppShellState extends State<AppShell> {
               : _MobileNavigationBar(
                   destinations: _destinations,
                   selectedIndex: widget.navigationShell.currentIndex,
-                  onDestinationSelected: widget.navigationShell.goBranch,
+                  onDestinationSelected: _goBranch,
                   chatUnreadCount: chatUnreadCount,
                   notificationUnreadCount: notificationUnreadCount,
                   badgeCount: _badgeCount,
