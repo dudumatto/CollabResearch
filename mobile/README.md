@@ -24,13 +24,14 @@ Levar os principais fluxos do CollabResearch para celular, mantendo acesso rapid
 
 ## Funcionalidades principais
 
-- Login, cadastro e recuperacao de acesso.
-- Dashboard com indicadores.
-- Lista e detalhe de projetos.
-- Inscricoes e acompanhamento de status.
-- Chat entre usuarios.
-- Notificacoes em tempo real.
-- Perfil, configuracoes e feedback.
+- Login e cadastro para alunos e orientadores.
+- Dashboard com indicadores reais do backend.
+- Criacao, edicao, listagem e detalhe de projetos.
+- Inscricoes com aprovacao, rejeicao e cancelamento conforme o papel do usuario.
+- Progresso e feedback vinculados ao projeto.
+- Chat entre usuarios, com mensagens atualizadas via STOMP.
+- Notificacoes consultadas pela API, com leitura individual ou em lote.
+- Perfil e configuracoes com tema claro ou escuro.
 
 ## Tecnologias utilizadas
 
@@ -67,7 +68,7 @@ tcc-mobile/
 
 ## Pre-requisitos
 
-- Flutter SDK 3.3 ou superior
+- Flutter SDK compativel com Dart `>=3.3.0 <4.0.0`
 - Dart compatível com o Flutter instalado
 - Android Studio, Xcode ou ambiente Flutter Web/Windows conforme a plataforma alvo
 - Backend CollabResearch em execucao
@@ -125,7 +126,19 @@ flowchart LR
     D --> E["Banco de dados"]
 ```
 
-O mobile consome a API HTTP do backend para CRUD e autentica o usuario com JWT. Conversas e notificacoes usam o canal em tempo real quando disponivel.
+O mobile consome a API HTTP do backend para CRUD e autentica o usuario com JWT. O token fica no `flutter_secure_storage`. O STOMP e usado apenas nas mensagens de chat porque o backend atual nao publica notificacoes por WebSocket; alertas sao atualizados ao entrar no app, abrir a tela ou puxar para atualizar.
+
+## Validacao local
+
+Os comandos usados para validar o projeto sao:
+
+```bash
+flutter analyze
+flutter test
+flutter build web
+```
+
+Pendencias conhecidas e evolucoes planejadas estao em [MELHORIAS.md](MELHORIAS.md).
 
 ## Equipe do projeto
 
