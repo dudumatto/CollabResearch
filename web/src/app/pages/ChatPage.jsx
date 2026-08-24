@@ -30,16 +30,31 @@ function ChatAvatar({ name, src, className }) {
   );
 }
 
-function getMessagePhotoUrl(message, currentUser, mine) {
-  if (mine) return getUserPhotoUrl(currentUser);
-  return (
+function getMessagePhotoUrl(message, currentUser, mine, conversation) {
+  const senderPhoto =
     message?.remetenteFotoPerfilUrl ||
+    message?.remetenteProfilePhotoUrl ||
+    message?.remetenteImagemPerfilUrl ||
+    message?.remetenteFotoUrl ||
     message?.remetenteAvatarUrl ||
+    message?.senderPhotoUrl ||
+    message?.senderAvatarUrl ||
+    message?.authorPhotoUrl ||
+    message?.authorAvatarUrl ||
     message?.fotoPerfilUrl ||
+    message?.avatarUrl ||
     getUserPhotoUrl(message?.remetente) ||
+    getUserPhotoUrl(message?.sender) ||
+    getUserPhotoUrl(message?.autor) ||
     getUserPhotoUrl(message?.usuario) ||
-    ""
-  );
+    getUserPhotoUrl(message?.user);
+
+  if (senderPhoto) return senderPhoto;
+  if (mine) return getUserPhotoUrl(currentUser);
+
+  return conversation?.tipo === "PRIVADA"
+    ? getUserPhotoUrl(conversation)
+    : "";
 }
 
 function getConversationTimestamp(conversation) {
@@ -708,7 +723,7 @@ export default function ChatPage() {
                           {!mine && (
                             <ChatAvatar
                               name={m?.remetenteNome}
-                              src={getMessagePhotoUrl(m, user, mine)}
+                              src={getMessagePhotoUrl(m, user, mine, selectedConversation)}
                               className="mensagem-avatar"
                             />
                           )}
@@ -740,7 +755,7 @@ export default function ChatPage() {
                           {mine && (
                             <ChatAvatar
                               name={user?.nome}
-                              src={getMessagePhotoUrl(m, user, mine)}
+                              src={getMessagePhotoUrl(m, user, mine, selectedConversation)}
                               className="mensagem-avatar mensagem-avatar--usuario"
                             />
                           )}

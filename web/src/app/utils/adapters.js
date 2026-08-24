@@ -15,9 +15,28 @@ export function getUserType(user) {
   return user?.tipo ?? user?.type ?? nestedUser?.tipo ?? nestedUser?.type ?? "";
 }
 
+function firstNonEmptyString(values) {
+  return values.map((value) => String(value ?? "").trim()).find(Boolean) ?? "";
+}
+
 export function getUserPhotoUrl(user) {
   const nestedUser = user?.usuario ?? user?.user ?? user?.aluno?.usuario ?? user?.aluno ?? user?.orientador?.usuario ?? user?.orientador;
-  return user?.fotoPerfilUrl ?? user?.profilePhotoUrl ?? user?.imagemPerfilUrl ?? user?.fotoUrl ?? user?.avatarUrl ?? user?.photoUrl ?? user?.pictureUrl ?? nestedUser?.fotoPerfilUrl ?? nestedUser?.profilePhotoUrl ?? nestedUser?.imagemPerfilUrl ?? nestedUser?.fotoUrl ?? nestedUser?.avatarUrl ?? nestedUser?.photoUrl ?? nestedUser?.pictureUrl ?? "";
+  return firstNonEmptyString([
+    user?.fotoPerfilUrl,
+    user?.profilePhotoUrl,
+    user?.imagemPerfilUrl,
+    user?.fotoUrl,
+    user?.avatarUrl,
+    user?.photoUrl,
+    user?.pictureUrl,
+    nestedUser?.fotoPerfilUrl,
+    nestedUser?.profilePhotoUrl,
+    nestedUser?.imagemPerfilUrl,
+    nestedUser?.fotoUrl,
+    nestedUser?.avatarUrl,
+    nestedUser?.photoUrl,
+    nestedUser?.pictureUrl,
+  ]);
 }
 
 export function withImageCacheBuster(url, version = Date.now()) {
