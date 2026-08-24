@@ -41,6 +41,7 @@ class AuthProvider extends ChangeNotifier {
       if (token != null && token!.isNotEmpty) {
         await _apiClient.saveToken(token!);
         currentUser = _extractUser(response.data) ?? _userFromToken(token!);
+        await refreshProfile();
       }
     } on FormatException {
       await _apiClient.clearToken();

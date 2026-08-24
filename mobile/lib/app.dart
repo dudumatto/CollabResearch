@@ -25,9 +25,11 @@ class _TccMobileAppState extends State<TccMobileApp> {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = context.watch<AuthProvider>().themeMode;
+    final auth = context.watch<AuthProvider>();
+    final sessionKey = auth.currentUser?.id ?? 'guest';
 
     return MultiProvider(
+      key: ValueKey<String>(sessionKey),
       providers: [
         ChangeNotifierProvider<ProjectProvider>(
           create: (_) => ProjectProvider(),
@@ -53,7 +55,7 @@ class _TccMobileAppState extends State<TccMobileApp> {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: themeMode,
+        themeMode: auth.themeMode,
         routerConfig: _router,
       ),
     );

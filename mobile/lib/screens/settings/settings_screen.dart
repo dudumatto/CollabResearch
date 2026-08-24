@@ -19,6 +19,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
   String _theme = 'claro';
   bool _savingPassword = false;
+  bool _showCurrentPassword = false;
+  bool _showNewPassword = false;
+  bool _showPasswordConfirmation = false;
 
   @override
   void initState() {
@@ -65,9 +68,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _changePassword() async {
-    final current = _currentPasswordController.text.trim();
-    final next = _newPasswordController.text.trim();
-    final confirmation = _confirmPasswordController.text.trim();
+    final current = _currentPasswordController.text;
+    final next = _newPasswordController.text;
+    final confirmation = _confirmPasswordController.text;
 
     if (current.isEmpty || next.isEmpty || confirmation.isEmpty) {
       _showMessage('Preencha todos os campos de senha.');
@@ -138,7 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onChanged: (value) =>
                       setState(() => _notificationsEnabled = value),
                   title: const Text('Notificacoes'),
-                  subtitle: const Text('Receber alertas em tempo real'),
+                  subtitle: const Text('Receber alertas do sistema'),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
@@ -165,30 +168,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text('Alterar senha',
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
-                TextField(
+                _PasswordField(
                   controller: _currentPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Senha atual',
-                    prefixIcon: Icon(Icons.lock_outline),
+                  label: 'Senha atual',
+                  icon: Icons.lock_outline,
+                  visible: _showCurrentPassword,
+                  onToggleVisibility: () => setState(
+                    () => _showCurrentPassword = !_showCurrentPassword,
                   ),
                 ),
                 const SizedBox(height: 12),
-                TextField(
+                _PasswordField(
                   controller: _newPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Nova senha',
-                    prefixIcon: Icon(Icons.lock_reset_outlined),
+                  label: 'Nova senha',
+                  icon: Icons.lock_reset_outlined,
+                  visible: _showNewPassword,
+                  onToggleVisibility: () => setState(
+                    () => _showNewPassword = !_showNewPassword,
                   ),
                 ),
                 const SizedBox(height: 12),
-                TextField(
+                _PasswordField(
                   controller: _confirmPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirmar nova senha',
-                    prefixIcon: Icon(Icons.verified_user_outlined),
+                  label: 'Confirmar nova senha',
+                  icon: Icons.verified_user_outlined,
+                  visible: _showPasswordConfirmation,
+                  onToggleVisibility: () => setState(
+                    () =>
+                        _showPasswordConfirmation = !_showPasswordConfirmation,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -234,6 +241,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PasswordField extends StatelessWidget {
+  const _PasswordField({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    required this.visible,
+    required this.onToggleVisibility,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final bool visible;
+  final VoidCallback onToggleVisibility;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      obscureText: !visible,
+      enableSuggestions: false,
+      autocorrect: false,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        suffixIcon: IconButton(
+          onPressed: onToggleVisibility,
+          icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
+          tooltip: visible ? 'Ocultar senha' : 'Mostrar senha',
+        ),
       ),
     );
   }

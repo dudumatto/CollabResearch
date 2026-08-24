@@ -1,10 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/api/api_client.dart';
+import '../../core/utils/validators.dart';
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/project_provider.dart';
+import '../../providers/dashboard_provider.dart';
 import '../../widgets/common/app_card.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,6 +18,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _institutionController = TextEditingController();
@@ -38,6 +42,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _syncForm(User? user) {
     if (user == null || _loadedUserId == user.id) return;
     _loadedUserId = user.id;
+    _populateForm(user);
+  }
+
+  void _populateForm(User user) {
     _nameController.text = user.name;
     _emailController.text = user.email;
     _institutionController.text = user.institution ?? '';
@@ -49,25 +57,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _saveProfile(AuthProvider auth) async {
     final current = auth.currentUser;
     if (current == null) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final saved = await auth.updateProfile(
-      current.toProfileUpdatePayload(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        institution: _institutionController.text.trim(),
-        bio: _bioController.text.trim(),
-        semester: int.tryParse(_semesterController.text.trim()),
-        interests: _interestsController.text.trim(),
-        department: current.department,
-        degree: current.degree,
-      ),
-    );
+    var saved = false;
+    String? errorMessage;
+    try {
+      saved = await auth.updateProfile(
+        current.toProfileUpdatePayload(
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          institution: _institutionController.text.trim(),
+          bio: _bioController.text.trim(),
+          semester: int.tryParse(_semesterController.text.trim()),
+          interests: _interestsController.text.trim(),
+          department: current.department,
+          degree: current.degree,
+        ),
+      );
+    } on DioException catch (error) {
+      errorMessage = ApiClient.instance.friendlyError(error);
+    } catch (_) {
+      errorMessage = 'Nao foi possivel salvar o perfil.';
+    }
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-            saved ? 'Perfil atualizado.' : 'Nao foi possivel salvar o perfil.'),
+        content: Text(saved
+            ? 'Perfil atualizado.'
+            : errorMessage ?? 'Nao foi possivel salvar o perfil.'),
       ),
     );
     if (saved) setState(() => _editing = false);
@@ -98,7 +116,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.currentUser;
-    final projectsCount = context.watch<ProjectProvider>().projects.length;
+    final projectsCount =
+        context.watch<DashboardProvider>().summary?.myProjects ?? 0;
     _syncForm(user);
 
     return Scaffold(
@@ -134,7 +153,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 42,
-                        foregroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
+                        foregroundImage: user?.avatarUrl != null
+                            ? NetworkImage(user!.avatarUrl!)
+                            : null,
                         child: Text(
                           _initials(user),
                           style: Theme.of(context).textTheme.headlineSmall,
@@ -174,82 +195,97 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Informacoes do perfil',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Informacoes do perfil',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Wrap(
+                      spacing: 4,
+                      children: [
+                        if (_editing)
+                          TextButton.icon(
+                            onPressed: auth.isLoading || user == null
+                                ? null
+                                : () {
+                                    _populateForm(user);
+                                    setState(() => _editing = false);
+                                  },
+                            icon: const Icon(Icons.close),
+                            label: const Text('Cancelar'),
+                          ),
+                        TextButton.icon(
+                          onPressed: auth.isLoading
+                              ? null
+                              : () {
+                                  if (_editing) {
+                                    _saveProfile(auth);
+                                  } else {
+                                    setState(() => _editing = true);
+                                  }
+                                },
+                          icon: Icon(_editing
+                              ? Icons.save_outlined
+                              : Icons.edit_outlined),
+                          label: Text(_editing ? 'Salvar' : 'Editar'),
+                        ),
+                      ],
                     ),
-                    if (_editing)
-                      TextButton.icon(
-                        onPressed: auth.isLoading
-                            ? null
-                            : () => setState(() => _editing = false),
-                        icon: const Icon(Icons.close),
-                        label: const Text('Cancelar'),
-                      ),
-                    TextButton.icon(
-                      onPressed: auth.isLoading
-                          ? null
-                          : () {
-                              if (_editing) {
-                                _saveProfile(auth);
-                              } else {
-                                setState(() => _editing = true);
-                              }
-                            },
-                      icon: Icon(
-                          _editing ? Icons.save_outlined : Icons.edit_outlined),
-                      label: Text(_editing ? 'Salvar' : 'Editar'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _ProfileField(
-                  label: 'Nome completo',
-                  icon: Icons.person_outline,
-                  controller: _nameController,
-                  enabled: _editing,
-                ),
-                _ProfileField(
-                  label: 'Email',
-                  icon: Icons.email_outlined,
-                  controller: _emailController,
-                  enabled: _editing,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                _ProfileField(
-                  label: 'Instituicao',
-                  icon: Icons.business_outlined,
-                  controller: _institutionController,
-                  enabled: _editing,
-                ),
-                _ProfileField(
-                  label: 'Semestre',
-                  icon: Icons.school_outlined,
-                  controller: _semesterController,
-                  enabled: _editing,
-                  keyboardType: TextInputType.number,
-                ),
-                _ProfileField(
-                  label: 'Interesses',
-                  icon: Icons.auto_awesome_outlined,
-                  controller: _interestsController,
-                  enabled: _editing,
-                ),
-                _ProfileField(
-                  label: 'Biografia',
-                  icon: Icons.notes_outlined,
-                  controller: _bioController,
-                  enabled: _editing,
-                  maxLines: 3,
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 12),
+                  _ProfileField(
+                    label: 'Nome completo',
+                    icon: Icons.person_outline,
+                    controller: _nameController,
+                    enabled: _editing,
+                    validator: (value) =>
+                        Validators.requiredField(value, label: 'Nome'),
+                  ),
+                  _ProfileField(
+                    label: 'Email',
+                    icon: Icons.email_outlined,
+                    controller: _emailController,
+                    enabled: _editing,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: Validators.email,
+                  ),
+                  _ProfileField(
+                    label: 'Instituicao',
+                    icon: Icons.business_outlined,
+                    controller: _institutionController,
+                    enabled: _editing,
+                  ),
+                  _ProfileField(
+                    label: 'Semestre',
+                    icon: Icons.school_outlined,
+                    controller: _semesterController,
+                    enabled: _editing,
+                    keyboardType: TextInputType.number,
+                    validator: (value) =>
+                        Validators.positiveInteger(value, label: 'Semestre'),
+                  ),
+                  _ProfileField(
+                    label: 'Interesses',
+                    icon: Icons.auto_awesome_outlined,
+                    controller: _interestsController,
+                    enabled: _editing,
+                  ),
+                  _ProfileField(
+                    label: 'Biografia',
+                    icon: Icons.notes_outlined,
+                    controller: _bioController,
+                    enabled: _editing,
+                    maxLines: 3,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -283,6 +319,7 @@ class _ProfileField extends StatelessWidget {
     required this.enabled,
     this.keyboardType,
     this.maxLines = 1,
+    this.validator,
   });
 
   final String label;
@@ -291,16 +328,18 @@ class _ProfileField extends StatelessWidget {
   final bool enabled;
   final TextInputType? keyboardType;
   final int maxLines;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         enabled: enabled,
         keyboardType: keyboardType,
         maxLines: maxLines,
+        validator: validator,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
