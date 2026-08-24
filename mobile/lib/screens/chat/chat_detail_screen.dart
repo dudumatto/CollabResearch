@@ -224,24 +224,33 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         final colorScheme = Theme.of(context).colorScheme;
         final conversationTitle = _conversationTitle(provider);
         final avatarUrl = _conversationAvatarUrl(provider);
+        final conversationBackground =
+            Theme.of(context).brightness == Brightness.light
+                ? AppColors.surfaceTint
+                : AppColors.darkBackground;
 
         return Scaffold(
+          backgroundColor: conversationBackground,
           appBar: AppBar(
+            backgroundColor: AppColors.primaryDark,
+            foregroundColor: AppColors.surface,
+            surfaceTintColor: AppColors.primaryDark,
+            iconTheme: const IconThemeData(color: AppColors.surface),
             toolbarHeight: 72,
             titleSpacing: 0,
             title: Row(
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: colorScheme.primaryContainer,
+                  backgroundColor: AppColors.surface,
                   foregroundImage:
                       avatarUrl != null ? NetworkImage(avatarUrl) : null,
                   child: Text(
                     conversationTitle.isEmpty
                         ? 'C'
                         : conversationTitle[0].toUpperCase(),
-                    style: TextStyle(
-                      color: colorScheme.onPrimaryContainer,
+                    style: const TextStyle(
+                      color: AppColors.primaryDark,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -258,6 +267,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         overflow: TextOverflow.ellipsis,
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: AppColors.surface,
                                   fontWeight: FontWeight.w700,
                                 ),
                       ),
@@ -265,7 +275,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       Text(
                         'Conversa acadêmica',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
+                              color: AppColors.surface.withValues(alpha: 0.78),
                             ),
                       ),
                     ],
@@ -273,13 +283,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
                 const SizedBox(width: 16),
               ],
-            ),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Divider(
-                height: 1,
-                color: colorScheme.outlineVariant,
-              ),
             ),
           ),
           body: Column(

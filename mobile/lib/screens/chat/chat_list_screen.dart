@@ -344,10 +344,11 @@ class _NewConversationSheetState extends State<_NewConversationSheet> {
                                   return Material(
                                     color: Colors.transparent,
                                     child: ListTile(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 4,
+                                      contentPadding: const EdgeInsets.fromLTRB(
+                                        4,
+                                        4,
+                                        12,
+                                        4,
                                       ),
                                       leading: CircleAvatar(
                                         backgroundColor:

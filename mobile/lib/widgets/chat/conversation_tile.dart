@@ -24,7 +24,7 @@ class ConversationTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(4, 12, 12, 12),
           child: Row(
             children: [
               Container(

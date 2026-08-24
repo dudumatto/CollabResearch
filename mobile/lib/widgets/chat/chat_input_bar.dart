@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
+
 class ChatInputBar extends StatelessWidget {
   const ChatInputBar(
       {super.key, required this.controller, required this.onSend});
@@ -10,6 +12,9 @@ class ChatInputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final borderColor = Theme.of(context).brightness == Brightness.light
+        ? AppColors.border
+        : AppColors.darkBorder;
 
     return SafeArea(
       top: false,
@@ -20,7 +25,7 @@ class ChatInputBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 5, 5, 5),
           decoration: BoxDecoration(
-            border: Border.all(color: colorScheme.outlineVariant),
+            border: Border.all(color: borderColor),
             borderRadius: BorderRadius.circular(26),
             boxShadow: [
               BoxShadow(

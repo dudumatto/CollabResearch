@@ -39,6 +39,7 @@ class MessageBubble extends StatelessWidget {
           if (isMine && (onEdit != null || onDelete != null)) ...[
             PopupMenuButton<_MessageAction>(
               tooltip: 'Acoes da mensagem',
+              constraints: const BoxConstraints(minWidth: 52, maxWidth: 52),
               icon: Icon(
                 Icons.more_vert,
                 size: 18,
@@ -58,23 +59,33 @@ class MessageBubble extends StatelessWidget {
                 if (onEdit != null)
                   const PopupMenuItem(
                     value: _MessageAction.edit,
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: 8),
-                        Text('Editar'),
-                      ],
+                    height: 44,
+                    padding: EdgeInsets.zero,
+                    child: Tooltip(
+                      message: 'Editar mensagem',
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(Icons.edit_outlined, size: 20),
+                          Opacity(opacity: 0, child: Text('Editar')),
+                        ],
+                      ),
                     ),
                   ),
                 if (onDelete != null)
                   const PopupMenuItem(
                     value: _MessageAction.delete,
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline, size: 18),
-                        SizedBox(width: 8),
-                        Text('Excluir'),
-                      ],
+                    height: 44,
+                    padding: EdgeInsets.zero,
+                    child: Tooltip(
+                      message: 'Excluir mensagem',
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(Icons.delete_outline, size: 20),
+                          Opacity(opacity: 0, child: Text('Excluir')),
+                        ],
+                      ),
                     ),
                   ),
               ],
