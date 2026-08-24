@@ -3,7 +3,6 @@ import { User, Mail, BookOpen, Building2, GraduationCap, Edit3, Save, X, Award }
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
-import { useUploadDocumento } from "../../hooks/useUploadDocumento";
 import { courseService } from "../services/courseService";
 import { userService } from "../services/userService";
 import { applicationService } from "../services/applicationService";
@@ -56,7 +55,7 @@ function resetFormFromProfile(profile) {
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
   const avatarInputRef = useRef(null);
-  const { upload: uploadAvatar, uploading: uploadingAvatar } = useUploadDocumento();
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const { data, loading, error, reload } = useAsyncData(async () => {
     if (!user?.id) return { profile: user, applications: [], documents: [], courses: [] };
     const [profile, applications, documents, courses] = await Promise.all([
@@ -142,6 +141,7 @@ export default function ProfilePage() {
     } catch (err) {
       toast.error(err.message || "Não foi possível atualizar a foto.");
     } finally {
+      setUploadingAvatar(false);
       event.target.value = "";
     }
   };

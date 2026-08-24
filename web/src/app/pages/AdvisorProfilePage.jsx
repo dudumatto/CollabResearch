@@ -4,8 +4,8 @@ import { Mail, Building2, GraduationCap, Save, X, Edit3, User } from "lucide-rea
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
-import { useUploadDocumento } from "../../hooks/useUploadDocumento";
 import { advisorService } from "../services/advisorService";
+import { userService } from "../services/userService";
 import { mapOrientadorPerfil, withImageCacheBuster } from "../utils/adapters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
@@ -52,7 +52,7 @@ function PerfilSkeleton() {
 export default function AdvisorProfilePage() {
   const { user, refreshUser } = useAuth();
   const avatarInputRef = useRef(null);
-  const { upload: uploadAvatar, uploading: uploadingAvatar } = useUploadDocumento();
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const { data: perfil, loading, error, reload } = useAsyncData(
     async () => mapOrientadorPerfil(await advisorService.perfil()),
     [],
@@ -130,6 +130,7 @@ export default function AdvisorProfilePage() {
     } catch (err) {
       toast.error(err.message || "Não foi possível atualizar a foto.");
     } finally {
+      setUploadingAvatar(false);
       event.target.value = "";
     }
   };
