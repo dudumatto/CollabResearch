@@ -25,6 +25,61 @@ class AppNotification {
   final String? conversationId;
   final String? messageId;
 
+  String? get mobileRoute {
+    if (conversationId != null && conversationId!.isNotEmpty) {
+      return Uri(
+        path: '/chat/$conversationId',
+        queryParameters: messageId == null
+            ? null
+            : <String, String>{'messageId': messageId!},
+      ).toString();
+    }
+
+    final uri = _safeUri(actionUrl);
+    if (uri != null) {
+      final conversationFromQuery = uri.queryParameters['conversationId'] ??
+          uri.queryParameters['conversaId'];
+      if ((uri.path == '/app/chat' || uri.path == '/chat') &&
+          conversationFromQuery != null &&
+          conversationFromQuery.isNotEmpty) {
+        return Uri(
+          path: '/chat/$conversationFromQuery',
+          queryParameters: _messageQuery(uri),
+        ).toString();
+      }
+
+      if (uri.path == '/app/applications' ||
+          uri.path.contains('/applications')) {
+        return '/subscriptions';
+      }
+
+      if (uri.path.startsWith('/app/projects')) {
+        return uri
+            .replace(
+              path: uri.path.replaceFirst('/app/projects', '/projects'),
+            )
+            .toString();
+      }
+
+      if (uri.path.startsWith('/app/notifications')) {
+        return '/notifications';
+      }
+    }
+
+    return switch (type.toUpperCase()) {
+      'INSCRICAO_APROVADA' || 'INSCRICAO_REJEITADA' => '/subscriptions',
+      'SOLICITACAO_ORIENTACAO' ||
+      'PROJETO_ACEITO' ||
+      'PROJETO_REJEITADO' ||
+      'INSCRICAO_RECEBIDA' ||
+      'PROGRESSO_REGISTRADO' ||
+      'PRAZO_PROXIMO' ||
+      'PRAZO_ATRASADO' =>
+        '/projects',
+      _ => null,
+    };
+  }
+
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     final createdAtValue = json['createdAt'] ??
         json['dataCriacao'] ??
@@ -165,6 +220,13 @@ class AppNotification {
     } catch (_) {
       return null;
     }
+  }
+
+  static Map<String, String>? _messageQuery(Uri uri) {
+    final value =
+        uri.queryParameters['messageId'] ?? uri.queryParameters['mensagemId'];
+    if (value == null || value.isEmpty) return null;
+    return <String, String>{'messageId': value};
   }
 }
 

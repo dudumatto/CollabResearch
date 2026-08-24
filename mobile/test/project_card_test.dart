@@ -29,4 +29,3 @@ void main() {
     expect(find.text('Ativo'), findsWidgets);
   });
 }
-

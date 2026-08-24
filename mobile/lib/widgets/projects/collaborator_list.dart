@@ -24,4 +24,3 @@ class CollaboratorList extends StatelessWidget {
     );
   }
 }
-

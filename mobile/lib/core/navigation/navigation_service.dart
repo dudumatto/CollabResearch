@@ -4,4 +4,3 @@ class NavigationService {
   static final GlobalKey<NavigatorState> rootNavigatorKey =
       GlobalKey<NavigatorState>();
 }
-

@@ -35,15 +35,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       }
     }
 
-    final chatRoute = _chatRoute(notification);
-    if (chatRoute != null) {
-      if (mounted) context.go(chatRoute);
-      return;
-    }
-
-    final actionRoute = _internalRouteFrom(notification.actionUrl);
-    if (actionRoute != null && actionRoute != '/notifications') {
-      if (mounted) context.go(actionRoute);
+    final route = notification.mobileRoute;
+    if (route != null && route != '/notifications') {
+      if (mounted) context.go(route);
       return;
     }
 
@@ -51,60 +45,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       _showSnackBar(
           'Nao foi possivel identificar a conversa dessa notificacao.');
     }
-  }
-
-  String? _chatRoute(AppNotification notification) {
-    final conversationId = notification.conversationId;
-    if (conversationId == null || conversationId.isEmpty) return null;
-
-    final uri = Uri(
-      path: '/chat/$conversationId',
-      queryParameters: notification.messageId == null
-          ? null
-          : <String, String>{'messageId': notification.messageId!},
-    );
-    return uri.toString();
-  }
-
-  String? _internalRouteFrom(String? actionUrl) {
-    if (actionUrl == null || actionUrl.isEmpty) return null;
-
-    final uri = Uri.tryParse(actionUrl);
-    if (uri == null) return null;
-
-    final conversationId = uri.queryParameters['conversationId'] ??
-        uri.queryParameters['conversaId'];
-    if ((uri.path == '/app/chat' || uri.path == '/chat') &&
-        conversationId != null) {
-      return Uri(
-        path: '/chat/$conversationId',
-        queryParameters: _messageQuery(uri),
-      ).toString();
-    }
-
-    final conversationMatch =
-        RegExp(r'(?:/app)?/conversas/([^/?#]+)').firstMatch(uri.path);
-    if (conversationMatch != null) {
-      return Uri(
-        path: '/chat/${conversationMatch.group(1)}',
-        queryParameters: _messageQuery(uri),
-      ).toString();
-    }
-
-    if (uri.path.startsWith('/app/projects/')) {
-      return uri.path.replaceFirst('/app/projects', '/projects');
-    }
-
-    if (uri.path.startsWith('/app/notifications')) return '/notifications';
-
-    return null;
-  }
-
-  Map<String, String>? _messageQuery(Uri uri) {
-    final messageId =
-        uri.queryParameters['messageId'] ?? uri.queryParameters['mensagemId'];
-    if (messageId == null || messageId.isEmpty) return null;
-    return <String, String>{'messageId': messageId};
   }
 
   void _showSnackBar(String message) {

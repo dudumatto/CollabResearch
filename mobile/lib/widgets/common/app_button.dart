@@ -29,4 +29,3 @@ class AppButton extends StatelessWidget {
     );
   }
 }
-

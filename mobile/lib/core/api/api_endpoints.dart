@@ -14,6 +14,7 @@ class ApiEndpoints {
   static const String feedback = '/api/feedback';
   static const String notifications = '/api/notificacoes';
   static const String chatConversations = '/api/conversas';
+  static const String users = '/api/usuarios';
 
   static String project(String id) => '$projects/$id';
   static String acceptProjectOrientation(String id) =>
@@ -22,6 +23,8 @@ class ApiEndpoints {
       '${project(id)}/rejeitar-orientacao';
   static String projectProgress(String id) => '${project(id)}/progresso';
   static String projectFeedback(String id) => '$feedback/projeto/$id';
+  static String projectCollaborators(String id) =>
+      '${project(id)}/colaboradores';
   static String approveSubscription(String id) => '$subscriptions/$id/aprovar';
   static String rejectSubscription(String id) => '$subscriptions/$id/rejeitar';
   static String cancelSubscription(String id) => '$subscriptions/$id/cancelar';
@@ -33,9 +36,12 @@ class ApiEndpoints {
       '$chatConversations/mensagem/$messageId';
   static String userConversations(String userId) =>
       '$chatConversations/$userId/todas';
+  static String privateConversation(String userId) =>
+      '$chatConversations/privada/$userId';
   static String notification(String id) => '$notifications/$id';
   static String readNotification(String id) => '${notification(id)}/ler';
   static String readAllNotifications() => '$notifications/ler-todas';
   static String user(String id) => '/api/usuarios/$id';
+  static String userProjects(String id) => '${user(id)}/projetos';
   static String userPreferences() => '$me/preferencias';
 }

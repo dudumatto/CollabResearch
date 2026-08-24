@@ -155,6 +155,23 @@ void main() {
     expect(notification.conversationId, '7');
     expect(notification.messageId, '9');
     expect(notification.actionUrl, '/conversas/7?mensagemId=9');
+    expect(notification.mobileRoute, '/chat/7?messageId=9');
+  });
+
+  test('AppNotification traduz rotas web para telas do mobile', () {
+    final applications = AppNotification.fromJson({
+      'id': 1,
+      'tipo': 'INSCRICAO_RECEBIDA',
+      'rotaSugerida': '/app/projects/4/applications',
+    });
+    final project = AppNotification.fromJson({
+      'id': 2,
+      'tipo': 'PROJETO_ACEITO',
+      'rotaSugerida': '/app/projects/4',
+    });
+
+    expect(applications.mobileRoute, '/subscriptions');
+    expect(project.mobileRoute, '/projects/4');
   });
 
   test('User aceita perfil retornado pelo backend', () {
@@ -163,12 +180,23 @@ void main() {
       'nome': 'Usuario Teste',
       'email': 'usuario@example.com',
       'tipo': 'ALUNO',
+      'ra': '20260001',
+      'cursoId': 8,
       'cursoNome': 'ADS',
     });
 
     expect(user.id, '1');
     expect(user.name, 'Usuario Teste');
     expect(user.course, 'ADS');
+    expect(user.courseId, 8);
+    expect(user.registrationNumber, '20260001');
     expect(user.roles, contains('ALUNO'));
+
+    final payload = user.toProfileUpdatePayload(
+      name: user.name,
+      email: user.email,
+      semester: 4,
+    );
+    expect(payload['cursoId'], 8);
   });
 }

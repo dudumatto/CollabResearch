@@ -6,6 +6,7 @@ import '../core/api/api_client.dart';
 import '../core/config/env.dart';
 import '../models/conversation.dart';
 import '../models/message.dart';
+import '../models/user.dart';
 import '../services/chat_service.dart';
 import '../services/stomp_service.dart';
 
@@ -13,12 +14,21 @@ class ChatProvider extends ChangeNotifier {
   final ChatService _service = ChatService();
   final List<Conversation> conversations = <Conversation>[];
   final List<Message> messages = <Message>[];
+  final List<User> contacts = <User>[];
   StompService? _stompService;
   StreamSubscription<Map<String, dynamic>>? _realtimeSubscription;
   String? _activeRealtimeConversationId;
   bool isLoading = false;
   bool isSending = false;
+  bool isLoadingContacts = false;
   String? errorMessage;
+  String? contactsErrorMessage;
+  String? _requestedConversationId;
+
+  int get unreadCount => conversations.fold<int>(
+        0,
+        (total, conversation) => total + conversation.unreadCount,
+      );
 
   Future<void> loadConversations() async {
     isLoading = true;
@@ -38,20 +48,73 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> loadMessages(String conversationId) async {
+    _requestedConversationId = conversationId;
+    messages.clear();
     isLoading = true;
     errorMessage = null;
     notifyListeners();
     try {
       final loadedMessages = await _service.messages(conversationId);
+      if (_requestedConversationId != conversationId) return;
       messages
         ..clear()
         ..addAll(loadedMessages);
       await _connectRealtime(conversationId);
     } catch (_) {
+      if (_requestedConversationId != conversationId) return;
       errorMessage = 'Nao foi possivel carregar as mensagens.';
     } finally {
-      isLoading = false;
+      if (_requestedConversationId == conversationId) {
+        isLoading = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<void> loadContacts(String currentUserId) async {
+    isLoadingContacts = true;
+    contactsErrorMessage = null;
+    notifyListeners();
+    try {
+      final loadedContacts = await _service.contacts();
+      final availableContacts = loadedContacts.isEmpty
+          ? await _service.projectContacts(currentUserId)
+          : loadedContacts;
+      contacts
+        ..clear()
+        ..addAll(
+          availableContacts.where(
+            (user) => user.id != currentUserId && user.id.isNotEmpty,
+          ),
+        )
+        ..sort((a, b) => a.name.compareTo(b.name));
+    } catch (_) {
+      contactsErrorMessage = 'Nao foi possivel carregar os contatos.';
+    } finally {
+      isLoadingContacts = false;
       notifyListeners();
+    }
+  }
+
+  Future<Conversation?> openPrivateConversation(String userId) async {
+    contactsErrorMessage = null;
+    notifyListeners();
+    try {
+      final conversation = await _service.openPrivateConversation(userId);
+      final index = conversations.indexWhere(
+        (item) => item.id == conversation.id,
+      );
+      if (index == -1) {
+        conversations.insert(0, conversation);
+      } else {
+        conversations[index] = conversation;
+      }
+      notifyListeners();
+      return conversation;
+    } catch (_) {
+      contactsErrorMessage = 'Nao foi possivel iniciar a conversa.';
+      notifyListeners();
+      return null;
     }
   }
 

@@ -5,4 +5,3 @@ abstract class BaseService {
 
   final ApiClient apiClient;
 }
-

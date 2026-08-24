@@ -22,4 +22,3 @@ class EmptyState extends StatelessWidget {
     );
   }
 }
-
