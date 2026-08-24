@@ -36,6 +36,7 @@ public class ConversaResponse {
     // Nome a exibir na lista
     private String titulo;
     private String fotoPerfilUrl;
+    private String avatarUrl;
 
     // Última mensagem
     private String ultimaMensagem;
@@ -65,8 +66,15 @@ public class ConversaResponse {
                     .outroUsuarioId(outro != null ? outro.getId() : null)
                     .outroUsuarioNome(outro != null ? outro.getNome() : null)
                     .fotoPerfilUrl(outro != null ? outro.getFotoPerfilUrl() : null)
+                    .avatarUrl(outro != null ? outro.getFotoPerfilUrl() : null)
                     .titulo(outro != null ? outro.getNome() : "Conversa privada");
         } else {
+            String fotoConversa = conversa.getProjeto() != null && conversa.getProjeto().getFotoProjetoUrl() != null
+                    ? conversa.getProjeto().getFotoProjetoUrl()
+                    : conversa.getProjeto() != null && conversa.getProjeto().getOrientador() != null
+                            ? conversa.getProjeto().getOrientador().getUsuario().getFotoPerfilUrl()
+                            : null;
+
             builder
                     .projetoId(conversa.getProjeto() != null ? conversa.getProjeto().getId() : null)
                     .projetoTitulo(conversa.getProjeto() != null ? conversa.getProjeto().getTitulo() : null)
@@ -78,11 +86,8 @@ public class ConversaResponse {
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getId() : null)
                     .alunoCriadorNome(conversa.getProjeto() != null && conversa.getProjeto().getAlunoCriador() != null
                             ? conversa.getProjeto().getAlunoCriador().getUsuario().getNome() : null)
-                    .fotoPerfilUrl(conversa.getProjeto() != null && conversa.getProjeto().getFotoProjetoUrl() != null
-                            ? conversa.getProjeto().getFotoProjetoUrl()
-                            : conversa.getProjeto() != null && conversa.getProjeto().getOrientador() != null
-                                    ? conversa.getProjeto().getOrientador().getUsuario().getFotoPerfilUrl()
-                                    : null)
+                    .fotoPerfilUrl(fotoConversa)
+                    .avatarUrl(fotoConversa)
                     .titulo(conversa.getProjeto() != null ? conversa.getProjeto().getTitulo() : "Grupo");
         }
 

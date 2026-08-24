@@ -22,6 +22,7 @@ public class UsuarioResponse {
     private LocalDateTime dataCadastro;
     private Boolean ativo;
     private String fotoPerfilUrl;
+    private String avatarUrl;
 
     public static UsuarioResponse fromEntity(Usuario usuario) {
         return UsuarioResponse.builder()
@@ -32,6 +33,7 @@ public class UsuarioResponse {
                 .dataCadastro(usuario.getDataCadastro())
                 .ativo(usuario.getAtivo())
                 .fotoPerfilUrl(usuario.getFotoPerfilUrl())
+                .avatarUrl(usuario.getFotoPerfilUrl())
                 .build();
     }
 }

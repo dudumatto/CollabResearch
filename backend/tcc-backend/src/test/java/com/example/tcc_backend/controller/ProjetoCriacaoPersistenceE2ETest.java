@@ -33,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.datasource.hikari.data-source-properties.sslmode=",
         "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
         "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.flyway.enabled=false",
         "jwt.secret=test-secret-value-with-at-least-32-bytes!!"
 })
 @AutoConfigureMockMvc

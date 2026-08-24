@@ -120,7 +120,8 @@ public class EtapaProgressoService {
         projectAccessPolicy.requireResponsibleAdvisor(projeto, usuarioLogado);
         validarDadosEtapa(request);
 
-        int proximaOrdem = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId).stream()
+        List<EtapaProgresso> etapasExistentes = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId);
+        int proximaOrdem = etapasExistentes.stream()
                 .mapToInt(e -> e.getOrdem() == null ? 0 : e.getOrdem())
                 .max()
                 .orElse(0) + 1;
@@ -137,7 +138,11 @@ public class EtapaProgressoService {
                 .obrigatoria(request.getObrigatoria() != null ? request.getObrigatoria() : true)
                 .build();
 
-        return EtapaResponse.fromEntity(etapaProgressoRepository.save(etapa));
+        EtapaProgresso salva = etapaProgressoRepository.save(etapa);
+        List<EtapaProgresso> etapas = new ArrayList<>(etapasExistentes);
+        etapas.add(salva);
+        sincronizarEtapasAtivas(etapas);
+        return EtapaResponse.fromEntity(salva);
     }
 
     @Transactional
@@ -178,6 +183,10 @@ public class EtapaProgressoService {
         }
 
         etapaProgressoRepository.delete(etapa);
+        List<EtapaProgresso> restantes = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId).stream()
+                .filter(e -> !e.getId().equals(etapaId))
+                .toList();
+        sincronizarEtapasAtivas(restantes);
     }
 
     @Transactional

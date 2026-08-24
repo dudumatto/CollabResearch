@@ -45,7 +45,7 @@ class User {
       course: payload['course'] as String?,
       courseId: (payload['cursoId'] as num?)?.toInt(),
       registrationNumber: payload['ra'] as String?,
-      avatarUrl: (payload['avatarUrl'] ?? payload['fotoPerfilUrl']) as String?,
+      avatarUrl: (payload['fotoPerfilUrl'] ?? payload['avatarUrl']) as String?,
       type: payload['tipo'] as String?,
       roles: (payload['roles'] as List?)?.map((e) => '$e').toList() ??
           const <String>[],
@@ -61,7 +61,7 @@ class User {
       courseId: (json['courseId'] as num?)?.toInt() ??
           (json['cursoId'] as num?)?.toInt(),
       registrationNumber: (json['registrationNumber'] ?? json['ra']) as String?,
-      avatarUrl: (json['avatarUrl'] ?? json['fotoPerfilUrl']) as String?,
+      avatarUrl: (json['fotoPerfilUrl'] ?? json['avatarUrl']) as String?,
       institution: (json['institution'] ?? json['instituicao']) as String?,
       bio: json['bio'] as String?,
       theme: (json['tema'] ?? json['theme']) as String?,

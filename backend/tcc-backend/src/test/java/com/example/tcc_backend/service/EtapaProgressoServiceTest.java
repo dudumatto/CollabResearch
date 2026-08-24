@@ -154,7 +154,7 @@ class EtapaProgressoServiceTest {
 
         assertThat(response.getTitulo()).isEqualTo("Etapa personalizada");
         assertThat(response.getResponsavel()).isEqualTo(EtapaResponsavel.ALUNO);
-        assertThat(response.getStatus()).isEqualTo(EtapaProgressoStatus.PENDING);
+        assertThat(response.getStatus()).isEqualTo(EtapaProgressoStatus.ACTIVE);
         verify(projectAccessPolicy).requireResponsibleAdvisor(projeto, orientadorUsuario);
     }
 

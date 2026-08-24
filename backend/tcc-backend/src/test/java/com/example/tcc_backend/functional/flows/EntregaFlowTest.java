@@ -107,7 +107,7 @@ class EntregaFlowTest extends FunctionalTestSupport {
 
         mockMvc.perform(get("/api/projetos/" + projetoId + "/entregas/" + entregaId + "/versoes/" + versao2Id + "/download")
                         .header("Authorization", authHeader(orientador.token())))
-                .andExpect(status().isOk());
+                .andExpect(status().is3xxRedirection());
     }
 
     @Test

@@ -7,7 +7,7 @@ import { useUploadDocumento } from "../../hooks/useUploadDocumento";
 import { courseService } from "../services/courseService";
 import { userService } from "../services/userService";
 import { applicationService } from "../services/applicationService";
-import { mapApplication } from "../utils/adapters";
+import { mapApplication, withImageCacheBuster } from "../utils/adapters";
 import { formatUserType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
@@ -135,6 +135,8 @@ export default function ProfilePage() {
         throw new Error("Não foi possível enviar a foto de perfil.");
       }
 
+      const fotoPerfilUrl = withImageCacheBuster(uploaded.publicUrl);
+
       await userService.update(user.id, {
         nome: form.nome,
         email: form.email,
@@ -142,7 +144,7 @@ export default function ProfilePage() {
         instituicao: form.instituicao,
         semestre: form.semestre === "" ? null : Number(form.semestre),
         bio: form.bio,
-        fotoPerfilUrl: uploaded.publicUrl,
+        fotoPerfilUrl,
       });
       await reload();
       await refreshUser();

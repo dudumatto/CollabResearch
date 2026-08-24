@@ -15,6 +15,7 @@ class FlywayMigrationTest {
         Flyway flyway = Flyway.configure()
                 .dataSource(url, "sa", "")
                 .locations("classpath:db/migration")
+                .target("2")
                 .load();
 
         var result = flyway.migrate();
@@ -38,7 +39,7 @@ class FlywayMigrationTest {
         }
 
         var result = Flyway.configure().dataSource(url, "sa", "")
-                .locations("classpath:db/migration").baselineOnMigrate(true).baselineVersion("1")
+                .locations("classpath:db/migration").target("2").baselineOnMigrate(true).baselineVersion("1")
                 .load().migrate();
 
         assertThat(result.migrationsExecuted).isEqualTo(1);

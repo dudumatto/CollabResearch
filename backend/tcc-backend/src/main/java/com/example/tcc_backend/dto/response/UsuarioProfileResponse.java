@@ -26,6 +26,7 @@ public class UsuarioProfileResponse {
     private String instituicao;
     private String bio;
     private String fotoPerfilUrl;
+    private String avatarUrl;
     private String tema;
     private Boolean notificacoesAtivas;
     private String ra;
@@ -47,6 +48,7 @@ public class UsuarioProfileResponse {
                 .instituicao(usuario.getInstituicao())
                 .bio(usuario.getBio())
                 .fotoPerfilUrl(usuario.getFotoPerfilUrl())
+                .avatarUrl(usuario.getFotoPerfilUrl())
                 .tema(usuario.getTema())
                 .notificacoesAtivas(usuario.getNotificacoesAtivas())
                 .ra(aluno != null ? aluno.getRa() : null)

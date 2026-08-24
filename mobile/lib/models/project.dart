@@ -54,13 +54,13 @@ class Project {
             json['orientador']?['usuario']?['nome'],
       ),
       advisorAvatarUrl: _nullableString(
-        json['advisorAvatarUrl'] ??
-            json['orientadorFotoPerfilUrl'] ??
+        json['orientadorFotoPerfilUrl'] ??
+            json['advisorAvatarUrl'] ??
             json['orientadorFotoUrl'] ??
-            json['orientador']?['avatarUrl'] ??
             json['orientador']?['fotoPerfilUrl'] ??
-            json['orientador']?['usuario']?['avatarUrl'] ??
-            json['orientador']?['usuario']?['fotoPerfilUrl'],
+            json['orientador']?['avatarUrl'] ??
+            json['orientador']?['usuario']?['fotoPerfilUrl'] ??
+            json['orientador']?['usuario']?['avatarUrl'],
       ),
       ownerName: _nullableString(
         json['ownerName'] ??
@@ -69,13 +69,13 @@ class Project {
             json['alunoCriador']?['usuario']?['nome'],
       ),
       ownerAvatarUrl: _nullableString(
-        json['ownerAvatarUrl'] ??
-            json['alunoCriadorFotoPerfilUrl'] ??
+        json['alunoCriadorFotoPerfilUrl'] ??
+            json['ownerAvatarUrl'] ??
             json['alunoCriadorFotoUrl'] ??
-            json['alunoCriador']?['avatarUrl'] ??
             json['alunoCriador']?['fotoPerfilUrl'] ??
-            json['alunoCriador']?['usuario']?['avatarUrl'] ??
-            json['alunoCriador']?['usuario']?['fotoPerfilUrl'],
+            json['alunoCriador']?['avatarUrl'] ??
+            json['alunoCriador']?['usuario']?['fotoPerfilUrl'] ??
+            json['alunoCriador']?['usuario']?['avatarUrl'],
       ),
       areaId: (json['areaId'] as num?)?.toInt() ?? _nestedInt(json['area']),
       advisorId: _nullableString(

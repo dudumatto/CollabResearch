@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useUploadDocumento } from "../../hooks/useUploadDocumento";
 import { advisorService } from "../services/advisorService";
-import { mapOrientadorPerfil } from "../utils/adapters";
+import { mapOrientadorPerfil, withImageCacheBuster } from "../utils/adapters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
 import "./AdvisorWorkspace.css";
@@ -122,6 +122,7 @@ export default function AdvisorProfilePage() {
         throw new Error("Não foi possível enviar a foto de perfil.");
       }
 
+      const fotoPerfilUrl = withImageCacheBuster(uploaded.publicUrl);
       const atualizado = mapOrientadorPerfil(
         await advisorService.atualizarPerfil({
           nome: form.nome.trim(),
@@ -130,10 +131,10 @@ export default function AdvisorProfilePage() {
           departamento: form.departamento.trim(),
           titulacao: form.titulacao.trim(),
           bio: form.bio.trim(),
-          fotoPerfilUrl: uploaded.publicUrl,
+          fotoPerfilUrl,
         }),
       );
-      setForm(resetFormFromPerfil({ ...form, ...atualizado, fotoPerfilUrl: uploaded.publicUrl }));
+      setForm(resetFormFromPerfil({ ...form, ...atualizado, fotoPerfilUrl }));
       await reload();
       await refreshUser();
       toast.success("Foto de perfil atualizada.");

@@ -18,6 +18,11 @@ function getInitials(name) {
 
 function ChatAvatar({ name, src, className }) {
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
   return (
     <div className={className}>
       {src && !failed ? <img src={src} alt={`Foto de perfil de ${name}`} onError={() => setFailed(true)} /> : <span>{getInitials(name)}</span>}

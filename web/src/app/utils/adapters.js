@@ -17,7 +17,25 @@ export function getUserType(user) {
 
 export function getUserPhotoUrl(user) {
   const nestedUser = user?.usuario ?? user?.user ?? user?.aluno?.usuario ?? user?.aluno ?? user?.orientador?.usuario ?? user?.orientador;
-  return user?.fotoPerfilUrl ?? user?.fotoUrl ?? user?.avatarUrl ?? user?.photoUrl ?? user?.pictureUrl ?? user?.imagemPerfilUrl ?? nestedUser?.fotoPerfilUrl ?? nestedUser?.fotoUrl ?? nestedUser?.avatarUrl ?? nestedUser?.photoUrl ?? nestedUser?.pictureUrl ?? nestedUser?.imagemPerfilUrl ?? "";
+  return user?.fotoPerfilUrl ?? user?.profilePhotoUrl ?? user?.imagemPerfilUrl ?? user?.fotoUrl ?? user?.avatarUrl ?? user?.photoUrl ?? user?.pictureUrl ?? nestedUser?.fotoPerfilUrl ?? nestedUser?.profilePhotoUrl ?? nestedUser?.imagemPerfilUrl ?? nestedUser?.fotoUrl ?? nestedUser?.avatarUrl ?? nestedUser?.photoUrl ?? nestedUser?.pictureUrl ?? "";
+}
+
+export function withImageCacheBuster(url, version = Date.now()) {
+  const raw = String(url ?? "").trim();
+  if (!raw || raw.startsWith("data:") || raw.startsWith("blob:")) return raw;
+
+  try {
+    const base = typeof window !== "undefined" ? window.location.origin : "http://localhost";
+    const parsed = new URL(raw, base);
+    parsed.searchParams.set("v", String(version));
+    if (raw.startsWith("/")) {
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    }
+    return parsed.toString();
+  } catch {
+    const separator = raw.includes("?") ? "&" : "?";
+    return `${raw}${separator}v=${encodeURIComponent(String(version))}`;
+  }
 }
 
 export function getUserId(user) {
