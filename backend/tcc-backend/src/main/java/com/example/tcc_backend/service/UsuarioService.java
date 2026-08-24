@@ -182,10 +182,10 @@ public class UsuarioService {
     @Transactional
     public UsuarioProfileResponse atualizarFotoPerfil(MultipartFile arquivo) {
         Usuario usuario = authHelper.getCurrentUser();
-        String extensao = validarFotoPerfil(arquivo);
+        validarFotoPerfil(arquivo);
         String caminho = supabaseStorageService.uploadUserDocument(
                 "usuarios/" + usuario.getId() + "/foto-perfil",
-                "foto-perfil" + extensao,
+                "foto-perfil",
                 lerBytes(arquivo),
                 arquivo.getContentType(),
                 true
@@ -288,11 +288,11 @@ public class UsuarioService {
 
         if ("image/jpeg".equals(contentType) && (nomeOriginal.endsWith(".jpg") || nomeOriginal.endsWith(".jpeg"))) {
             validarAssinaturaFoto(arquivo, contentType);
-            return ".jpg";
+            return;
         }
         if ("image/png".equals(contentType) && nomeOriginal.endsWith(".png")) {
             validarAssinaturaFoto(arquivo, contentType);
-            return ".png";
+            return;
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Use uma imagem JPG ou PNG");
     }
