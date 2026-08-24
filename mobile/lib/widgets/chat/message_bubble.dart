@@ -22,10 +22,8 @@ class MessageBubble extends StatelessWidget {
     final isMine = message.isMine || message.senderId == currentUserId;
     final alignment = isMine ? Alignment.centerRight : Alignment.centerLeft;
     final colorScheme = Theme.of(context).colorScheme;
-    final background =
-        isMine ? colorScheme.primary : colorScheme.primaryContainer;
-    final foreground =
-        isMine ? colorScheme.onPrimary : colorScheme.onPrimaryContainer;
+    final background = isMine ? colorScheme.primary : colorScheme.surface;
+    final foreground = isMine ? colorScheme.onPrimary : colorScheme.onSurface;
     final metadataColor = foreground.withValues(alpha: 0.72);
 
     return Align(
@@ -37,7 +35,11 @@ class MessageBubble extends StatelessWidget {
           if (isMine && (onEdit != null || onDelete != null)) ...[
             PopupMenuButton<_MessageAction>(
               tooltip: 'Acoes da mensagem',
-              icon: const Icon(Icons.more_vert, size: 18),
+              icon: Icon(
+                Icons.more_vert,
+                size: 18,
+                color: colorScheme.onSurfaceVariant,
+              ),
               onSelected: (action) {
                 switch (action) {
                   case _MessageAction.edit:
@@ -76,20 +78,29 @@ class MessageBubble extends StatelessWidget {
             const SizedBox(width: 4),
           ],
           Container(
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             constraints: BoxConstraints(
-              maxWidth: MediaQuery.sizeOf(context).width * 0.74,
+              maxWidth: MediaQuery.sizeOf(context).width * 0.76,
               minWidth: 72,
             ),
             decoration: BoxDecoration(
               color: background,
+              border:
+                  isMine ? null : Border.all(color: colorScheme.outlineVariant),
               borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(14),
-                topRight: const Radius.circular(14),
-                bottomLeft: Radius.circular(isMine ? 14 : 4),
-                bottomRight: Radius.circular(isMine ? 4 : 14),
+                topLeft: const Radius.circular(18),
+                topRight: const Radius.circular(18),
+                bottomLeft: Radius.circular(isMine ? 18 : 5),
+                bottomRight: Radius.circular(isMine ? 5 : 18),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,7 +118,7 @@ class MessageBubble extends StatelessWidget {
                 ],
                 Text(
                   message.content,
-                  style: TextStyle(color: foreground, height: 1.25),
+                  style: TextStyle(color: foreground, height: 1.3),
                 ),
                 const SizedBox(height: 6),
                 Row(

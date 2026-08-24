@@ -46,6 +46,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => const _NewConversationSheet(),
     );
     if (conversation != null && mounted) {
@@ -59,11 +60,23 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Chat')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showNewConversation,
-        icon: const Icon(Icons.chat_bubble_outline),
-        label: const Text('Nova conversa'),
+      appBar: AppBar(
+        title: Text(
+          'Conversas',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton.filledTonal(
+              onPressed: _showNewConversation,
+              tooltip: 'Nova conversa',
+              icon: const Icon(Icons.edit_square),
+            ),
+          ),
+        ],
       ),
       body: Consumer<ChatProvider>(
         builder: (context, provider, _) {
@@ -82,50 +95,77 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
           return RefreshIndicator(
             onRefresh: provider.loadConversations,
-            child: ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                TextField(
-                  controller: _searchController,
-                  onChanged: (value) => setState(() => _query = value),
-                  decoration: const InputDecoration(
-                    labelText: 'Buscar conversa',
-                    prefixIcon: Icon(Icons.search),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final horizontalPadding =
+                    constraints.maxWidth < 420 ? 16.0 : 24.0;
+
+                return ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    8,
+                    horizontalPadding,
+                    24,
                   ),
-                ),
-                const SizedBox(height: 16),
-                if (provider.errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      provider.errorMessage!,
-                      style:
-                          TextStyle(color: Theme.of(context).colorScheme.error),
+                  children: [
+                    Text(
+                      'Acompanhe suas conversas acadêmicas.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                     ),
-                  ),
-                if (conversations.isEmpty)
-                  SizedBox(
-                    height: 280,
-                    child: EmptyState(
-                      title: normalizedQuery.isEmpty
-                          ? 'Nenhuma conversa encontrada'
-                          : 'Nenhum resultado encontrado',
-                      subtitle: normalizedQuery.isEmpty
-                          ? 'Inicie uma conversa ou puxe para atualizar.'
-                          : 'Tente buscar por outro termo.',
-                    ),
-                  )
-                else
-                  ...conversations.map(
-                    (conversation) => ConversationTile(
-                      conversation: conversation,
-                      onTap: () => context.go(
-                        '/chat/${conversation.id}',
-                        extra: conversation.title,
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _searchController,
+                      onChanged: (value) => setState(() => _query = value),
+                      textInputAction: TextInputAction.search,
+                      decoration: const InputDecoration(
+                        hintText: 'Buscar conversa',
+                        prefixIcon: Icon(Icons.search_rounded),
                       ),
                     ),
-                  ),
-              ],
+                    const SizedBox(height: 16),
+                    if (provider.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          provider.errorMessage!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    if (conversations.isEmpty)
+                      SizedBox(
+                        height: 280,
+                        child: EmptyState(
+                          title: normalizedQuery.isEmpty
+                              ? 'Nenhuma conversa encontrada'
+                              : 'Nenhum resultado encontrado',
+                          subtitle: normalizedQuery.isEmpty
+                              ? 'Inicie uma conversa ou puxe para atualizar.'
+                              : 'Tente buscar por outro termo.',
+                        ),
+                      )
+                    else ...[
+                      for (var index = 0;
+                          index < conversations.length;
+                          index++) ...[
+                        ConversationTile(
+                          conversation: conversations[index],
+                          onTap: () => context.go(
+                            '/chat/${conversations[index].id}',
+                            extra: conversations[index].title,
+                          ),
+                        ),
+                        if (index < conversations.length - 1)
+                          const SizedBox(height: 10),
+                      ],
+                    ],
+                  ],
+                );
+              },
             ),
           );
         },
@@ -176,92 +216,197 @@ class _NewConversationSheetState extends State<_NewConversationSheet> {
         }).toList();
 
         return FractionallySizedBox(
-          heightFactor: 0.82,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              24,
-              12,
-              24,
-              24 + MediaQuery.viewInsetsOf(context).bottom,
+          heightFactor: 0.86,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 42,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final horizontalPadding =
+                    constraints.maxWidth < 420 ? 20.0 : 24.0;
+
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    12,
+                    horizontalPadding,
+                    20 + MediaQuery.viewInsetsOf(context).bottom,
                   ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Nova conversa',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _searchController,
-                  autofocus: true,
-                  onChanged: (value) => setState(() => _query = value),
-                  decoration: const InputDecoration(
-                    labelText: 'Buscar pessoa',
-                    prefixIcon: Icon(Icons.search),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (chatProvider.contactsErrorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      chatProvider.contactsErrorMessage!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ),
-                Expanded(
-                  child: contacts.isEmpty
-                      ? const EmptyState(
-                          title: 'Nenhum contato encontrado',
-                          subtitle: 'Tente buscar por outro nome.',
-                        )
-                      : ListView.separated(
-                          itemCount: contacts.length,
-                          separatorBuilder: (_, __) => const Divider(),
-                          itemBuilder: (context, index) {
-                            final user = contacts[index];
-                            final isOpening = _openingUserId == user.id;
-                            return ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: CircleAvatar(
-                                child: Text(
-                                  user.name.isEmpty
-                                      ? 'U'
-                                      : user.name[0].toUpperCase(),
-                                ),
-                              ),
-                              title: Text(user.name),
-                              subtitle: Text(user.email),
-                              trailing: isOpening
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Icon(Icons.chevron_right),
-                              enabled: _openingUserId == null,
-                              onTap: () => _openConversation(user.id),
-                            );
-                          },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 42,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
                         ),
-                ),
-              ],
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.people_outline,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Contatos',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                ),
+                                Text(
+                                  'Escolha uma pessoa para conversar.',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            tooltip: 'Fechar',
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      TextField(
+                        controller: _searchController,
+                        autofocus: true,
+                        onChanged: (value) => setState(() => _query = value),
+                        textInputAction: TextInputAction.search,
+                        decoration: const InputDecoration(
+                          hintText: 'Buscar pessoa',
+                          prefixIcon: Icon(Icons.search_rounded),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      if (chatProvider.contactsErrorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            chatProvider.contactsErrorMessage!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      Expanded(
+                        child: contacts.isEmpty
+                            ? const EmptyState(
+                                title: 'Nenhum contato encontrado',
+                                subtitle: 'Tente buscar por outro nome.',
+                              )
+                            : ListView.separated(
+                                itemCount: contacts.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 8),
+                                itemBuilder: (context, index) {
+                                  final user = contacts[index];
+                                  final isOpening = _openingUserId == user.id;
+                                  final colorScheme =
+                                      Theme.of(context).colorScheme;
+
+                                  return Material(
+                                    color: colorScheme.surfaceContainerLowest,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      side: BorderSide(
+                                        color: colorScheme.outlineVariant,
+                                      ),
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: ListTile(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 4,
+                                      ),
+                                      leading: CircleAvatar(
+                                        backgroundColor:
+                                            colorScheme.primaryContainer,
+                                        foregroundImage: user.avatarUrl != null
+                                            ? NetworkImage(user.avatarUrl!)
+                                            : null,
+                                        child: Text(
+                                          user.name.isEmpty
+                                              ? 'U'
+                                              : user.name[0].toUpperCase(),
+                                          style: TextStyle(
+                                            color:
+                                                colorScheme.onPrimaryContainer,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                      title: Text(
+                                        user.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        user.email,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      trailing: isOpening
+                                          ? const SizedBox(
+                                              width: 22,
+                                              height: 22,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                          : Icon(
+                                              Icons.chat_bubble_outline,
+                                              color: colorScheme.primary,
+                                            ),
+                                      enabled: _openingUserId == null,
+                                      onTap: () => _openConversation(user.id),
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         );

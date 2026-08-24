@@ -206,23 +206,98 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return 'Conversa';
   }
 
+  String? _conversationAvatarUrl(ChatProvider provider) {
+    for (final conversation in provider.conversations) {
+      if (conversation.id == widget.conversationId) {
+        return conversation.avatarUrl;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUserId = context.watch<AuthProvider>().currentUser?.id;
     return Consumer<ChatProvider>(
       builder: (context, provider, _) {
         _scrollToTargetMessage(provider.messages);
+        final colorScheme = Theme.of(context).colorScheme;
+        final conversationTitle = _conversationTitle(provider);
+        final avatarUrl = _conversationAvatarUrl(provider);
+
         return Scaffold(
-          appBar: AppBar(title: Text(_conversationTitle(provider))),
+          appBar: AppBar(
+            toolbarHeight: 72,
+            titleSpacing: 0,
+            title: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: colorScheme.primaryContainer,
+                  foregroundImage:
+                      avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                  child: Text(
+                    conversationTitle.isEmpty
+                        ? 'C'
+                        : conversationTitle[0].toUpperCase(),
+                    style: TextStyle(
+                      color: colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        conversationTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Conversa acadêmica',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ],
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Divider(
+                height: 1,
+                color: colorScheme.outlineVariant,
+              ),
+            ),
+          ),
           body: Column(
             children: [
               if (provider.errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: Text(
-                    provider.errorMessage!,
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.error),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      provider.errorMessage!,
+                      style: TextStyle(color: colorScheme.onErrorContainer),
+                    ),
                   ),
                 ),
               Expanded(
@@ -235,7 +310,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                 'Envie a primeira mensagem desta conversa.',
                           )
                         : ListView.builder(
-                            padding: const EdgeInsets.all(16),
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                             itemCount: provider.messages.length,
                             itemBuilder: (context, index) {
                               final message = provider.messages[index];
@@ -286,7 +363,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
                 child: ChatInputBar(
                   controller: _controller,
                   onSend: provider.isSending ? () {} : _sendMessage,
