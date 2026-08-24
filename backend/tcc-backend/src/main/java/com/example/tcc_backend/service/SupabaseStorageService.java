@@ -62,9 +62,27 @@ public class SupabaseStorageService {
         if (!isConfigured()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Armazenamento de entregas nao configurado");
         }
+        return uploadToBucket(projectDocumentsBucket, pastaRelativa, nomeArquivo, conteudo, contentType, false);
+    }
 
+    public String uploadUserDocument(String pastaRelativa, String nomeArquivo, byte[] conteudo, String contentType, boolean upsert) {
+        if (!isConfigured()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Armazenamento de usuarios nao configurado");
+        }
+        return uploadToBucket(userDocumentsBucket, pastaRelativa, nomeArquivo, conteudo, contentType, upsert);
+    }
+
+    public String createPublicUserDocumentUrl(String caminho) {
+        if (!isConfigured() || isBlank(caminho)) {
+            return null;
+        }
+        String cleanPath = caminho.replaceAll("^/+", "");
+        return normalizedUrl() + "/storage/v1/object/public/" + URLEncoder.encode(userDocumentsBucket, StandardCharsets.UTF_8) + "/" + cleanPath;
+    }
+
+    private String uploadToBucket(String bucket, String pastaRelativa, String nomeArquivo, byte[] conteudo, String contentType, boolean upsert) {
         String caminho = pastaRelativa.replaceAll("^/+", "").replaceAll("/+$", "") + "/" + nomeArquivo;
-        String storagePath = "/storage/v1/object/" + projectDocumentsBucket + "/" + caminho;
+        String storagePath = "/storage/v1/object/" + bucket + "/" + caminho;
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -73,6 +91,7 @@ public class SupabaseStorageService {
                     .header("apikey", supabaseServiceRoleKey)
                     .header("Authorization", "Bearer " + supabaseServiceRoleKey)
                     .header("Content-Type", contentType != null ? contentType : "application/octet-stream")
+                    .header("x-upsert", Boolean.toString(upsert))
                     .PUT(HttpRequest.BodyPublishers.ofByteArray(conteudo))
                     .build();
 

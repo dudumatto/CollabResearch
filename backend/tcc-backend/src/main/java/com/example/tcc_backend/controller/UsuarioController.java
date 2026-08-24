@@ -18,8 +18,10 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -116,16 +118,30 @@ public class UsuarioController {
     }
 
     @Operation(
-            summary = "Atualizar preferências do usuário",
-            description = "Atualiza as preferências do usuário autenticado."
+            summary = "Atualizar preferencias do usuario",
+            description = "Atualiza as preferencias do usuario autenticado."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Preferências atualizadas com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "200", description = "Preferencias atualizadas com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados invalidos")
     })
     @PutMapping("/me/preferencias")
     public ResponseEntity<UsuarioProfileResponse> updatePreferencias(@RequestBody @Valid UsuarioPreferenciasRequest dto) {
         return ResponseEntity.ok(usuarioService.updatePreferencias(dto));
+    }
+
+    @Operation(
+            summary = "Atualizar foto de perfil",
+            description = "Envia uma imagem JPG ou PNG de ate 2 MB para o armazenamento e atualiza a URL no perfil."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Foto atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Imagem invalida"),
+            @ApiResponse(responseCode = "413", description = "Imagem muito grande")
+    })
+    @PostMapping(value = "/me/foto-perfil", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UsuarioProfileResponse> updateFotoPerfil(@RequestPart("arquivo") MultipartFile arquivo) {
+        return ResponseEntity.ok(usuarioService.atualizarFotoPerfil(arquivo));
     }
 
     @Operation(
