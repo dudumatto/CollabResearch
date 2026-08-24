@@ -5,6 +5,9 @@ const API_BASE_URL = (
   import.meta.env.DEV ? "" : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || ""
 ).replace(/\/$/, "");
 
+const GET_DEDUPE_TTL_MS = 750;
+const getRequestCache = new Map();
+
 function buildRequestUrl(path) {
   const requestPath = path.startsWith("/") ? path : `/${path}`;
 
@@ -15,23 +18,23 @@ function buildRequestUrl(path) {
   return `${API_BASE_URL}${requestPath}`;
 }
 
-async function request(path, options = {}) {
-  const token = getStoredToken();
-  const headers = new Headers(options.headers ?? {});
+function getRequestCacheKey(url, headers) {
+  return `${headers.get("Authorization") ?? ""}|${url}`;
+}
 
-  if (!(options.body instanceof FormData) && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
-  }
+function rememberGetResult(cacheKey, value) {
+  const expiresAt = Date.now() + GET_DEDUPE_TTL_MS;
+  getRequestCache.set(cacheKey, { value, expiresAt });
+  setTimeout(() => {
+    const cached = getRequestCache.get(cacheKey);
+    if (cached?.expiresAt === expiresAt) {
+      getRequestCache.delete(cacheKey);
+    }
+  }, GET_DEDUPE_TTL_MS);
+}
 
-  if (!headers.has("Accept")) {
-    headers.set("Accept", "application/json");
-  }
-
-  if (token && !headers.has("Authorization")) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-
-  const response = await fetch(buildRequestUrl(path), {
+async function performRequest(url, options, headers) {
+  const response = await fetch(url, {
     ...options,
     headers,
   });
@@ -73,6 +76,53 @@ async function request(path, options = {}) {
   }
 
   return payload;
+}
+
+function clearGetRequestCache() {
+  getRequestCache.clear();
+}
+
+async function request(path, options = {}) {
+  const token = getStoredToken();
+  const headers = new Headers(options.headers ?? {});
+  const method = String(options.method ?? "GET").toUpperCase();
+  const url = buildRequestUrl(path);
+
+  if (!(options.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "application/json");
+  }
+
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  if (method !== "GET") {
+    clearGetRequestCache();
+    return performRequest(url, options, headers);
+  }
+
+  const cacheKey = getRequestCacheKey(url, headers);
+  const cached = getRequestCache.get(cacheKey);
+  if (cached?.promise) return cached.promise;
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+
+  const promise = performRequest(url, options, headers);
+  getRequestCache.set(cacheKey, { promise });
+
+  try {
+    const result = await promise;
+    rememberGetResult(cacheKey, result);
+    return result;
+  } catch (err) {
+    if (getRequestCache.get(cacheKey)?.promise === promise) {
+      getRequestCache.delete(cacheKey);
+    }
+    throw err;
+  }
 }
 
 export const api = {

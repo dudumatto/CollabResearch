@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
 import { Toaster } from "./components/ui/sonner";
@@ -8,7 +9,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <Suspense fallback={<div className="app-route-loading" aria-label="Carregando página" />}>
+          <RouterProvider router={router} />
+        </Suspense>
         <Toaster richColors position="top-right" />
       </AuthProvider>
     </ThemeProvider>

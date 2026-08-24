@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { createContext, Suspense, useContext, useState } from "react";
 import { Outlet, useLocation } from "react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sidebar } from "../components/Sidebar";
 import { Topbar } from "../components/Topbar";
 import { useAuth } from "../hooks/useAuth";
 import "./DashboardLayout.css";
-import { createContext, useContext } from "react";
 
 export const SidebarContext = createContext({ collapsed: false });
 export const useSidebarContext = () => useContext(SidebarContext);
@@ -93,7 +92,9 @@ export function DashboardLayout() {
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 className="pagina-app__pagina"
               >
-                <Outlet />
+                <Suspense fallback={<div className="pagina-app__rota-carregando" aria-label="Carregando página" />}>
+                  <Outlet />
+                </Suspense>
               </motion.div>
             </AnimatePresence>
           </main>

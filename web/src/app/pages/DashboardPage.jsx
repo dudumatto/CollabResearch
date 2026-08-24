@@ -17,7 +17,6 @@ import { notificationService } from "../services/notificationService";
 import { StatusView } from "../components/StatusView";
 import { WelcomeBanner } from "../components/WelcomeBanner";
 import {
-  getProjectSeatHolders,
   getProjectSlotsUsage,
   mapApplication,
   mapNotification,
@@ -128,23 +127,9 @@ export default function DashboardPage() {
     ]);
 
     const mappedProjects = Array.isArray(projects) ? projects.map(mapProject) : [];
-    const projectsWithSlots = await Promise.all(
-      mappedProjects.map(async (project) => {
-        const collaborators = await projectService.getCollaborators(project.id).catch(() => null);
-        if (!Array.isArray(collaborators)) return project;
-        const slots = getProjectSlotsUsage(project, collaborators);
-        return {
-          ...project,
-          collaborators,
-          acceptedCollaborators: getProjectSeatHolders(project, collaborators),
-          slotsUsed: slots.used,
-          slotsRemaining: slots.remaining,
-        };
-      }),
-    );
 
     return {
-      projects: projectsWithSlots,
+      projects: mappedProjects,
       applications: Array.isArray(applications) ? applications.map(mapApplication) : [],
       notifications: Array.isArray(notifications) ? notifications.map(mapNotification) : [],
     };

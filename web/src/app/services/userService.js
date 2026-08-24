@@ -22,6 +22,11 @@ export const userService = {
   updatePreferencias(payload) {
     return api.put("/api/usuarios/me/preferencias", payload);
   },
+  uploadProfilePhoto(file) {
+    const formData = new FormData();
+    formData.append("arquivo", file);
+    return api.post("/api/usuarios/me/foto-perfil", formData);
+  },
   getProjects(id) {
     return api.get(`/api/usuarios/${id}/projetos`);
   },

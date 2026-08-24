@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, useState } from "react";
+import { createContext, startTransition, useEffect, useMemo, useState } from "react";
 import { authService } from "../services/authService";
 import { notificationService } from "../services/notificationService";
 import { projectService } from "../services/projectService";
@@ -135,7 +135,9 @@ export function AuthProvider({ children }) {
   const refreshUser = async () => {
     if (!identity) return null;
     const resolved = await resolveCurrentUser(identity);
-    setUser(resolved ?? null);
+    startTransition(() => {
+      setUser(resolved ?? null);
+    });
     return resolved;
   };
 

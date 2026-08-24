@@ -6,8 +6,8 @@ import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useProjectProgress } from "../hooks/useProjectProgress";
 import { userService } from "../services/userService";
-import { projectService } from "../services/projectService";
-import { getProjectSeatHolders, getProjectSlotsUsage, mapProject } from "../utils/adapters";
+import { progressService } from "../services/progressService";
+import { getProjectSlotsUsage, mapProject } from "../utils/adapters";
 import { formatDate, formatProjectStatus, formatUserType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
@@ -126,37 +126,39 @@ export default function ProgressPage() {
 
   const { data, loading, error } = useAsyncData(
     async () => {
-      if (!user?.id) return { projects: [] };
+      if (!user?.id) return { projects: [], initialProgress: null, initialProjectId: "" };
 
       const projectsResult = await userService.getProjects(user.id).catch(() => []);
-      const mappedProjects = Array.isArray(projectsResult) ? projectsResult.map(mapProject) : [];
+      const projects = Array.isArray(projectsResult) ? projectsResult.map(mapProject) : [];
+      const initialProject =
+        (targetProjectId
+          ? projects.find((project) => String(project.id) === String(targetProjectId))
+          : null) ??
+        projects[0] ??
+        null;
 
-      const projects = await Promise.all(
-        mappedProjects.map(async (project) => {
-          const collaborators = await projectService.getCollaborators(project.id).catch(() => null);
+      if (!initialProject?.id) {
+        return { projects, initialProgress: null, initialProjectId: "" };
+      }
 
-          if (!Array.isArray(collaborators)) {
-            return project;
-          }
+      const initialProgress = await progressService
+        .getProgress(initialProject.id)
+        .then((result) => ({ ...result, projectId: result?.projectId ?? initialProject.id }))
+        .catch(() => null);
 
-          const slots = getProjectSlotsUsage(project, collaborators);
-          return {
-            ...project,
-            collaborators,
-            acceptedCollaborators: getProjectSeatHolders(project, collaborators),
-            slotsUsed: slots.used,
-            slotsRemaining: slots.remaining,
-          };
-        }),
-      );
-
-      return { projects };
+      return { projects, initialProgress, initialProjectId: String(initialProject.id) };
     },
-    [user?.id],
-    { initialData: { projects: [] } },
+    [user?.id, targetProjectId],
+    { initialData: { projects: [], initialProgress: null, initialProjectId: "" } },
   );
 
   const projects = data?.projects ?? [];
+  const targetProjectExists = Boolean(
+    targetProjectId && projects.some((project) => String(project.id) === String(targetProjectId)),
+  );
+  const effectiveSelectedProjectId = targetProjectExists
+    ? String(targetProjectId)
+    : selectedProjectId || data?.initialProjectId || "";
 
   useEffect(() => {
     if (targetProjectId && projects.some((project) => String(project.id) === String(targetProjectId))) {
@@ -169,8 +171,8 @@ export default function ProgressPage() {
   }, [projects, selectedProjectId, targetProjectId]);
 
   const selectedProject = useMemo(
-    () => projects.find((project) => String(project.id) === String(selectedProjectId)) ?? projects[0] ?? null,
-    [projects, selectedProjectId],
+    () => projects.find((project) => String(project.id) === String(effectiveSelectedProjectId)) ?? projects[0] ?? null,
+    [projects, effectiveSelectedProjectId],
   );
 
   const {
@@ -181,7 +183,7 @@ export default function ProgressPage() {
     error: progressError,
     advanceStep,
     createUpdate,
-  } = useProjectProgress(selectedProject?.id);
+  } = useProjectProgress(selectedProject?.id, { initialProgress: data?.initialProgress });
 
   const stepOrderStorageKey = selectedProject?.id && user?.id
     ? `collabresearch:step-display-order:${user.id}:${selectedProject.id}`
@@ -263,7 +265,9 @@ export default function ProgressPage() {
     }
   };
 
-  if (loading || progressLoading) {
+  const hasProgressContent = steps.length > 0 || updates.length > 0 || overallPercent > 0;
+
+  if (loading || (progressLoading && !hasProgressContent)) {
     return <ProgressSkeleton />;
   }
 
@@ -296,7 +300,7 @@ export default function ProgressPage() {
             <AppCombobox
               ariaLabel="Selecionar projeto"
               className="app-combobox--progress"
-              value={selectedProjectId || selectedProject.id}
+              value={effectiveSelectedProjectId || selectedProject.id}
               onChange={setSelectedProjectId}
               options={projects.map((project) => ({ value: project.id, label: project.title }))}
             />

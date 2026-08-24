@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { progressService } from "../services/progressService";
 
 const FALLBACK_PROGRESS = {
@@ -31,19 +31,36 @@ function normalizeStepsAfterAdvance(steps, stepId) {
   return nextSteps;
 }
 
-export function useProjectProgress(projectId) {
+function projectKey(projectId) {
+  return projectId == null ? "" : String(projectId);
+}
+
+export function useProjectProgress(projectId, options = {}) {
+  const { initialProgress = null } = options;
+  const hydratedInitialProjectRef = useRef(null);
   const [steps, setSteps] = useState([]);
   const [updates, setUpdates] = useState([]);
   const [overallPercent, setOverallPercent] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const applyProgress = useCallback((result) => {
+    setSteps(Array.isArray(result?.steps) ? result.steps : FALLBACK_PROGRESS.steps);
+    setUpdates(Array.isArray(result?.updates) ? result.updates : FALLBACK_PROGRESS.updates);
+    setOverallPercent(Number(result?.overallPercent ?? FALLBACK_PROGRESS.overallPercent));
+  }, []);
+
+  const resetProgress = useCallback(() => {
+    setSteps(FALLBACK_PROGRESS.steps);
+    setUpdates(FALLBACK_PROGRESS.updates);
+    setOverallPercent(FALLBACK_PROGRESS.overallPercent);
+    setError(null);
+    setIsLoading(false);
+  }, []);
+
   const reload = useCallback(async () => {
     if (!projectId) {
-      setSteps([]);
-      setUpdates([]);
-      setOverallPercent(0);
-      setError(null);
+      resetProgress();
       return null;
     }
 
@@ -52,14 +69,10 @@ export function useProjectProgress(projectId) {
 
     try {
       const result = await progressService.getProgress(projectId);
-      setSteps(result.steps);
-      setUpdates(result.updates);
-      setOverallPercent(result.overallPercent);
+      applyProgress(result);
       return result;
     } catch (err) {
-      setSteps(FALLBACK_PROGRESS.steps);
-      setUpdates(FALLBACK_PROGRESS.updates);
-      setOverallPercent(FALLBACK_PROGRESS.overallPercent);
+      resetProgress();
       setError(null);
       return {
         ...FALLBACK_PROGRESS,
@@ -69,11 +82,29 @@ export function useProjectProgress(projectId) {
     } finally {
       setIsLoading(false);
     }
-  }, [projectId]);
+  }, [applyProgress, projectId, resetProgress]);
 
   useEffect(() => {
+    const currentProjectKey = projectKey(projectId);
+    if (!currentProjectKey) {
+      resetProgress();
+      return;
+    }
+
+    const initialProjectKey = projectKey(initialProgress?.projectId);
+    if (
+      initialProjectKey === currentProjectKey &&
+      hydratedInitialProjectRef.current !== currentProjectKey
+    ) {
+      hydratedInitialProjectRef.current = currentProjectKey;
+      applyProgress(initialProgress);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
     reload().catch(() => {});
-  }, [reload]);
+  }, [applyProgress, initialProgress, projectId, reload, resetProgress]);
 
   const advanceStep = useCallback(
     async (stepId) => {

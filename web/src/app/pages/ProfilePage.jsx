@@ -130,22 +130,12 @@ export default function ProfilePage() {
     if (!file || !user?.id) return;
 
     try {
-      const uploaded = await uploadAvatar(file, `usuarios/${user.id}/foto-perfil`);
-      if (!uploaded?.publicUrl) {
+      setUploadingAvatar(true);
+      const updatedProfile = await userService.uploadProfilePhoto(file);
+      const fotoPerfilUrl = withImageCacheBuster(updatedProfile?.fotoPerfilUrl);
+      if (!fotoPerfilUrl) {
         throw new Error("Não foi possível enviar a foto de perfil.");
       }
-
-      const fotoPerfilUrl = withImageCacheBuster(uploaded.publicUrl);
-
-      await userService.update(user.id, {
-        nome: form.nome,
-        email: form.email,
-        cursoId: form.cursoId === "" ? null : Number(form.cursoId),
-        instituicao: form.instituicao,
-        semestre: form.semestre === "" ? null : Number(form.semestre),
-        bio: form.bio,
-        fotoPerfilUrl,
-      });
       await reload();
       await refreshUser();
       toast.success("Foto de perfil atualizada.");

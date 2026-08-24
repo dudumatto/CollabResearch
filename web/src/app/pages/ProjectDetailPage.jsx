@@ -217,15 +217,13 @@ export default function ProjectDetailPage() {
   const [recrutandoId, setRecrutandoId] = useState(null);
 
   const { data, loading, error, reload } = useAsyncData(async () => {
-    const [project, progress, projectCollaborators] = await Promise.all([
+    const [project, progress] = await Promise.all([
       projectService.getById(id),
       projectService.getProgress(id).catch(() => []),
-      projectService.getCollaborators(id).catch(() => null),
     ]);
     return {
       project: mapProject(project),
       progress: Array.isArray(progress) ? progress.map(mapProgressItem) : [],
-      collaborators: Array.isArray(projectCollaborators) ? projectCollaborators : null,
     };
   }, [id], { initialData: { project: null, progress: [] } });
 
@@ -256,6 +254,8 @@ export default function ProjectDetailPage() {
       && Number(user.id) === Number(project.advisorId);
   }, [user, project]);
 
+  const canViewTeam = isAdvisorOwner || isStudentCreator || user?.tipo === "ADMIN";
+
   const loadCollaborators = useCallback(async () => {
     setCollabLoading(true);
     try {
@@ -266,7 +266,7 @@ export default function ProjectDetailPage() {
     } finally {
       setCollabLoading(false);
     }
-  }, [id, project?.collaborators]);
+  }, [id]);
 
   const loadInscricoes = useCallback(async () => {
     try {
@@ -279,15 +279,12 @@ export default function ProjectDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    if (!loading && project) {
-      if (Array.isArray(data?.collaborators)) {
-        setCollaborators(data.collaborators);
-      } else {
-        loadCollaborators();
-      }
-      if (isAdvisorOwner) loadInscricoes();
-    }
-  }, [loading, project, data?.collaborators, isAdvisorOwner, loadCollaborators, loadInscricoes]);
+    if (loading || !project) return;
+
+    setCollaborators(null);
+    if (canViewTeam) loadCollaborators();
+    if (isAdvisorOwner) loadInscricoes();
+  }, [loading, project?.id, canViewTeam, isAdvisorOwner, loadCollaborators, loadInscricoes]);
 
 
   const statusClass = project?.status === "FINALIZADO"

@@ -57,3 +57,6 @@
     transition-duration: 1ms !important;
   }
 }
+.pagina-app__rota-carregando {
+  min-height: 16rem;
+}

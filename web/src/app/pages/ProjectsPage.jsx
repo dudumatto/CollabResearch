@@ -3,12 +3,13 @@ import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { Search, FolderOpen, Users, Clock, ChevronRight, SlidersHorizontal, X, Plus } from "lucide-react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { projectService } from "../services/projectService";
 import { courseService } from "../services/courseService";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
-import { getProjectSeatHolders, getProjectSlotsUsage, getUserPhotoUrl, mapProject } from "../utils/adapters";
+import { getProjectSlotsUsage, getUserPhotoUrl, mapProject } from "../utils/adapters";
 import { formatProjectStatus } from "../utils/formatters";
 import "./ProjectsPage.css";
 
@@ -46,6 +47,7 @@ function AdvisorAvatar({ advisor }) {
 export default function ProjectsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 350);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedArea, setSelectedArea] = useState("Todas");
   const [selectedStatus, setSelectedStatus] = useState("Todos");
@@ -77,28 +79,11 @@ export default function ProjectsPage() {
         curso: selectedCourse === "Todos" ? "" : selectedCourse,
         area: selectedArea === "Todas" ? "" : selectedArea,
         status: selectedStatus === "Todos" ? "" : selectedStatus,
-        busca: search,
+        busca: debouncedSearch,
       });
-      const projects = Array.isArray(result) ? result.map(mapProject) : [];
-
-      return Promise.all(
-        projects.map(async (project) => {
-          const collaborators = await projectService.getCollaborators(project.id).catch(() => null);
-          if (!Array.isArray(collaborators)) return project;
-
-          const slots = getProjectSlotsUsage(project, collaborators);
-
-          return {
-            ...project,
-            collaborators,
-            acceptedCollaborators: getProjectSeatHolders(project, collaborators),
-            slotsUsed: slots.used,
-            slotsRemaining: slots.remaining,
-          };
-        }),
-      );
+      return Array.isArray(result) ? result.map(mapProject) : [];
     },
-    [selectedCourse, selectedArea, selectedStatus, search],
+    [selectedCourse, selectedArea, selectedStatus, debouncedSearch],
     { initialData: [] },
   );
   const projects = Array.isArray(data) ? data : [];

@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { projectService } from "../services/projectService";
-import { getProjectSeatHolders, getProjectSlotsUsage, mapProject } from "../utils/adapters";
+import { mapProject } from "../utils/adapters";
 import { formatProjectStatus } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
@@ -183,22 +183,7 @@ export default function AdvisorProjectsPage() {
       const raw = isExplorar
         ? await advisorService.explorar()
         : await advisorService.meusProjetos();
-      const projects = (Array.isArray(raw) ? raw : []).map(mapProject);
-      return Promise.all(
-        projects.map(async (project) => {
-          const collaborators = await projectService.getCollaborators(project.id).catch(() => null);
-          if (!Array.isArray(collaborators)) return project;
-
-          const slots = getProjectSlotsUsage(project, collaborators);
-          return {
-            ...project,
-            collaborators,
-            acceptedCollaborators: getProjectSeatHolders(project, collaborators),
-            slotsUsed: slots.used,
-            slotsRemaining: slots.remaining,
-          };
-        }),
-      );
+      return (Array.isArray(raw) ? raw : []).map(mapProject);
     },
     [aba],
     { initialData: [] },

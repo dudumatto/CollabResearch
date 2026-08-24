@@ -117,24 +117,13 @@ export default function AdvisorProfilePage() {
     if (!file || !userId || !form) return;
 
     try {
-      const uploaded = await uploadAvatar(file, `usuarios/${userId}/foto-perfil`);
-      if (!uploaded?.publicUrl) {
+      setUploadingAvatar(true);
+      const updatedProfile = await userService.uploadProfilePhoto(file);
+      const fotoPerfilUrl = withImageCacheBuster(updatedProfile?.fotoPerfilUrl);
+      if (!fotoPerfilUrl) {
         throw new Error("Não foi possível enviar a foto de perfil.");
       }
-
-      const fotoPerfilUrl = withImageCacheBuster(uploaded.publicUrl);
-      const atualizado = mapOrientadorPerfil(
-        await advisorService.atualizarPerfil({
-          nome: form.nome.trim(),
-          email: form.email.trim(),
-          instituicao: form.instituicao.trim(),
-          departamento: form.departamento.trim(),
-          titulacao: form.titulacao.trim(),
-          bio: form.bio.trim(),
-          fotoPerfilUrl,
-        }),
-      );
-      setForm(resetFormFromPerfil({ ...form, ...atualizado, fotoPerfilUrl }));
+      setForm(resetFormFromPerfil({ ...form, fotoPerfilUrl }));
       await reload();
       await refreshUser();
       toast.success("Foto de perfil atualizada.");
