@@ -35,7 +35,7 @@ class Message {
             json['sender']?['name'] ??
             json['sender']?['nome'],
       ),
-      sentAt: DateTime.tryParse('$sentAtValue') ?? DateTime.now(),
+      sentAt: _parseSentAt(sentAtValue),
       isEdited: json['isEdited'] == true || json['editada'] == true,
       isMine: json['isMine'] == true ||
           json['mine'] == true ||
@@ -47,5 +47,9 @@ class Message {
     if (value == null) return null;
     final text = '$value'.trim();
     return text.isEmpty ? null : text;
+  }
+
+  static DateTime _parseSentAt(dynamic value) {
+    return DateTime.tryParse('$value')?.toLocal() ?? DateTime.now();
   }
 }
