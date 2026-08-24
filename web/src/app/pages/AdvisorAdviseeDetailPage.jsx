@@ -39,6 +39,16 @@ function iniciais(nome = "") {
     .toUpperCase();
 }
 
+function AvatarPerfil({ nome, src }) {
+  const [failed, setFailed] = useState(false);
+  const showPhoto = Boolean(src) && !failed;
+
+  return (
+    <div className="advisor-perfil-cartao__avatar">
+      {showPhoto ? <img src={src} alt={`Foto de perfil de ${nome}`} onError={() => setFailed(true)} /> : iniciais(nome)}
+    </div>
+  );
+}
 function DetalheSkeleton() {
   return (
     <div className="advisor-pagina">
@@ -114,7 +124,7 @@ export default function AdvisorAdviseeDetailPage() {
       <div className="advisor-detalhe-grade">
         <div className="advisor-detalhe-lateral">
           <div className="advisor-perfil-cartao">
-            <div className="advisor-perfil-cartao__avatar">{iniciais(data.nome)}</div>
+            <AvatarPerfil nome={data.nome} src={data.fotoPerfilUrl || data.avatarUrl} />
             <h3 className="advisor-perfil-cartao__nome">{data.nome}</h3>
             <span className={`advisor-etiqueta ${situacaoPillClass(data.projetoSelecionado?.status ?? data.projetos[0]?.status ?? "INATIVO")}`}>
               {formatProjectStatus(data.projetoSelecionado?.status ?? data.projetos[0]?.status ?? "INATIVO")}

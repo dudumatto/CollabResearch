@@ -19,6 +19,30 @@ const FILTROS = [
   { key: "REJEITADO", rotulo: "Rejeitadas" },
 ];
 
+function iniciais(nome = "") {
+  return String(nome)
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
+}
+
+function AvatarAluno({ nome, src }) {
+  const [failed, setFailed] = useState(false);
+  const showPhoto = Boolean(src) && !failed;
+
+  return (
+    <div className="advisor-linha-card__icone" style={{ borderRadius: "var(--raio-completo)" }}>
+      {showPhoto ? (
+        <img src={src} alt={`Foto de perfil de ${nome}`} onError={() => setFailed(true)} />
+      ) : (
+        <span style={{ fontSize: "var(--tamanho-normal)", fontWeight: 700 }}>{iniciais(nome || "?")}</span>
+      )}
+    </div>
+  );
+}
 function statusPillClass(status) {
   if (status === "PENDENTE") return "advisor-etiqueta--amarelo";
   if (status === "APROVADO") return "advisor-etiqueta--verde";
@@ -199,17 +223,7 @@ export default function AdvisorApplicationsPage() {
                 transition={{ duration: 0.25, delay: index * 0.03 }}
                 className="advisor-linha-card"
               >
-                <div className="advisor-linha-card__icone" style={{ borderRadius: "var(--raio-completo)" }}>
-                  <span style={{ fontSize: "var(--tamanho-normal)", fontWeight: 700 }}>
-                    {String(app.alunoNome ?? "?")
-                      .split(" ")
-                      .filter(Boolean)
-                      .slice(0, 2)
-                      .map((p) => p[0])
-                      .join("")
-                      .toUpperCase()}
-                  </span>
-                </div>
+                <AvatarAluno nome={app.alunoNome} src={app.alunoFotoPerfilUrl} />
 
                 <div className="advisor-linha-card__conteudo">
                   <p className="advisor-linha-card__titulo">{app.alunoNome}</p>

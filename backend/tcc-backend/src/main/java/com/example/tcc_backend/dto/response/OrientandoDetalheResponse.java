@@ -17,6 +17,7 @@ public class OrientandoDetalheResponse {
     private Integer alunoUsuarioId;
     private String nome;
     private String email;
+    private String fotoPerfilUrl;
     private String ra;
     private String curso;
     private Integer semestre;

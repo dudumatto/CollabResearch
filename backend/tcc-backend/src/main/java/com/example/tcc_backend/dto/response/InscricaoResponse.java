@@ -27,6 +27,7 @@ public class InscricaoResponse {
     private Integer alunoId;
     private Integer alunoUsuarioId;
     private String alunoNome;
+    private String alunoFotoPerfilUrl;
 
     public static InscricaoResponse fromEntity(Inscricao inscricao) {
         return fromEntity(inscricao, null);
@@ -52,6 +53,7 @@ public class InscricaoResponse {
                 .alunoId(inscricao.getAluno() != null ? inscricao.getAluno().getId() : null)
                 .alunoUsuarioId(inscricao.getAluno() != null && inscricao.getAluno().getUsuario() != null ? inscricao.getAluno().getUsuario().getId() : null)
                 .alunoNome(inscricao.getAluno() != null && inscricao.getAluno().getUsuario() != null ? inscricao.getAluno().getUsuario().getNome() : null)
+                .alunoFotoPerfilUrl(inscricao.getAluno() != null && inscricao.getAluno().getUsuario() != null ? inscricao.getAluno().getUsuario().getFotoPerfilUrl() : null)
                 .build();
     }
 }

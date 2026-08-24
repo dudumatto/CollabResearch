@@ -35,6 +35,19 @@ function iniciais(nome = "") {
     .toUpperCase();
 }
 
+function AvatarOrientando({ nome, src }) {
+  const [failed, setFailed] = useState(false);
+  const showPhoto = Boolean(src) && !failed;
+
+  return (
+    <div
+      className="advisor-linha-card__icone"
+      style={{ width: "2.75rem", height: "2.75rem", borderRadius: "var(--raio-completo)", background: "var(--gradiente-avatar)", color: "#f6f8f5", fontWeight: 700 }}
+    >
+      {showPhoto ? <img src={src} alt={`Foto de perfil de ${nome}`} onError={() => setFailed(true)} /> : iniciais(nome)}
+    </div>
+  );
+}
 function SkeletonLinha({ linhas = 5 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
@@ -189,12 +202,7 @@ export default function AdvisorAdviseesPage() {
               style={{ cursor: "pointer" }}
               onClick={() => navigate(`/app/advisees/${orientando.alunoId}`)}
             >
-              <div
-                className="advisor-linha-card__icone"
-                style={{ width: "2.75rem", height: "2.75rem", borderRadius: "var(--raio-completo)", background: "var(--gradiente-avatar)", color: "#f6f8f5", fontWeight: 700 }}
-              >
-                {iniciais(orientando.nome)}
-              </div>
+              <AvatarOrientando nome={orientando.nome} src={orientando.fotoPerfilUrl || orientando.avatarUrl} />
 
               <div className="advisor-linha-card__conteudo">
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>

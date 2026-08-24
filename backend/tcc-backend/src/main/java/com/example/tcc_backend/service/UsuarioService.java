@@ -190,7 +190,7 @@ public class UsuarioService {
                 arquivo.getContentType(),
                 true
         );
-        String publicUrl = supabaseStorageService.createPublicUserDocumentUrl(caminho);
+        String publicUrl = withCacheVersion(supabaseStorageService.createPublicUserDocumentUrl(caminho));
         if (publicUrl == null || publicUrl.isBlank()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falha ao gerar URL da foto de perfil");
         }
@@ -319,6 +319,14 @@ public class UsuarioService {
         if ("image/jpeg".equals(contentType) && (read < 3 || (header[0] & 0xFF) != 0xFF || (header[1] & 0xFF) != 0xD8 || (header[2] & 0xFF) != 0xFF)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imagem invalida");
         }
+    }
+
+    private String withCacheVersion(String url) {
+        if (url == null || url.isBlank()) {
+            return url;
+        }
+        String separator = url.contains("?") ? "&" : "?";
+        return url + separator + "v=" + System.currentTimeMillis();
     }
 
     private byte[] lerBytes(MultipartFile arquivo) {

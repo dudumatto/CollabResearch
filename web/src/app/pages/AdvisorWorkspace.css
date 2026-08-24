@@ -951,6 +951,15 @@
   color: var(--cor-primaria);
 }
 
+
+.advisor-linha-card__icone img,
+.advisor-perfil-cartao__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  display: block;
+}
 .advisor-linha-card__conteudo {
   flex: 1;
   min-width: 0;

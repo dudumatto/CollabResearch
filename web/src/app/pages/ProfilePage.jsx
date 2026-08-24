@@ -56,7 +56,7 @@ export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
   const avatarInputRef = useRef(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const { data, loading, error, reload } = useAsyncData(async () => {
+  const { data, setData, loading, error, reload } = useAsyncData(async () => {
     if (!user?.id) return { profile: user, applications: [], documents: [], courses: [] };
     const [profile, applications, documents, courses] = await Promise.all([
       userService.getCurrentUser().catch(() => user),
@@ -135,6 +135,10 @@ export default function ProfilePage() {
       if (!fotoPerfilUrl) {
         throw new Error("Não foi possível enviar a foto de perfil.");
       }
+      setData((prev) => ({
+        ...prev,
+        profile: { ...prev?.profile, ...updatedProfile, fotoPerfilUrl },
+      }));
       await reload();
       await refreshUser();
       toast.success("Foto de perfil atualizada.");

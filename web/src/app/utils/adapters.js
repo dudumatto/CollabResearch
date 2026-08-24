@@ -293,6 +293,7 @@ export function mapAdvisorApplication(application) {
     alunoId: application?.alunoId ?? null,
     alunoUsuarioId: application?.alunoUsuarioId ?? null,
     alunoNome: application?.alunoNome ?? project?.owner?.name ?? "Estudante",
+    alunoFotoPerfilUrl: application?.alunoFotoPerfilUrl ?? getUserPhotoUrl(application?.aluno) ?? getUserPhotoUrl(application?.usuario) ?? "",
     project,
   };
 }
@@ -477,6 +478,8 @@ export function mapOrientando(orientando) {
     alunoUsuarioId: orientando.alunoUsuarioId ?? null,
     nome: orientando.nome ?? "Estudante",
     email: orientando.email ?? "",
+    fotoPerfilUrl: getUserPhotoUrl(orientando) || orientando.fotoPerfilUrl || "",
+    avatarUrl: getUserPhotoUrl(orientando) || orientando.fotoPerfilUrl || "",
     ra: orientando.ra ?? "",
     curso: orientando.curso ?? "",
     situacao: orientando.situacao ?? "INATIVO",
@@ -530,6 +533,8 @@ export function mapOrientandoDetalhe(detalhe) {
     alunoUsuarioId: detalhe.alunoUsuarioId ?? null,
     nome: detalhe.nome ?? "Estudante",
     email: detalhe.email ?? "",
+    fotoPerfilUrl: getUserPhotoUrl(detalhe) || detalhe.fotoPerfilUrl || "",
+    avatarUrl: getUserPhotoUrl(detalhe) || detalhe.fotoPerfilUrl || "",
     ra: detalhe.ra ?? "",
     curso: detalhe.curso ?? "",
     semestre: detalhe.semestre ?? null,
