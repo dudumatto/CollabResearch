@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../widgets/common/collab_logo.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/dashboard/activity_chart.dart';
 import '../../widgets/dashboard/recent_activity_list.dart';
@@ -68,49 +70,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  foregroundImage: user?.avatarUrl != null
-                                      ? NetworkImage(user!.avatarUrl!)
-                                      : null,
-                                  child: Text(user?.name.isNotEmpty == true
-                                      ? user!.name[0].toUpperCase()
-                                      : 'U'),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text.rich(
-                                    TextSpan(
-                                      text: 'Olá, ',
-                                      children: [
-                                        TextSpan(
-                                          text: user?.name.isNotEmpty == true
-                                              ? user!.name.split(' ').first
-                                              : 'pesquisador',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    style:
-                                        Theme.of(context).textTheme.titleLarge,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 18),
-                            Text(
-                              'Dashboard',
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Resumo dos seus projetos, conversas e alertas.',
-                              style: Theme.of(context).textTheme.bodyMedium,
+                            _DashboardHeader(
+                              name: user?.name.isNotEmpty == true
+                                  ? user!.name.split(' ').first
+                                  : 'pesquisador',
+                              avatarUrl: user?.avatarUrl,
                             ),
                             const SizedBox(height: 18),
                             if (dashboardProvider.errorMessage != null) ...[
@@ -191,6 +155,112 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 );
               },
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DashboardHeader extends StatelessWidget {
+  const _DashboardHeader({required this.name, this.avatarUrl});
+
+  final String name;
+  final String? avatarUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 360;
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: ColoredBox(
+            color: AppColors.primaryDark,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -22,
+                  right: -26,
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: 0.1,
+                      child: CollabLogo(
+                        full: false,
+                        height: isCompact ? 104 : 120,
+                        inverted: true,
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(isCompact ? 16 : 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: isCompact ? 19 : 21,
+                            backgroundColor: AppColors.surface,
+                            foregroundImage: avatarUrl != null
+                                ? NetworkImage(avatarUrl!)
+                                : null,
+                            child: Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                              style: const TextStyle(
+                                color: AppColors.primaryDark,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                text: 'Olá, ',
+                                children: [
+                                  TextSpan(
+                                    text: name,
+                                    style: const TextStyle(
+                                      color: AppColors.color1,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(color: AppColors.surface),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: isCompact ? 16 : 18),
+                      Text(
+                        'Dashboard',
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: AppColors.surface,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Resumo dos seus projetos, conversas e alertas.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.surface.withValues(alpha: 0.86),
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         );
