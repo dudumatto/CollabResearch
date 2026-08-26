@@ -262,7 +262,18 @@ public class UsuarioService {
     private UsuarioProfileResponse montarPerfil(Usuario usuario) {
         Aluno aluno = alunoRepository.findByUsuarioId(usuario.getId()).orElse(null);
         Orientador orientador = orientadorRepository.findByUsuarioId(usuario.getId()).orElse(null);
-        return UsuarioProfileResponse.from(usuario, aluno, orientador);
+        UsuarioProfileResponse response = UsuarioProfileResponse.from(usuario, aluno, orientador);
+        String fotoPerfilUrl = resolverFotoPerfilParaExibicao(usuario.getFotoPerfilUrl());
+        response.setFotoPerfilUrl(fotoPerfilUrl);
+        response.setAvatarUrl(fotoPerfilUrl);
+        return response;
+    }
+
+    public String resolverFotoPerfilParaExibicao(String fotoPerfilUrl) {
+        if (fotoPerfilUrl == null || fotoPerfilUrl.isBlank() || supabaseStorageService == null) {
+            return fotoPerfilUrl;
+        }
+        return supabaseStorageService.createDisplayUserDocumentUrl(fotoPerfilUrl);
     }
 
     private Curso buscarCurso(Integer cursoId) {

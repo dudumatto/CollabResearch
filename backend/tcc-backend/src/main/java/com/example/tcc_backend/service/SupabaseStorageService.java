@@ -55,7 +55,7 @@ public class SupabaseStorageService {
     }
 
     public boolean isConfigured() {
-        return !isBlank(supabaseUrl) && !isBlank(supabaseServiceRoleKey) && !isBlank(projectDocumentsBucket);
+        return !isBlank(supabaseUrl) && !isBlank(supabaseServiceRoleKey) && !isBlank(projectDocumentsBucket) && !isBlank(userDocumentsBucket);
     }
 
     public String upload(String pastaRelativa, String nomeArquivo, byte[] conteudo, String contentType) {
@@ -122,6 +122,14 @@ public class SupabaseStorageService {
 
     public String createSignedUserDocumentUrlFromPublicUrl(String publicUrl) {
         return createSignedUserDocumentUrl(publicUrl);
+    }
+
+    public String createDisplayUserDocumentUrl(String documentReference) {
+        if (isBlank(documentReference)) {
+            return documentReference;
+        }
+        String signedUrl = createSignedUserDocumentUrl(documentReference);
+        return !isBlank(signedUrl) ? signedUrl : documentReference;
     }
 
     public boolean isUserDocumentReference(String documentReference) {

@@ -65,10 +65,10 @@ export default function AdvisorProfilePage() {
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
 
   useEffect(() => {
-    if (perfil && !form) {
+    if (perfil && (!form || !editing)) {
       setForm(resetFormFromPerfil(perfil));
     }
-  }, [perfil, form]);
+  }, [perfil, editing]);
 
   useEffect(() => {
     setAvatarLoadFailed(false);

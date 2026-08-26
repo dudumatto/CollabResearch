@@ -49,6 +49,8 @@ class UsuarioServiceTest {
     private InscricaoRepository inscricaoRepository;
     @Mock
     private AuthHelper authHelper;
+    @Mock
+    private SupabaseStorageService supabaseStorageService;
 
     @InjectMocks
     private UsuarioService usuarioService;
@@ -161,6 +163,24 @@ class UsuarioServiceTest {
         assertThat(profile.getId()).isEqualTo(1);
         assertThat(profile.getCursoNome()).isEqualTo("ADS");
         assertThat(profile.getTema()).isEqualTo("escuro");
+    }
+
+    @Test
+    void meDeveRetornarFotoPerfilAssinadaParaExibicao() {
+        Usuario usuario = TestDataFactory.usuarioAluno(1);
+        usuario.setFotoPerfilUrl("https://example.supabase.co/storage/v1/object/public/documents/usuarios/1/foto-perfil/foto-perfil");
+
+        when(authHelper.getCurrentUser()).thenReturn(usuario);
+        when(alunoRepository.findByUsuarioId(1)).thenReturn(Optional.empty());
+        when(orientadorRepository.findByUsuarioId(1)).thenReturn(Optional.empty());
+        when(supabaseStorageService.createDisplayUserDocumentUrl(usuario.getFotoPerfilUrl()))
+                .thenReturn("https://example.supabase.co/storage/v1/object/sign/documents/usuarios/1/foto-perfil/foto-perfil?token=abc");
+
+        UsuarioProfileResponse profile = usuarioService.me();
+
+        assertThat(profile.getFotoPerfilUrl())
+                .isEqualTo("https://example.supabase.co/storage/v1/object/sign/documents/usuarios/1/foto-perfil/foto-perfil?token=abc");
+        assertThat(profile.getAvatarUrl()).isEqualTo(profile.getFotoPerfilUrl());
     }
 
     @Test

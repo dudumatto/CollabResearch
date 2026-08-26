@@ -202,7 +202,7 @@ public class OrientadorService {
                 .alunoUsuarioId(aluno.getUsuario().getId())
                 .nome(aluno.getUsuario().getNome())
                 .email(aluno.getUsuario().getEmail())
-                .fotoPerfilUrl(aluno.getUsuario().getFotoPerfilUrl())
+                .fotoPerfilUrl(usuarioService.resolverFotoPerfilParaExibicao(aluno.getUsuario().getFotoPerfilUrl()))
                 .ra(aluno.getRa())
                 .curso(aluno.getCurso() != null ? aluno.getCurso().getNome() : null)
                 .semestre(aluno.getSemestre())
@@ -241,7 +241,9 @@ public class OrientadorService {
         long orientandos = orientandosAtivos(inscricoes, ativos).size();
         long avaliacoes = avaliacoesDoEscopo(usuario).size();
 
-        return OrientadorPerfilResponse.from(usuario, orientador, projetos.size(), orientandos, avaliacoes);
+        OrientadorPerfilResponse response = OrientadorPerfilResponse.from(usuario, orientador, projetos.size(), orientandos, avaliacoes);
+        response.setFotoPerfilUrl(usuarioService.resolverFotoPerfilParaExibicao(usuario.getFotoPerfilUrl()));
+        return response;
     }
 
     @Transactional
@@ -307,7 +309,7 @@ public class OrientadorService {
                 .alunoUsuarioId(aluno.getUsuario().getId())
                 .nome(aluno.getUsuario().getNome())
                 .email(aluno.getUsuario().getEmail())
-                .fotoPerfilUrl(aluno.getUsuario().getFotoPerfilUrl())
+                .fotoPerfilUrl(usuarioService.resolverFotoPerfilParaExibicao(aluno.getUsuario().getFotoPerfilUrl()))
                 .ra(aluno.getRa())
                 .curso(aluno.getCurso() != null ? aluno.getCurso().getNome() : null)
                 .situacao(ativo ? situacao : "INATIVO")
