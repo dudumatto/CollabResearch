@@ -252,9 +252,9 @@ export default function AdvisorProjectsPage() {
       transition={{ duration: 0.3 }}
       className="advisor-pagina"
     >
-      <div className="advisor-hero" style={{ padding: "var(--espaco-4)" }}>
+      <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
         <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
-          {isExplorar ? "Explorar projetos" : "Meus projetos"}
+          {isExplorar ? "Descubra oportunidades" : "Acompanhe solicitações e vínculos"}
         </h2>
         <p className="advisor-hero__subtitulo">
           {isExplorar

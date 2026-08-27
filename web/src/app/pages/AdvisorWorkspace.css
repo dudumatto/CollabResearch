@@ -370,6 +370,10 @@
   box-shadow: 0 8px 32px rgba(31, 122, 90, 0.28);
 }
 
+.advisor-hero--sem-sombra {
+  box-shadow: none;
+}
+
 .dark .advisor-hero {
   background:
     radial-gradient(circle at top right, rgba(126, 160, 106, 0.22), transparent 28%),

@@ -237,9 +237,9 @@ export default function AdvisorProgressPage() {
       transition={{ duration: 0.3 }}
       className="advisor-pagina"
     >
-      <div className="advisor-hero" style={{ padding: "var(--espaco-4)" }}>
+      <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
         <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
-          Progresso e prazos
+          Organize etapas e prazos
         </h2>
         <p className="advisor-hero__subtitulo">
           Defina etapas, responsáveis e prazos para cada projeto sob sua orientação.

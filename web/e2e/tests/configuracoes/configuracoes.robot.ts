@@ -39,10 +39,10 @@ export async function openAppearancePanel(page: Page) {
 }
 
 export async function toggleDarkMode(page: Page) {
-  const toggle = page.locator(".cfg-toggle[aria-label='Modo escuro']");
-  const wasOn = await toggle.getAttribute("aria-pressed");
-  await toggle.click();
-  await expect(toggle).toHaveAttribute("aria-pressed", wasOn === "true" ? "false" : "true");
+  const appearancePanel = page.locator(".cfg-panel");
+  await expect(appearancePanel.getByText("Tamanho da fonte")).toBeHidden();
+  await appearancePanel.getByRole("radio", { name: /Escuro/ }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme-preference", "dark");
 }
 
 export async function assertPageReloadsCorrectly(page: Page) {

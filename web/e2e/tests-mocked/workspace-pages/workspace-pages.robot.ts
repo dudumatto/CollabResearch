@@ -155,11 +155,10 @@ export async function runSettingsFlow(page: Page, expectedRole = "Aluno") {
 
   await page.getByRole("button", { name: /Aparência/ }).click();
   const appearancePanel = page.locator(".cfg-panel");
-  await expect(appearancePanel.getByRole("button", { name: "Claro" })).toBeVisible();
-  await appearancePanel.getByRole("button", { name: "Escuro" }).click();
+  await expect(appearancePanel.getByRole("radio", { name: /Claro/ })).toBeVisible();
+  await expect(appearancePanel.getByText("Tamanho da fonte")).toBeHidden();
+  await appearancePanel.getByRole("radio", { name: /Escuro/ }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme-preference", "dark");
-  await appearancePanel.getByRole("button", { name: "Grande" }).click();
-  await expect(page.locator("html")).toHaveAttribute("data-font-size", "large");
   await page.locator(".cfg-panel__back").click();
   await expect(page.locator(".cfg-panel__back")).toBeHidden();
 

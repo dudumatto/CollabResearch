@@ -21,14 +21,6 @@ function normalizeValue(value) {
     .trim();
 }
 
-function ProjectCover({ project }) {
-  return project.coverUrl ? (
-    <img className="projeto-card__foto" src={project.coverUrl} alt={`Foto do projeto ${project.title}`} />
-  ) : (
-    <div className="projeto-card__barra-topo" />
-  );
-}
-
 function AdvisorAvatar({ advisor }) {
   const photoUrl = getUserPhotoUrl(advisor);
   return (
@@ -306,7 +298,6 @@ export default function ProjectsPage() {
                 onClick={() => navigate(`/app/projects/${project.id}`)}
                 className="projeto-card"
               >
-                <ProjectCover project={project} />
                 <div className="projeto-card__corpo">
                   <div className="projeto-card__cabecalho">
                     <span className={`projeto-card__status ${statusClass}`}>

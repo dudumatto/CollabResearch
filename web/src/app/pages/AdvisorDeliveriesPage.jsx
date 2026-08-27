@@ -204,9 +204,9 @@ export default function AdvisorDeliveriesPage() {
       transition={{ duration: 0.3 }}
       className="advisor-pagina"
     >
-      <div className="advisor-hero" style={{ padding: "var(--espaco-4)" }}>
+      <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
         <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
-          Entregas
+          Revise arquivos enviados
         </h2>
         <p className="advisor-hero__subtitulo">
           Revise as entregas dos alunos, solicite ajustes ou aprove cada versão.

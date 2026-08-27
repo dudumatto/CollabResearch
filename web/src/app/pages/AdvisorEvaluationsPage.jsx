@@ -229,9 +229,9 @@ export default function AdvisorEvaluationsPage() {
       transition={{ duration: 0.3 }}
       className="advisor-pagina"
     >
-      <div className="advisor-hero" style={{ padding: "var(--espaco-4)" }}>
+      <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
         <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
-          Avaliações acadêmicas
+          Registre desempenho acadêmico
         </h2>
         <p className="advisor-hero__subtitulo">
           Avalie a participação, a qualidade técnica, os prazos e a comunicação de cada estudante por etapa concluída.

@@ -14,9 +14,9 @@ const PAGINAS = [
   { nome: "inscricoes", rota: "/app/applications", pistas: ["Inscrições recebidas"] },
   { nome: "orientandos", rota: "/app/advisees", pistas: ["Aluno E2E"] },
   { nome: "orientando-detalhe", rota: "/app/advisees/1", pistas: ["Histórico de participação"] },
-  { nome: "progresso", rota: "/app/progress", pistas: ["Progresso e prazos"] },
+  { nome: "progresso", rota: "/app/progress", pistas: ["Organize etapas e prazos"] },
   { nome: "entregas", rota: "/app/deliveries", pistas: ["Monografia"] },
-  { nome: "avaliacoes", rota: "/app/avaliacoes", pistas: ["Avaliações acadêmicas"] },
+  { nome: "avaliacoes", rota: "/app/avaliacoes", pistas: ["Registre desempenho acadêmico"] },
   { nome: "perfil", rota: "/app/profile", pistas: ["Salvar alterações"] },
 ];
 

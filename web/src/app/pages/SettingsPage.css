@@ -551,30 +551,112 @@
   color: var(--cor-texto-fraco);
 }
  
-/* ── Chip group ───────────────────────────────────────── */
-.cfg-chip-group {
-  display: flex;
-  flex-wrap: wrap;
+/* ── Theme options ────────────────────────────────────── */
+.cfg-theme-grid {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 8px;
-  margin-bottom: 16px;
+  padding: 8px;
 }
- 
-.cfg-chip {
-  background-color: var(--cor-superficie);
-  border: 1px solid var(--cor-input-borda);
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 13px;
-  color: var(--cor-texto-medio);
+
+.cfg-theme-option {
+  width: 100%;
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--cor-separador-suave);
+  border-radius: 12px;
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
   cursor: pointer;
   font-family: var(--fonte-principal);
-  transition: var(--transicao-normal);
+  text-align: left;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
- 
-.cfg-chip--active {
-  background-color: color-mix(in srgb, var(--cor-primaria) 12%, transparent);
+
+.cfg-theme-option:hover {
+  background: var(--cor-superficie-brand);
+}
+
+.cfg-theme-option:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+.cfg-theme-option--active {
   border-color: var(--cor-primaria);
+  background: color-mix(in srgb, var(--cor-primaria) 9%, var(--cor-superficie));
+}
+
+.cfg-theme-option__icon,
+.cfg-theme-option__check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cfg-theme-option__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cor-primaria) 12%, transparent);
   color: var(--cor-primaria);
+}
+
+.cfg-theme-option__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cfg-theme-option__title {
+  color: var(--cor-texto);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.cfg-theme-option__description {
+  color: var(--cor-texto-fraco);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.cfg-theme-option__check {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  color: var(--cor-primaria);
+}
+
+@media (min-width: 720px) {
+  .cfg-theme-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cfg-theme-option {
+    min-height: 8.25rem;
+    grid-template-columns: 1fr 24px;
+    grid-template-rows: auto 1fr;
+    align-items: start;
+  }
+
+  .cfg-theme-option__icon {
+    grid-column: 1;
+  }
+
+  .cfg-theme-option__check {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .cfg-theme-option__text {
+    grid-column: 1 / -1;
+  }
 }
  
 /* ── Empty state ──────────────────────────────────────── */

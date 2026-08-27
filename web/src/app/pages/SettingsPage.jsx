@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   User, Lock,
   Palette, LogOut, ChevronRight,
-  ArrowLeft,
+  ArrowLeft, Check, Monitor, Moon, Sun,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../providers/ThemeProvider";
@@ -22,31 +22,6 @@ function Avatar({ name, size = 52 }) {
   return (
     <div className="cfg-avatar" style={{ width: size, height: size, fontSize: size * 0.33 }}>
       {getInitials(name) || "?"}
-    </div>
-  );
-}
-
-function Toggle({ on, onToggle, label }) {
-  return (
-    <button
-      className={`cfg-toggle ${on ? "cfg-toggle--on" : ""}`}
-      onClick={onToggle}
-      aria-pressed={on}
-      aria-label={label}
-    >
-      <span className="cfg-toggle__knob" />
-    </button>
-  );
-}
-
-function ToggleRow({ title, sub, on, onToggle }) {
-  return (
-    <div className="cfg-toggle-row">
-      <div className="cfg-toggle-row__text">
-        <span className="cfg-toggle-row__title">{title}</span>
-        {sub && <span className="cfg-toggle-row__sub">{sub}</span>}
-      </div>
-      <Toggle on={on} onToggle={onToggle} label={title} />
     </div>
   );
 }
@@ -127,18 +102,39 @@ function DangerBtn({ children, ...props }) {
   return <button className="cfg-btn cfg-btn--danger" {...props}>{children}</button>;
 }
 
-function ChipGroup({ options, value, onChange }) {
+const THEME_OPTIONS = [
+  { key: "light", label: "Claro", description: "Interface com fundo claro", icon: Sun },
+  { key: "dark", label: "Escuro", description: "Interface com fundo escuro", icon: Moon },
+  { key: "system", label: "Seguir o sistema", description: "Usa a preferência do dispositivo", icon: Monitor },
+];
+
+function ThemeSelector({ value, onChange }) {
   return (
-    <div className="cfg-chip-group">
-      {options.map((opt) => (
-        <button
-          key={opt}
-          className={`cfg-chip ${value === opt ? "cfg-chip--active" : ""}`}
-          onClick={() => onChange(opt)}
-        >
-          {opt}
-        </button>
-      ))}
+    <div className="cfg-theme-grid" role="radiogroup" aria-label="Tema da interface">
+      {THEME_OPTIONS.map(({ key, label, description, icon: Icon }) => {
+        const active = value === key;
+        return (
+          <button
+            key={key}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            className={`cfg-theme-option ${active ? "cfg-theme-option--active" : ""}`}
+            onClick={() => onChange(key)}
+          >
+            <span className="cfg-theme-option__icon">
+              <Icon size={18} />
+            </span>
+            <span className="cfg-theme-option__text">
+              <span className="cfg-theme-option__title">{label}</span>
+              <span className="cfg-theme-option__description">{description}</span>
+            </span>
+            <span className="cfg-theme-option__check" aria-hidden="true">
+              {active && <Check size={15} />}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -176,7 +172,7 @@ function resolveRegistration(profile, fallbackUser) {
 export default function SettingsPage() {
   const { collapsed } = useSidebarContext();
   const { user, logout, refreshUser } = useAuth();
-  const { theme, setTheme, fontSize, setFontSize } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [activePanel, setActivePanel] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -369,18 +365,8 @@ export default function SettingsPage() {
       <Panel panelId="aparencia" title="Aparência" {...panelProps}>
         <SectionLabel>Tema</SectionLabel>
         <SectionGroup>
-          <ChipGroup
-            options={["Claro", "Escuro", "Seguir o sistema"]}
-            value={theme === "dark" ? "Escuro" : theme === "system" ? "Seguir o sistema" : "Claro"}
-            onChange={(value) => setTheme(value === "Escuro" ? "dark" : value === "Seguir o sistema" ? "system" : "light")}
-          />
+          <ThemeSelector value={theme} onChange={setTheme} />
         </SectionGroup>
-        <SectionLabel>Tamanho da fonte</SectionLabel>
-        <ChipGroup
-          options={["Pequena", "MÃ©dia", "Grande"]}
-          value={fontSize === "small" ? "Pequena" : fontSize === "large" ? "Grande" : "MÃ©dia"}
-          onChange={(value) => setFontSize(value === "Pequena" ? "small" : value === "Grande" ? "large" : "medium")}
-        />
       </Panel>
 
       <Panel panelId="logout" title="Sair da conta" {...panelProps}>

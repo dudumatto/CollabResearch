@@ -9,9 +9,6 @@ export default function ProjectCardSkeleton({ index = 0 }) {
       className="projeto-card projeto-card--skeleton"
       aria-hidden="true"
     >
-      {/* barra de cor no topo */}
-      <div className="projeto-card__barra-topo skeleton" style={{ borderRadius: "0.75rem 0.75rem 0 0" }} />
-
       <div className="projeto-card__corpo">
         {/* badge de status */}
         <div className="projeto-card__cabecalho">
@@ -28,7 +25,7 @@ export default function ProjectCardSkeleton({ index = 0 }) {
         <div className="skeleton" style={{ width: "70%", height: 13, marginTop: 6 }} />
 
         {/* tags */}
-        <div className="projeto-card__tags" style={{ marginTop: 14 }}>
+        <div className="projeto-card__tags" style={{ marginTop: 12 }}>
           {[52, 68, 60].map((w, i) => (
             <span
               key={i}
@@ -39,7 +36,7 @@ export default function ProjectCardSkeleton({ index = 0 }) {
         </div>
 
         {/* info row */}
-        <div className="projeto-card__informacoes" style={{ marginTop: 16 }}>
+        <div className="projeto-card__informacoes" style={{ marginTop: 12 }}>
           {[1, 2, 3].map((i) => (
             <div key={i} className="projeto-card__info-item">
               <div className="skeleton projeto-card__info-icone" style={{ borderRadius: "50%", width: 22, height: 22 }} />
@@ -50,7 +47,7 @@ export default function ProjectCardSkeleton({ index = 0 }) {
         </div>
 
         {/* orientador */}
-        <div className="projeto-card__orientador" style={{ marginTop: 16 }}>
+        <div className="projeto-card__orientador" style={{ marginTop: 12 }}>
           <div className="projeto-card__orientador-dados">
             <div
               className="skeleton projeto-card__avatar-orientador"
