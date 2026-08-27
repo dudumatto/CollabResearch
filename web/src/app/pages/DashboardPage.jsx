@@ -25,6 +25,8 @@ import {
 import { formatApplicationStatus, formatProjectStatus } from "../utils/formatters";
 import "./DashboardPage.css";
 
+const DASHBOARD_PREVIEW_LIMIT = 2;
+
 function buildActivityData(projects, applications) {
   const entries = [...projects, ...applications]
     .map((item) => item.createdAt ?? item.appliedAt ?? item.updatedAt)
@@ -58,7 +60,7 @@ function CardRow({ lines = 2 }) {
   );
 }
 
-function InnerCard({ rows = 3, titleW = 120 }) {
+function InnerCard({ rows = DASHBOARD_PREVIEW_LIMIT, titleW = 120 }) {
   return (
     <div style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", overflow: "hidden" }}>
       <div style={{ padding: "var(--espaco-4)", borderBottom: "1px solid var(--cor-borda-clara)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -90,8 +92,8 @@ function DashboardSkeleton() {
       </div>
       <div className="painel__grade-principal" style={{ marginTop: "var(--espaco-6)" }}>
         <div className="painel__coluna-esquerda">
-          <InnerCard rows={3} titleW={130} />
-          <InnerCard rows={4} titleW={115} />
+          <InnerCard rows={DASHBOARD_PREVIEW_LIMIT} titleW={130} />
+          <InnerCard rows={DASHBOARD_PREVIEW_LIMIT} titleW={115} />
           <div style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-5)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--espaco-4)" }}>
               <Sk w={130} h={15} />
@@ -101,8 +103,8 @@ function DashboardSkeleton() {
           </div>
         </div>
         <div className="painel__coluna-direita">
-          <InnerCard rows={3} titleW={140} />
-          <InnerCard rows={4} titleW={110} />
+          <InnerCard rows={DASHBOARD_PREVIEW_LIMIT} titleW={140} />
+          <InnerCard rows={DASHBOARD_PREVIEW_LIMIT} titleW={110} />
         </div>
       </div>
     </div>
@@ -164,9 +166,9 @@ export default function DashboardPage() {
       ? projects.filter((item) => Number(item.advisorId) === Number(user.id) && item.status !== "FINALIZADO").length
       : applications.filter((item) => item.status === "APROVADO" && item.project?.status !== "FINALIZADO").length;
     const unreadNotifications = notifications.filter((item) => !item.read).length;
-    const recentProjects = projects.slice(0, 3);
-    const recentApplications = applications.slice(0, 4);
-    const recentNotifications = notifications.slice(0, 2);
+    const recentProjects = projects.slice(0, DASHBOARD_PREVIEW_LIMIT);
+    const recentApplications = applications.slice(0, DASHBOARD_PREVIEW_LIMIT);
+    const recentNotifications = notifications.slice(0, DASHBOARD_PREVIEW_LIMIT);
     const activityData = buildActivityData(projects, applications);
     const totalActivity = activityData.reduce((acc, item) => acc + item.atividade, 0);
     const activityPeak = Math.max(1, ...activityData.map((item) => item.atividade));

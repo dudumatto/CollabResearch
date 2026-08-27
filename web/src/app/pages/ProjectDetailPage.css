@@ -183,6 +183,68 @@
   background-color: var(--cor-primaria-leve);
 }
 
+.detalhe-historico {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.detalhe-historico__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--espaco-3);
+}
+
+.detalhe-historico__marcador {
+  width: 0.625rem;
+  height: 0.625rem;
+  margin-top: 0.45rem;
+  border-radius: var(--raio-completo);
+  background-color: var(--cor-primaria);
+  box-shadow: 0 0 0 4px var(--cor-primaria-clara);
+}
+
+.detalhe-historico__conteudo {
+  min-width: 0;
+  padding-bottom: var(--espaco-3);
+  border-bottom: 1px solid var(--cor-borda-clara);
+}
+
+.detalhe-historico__item:last-child .detalhe-historico__conteudo {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.detalhe-historico__cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.detalhe-historico__titulo {
+  min-width: 0;
+  color: var(--cor-texto);
+  font-size: 0.92rem;
+  font-weight: var(--peso-semi);
+  overflow-wrap: anywhere;
+}
+
+.detalhe-historico__data,
+.detalhe-historico__autor {
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-pequeno);
+}
+
+.detalhe-historico__texto {
+  margin-top: var(--espaco-1);
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-base);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 /* ================================================================
    Card de cabeçalho do projeto
    ================================================================ */
@@ -540,6 +602,18 @@
   border-radius: var(--raio-grande);
   text-align: center;
   font-size: 0.9rem;
+}
+
+.card-inscricao__status-vinculo {
+  width: 100%;
+  padding: 0.875rem var(--espaco-3);
+  background-color: var(--cor-primaria-clara);
+  color: var(--cor-primaria);
+  border: 1px solid var(--cor-primaria-borda);
+  border-radius: var(--raio-grande);
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: var(--peso-semi);
 }
 
 .card-inscricao__botao-perguntar {

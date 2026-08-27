@@ -7,6 +7,10 @@ export async function runDashboardFlow(page: Page) {
   await expect(page.getByText("Projetos recentes")).toBeVisible();
   await expect(page.getByText("Minhas inscrições")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Notificações" })).toBeVisible();
+  await expect(page.locator(".painel__card--recentes .inscricao-item")).toHaveCount(2);
+  await expect(page.locator(".painel__card--inscricoes .inscricao-item")).toHaveCount(2);
+  await expect(page.locator(".painel__card-projetos-sugeridos .projeto-sugerido")).toHaveCount(2);
+  await expect(page.locator(".painel__card--notificacoes .notificacao-resumo")).toHaveCount(2);
   await page.getByRole("button", { name: /Buscar projetos/ }).click();
   await expect(page).toHaveURL(/\/app\/projects$/);
 }
@@ -136,18 +140,28 @@ export async function runNotificationsFlow(page: Page) {
   await expect(page.getByText("Nenhuma notificação", { exact: true })).toBeVisible();
 }
 
-export async function runSettingsFlow(page: Page) {
+export async function runSettingsFlow(page: Page, expectedRole = "Aluno") {
   await page.goto("/app/configuracoes");
   await expect(page.getByRole("heading", { name: "Configurações", exact: true })).toBeVisible();
   await expect(page.getByText("Informações da conta")).toBeVisible();
-  await expect(page.getByText("Visibilidade do perfil")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Aparência/ })).toBeVisible();
 
   await page.getByRole("button", { name: /Informações da conta/ }).click();
   await expect(page.getByText("Nome completo")).toBeVisible();
   await expect(page.getByText("Função", { exact: true })).toBeVisible();
-  await expect(page.locator(".cfg-readonly").filter({ hasText: "Aluno" })).toBeVisible();
+  await expect(page.locator(".cfg-readonly").filter({ hasText: expectedRole })).toBeVisible();
   await page.getByRole("button", { name: "Salvar alterações" }).click();
   await expectToast(page, "Configurações salvas com sucesso.");
+
+  await page.getByRole("button", { name: /Aparência/ }).click();
+  const appearancePanel = page.locator(".cfg-panel");
+  await expect(appearancePanel.getByRole("button", { name: "Claro" })).toBeVisible();
+  await appearancePanel.getByRole("button", { name: "Escuro" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme-preference", "dark");
+  await appearancePanel.getByRole("button", { name: "Grande" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-font-size", "large");
+  await page.locator(".cfg-panel__back").click();
+  await expect(page.locator(".cfg-panel__back")).toBeHidden();
 
   await page.getByRole("button", { name: /Alterar senha/ }).click();
   const passwordPanel = page.locator(".cfg-panel");

@@ -150,6 +150,40 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
         orientadorNome: "Prof Ana Orientadora",
         orientadorEmail: "ana.orientadora@universidade.br",
       },
+      {
+        id: 3,
+        titulo: "Projeto E2E Finalizado",
+        descricao: "Projeto concluido mantido para consulta historica.",
+        requisitos: "Relatorio final",
+        areaId: 1,
+        areaNome: "Ciencia da Computacao",
+        cursoNome: "Ciencia da Computacao",
+        vagas: 2,
+        status: "FINALIZADO",
+        dataCriacao: "2026-04-20T12:00:00.000Z",
+        alunoCriadorId: 88,
+        alunoCriadorNome: "Aluno Historico",
+        orientadorId: 2,
+        orientadorNome: "Prof Ana Orientadora",
+        orientadorEmail: "ana.orientadora@universidade.br",
+      },
+      {
+        id: 4,
+        titulo: "Projeto E2E Nova Inscricao",
+        descricao: "Projeto aberto para nova candidatura.",
+        requisitos: "Node.js",
+        areaId: 2,
+        areaNome: "Engenharia de Software",
+        cursoNome: "Sistemas de Informacao",
+        vagas: 3,
+        status: "ABERTO",
+        dataCriacao: "2026-05-04T12:00:00.000Z",
+        alunoCriadorId: 77,
+        alunoCriadorNome: "Aluno Externo",
+        orientadorId: 2,
+        orientadorNome: "Prof Ana Orientadora",
+        orientadorEmail: "ana.orientadora@universidade.br",
+      },
     ],
     applications: options.empty?.applications ? [] : [
       {
@@ -181,6 +215,17 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
         parecerOrientador: "Vagas encerradas.",
         dataInscricao: "2026-05-02T12:00:00.000Z",
         dataAtualizacao: "2026-05-07T12:00:00.000Z",
+        projeto: null as unknown,
+        aluno: { usuario: mockUsers.student },
+        alunoNome: "Aluno E2E",
+      },
+      {
+        id: 13,
+        status: "APROVADO",
+        motivacao: "Participei ate a conclusao.",
+        parecerOrientador: "Participacao concluida.",
+        dataInscricao: "2026-04-21T12:00:00.000Z",
+        dataAtualizacao: "2026-05-01T12:00:00.000Z",
         projeto: null as unknown,
         aluno: { usuario: mockUsers.student },
         alunoNome: "Aluno E2E",
@@ -264,6 +309,7 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
   if (state.applications[0] && state.projects[1]) state.applications[0].projeto = state.projects[1];
   if (state.applications[1] && state.projects[0]) state.applications[1].projeto = state.projects[0];
   if (state.applications[2] && state.projects[1]) state.applications[2].projeto = state.projects[1];
+  if (state.applications[3] && state.projects[2]) state.applications[3].projeto = state.projects[2];
   if (state.feedbacks[0] && state.projects[0]) state.feedbacks[0].projeto = state.projects[0];
 
   await page.route("**/api/**", async (route) => {
@@ -310,6 +356,11 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
     }
 
     if (method === "POST" && path === "/api/auth/logout") {
+      await fulfill(route, 204);
+      return;
+    }
+
+    if (method === "PUT" && path === "/api/auth/senha") {
       await fulfill(route, 204);
       return;
     }
@@ -368,6 +419,29 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
       const body = await readJson(route);
       state.currentUser = { ...state.currentUser, ...body };
       await fulfill(route, 200, state.currentUser);
+      return;
+    }
+
+    if (method === "GET" && path === "/api/projetos/pagina") {
+      const busca = (url.searchParams.get("busca") ?? url.searchParams.get("search") ?? "").toLowerCase();
+      const status = url.searchParams.get("status") ?? "";
+      const curso = (url.searchParams.get("curso") ?? url.searchParams.get("course") ?? "").toLowerCase();
+      const area = (url.searchParams.get("area") ?? "").toLowerCase();
+      const meusProjetos = url.searchParams.get("meusProjetos") === "true";
+      const relatedProjectIds = new Set(
+        state.applications
+          .map((application) => application.projeto?.id)
+          .filter((projectId): projectId is number => typeof projectId === "number"),
+      );
+      const projects = state.projects.filter((project) => {
+        const matchesSearch = !busca || project.titulo.toLowerCase().includes(busca) || project.descricao.toLowerCase().includes(busca);
+        const matchesStatus = !status || project.status === status;
+        const matchesCurso = !curso || String(project.cursoNome ?? "").toLowerCase() === curso;
+        const matchesArea = !area || String(project.areaNome ?? "").toLowerCase() === area;
+        const matchesMine = !meusProjetos || project.alunoCriadorId === state.currentUser.id || project.orientadorId === state.currentUser.id || relatedProjectIds.has(project.id);
+        return matchesSearch && matchesStatus && matchesCurso && matchesArea && matchesMine;
+      });
+      await fulfill(route, 200, { content: projects, totalElements: projects.length });
       return;
     }
 

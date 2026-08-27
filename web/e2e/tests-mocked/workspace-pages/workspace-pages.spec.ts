@@ -26,3 +26,12 @@ test.describe("paginas internas", () => {
   test("notificacoes marca como lida, filtra e limpa vista local", async ({ page }) => runNotificationsFlow(page));
   test("configuracoes salva, valida senha, alterna tema e faz logout", async ({ page }) => runSettingsFlow(page));
 });
+
+test.describe("configuracoes compartilhadas", () => {
+  test("orientador usa a mesma pagina e componentes de aparencia do aluno", async ({ page }) => {
+    await setupApiMock(page, { user: mockUsers.advisor });
+    await authenticateAs(page, mockUsers.advisor);
+
+    await runSettingsFlow(page, "Orientador");
+  });
+});

@@ -75,7 +75,7 @@ export default function ProjectsPage() {
 
   const { data, loading, error } = useAsyncData(
     async () => {
-      const result = await projectService.list({
+      const result = await projectService.listMine({
         curso: selectedCourse === "Todos" ? "" : selectedCourse,
         area: selectedArea === "Todas" ? "" : selectedArea,
         status: selectedStatus === "Todos" ? "" : selectedStatus,
@@ -107,6 +107,15 @@ export default function ProjectsPage() {
     [projects, search],
   );
 
+  const counts = useMemo(
+    () => ({
+      total: projects.length,
+      active: projects.filter((project) => project.status !== "FINALIZADO").length,
+      finished: projects.filter((project) => project.status === "FINALIZADO").length,
+    }),
+    [projects],
+  );
+
   if (error) {
     return <StatusView title="Falha ao carregar projetos" description={error.message} />;
   }
@@ -120,8 +129,8 @@ export default function ProjectsPage() {
     >
       <div className="pagina-projetos__cabecalho">
         <div>
-          <h2 className="pagina-projetos__titulo">{filtered.length} projetos encontrados</h2>
-          <p className="pagina-projetos__subtitulo">Encontre a oportunidade certa para sua carreira acadêmica</p>
+          <h2 className="pagina-projetos__titulo">{filtered.length} projetos vinculados</h2>
+          <p className="pagina-projetos__subtitulo">Acompanhe projetos em andamento e mantenha finalizados como histórico de consulta.</p>
         </div>
         <div className="pagina-projetos__acoes-cabecalho">
           <motion.button
@@ -148,6 +157,24 @@ export default function ProjectsPage() {
             )}
           </motion.button>
         </div>
+      </div>
+
+      <div className="pagina-projetos__resumo-historico">
+        {[
+          ["Todos", "Todos", counts.total],
+          ["EM_ANDAMENTO", "Em andamento", counts.active],
+          ["FINALIZADO", "Finalizados", counts.finished],
+        ].map(([status, label, count]) => (
+          <button
+            key={status}
+            type="button"
+            onClick={() => setSelectedStatus(status)}
+            className={`pagina-projetos__atalho-status ${selectedStatus === status ? "pagina-projetos__atalho-status--ativo" : ""}`}
+          >
+            <span className="pagina-projetos__atalho-status-valor">{count}</span>
+            <span className="pagina-projetos__atalho-status-label">{label}</span>
+          </button>
+        ))}
       </div>
 
       <div className="pagina-projetos__busca">

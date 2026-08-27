@@ -66,7 +66,7 @@ const projects = [
 
 const dashboard = {
   metricas: {
-    projetosAtivos: 1,
+    projetosAtivos: 3,
     solicitacoesOrientacao: 1,
     inscricoesPendentes: 1,
     orientandosAtivos: 1,
@@ -77,6 +77,8 @@ const dashboard = {
   filas: {
     projetosAtivos: [
       { id: 1, titulo: "Projeto E2E Autoria", subtitulo: "2 participantes", status: "EM_ANDAMENTO", destino: "/app/projects/1" },
+      { id: 2, titulo: "Projeto E2E Candidatura", subtitulo: "1 participante", status: "EM_ANDAMENTO", destino: "/app/projects/2" },
+      { id: 4, titulo: "Projeto extra oculto", subtitulo: "3 participantes", status: "EM_ANDAMENTO", destino: "/app/projects/4" },
     ],
     solicitacoesOrientacao: [
       { id: 3, titulo: "Proposta de pesquisa IA", subtitulo: "Aluno Propositor", status: "PENDENTE_ORIENTADOR", destino: "/app/projects/3" },
@@ -279,6 +281,27 @@ export async function setupAdvisorMock(page: Page): Promise<void> {
 
     if (method === "GET" && path === "/api/usuarios/me") {
       await fulfill(route, 200, advisorUser);
+      return;
+    }
+
+    const userMatch = path.match(/^\/api\/usuarios\/(\d+)$/);
+    if (method === "GET" && userMatch) {
+      await fulfill(route, 200, advisorUser);
+      return;
+    }
+
+    if (method === "PUT" && userMatch) {
+      await fulfill(route, 200, advisorUser);
+      return;
+    }
+
+    if (method === "POST" && path === "/api/auth/logout") {
+      await fulfill(route, 204);
+      return;
+    }
+
+    if (method === "PUT" && path === "/api/auth/senha") {
+      await fulfill(route, 204);
       return;
     }
 

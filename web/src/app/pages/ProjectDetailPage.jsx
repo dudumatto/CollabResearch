@@ -217,15 +217,17 @@ export default function ProjectDetailPage() {
   const [recrutandoId, setRecrutandoId] = useState(null);
 
   const { data, loading, error, reload } = useAsyncData(async () => {
-    const [project, progress] = await Promise.all([
+    const [project, progress, myApplications] = await Promise.all([
       projectService.getById(id),
       projectService.getProgress(id).catch(() => []),
+      user?.tipo === "ALUNO" ? applicationService.listMine().catch(() => []) : Promise.resolve([]),
     ]);
     return {
       project: mapProject(project),
       progress: Array.isArray(progress) ? progress.map(mapProgressItem) : [],
+      myApplications: Array.isArray(myApplications) ? myApplications : [],
     };
-  }, [id], { initialData: { project: null, progress: [] } });
+  }, [id, user?.tipo], { initialData: { project: null, progress: [], myApplications: [] } });
 
   const project = data?.project;
 
@@ -246,6 +248,14 @@ export default function ProjectDetailPage() {
 
   const canEditProject = isStudentCreator || isAdvisorOwner;
   const canApply = user?.tipo === "ALUNO" && !isStudentCreator;
+
+  const currentApplication = useMemo(() => {
+    if (!project || !Array.isArray(data?.myApplications)) return null;
+    return data.myApplications.find((application) => {
+      const applicationProjectId = application?.projeto?.id ?? application?.projetoId ?? application?.project?.id;
+      return Number(applicationProjectId) === Number(project.id);
+    }) ?? null;
+  }, [data?.myApplications, project]);
 
   const canReviewGuidance = useMemo(() => {
     if (!user?.id || !project) return false;
@@ -420,6 +430,9 @@ export default function ProjectDetailPage() {
   const getInscricaoPhotoUrl = (i) =>
     getUserPhotoUrl(i?.aluno?.usuario ?? i?.aluno ?? i?.usuario ?? i);
 
+  const applicationStatus = currentApplication?.status;
+  const hasApplicationOrParticipation = Boolean(currentApplication) || isStudentCreator;
+
   if (loading) return <ProjectDetailSkeleton />;
   if (error || !project) {
     return <StatusView title="Projeto indisponível" description={error?.message || "Não foi possível localizar este projeto."} />;
@@ -433,7 +446,7 @@ export default function ProjectDetailPage() {
           <ArrowLeft size={16} />
           Voltar para projetos
         </button>
-        {isAdvisorOwner && (
+        {canEditProject && (
           <div className="pagina-detalhe-projeto__acoes-dono">
             <button
               onClick={() => navigate(`/app/projects/${id}/edit`)}
@@ -554,6 +567,31 @@ export default function ProjectDetailPage() {
             </div>
           </div>
 
+          <div className="detalhe-card">
+            <h2 className="detalhe-card__titulo-secao">Histórico do projeto</h2>
+            {data.progress.length === 0 ? (
+              <p className="detalhe-card__descricao">Nenhuma atualização registrada.</p>
+            ) : (
+              <div className="detalhe-historico">
+                {data.progress.map((item) => (
+                  <div key={item.id} className="detalhe-historico__item">
+                    <div className="detalhe-historico__marcador" />
+                    <div className="detalhe-historico__conteudo">
+                      <div className="detalhe-historico__cabecalho">
+                        <h3 className="detalhe-historico__titulo">{item.title}</h3>
+                        <span className="detalhe-historico__data">
+                          {item.date ? new Date(item.date).toLocaleDateString("pt-BR") : "-"}
+                        </span>
+                      </div>
+                      <p className="detalhe-historico__texto">{item.content}</p>
+                      <span className="detalhe-historico__autor">{item.author}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Inscrições pendentes (apenas dono) */}
           {isAdvisorOwner && (
             <div className="detalhe-card">
@@ -617,7 +655,17 @@ export default function ProjectDetailPage() {
               ))}
             </div>
 
-            {project.status === "ABERTO" && canApply && slots.remaining > 0 ? (
+            {hasApplicationOrParticipation && user?.tipo === "ALUNO" ? (
+              <div className="card-inscricao__status-vinculo">
+                {isStudentCreator
+                  ? "Você criou este projeto."
+                  : applicationStatus === "APROVADO"
+                    ? "Você participa deste projeto."
+                    : applicationStatus === "PENDENTE"
+                      ? "Sua inscrição está em análise."
+                      : "Você já se inscreveu neste projeto."}
+              </div>
+            ) : project.status === "ABERTO" && canApply && slots.remaining > 0 ? (
               <button onClick={() => setShowModal(true)} className="card-inscricao__botao-inscrever">
                 <Send size={16} /> Inscrever-se
               </button>

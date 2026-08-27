@@ -48,4 +48,13 @@ test.describe("area do orientador (mockada)", () => {
       }
     });
   }
+
+  test("dashboard limita a pre-visualizacao das filas a 2 itens", async ({ page }) => {
+    await page.goto("/app");
+
+    const activeProjectsCard = page.locator(".advisor-card", { hasText: "Projetos ativos" });
+    await expect(activeProjectsCard.locator(".advisor-card__contador")).toHaveText("3");
+    await expect(activeProjectsCard.locator(".advisor-fila-item")).toHaveCount(2);
+    await expect(activeProjectsCard.getByText("Projeto extra oculto")).toHaveCount(0);
+  });
 });

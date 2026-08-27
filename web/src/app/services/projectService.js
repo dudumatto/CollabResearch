@@ -36,6 +36,19 @@ export const projectService = {
     return api.get(`/api/projetos${buildQs(filters)}`);
   },
 
+  async listMine(filters = {}) {
+    const payload = await api.get(`/api/projetos/pagina${buildQs({
+      meusProjetos: "true",
+      page: 0,
+      size: 200,
+      sort: "dataCriacao",
+      direction: "DESC",
+      ...filters,
+    })}`);
+    const content = Array.isArray(payload) ? payload : payload?.content ?? payload?.data ?? [];
+    return Array.isArray(content) ? content : [];
+  },
+
   // findById
   getById(id) {
     return api.get(`/api/projetos/${id}`);

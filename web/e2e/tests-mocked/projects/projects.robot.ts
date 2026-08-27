@@ -2,25 +2,41 @@ import { expect, type Browser, type Page } from "@playwright/test";
 import { authenticateAs, expectToast, mockUsers, setupApiMock } from "../../helpers/api-mock.helper";
 import { buildProjectDraft } from "../../helpers/test-data.helper";
 
+async function selectComboboxOption(page: Page, name: string | RegExp, option: string) {
+  const combobox = page.getByRole("combobox", { name });
+  await combobox.click();
+  if ((await combobox.getAttribute("aria-expanded")) !== "true") {
+    await combobox.press("Enter");
+  }
+  await expect(combobox).toHaveAttribute("aria-expanded", "true");
+  await page.getByRole("listbox").getByRole("option", { name: option }).click();
+}
+
 export async function runProjectsListAndApplyFlow(page: Page) {
   await page.goto("/app/projects");
-  await expect(page.getByText("projetos encontrados")).toBeVisible();
+  await expect(page.getByText("projetos vinculados")).toBeVisible();
   await expect(page.getByText("Projeto E2E Candidatura")).toBeVisible();
+  await expect(page.getByText("Projeto E2E Finalizado")).toBeVisible();
   await page.getByPlaceholder("Buscar projetos por título, área ou tecnologia...").fill("Candidatura");
   await expect(page.getByText("Projeto E2E Candidatura")).toBeVisible();
   await expect(page.getByText("Projeto E2E Autoria")).toBeHidden();
   await page.getByRole("button", { name: "Filtros" }).click();
   await expect(page.getByText("Área de pesquisa")).toBeVisible();
-  await page.locator("select.pagina-projetos__input-filtro-curso").selectOption("Sistemas de Informacao");
-  await expect(page.getByText("2 / 3")).toBeVisible();
+  await selectComboboxOption(page, "Filtrar por curso", "Sistemas de Informacao");
+  await expect(page.getByText("0 / 3")).toBeVisible();
   await expect(page.getByText("Prof Ana Orientadora (orientador)")).toBeVisible();
   await page.getByText("Projeto E2E Candidatura").click();
   await expect(page).toHaveURL(/\/app\/projects\/2$/);
   await expect(page.getByRole("heading", { name: "Projeto E2E Candidatura" })).toBeVisible();
-  await expect(page.getByText("1/3")).toBeVisible();
+  await expect(page.getByText("3/3")).toBeVisible();
   await expect(page.getByText("Orientador do projeto")).toBeVisible();
   await expect(page.getByText("Sobre o projeto")).toBeVisible();
+  await expect(page.getByText("Histórico do projeto")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cursos elegíveis" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Inscrever-se" })).toHaveCount(0);
+  await expect(page.getByText("Sua inscrição está em análise.")).toBeVisible();
+  await page.goto("/app/projects/4");
+  await expect(page.getByRole("heading", { name: "Projeto E2E Nova Inscricao" })).toBeVisible();
   await page.getByRole("button", { name: "Inscrever-se" }).click();
   await expect(page.getByText("Inscrição no projeto")).toBeVisible();
   await page.getByPlaceholder("Escreva sua motivação para o projeto...").fill("Quero contribuir com a pesquisa.");
@@ -38,8 +54,8 @@ export async function runProjectsCrudFlow(page: Page) {
   await page.getByPlaceholder("Descreva os objetivos, metodologia e resultados esperados...").fill(project.description);
   await page.getByPlaceholder("Ex: Conhecimento em Python, estatística básica").fill(project.requirements);
   await page.getByPlaceholder("Ex: React, Spring Boot, PostgreSQL").fill(project.technologies);
-  await page.locator("#areaId").selectOption({ index: 1 });
-  await page.locator("#orientadorId").selectOption({ index: 1 });
+  await selectComboboxOption(page, /rea de pesquisa/i, "Ciencia da Computacao");
+  await selectComboboxOption(page, /orientador/i, "Prof Ana Orientadora");
   await page.getByPlaceholder("Ex: 3").fill(String(project.slots));
   await page.getByRole("button", { name: "Criar projeto" }).click();
   await expect(page.getByText("Projeto criado com sucesso! Redirecionando...")).toBeVisible();
@@ -100,7 +116,7 @@ export async function runProjectsEmptyAndErrorFlow(page: Page) {
   await page.getByPlaceholder("Buscar projetos por título, área ou tecnologia...").fill("não existe");
   await expect(page.getByText("Nenhum projeto encontrado")).toBeVisible();
   const errorPage = await page.context().newPage();
-  await setupApiMock(errorPage, { fail: [/^\/api\/projetos(?:\?|$)/] });
+  await setupApiMock(errorPage, { fail: [/^\/api\/projetos\/pagina(?:\?|$)/] });
   await authenticateAs(errorPage, mockUsers.student);
   await errorPage.goto("/app/projects");
   await expect(errorPage.getByText("Falha ao carregar projetos")).toBeVisible();
@@ -112,7 +128,7 @@ export async function runProjectApplicationsAccessFlow(browser: Browser) {
   await setupApiMock(studentPage);
   await authenticateAs(studentPage, mockUsers.student);
   await studentPage.goto("/app/projects/2/applications");
-  await expect(studentPage.getByText("Acesso negado")).toBeVisible();
+  await expect(studentPage).toHaveURL(/\/app$/);
   await studentContext.close();
   const advisorContext = await browser.newContext();
   const advisorPage = await advisorContext.newPage();

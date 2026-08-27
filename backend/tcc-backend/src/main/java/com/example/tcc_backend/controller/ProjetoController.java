@@ -100,7 +100,10 @@ public class ProjetoController {
         String buscaFiltro = busca != null ? busca : search;
 
         if (Boolean.TRUE.equals(meusProjetos)) {
-            return ResponseEntity.ok(PageResponse.from(projetoService.findMeusProjetos(pageable).map(this::toResponse)));
+            return ResponseEntity.ok(PageResponse.from(
+                    projetoService.findMeusProjetos(status, areaId, area, cursoFiltro, buscaFiltro, pageable)
+                            .map(this::toResponse)
+            ));
         }
 
         return ResponseEntity.ok(PageResponse.from(

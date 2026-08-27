@@ -83,6 +83,49 @@
   margin-top: 0.125rem;
 }
 
+.pagina-projetos__resumo-historico {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-3);
+}
+
+.pagina-projetos__atalho-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  align-items: flex-start;
+  min-width: 0;
+  padding: var(--espaco-3);
+  background-color: var(--cor-branco);
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-medio);
+  color: var(--cor-texto-secundario);
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.pagina-projetos__atalho-status:hover,
+.pagina-projetos__atalho-status--ativo {
+  border-color: var(--cor-primaria-borda);
+  background-color: var(--cor-primaria-clara);
+}
+
+.pagina-projetos__atalho-status-valor {
+  font-size: 1.25rem;
+  font-weight: var(--peso-negrito);
+  line-height: 1;
+  color: var(--cor-texto);
+}
+
+.pagina-projetos__atalho-status-label {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-pequeno);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .pagina-projetos__botao-filtros {
   width: 100%;
   display: flex;

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.persistence.criteria.JoinType;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -151,15 +152,43 @@ public class ProjetoService {
     }
 
     public Page<Projeto> findMeusProjetos(Pageable pageable) {
+        return findMeusProjetos(null, null, null, null, null, pageable);
+    }
+
+    public Page<Projeto> findMeusProjetos(String status, Integer areaId, String area, String curso, String busca, Pageable pageable) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
-        if (usuarioLogado.getTipo() == TipoUsuario.ALUNO) {
-            return projetoRepository.findRelacionadosAoUsuario(usuarioLogado.getId(), pageable);
-        }
-        return projetoRepository.findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(
-                usuarioLogado.getId(),
-                usuarioLogado.getId(),
+        return projetoRepository.findAll(
+                createSpecification(status, areaId, area, curso, busca)
+                        .and(createUserProjectsSpecification(usuarioLogado.getId())),
                 pageable
         );
+    }
+
+    private Specification<Projeto> createUserProjectsSpecification(Integer usuarioId) {
+        return (root, query, cb) -> {
+            if (query != null) {
+                query.distinct(true);
+            }
+
+            var inscricaoSubquery = query.subquery(Integer.class);
+            var inscricao = inscricaoSubquery.from(Inscricao.class);
+            var orientador = root.join("orientador", JoinType.LEFT);
+            var orientadorUsuario = orientador.join("usuario", JoinType.LEFT);
+            var alunoCriador = root.join("alunoCriador", JoinType.LEFT);
+            var alunoCriadorUsuario = alunoCriador.join("usuario", JoinType.LEFT);
+
+            inscricaoSubquery.select(inscricao.get("projeto").get("id"))
+                    .where(
+                            cb.equal(inscricao.get("projeto").get("id"), root.get("id")),
+                            cb.equal(inscricao.get("aluno").get("usuario").get("id"), usuarioId)
+                    );
+
+            return cb.or(
+                    cb.equal(orientadorUsuario.get("id"), usuarioId),
+                    cb.equal(alunoCriadorUsuario.get("id"), usuarioId),
+                    cb.exists(inscricaoSubquery)
+            );
+        };
     }
 
     @Transactional

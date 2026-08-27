@@ -21,6 +21,8 @@ import { StatusView } from "../components/StatusView";
 import { WelcomeBanner } from "../components/WelcomeBanner";
 import "./AdvisorWorkspace.css";
 
+const DASHBOARD_PREVIEW_LIMIT = 2;
+
 const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
   <div className="skeleton" style={{ width: w, height: h, borderRadius: r, marginBottom: mb || undefined }} />
 );
@@ -138,6 +140,8 @@ const filasConfig = [
 ];
 
 function QueueCard({ title, icon: Icon, items, kind, onNavigate }) {
+  const visibleItems = items.slice(0, DASHBOARD_PREVIEW_LIMIT);
+
   return (
     <div className={`advisor-card advisor-card--${kind} ${items.length === 0 ? "advisor-card--sem-itens" : ""}`}>
       <div className="advisor-card__cabecalho">
@@ -151,7 +155,7 @@ function QueueCard({ title, icon: Icon, items, kind, onNavigate }) {
             <span>Nada pendente por aqui.</span>
           </div>
         ) : (
-          items.map((item, index) => (
+          visibleItems.map((item, index) => (
             <motion.button
               key={`${item.id}-${index}`}
               initial={{ opacity: 0, y: 8 }}

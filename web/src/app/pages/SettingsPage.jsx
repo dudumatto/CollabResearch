@@ -165,6 +165,14 @@ function SettingsSkeleton() {
 
 import { useSidebarContext } from "../layouts/DashboardLayout";
 
+function readProfileValue(profile, field, fallback = "") {
+  return profile?.[field] ?? fallback;
+}
+
+function resolveRegistration(profile, fallbackUser) {
+  return profile?.ra ?? profile?.matricula ?? profile?.registration ?? fallbackUser?.ra ?? fallbackUser?.matricula ?? "";
+}
+
 export default function SettingsPage() {
   const { collapsed } = useSidebarContext();
   const { user, logout, refreshUser } = useAuth();
@@ -181,19 +189,34 @@ export default function SettingsPage() {
   const [matricula, setMatricula] = useState("");
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      nome: readProfileValue(user, "nome", ""),
+      email: readProfileValue(user, "email", ""),
+    }));
+    setTipoPerfil(user?.tipo ?? "ALUNO");
+    setMatricula(resolveRegistration(user, user));
+
     userService.getById(user.id)
       .then((profile) => {
         setForm((prev) => ({
           ...prev,
-          nome: profile.nome ?? "",
-          email: profile.email ?? "",
+          nome: readProfileValue(profile, "nome", user?.nome ?? ""),
+          email: readProfileValue(profile, "email", user?.email ?? ""),
         }));
         setTipoPerfil(profile.tipo ?? user?.tipo ?? "ALUNO");
-        setMatricula(profile.ra ?? profile.matricula ?? profile.registration ?? user?.ra ?? user?.matricula ?? "");
+        setMatricula(resolveRegistration(profile, user));
+      })
+      .catch(() => {
+        setTipoPerfil(user?.tipo ?? "ALUNO");
       })
       .finally(() => setLoading(false));
-  }, [user?.id]);
+  }, [user]);
 
   useEffect(() => {
     if (!activePanel) {

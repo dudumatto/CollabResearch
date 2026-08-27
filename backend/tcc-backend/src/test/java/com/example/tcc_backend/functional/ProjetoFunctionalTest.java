@@ -66,6 +66,33 @@ class ProjetoFunctionalTest extends FunctionalTestSupport {
     }
 
     @Test
+    void meusProjetosDoAlunoDeveManterProjetoFinalizado() throws Exception {
+        TestUser orientador = registerOrientador("proj-mine-final-advisor");
+        TestUser aluno = registerAluno("proj-mine-final-student");
+        Integer areaId = createArea("Historia", createCurso("CC"));
+        Integer projetoId = createProjetoAsOrientador(orientador.token(), "Projeto Historico Finalizado", areaId);
+        Integer inscricaoId = inscreverAluno(aluno.token(), projetoId);
+        aprovarInscricao(orientador.token(), inscricaoId);
+        jdbc.update("UPDATE projeto SET status = 'FINALIZADO' WHERE id_projeto = ?", projetoId);
+
+        JsonNode pagina = objectMapper.readTree(
+                mockMvc.perform(get("/api/projetos/pagina")
+                                .param("meusProjetos", "true")
+                                .param("status", "FINALIZADO")
+                                .header("Authorization", authHeader(aluno.token())))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString()
+        );
+
+        JsonNode content = pagina.get("content");
+        assertThat(content.isArray()).isTrue();
+        assertThat(content).anySatisfy(p -> {
+            assertThat(p.get("id").asInt()).isEqualTo(projetoId);
+            assertThat(p.get("status").asText()).isEqualTo("FINALIZADO");
+        });
+    }
+
+    @Test
     void atualizarProjetoDeveFuncionar() throws Exception {
         TestUser orientador = registerOrientador("proj-update");
         Integer areaId = createArea("IA", createCurso("CC"));
