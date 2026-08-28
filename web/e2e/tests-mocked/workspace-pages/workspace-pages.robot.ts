@@ -32,7 +32,25 @@ export async function runDeadlinesFlow(page: Page) {
       .toBeLessThanOrEqual(2);
 
     const calendarBox = await page.locator(".calendario-card--principal").boundingBox();
-    expect(calendarBox?.height ?? 0).toBeLessThanOrEqual(viewport.width <= 460 ? 430 : 620);
+    if (viewport.width > 1119) {
+      await expect
+        .poll(async () => page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight))
+        .toBeLessThanOrEqual(2);
+
+      const lateralBox = await page.locator(".calendario-lateral").boundingBox();
+      const lateralCards = await page.locator(".calendario-card--lateral").evaluateAll((cards) =>
+        cards.map((card) => card.getBoundingClientRect().height),
+      );
+      expect(Math.abs((calendarBox?.height ?? 0) - (lateralBox?.height ?? 0))).toBeLessThanOrEqual(2);
+      expect(Math.abs((lateralCards[0] ?? 0) - (lateralCards[1] ?? 0))).toBeLessThanOrEqual(2);
+
+      const originalUrl = page.url();
+      await page.locator(".calendario-dia--com-evento").first().click();
+      await expect(page.locator(".calendario-dia__tooltip").first()).toBeVisible();
+      await expect(page).toHaveURL(originalUrl);
+    } else {
+      expect(calendarBox?.height ?? 0).toBeLessThanOrEqual(430);
+    }
   }
 }
 

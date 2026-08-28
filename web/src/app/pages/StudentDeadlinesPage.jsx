@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import { CalendarClock, ChevronLeft, ChevronRight, CircleAlert, ClipboardList } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -87,14 +86,6 @@ function DeadlineItem({ item, compact = false }) {
   );
 }
 
-function deadlineTarget(item) {
-  const params = new URLSearchParams({
-    projectId: String(item.projectId),
-    stageId: String(item.id),
-  });
-  return `/app/progress?${params.toString()}`;
-}
-
 async function loadProjectsForUser(user) {
   if (!user?.id) return [];
   const raw = user.tipo === "ORIENTADOR"
@@ -106,8 +97,8 @@ async function loadProjectsForUser(user) {
 
 export default function StudentDeadlinesPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [tooltipDirections, setTooltipDirections] = useState({});
+  const [activeTooltipKey, setActiveTooltipKey] = useState(null);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
@@ -158,10 +149,12 @@ export default function StudentDeadlinesPage() {
 
   const moveMonth = (amount) => {
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
+    setActiveTooltipKey(null);
   };
 
-  const openDeadline = (item) => {
-    navigate(deadlineTarget(item), { state: { projectId: item.projectId, stageId: item.id } });
+  const toggleDayTooltip = (event, key) => {
+    updateTooltipDirection(event, key);
+    setActiveTooltipKey((current) => (current === key ? null : key));
   };
 
   const updateTooltipDirection = (event, key) => {
@@ -226,48 +219,53 @@ export default function StudentDeadlinesPage() {
                 const key = toDateKey(date);
                 const items = byDay.get(key) ?? [];
                 const outside = date.getMonth() !== visibleMonth.getMonth();
+                const hasItems = items.length > 0;
+                const isTooltipOpen = activeTooltipKey === key;
                 return (
                   <div
                     key={key}
-                    className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""} ${items.length ? "calendario-dia--com-evento" : ""} ${tooltipDirections[key] === "acima" ? "calendario-dia--tooltip-acima" : ""}`}
-                    aria-label={items.length ? `${date.getDate()} com ${items.length} ${items.length === 1 ? "evento" : "eventos"}` : undefined}
-                    onMouseEnter={items.length ? (event) => updateTooltipDirection(event, key) : undefined}
-                    onFocus={items.length ? (event) => updateTooltipDirection(event, key) : undefined}
+                    className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""} ${hasItems ? "calendario-dia--com-evento" : ""} ${isTooltipOpen ? "calendario-dia--tooltip-aberto" : ""} ${tooltipDirections[key] === "acima" ? "calendario-dia--tooltip-acima" : ""}`}
+                    aria-label={hasItems ? `${date.getDate()} com ${items.length} ${items.length === 1 ? "evento" : "eventos"}` : undefined}
+                    aria-expanded={hasItems ? isTooltipOpen : undefined}
+                    tabIndex={hasItems ? 0 : undefined}
+                    onClick={hasItems ? (event) => toggleDayTooltip(event, key) : undefined}
+                    onKeyDown={hasItems ? (event) => {
+                      if (event.key !== "Enter" && event.key !== " ") return;
+                      event.preventDefault();
+                      toggleDayTooltip(event, key);
+                    } : undefined}
+                    onMouseEnter={hasItems ? (event) => updateTooltipDirection(event, key) : undefined}
+                    onFocus={hasItems ? (event) => updateTooltipDirection(event, key) : undefined}
                   >
                     <span className="calendario-dia__numero">{date.getDate()}</span>
                     <div className="calendario-dia__eventos">
                       {items.slice(0, 2).map((item) => (
-                        <button
+                        <span
                           key={`${item.projectId}-${item.id}`}
-                          type="button"
                           className="calendario-evento"
-                          onClick={() => openDeadline(item)}
-                          aria-label={`Abrir entrega ${item.titulo}`}
                         >
                           <span className="calendario-evento__rotulo">{item.titulo}</span>
-                        </button>
+                        </span>
                       ))}
                       {items.length > 2 && <small>+{items.length - 2} etapas</small>}
                       {items.length > 0 && (
-                        <div className="calendario-dia__tooltip" role="tooltip">
+                        <div className="calendario-dia__tooltip" role="tooltip" onClick={(event) => event.stopPropagation()}>
                           <div className="calendario-dia__tooltip-topo">
                             <strong>{items.length} {items.length === 1 ? "etapa" : "etapas"}</strong>
                             <span>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long" }).format(date)}</span>
                         </div>
                           <div className="calendario-dia__tooltip-lista">
                             {items.map((item) => (
-                              <button
+                              <div
                                 key={`tooltip-${item.projectId}-${item.id}`}
-                                type="button"
                                 className="calendario-dia__tooltip-item"
-                                onClick={() => openDeadline(item)}
                               >
                                 <strong>{item.titulo}</strong>
                                 <span>{item.projectTitle}</span>
                                 <small>
                                   {formatCalendarDate(item)} · {formatEtapaResponsavel(item.responsavel)} · {formatEtapaStatus(item.status)}
                                 </small>
-                              </button>
+                              </div>
                             ))}
                         </div>
                       </div>

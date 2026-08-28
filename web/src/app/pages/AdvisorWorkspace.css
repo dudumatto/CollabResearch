@@ -1549,10 +1549,13 @@
 .calendario-pagina {
   width: 100%;
   max-width: 76rem;
+  height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .calendario-cabecalho {
@@ -1612,7 +1615,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--espaco-4);
-  align-items: start;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 @media (min-width: 1120px) {
@@ -1638,15 +1644,13 @@
 }
 
 .calendario-card--principal {
-  align-self: start;
   justify-self: center;
   width: min(100%, 52rem);
   overflow: visible;
 }
 
 .calendario-card--lateral {
-  height: auto;
-  max-height: 24rem;
+  height: 100%;
   width: 100%;
   overflow: hidden;
 }
@@ -1694,7 +1698,9 @@
 }
 
 .calendario-card--principal > .calendario-grade:not(.calendario-grade--semana) {
-  grid-template-rows: repeat(6, 4.75rem);
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .calendario-grade--semana {
@@ -1766,7 +1772,7 @@
 
 .calendario-evento {
   border: 0;
-  cursor: pointer;
+  cursor: default;
   display: block;
   line-height: 1.2;
   min-height: 1.35rem;
@@ -1846,14 +1852,16 @@
 }
 
 .calendario-dia:hover .calendario-dia__tooltip,
-.calendario-dia:focus-within .calendario-dia__tooltip {
+.calendario-dia:focus-within .calendario-dia__tooltip,
+.calendario-dia--tooltip-aberto .calendario-dia__tooltip {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0.25rem);
 }
 
 .calendario-dia--tooltip-acima:hover .calendario-dia__tooltip,
-.calendario-dia--tooltip-acima:focus-within .calendario-dia__tooltip {
+.calendario-dia--tooltip-acima:focus-within .calendario-dia__tooltip,
+.calendario-dia--tooltip-acima.calendario-dia--tooltip-aberto .calendario-dia__tooltip {
   transform: translateY(-0.25rem);
 }
 
@@ -1893,7 +1901,6 @@
   border-radius: var(--raio-pequeno);
   background: var(--cor-fundo-leve);
   color: var(--cor-texto);
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
@@ -1930,7 +1937,7 @@
 .calendario-lateral {
   display: grid;
   grid-template-rows: repeat(2, minmax(0, 1fr));
-  height: auto;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
 }
@@ -2023,6 +2030,7 @@
 
 @media (max-width: 1119px) {
   .calendario-pagina {
+    height: auto;
     overflow: visible;
   }
 

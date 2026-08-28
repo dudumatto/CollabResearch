@@ -57,4 +57,16 @@ test.describe("area do orientador (mockada)", () => {
     await expect(activeProjectsCard.locator(".advisor-fila-item")).toHaveCount(2);
     await expect(activeProjectsCard.getByText("Projeto extra oculto")).toHaveCount(0);
   });
+
+  test("exibe fallback amigavel quando chunk lazy falha", async ({ page }) => {
+    await page.route(/\/src\/app\/pages\/AdvisorDashboardPage\.jsx/, async (route) => {
+      await route.abort();
+    });
+
+    await page.goto("/app");
+
+    await expect(page.getByRole("heading", { name: "Não foi possível carregar esta tela" })).toBeVisible();
+    await expect(page.getByText("Unexpected Application Error")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Recarregar página" })).toBeVisible();
+  });
 });

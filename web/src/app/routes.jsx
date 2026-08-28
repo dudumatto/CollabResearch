@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { createBrowserRouter, Navigate, useLocation, useParams } from "react-router";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { RouteErrorFallback } from "./components/AppErrorBoundary";
 import { features } from "./config/features";
 import { useAuth } from "./hooks/useAuth";
 
@@ -56,14 +57,17 @@ export const router = createBrowserRouter([
   {
     path: "/",
     Component: LandingPage,
+    errorElement: <RouteErrorFallback />,
   },
   {
     path: "/login",
     Component: LoginPage,
+    errorElement: <RouteErrorFallback />,
   },
   {
     path: "/register",
     Component: RegisterPage,
+    errorElement: <RouteErrorFallback />,
   },
   {
     path: "/projetos/:id/inscricoes",
@@ -108,6 +112,7 @@ export const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
+    errorElement: <RouteErrorFallback />,
     children: [
       {
         index: true,
