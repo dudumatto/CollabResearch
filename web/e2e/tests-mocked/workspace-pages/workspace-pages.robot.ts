@@ -15,6 +15,27 @@ export async function runDashboardFlow(page: Page) {
   await expect(page).toHaveURL(/\/app\/projects$/);
 }
 
+export async function runDeadlinesFlow(page: Page) {
+  for (const viewport of [
+    { width: 1280, height: 820 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/app/deadlines");
+
+    await expect(page.getByRole("heading", { name: "Prazos das etapas", exact: true })).toBeVisible();
+    await expect(page.getByText("Este mês", { exact: true })).toBeVisible();
+    await expect(page.locator(".calendario-lista").getByText("Entrega parcial com titulo muito longo")).toBeVisible();
+    await expect(page.locator(".calendario-evento__rotulo").first()).toHaveCSS("text-overflow", "clip");
+    await expect
+      .poll(async () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth))
+      .toBeLessThanOrEqual(2);
+
+    const calendarBox = await page.locator(".calendario-card--principal").boundingBox();
+    expect(calendarBox?.height ?? 0).toBeLessThanOrEqual(viewport.width <= 460 ? 430 : 620);
+  }
+}
+
 export async function runChatFlow(page: Page, browser: Browser) {
   await page.goto("/app/chat");
   await expect(page.locator(".barra-topo__titulo")).toHaveText("Mensagens");
@@ -47,8 +68,10 @@ export async function runChatFlow(page: Page, browser: Browser) {
 
 export async function runProgressFlow(page: Page, browser: Browser) {
   await page.goto("/app/progress");
-  await expect(page.getByRole("heading", { name: "Progresso do Projeto", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Feed de atualizações" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Progresso do projeto", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Entrega parcial com titulo muito longo para validar corte sem tres pontos" })).toBeVisible();
+  await expect(page.getByText("Mover").first()).toBeVisible();
+  await expect(page.locator(".progress-page__grid")).toHaveCSS("align-items", "start");
   await page.getByRole("button", { name: "Nova atualização" }).click();
   await page.getByPlaceholder("Ex.: Capítulo 2 escrito").fill("Atualização publicada pelo E2E.");
   await page.getByRole("button", { name: "Publicar" }).click();

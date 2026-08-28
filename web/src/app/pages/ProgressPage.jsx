@@ -14,6 +14,7 @@ import { AppCombobox } from "../components/ui/AppCombobox";
 import { ProgressDonut } from "../components/progress/ProgressDonut";
 import { StepperVertical } from "../components/progress/StepperVertical";
 import { UpdateForm } from "../components/progress/UpdateForm";
+import { UpdateFeed } from "../components/progress/UpdateFeed";
 import "./ProgressPage.css";
 
 const Sk = ({ w = "100%", h = 14, r = "0.5rem", style }) => (
@@ -363,7 +364,7 @@ export default function ProgressPage() {
           <div className="progress-page__panel-header">
             <div>
               <h2>Progresso</h2>
-              <p>{currentUserRole === "ALUNO" ? "Arraste um item para reorganizar sua visualização ou conclua a etapa ativa quando permitido." : "Conclua a etapa ativa quando o papel do usuário permitir."}</p>
+              <p>{currentUserRole === "ALUNO" ? "Use a alça Mover para reorganizar sua visualização ou conclua a etapa ativa quando permitido." : "Conclua a etapa ativa quando o papel do usuário permitir."}</p>
             </div>
           </div>
           <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onReorderStep={handleReorderStep} highlightedStepId={targetStageId} />
@@ -392,6 +393,11 @@ export default function ProgressPage() {
               <p>O formulário está recolhido. Use o botão acima para publicar uma atualização.</p>
             </div>
           )}
+
+          <div className="progress-page__updates">
+            <h3>Atualizações recentes</h3>
+            <UpdateFeed updates={updates} />
+          </div>
         </div>
       </section>
     </div>

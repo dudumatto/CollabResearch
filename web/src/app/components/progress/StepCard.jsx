@@ -50,6 +50,7 @@ export function StepCard({
       {canReorder ? (
         <div className="step-card__drag-handle" aria-hidden="true" title="Arraste para reordenar">
           <GripVertical size={17} />
+          <span>Mover</span>
         </div>
       ) : null}
 

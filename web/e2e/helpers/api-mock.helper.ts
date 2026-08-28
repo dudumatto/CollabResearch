@@ -303,6 +303,34 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
         editada: false,
       },
     ],
+    stages: [
+      {
+        id: 80,
+        projetoId: 1,
+        titulo: "Entrega parcial com titulo muito longo para validar corte sem tres pontos",
+        descricao: "Entrega para testar o calendario.",
+        peso: 20,
+        ordem: 1,
+        status: "ACTIVE",
+        responsavel: "ALUNO",
+        prazo: "2026-08-15",
+        obrigatoria: true,
+        criadaEm: "2026-08-01T12:00:00.000Z",
+      },
+      {
+        id: 81,
+        projetoId: 1,
+        titulo: "Revisao final",
+        descricao: "Revisao da entrega.",
+        peso: 30,
+        ordem: 2,
+        status: "PENDING",
+        responsavel: "AMBOS",
+        prazo: "2026-08-28",
+        obrigatoria: true,
+        criadaEm: "2026-08-02T12:00:00.000Z",
+      },
+    ],
     removedCollaboratorIds: new Set<number>(),
   };
 
@@ -522,6 +550,13 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
     const projectProgressMatch = path.match(/^\/api\/projetos\/(\d+)\/progresso$/);
     if (projectProgressMatch && method === "GET") {
       await fulfill(route, 200, state.progress);
+      return;
+    }
+
+    const projectStagesMatch = path.match(/^\/api\/projetos\/(\d+)\/etapas$/);
+    if (projectStagesMatch && method === "GET") {
+      const projectId = Number(projectStagesMatch[1]);
+      await fulfill(route, 200, state.stages.filter((item) => item.projetoId === projectId));
       return;
     }
 

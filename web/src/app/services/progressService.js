@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { etapaService } from "./etapaService";
 import { projectService } from "./projectService";
 
 const DEFAULT_STEPS = [
@@ -23,6 +24,22 @@ function normalizeStep(step) {
     responsible: String(step.responsible ?? step.responsavel ?? "AMBOS").toUpperCase(),
     completedAt: step.completedAt ?? step.concluidaEm ?? null,
     completedBy: step.completedBy ?? step.concluidaPor ?? null,
+  };
+}
+
+function normalizeLegacyStage(stage) {
+  const normalized = normalizeStep(stage);
+  if (!normalized) return null;
+
+  return {
+    ...normalized,
+    title: stage?.titulo ?? normalized.title,
+    description: stage?.descricao ?? normalized.description,
+    weight: Number(stage?.peso ?? normalized.weight ?? 0),
+    stepOrder: Number(stage?.ordem ?? normalized.stepOrder ?? 0),
+    responsible: String(stage?.responsavel ?? normalized.responsible ?? "AMBOS").toUpperCase(),
+    completedAt: stage?.concluidaEm ?? normalized.completedAt ?? null,
+    completedBy: stage?.concluidaPor ?? normalized.completedBy ?? null,
   };
 }
 
@@ -91,13 +108,17 @@ export const progressService = {
       const payload = await api.get(`/api/projects/${projectId}/progress`);
       return normalizeSummary(payload);
     } catch (error) {
-      const [project, legacyUpdates] = await Promise.all([
+      const [project, legacyStages, legacyUpdates] = await Promise.all([
         projectService.getById(projectId).catch(() => null),
+        etapaService.list(projectId).catch(() => []),
         api.get(`/api/projetos/${projectId}/progresso`).catch(() => []),
       ]);
 
       const updates = mapLegacyUpdates(legacyUpdates);
-      const steps = buildLegacySteps(project, updates);
+      const stepsFromStages = Array.isArray(legacyStages)
+        ? legacyStages.map(normalizeLegacyStage).filter(Boolean)
+        : [];
+      const steps = stepsFromStages.length > 0 ? stepsFromStages : buildLegacySteps(project, updates);
 
       return {
         projectId,

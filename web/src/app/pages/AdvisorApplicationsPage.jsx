@@ -173,9 +173,9 @@ export default function AdvisorApplicationsPage() {
       transition={{ duration: 0.3 }}
       className="advisor-pagina"
     >
-      <div className="advisor-hero" style={{ padding: "var(--espaco-4)" }}>
+      <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
         <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
-          Inscrições recebidas
+          Analise novas candidaturas
         </h2>
         <p className="advisor-hero__subtitulo">
           Revise as inscrições dos alunos nos seus projetos e aprove ou rejeite com um parecer.

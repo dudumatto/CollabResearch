@@ -11,7 +11,7 @@ const VIEWPORTS = [
 const PAGINAS = [
   { nome: "dashboard", rota: "/app", pistas: ["Olá, Prof!"] },
   { nome: "projetos", rota: "/app/projects", pistas: ["Projeto E2E Autoria"] },
-  { nome: "inscricoes", rota: "/app/applications", pistas: ["Inscrições recebidas"] },
+  { nome: "inscricoes", rota: "/app/applications", pistas: ["Analise novas candidaturas"] },
   { nome: "orientandos", rota: "/app/advisees", pistas: ["Aluno E2E"] },
   { nome: "orientando-detalhe", rota: "/app/advisees/1", pistas: ["Histórico de participação"] },
   { nome: "progresso", rota: "/app/progress", pistas: ["Organize etapas e prazos"] },

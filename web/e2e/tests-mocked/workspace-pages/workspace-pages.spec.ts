@@ -3,6 +3,7 @@ import { authenticateAs, mockUsers, setupApiMock } from "../../helpers/api-mock.
 import {
   runDashboardFlow,
   runChatFlow,
+  runDeadlinesFlow,
   runProgressFlow,
   runFeedbackFlow,
   runProfileFlow,
@@ -18,6 +19,7 @@ test.describe("paginas internas", () => {
   });
 
   test("dashboard renderiza resumos e navega para secoes principais", async ({ page }) => runDashboardFlow(page));
+  test("calendario adapta layout e corta texto sem reticencias", async ({ page }) => runDeadlinesFlow(page));
   test("chat envia, edita, exclui, busca e lida com lista vazia", async ({ page, browser }) => runChatFlow(page, browser));
   test("progresso publica atualizacao e cobre estado sem projetos", async ({ page, browser }) => runProgressFlow(page, browser));
   test("feedback valida botao desabilitado, envia avaliacao e cobre lista vazia", async ({ page, browser }) => runFeedbackFlow(page, browser));
