@@ -205,13 +205,15 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
 class _ProjectsGrid extends StatelessWidget {
   const _ProjectsGrid({required this.children});
 
-  final List<Widget> children;
+  final List<ProjectCard> children;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         const spacing = 12.0;
+        // Mobile-only: a grade repassa sua largura real para cada card.
+        final isMobile = constraints.maxWidth <= 480;
         final columns = constraints.maxWidth >= 980
             ? 3
             : constraints.maxWidth >= 640
@@ -227,7 +229,12 @@ class _ProjectsGrid extends StatelessWidget {
             for (final child in children)
               SizedBox(
                 width: itemWidth,
-                child: child,
+                child: ProjectCard(
+                  key: child.key,
+                  project: child.project,
+                  onTap: child.onTap,
+                  mobile: isMobile,
+                ),
               ),
           ],
         );

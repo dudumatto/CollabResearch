@@ -137,181 +137,267 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          AppCard(
-            padding: EdgeInsets.zero,
-            child: Column(
-              children: [
-                Container(
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(8),
-                    ),
-                  ),
-                ),
-                Transform.translate(
-                  offset: const Offset(0, -36),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 42,
-                        foregroundImage: user?.avatarUrl != null
-                            ? NetworkImage(user!.avatarUrl!)
-                            : null,
-                        child: Text(
-                          _initials(user),
-                          style: Theme.of(context).textTheme.headlineSmall,
+      body: LayoutBuilder(
+        builder: (context, pageConstraints) {
+          // Mobile-only: usa a largura real disponível para o corpo da tela.
+          final isMobile = pageConstraints.maxWidth <= 480;
+          final isNarrowMobile = pageConstraints.maxWidth <= 360;
+
+          return ListView(
+            // Mobile-only: recupera largura útil sem alterar tablet ou desktop.
+            padding: EdgeInsets.all(isMobile ? 16 : 24),
+            children: [
+              AppCard(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    Container(
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(8),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        user?.name.isNotEmpty == true ? user!.name : 'Usuario',
-                        style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Transform.translate(
+                      offset: const Offset(0, -36),
+                      child: Padding(
+                        // Mobile-only: impede textos longos de encostarem no card.
+                        padding:
+                            EdgeInsets.symmetric(horizontal: isMobile ? 12 : 0),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 42,
+                              foregroundImage: user?.avatarUrl != null
+                                  ? NetworkImage(user!.avatarUrl!)
+                                  : null,
+                              child: Text(
+                                _initials(user),
+                                style:
+                                    Theme.of(context).textTheme.headlineSmall,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              user?.name.isNotEmpty == true
+                                  ? user!.name
+                                  : 'Usuario',
+                              maxLines: isMobile ? 2 : null,
+                              overflow: isMobile
+                                  ? TextOverflow.ellipsis
+                                  : TextOverflow.clip,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            Text(_userType(user)),
+                            Text(
+                              user?.institution?.isNotEmpty == true
+                                  ? user!.institution!
+                                  : 'Instituicao nao informada',
+                              maxLines: isMobile ? 2 : null,
+                              overflow: isMobile
+                                  ? TextOverflow.ellipsis
+                                  : TextOverflow.clip,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final stats = [
+                                  _ProfileStat(
+                                    label: 'Projetos',
+                                    value: '$projectsCount',
+                                    compact: isMobile,
+                                  ),
+                                  _ProfileStat(
+                                    label: 'Tipo',
+                                    value: _userType(user),
+                                    compact: isMobile,
+                                  ),
+                                  _ProfileStat(
+                                    label: 'Curso',
+                                    value: user?.course?.isNotEmpty == true
+                                        ? user!.course!
+                                        : '-',
+                                    compact: isMobile,
+                                  ),
+                                ];
+
+                                if (!isMobile) {
+                                  return Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: stats,
+                                  );
+                                }
+
+                                // Mobile-only: em 320–360 px o curso ganha uma linha
+                                // inteira; de 361–480 px os três blocos dividem o card.
+                                const spacing = 8.0;
+                                final itemWidth = isNarrowMobile
+                                    ? (constraints.maxWidth - spacing) / 2
+                                    : (constraints.maxWidth - spacing * 2) / 3;
+
+                                return Wrap(
+                                  key: const Key('profile-mobile-stats'),
+                                  alignment: WrapAlignment.center,
+                                  spacing: spacing,
+                                  runSpacing: 12,
+                                  children: [
+                                    SizedBox(width: itemWidth, child: stats[0]),
+                                    SizedBox(width: itemWidth, child: stats[1]),
+                                    SizedBox(
+                                      width: isNarrowMobile
+                                          ? constraints.maxWidth
+                                          : itemWidth,
+                                      child: stats[2],
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      Text(_userType(user)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              AppCard(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        user?.institution?.isNotEmpty == true
-                            ? user!.institution!
-                            : 'Instituicao nao informada',
+                        'Informacoes do perfil',
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _ProfileStat(
-                              label: 'Projetos', value: '$projectsCount'),
-                          _ProfileStat(label: 'Tipo', value: _userType(user)),
-                          _ProfileStat(
-                            label: 'Curso',
-                            value: user?.course?.isNotEmpty == true
-                                ? user!.course!
-                                : '-',
-                          ),
-                        ],
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Wrap(
+                          spacing: 4,
+                          children: [
+                            if (_editing)
+                              TextButton.icon(
+                                onPressed: auth.isLoading || user == null
+                                    ? null
+                                    : () {
+                                        _populateForm(user);
+                                        setState(() => _editing = false);
+                                      },
+                                icon: const Icon(Icons.close),
+                                label: const Text('Cancelar'),
+                              ),
+                            TextButton.icon(
+                              onPressed: auth.isLoading
+                                  ? null
+                                  : () {
+                                      if (_editing) {
+                                        _saveProfile(auth);
+                                      } else {
+                                        setState(() => _editing = true);
+                                      }
+                                    },
+                              icon: Icon(_editing
+                                  ? Icons.save_outlined
+                                  : Icons.edit_outlined),
+                              label: Text(_editing ? 'Salvar' : 'Editar'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _ProfileField(
+                        label: 'Nome completo',
+                        icon: Icons.person_outline,
+                        controller: _nameController,
+                        enabled: _editing,
+                        validator: (value) =>
+                            Validators.requiredField(value, label: 'Nome'),
+                      ),
+                      _ProfileField(
+                        label: 'Email',
+                        icon: Icons.email_outlined,
+                        controller: _emailController,
+                        enabled: _editing,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: Validators.email,
+                      ),
+                      _ProfileField(
+                        label: 'Instituicao',
+                        icon: Icons.business_outlined,
+                        controller: _institutionController,
+                        enabled: _editing,
+                      ),
+                      _ProfileField(
+                        label: 'Semestre',
+                        icon: Icons.school_outlined,
+                        controller: _semesterController,
+                        enabled: _editing,
+                        keyboardType: TextInputType.number,
+                        validator: (value) => Validators.positiveInteger(value,
+                            label: 'Semestre'),
+                      ),
+                      _ProfileField(
+                        label: 'Interesses',
+                        icon: Icons.auto_awesome_outlined,
+                        controller: _interestsController,
+                        enabled: _editing,
+                      ),
+                      _ProfileField(
+                        label: 'Biografia',
+                        icon: Icons.notes_outlined,
+                        controller: _bioController,
+                        enabled: _editing,
+                        maxLines: 3,
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          AppCard(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Informacoes do perfil',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Wrap(
-                      spacing: 4,
-                      children: [
-                        if (_editing)
-                          TextButton.icon(
-                            onPressed: auth.isLoading || user == null
-                                ? null
-                                : () {
-                                    _populateForm(user);
-                                    setState(() => _editing = false);
-                                  },
-                            icon: const Icon(Icons.close),
-                            label: const Text('Cancelar'),
-                          ),
-                        TextButton.icon(
-                          onPressed: auth.isLoading
-                              ? null
-                              : () {
-                                  if (_editing) {
-                                    _saveProfile(auth);
-                                  } else {
-                                    setState(() => _editing = true);
-                                  }
-                                },
-                          icon: Icon(_editing
-                              ? Icons.save_outlined
-                              : Icons.edit_outlined),
-                          label: Text(_editing ? 'Salvar' : 'Editar'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _ProfileField(
-                    label: 'Nome completo',
-                    icon: Icons.person_outline,
-                    controller: _nameController,
-                    enabled: _editing,
-                    validator: (value) =>
-                        Validators.requiredField(value, label: 'Nome'),
-                  ),
-                  _ProfileField(
-                    label: 'Email',
-                    icon: Icons.email_outlined,
-                    controller: _emailController,
-                    enabled: _editing,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: Validators.email,
-                  ),
-                  _ProfileField(
-                    label: 'Instituicao',
-                    icon: Icons.business_outlined,
-                    controller: _institutionController,
-                    enabled: _editing,
-                  ),
-                  _ProfileField(
-                    label: 'Semestre',
-                    icon: Icons.school_outlined,
-                    controller: _semesterController,
-                    enabled: _editing,
-                    keyboardType: TextInputType.number,
-                    validator: (value) =>
-                        Validators.positiveInteger(value, label: 'Semestre'),
-                  ),
-                  _ProfileField(
-                    label: 'Interesses',
-                    icon: Icons.auto_awesome_outlined,
-                    controller: _interestsController,
-                    enabled: _editing,
-                  ),
-                  _ProfileField(
-                    label: 'Biografia',
-                    icon: Icons.notes_outlined,
-                    controller: _bioController,
-                    enabled: _editing,
-                    maxLines: 3,
-                  ),
-                ],
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 }
 
 class _ProfileStat extends StatelessWidget {
-  const _ProfileStat({required this.label, required this.value});
+  const _ProfileStat({
+    required this.label,
+    required this.value,
+    this.compact = false,
+  });
 
   final String label;
   final String value;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value, style: Theme.of(context).textTheme.titleMedium),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
+        Text(
+          value,
+          // Mobile-only: restringe conteúdo dinâmico à célula do indicador.
+          maxLines: compact ? 2 : null,
+          overflow: compact ? TextOverflow.ellipsis : TextOverflow.clip,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Text(
+          label,
+          maxLines: compact ? 1 : null,
+          overflow: compact ? TextOverflow.ellipsis : TextOverflow.clip,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
       ],
     );
   }

@@ -143,47 +143,75 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            DropdownButtonFormField<int>(
-                              initialValue: _selectedAreaId,
-                              decoration: const InputDecoration(
-                                labelText: 'Area de pesquisa',
-                                prefixIcon: Icon(Icons.category_outlined),
-                              ),
-                              items: [
-                                for (final area in provider.areas)
-                                  DropdownMenuItem(
-                                    value: area.id,
-                                    child: Text(area.name),
+                            LayoutBuilder(
+                              builder: (context, fieldConstraints) {
+                                // Mobile-only: mede o espaco real do campo.
+                                final isMobile =
+                                    fieldConstraints.maxWidth <= 480;
+                                return DropdownButtonFormField<int>(
+                                  initialValue: _selectedAreaId,
+                                  // Mobile-only: limita o item selecionado ao campo.
+                                  isExpanded: isMobile,
+                                  isDense: !isMobile,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Area de pesquisa',
+                                    prefixIcon: Icon(Icons.category_outlined),
                                   ),
-                              ],
-                              onChanged: (value) =>
-                                  setState(() => _selectedAreaId = value),
-                              validator: (value) => value == null
-                                  ? 'Area de pesquisa obrigatoria'
-                                  : null,
+                                  items: [
+                                    for (final area in provider.areas)
+                                      DropdownMenuItem(
+                                        value: area.id,
+                                        child: Text(
+                                          area.name,
+                                          maxLines: isMobile ? 2 : 1,
+                                          softWrap: isMobile,
+                                        ),
+                                      ),
+                                  ],
+                                  onChanged: (value) =>
+                                      setState(() => _selectedAreaId = value),
+                                  validator: (value) => value == null
+                                      ? 'Area de pesquisa obrigatoria'
+                                      : null,
+                                );
+                              },
                             ),
                             if (_isStudent) ...[
                               const SizedBox(height: 16),
-                              DropdownButtonFormField<int>(
-                                initialValue: _selectedAdvisorId,
-                                decoration: const InputDecoration(
-                                  labelText: 'Orientador',
-                                  prefixIcon:
-                                      Icon(Icons.workspace_premium_outlined),
-                                ),
-                                items: [
-                                  for (final advisor in provider.advisors)
-                                    DropdownMenuItem(
-                                      value: advisor.id,
-                                      child: Text(advisor.name),
+                              LayoutBuilder(
+                                builder: (context, fieldConstraints) {
+                                  // Mobile-only: mede o espaco real do campo.
+                                  final isMobile =
+                                      fieldConstraints.maxWidth <= 480;
+                                  return DropdownButtonFormField<int>(
+                                    initialValue: _selectedAdvisorId,
+                                    // Mobile-only: nomes longos podem quebrar linha.
+                                    isExpanded: isMobile,
+                                    isDense: !isMobile,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Orientador',
+                                      prefixIcon: Icon(
+                                          Icons.workspace_premium_outlined),
                                     ),
-                                ],
-                                onChanged: (value) => setState(
-                                  () => _selectedAdvisorId = value,
-                                ),
-                                validator: (value) => value == null
-                                    ? 'Orientador obrigatorio'
-                                    : null,
+                                    items: [
+                                      for (final advisor in provider.advisors)
+                                        DropdownMenuItem(
+                                          value: advisor.id,
+                                          child: Text(
+                                            advisor.name,
+                                            maxLines: isMobile ? 2 : 1,
+                                            softWrap: isMobile,
+                                          ),
+                                        ),
+                                    ],
+                                    onChanged: (value) => setState(
+                                      () => _selectedAdvisorId = value,
+                                    ),
+                                    validator: (value) => value == null
+                                        ? 'Orientador obrigatorio'
+                                        : null,
+                                  );
+                                },
                               ),
                             ],
                             const SizedBox(height: 16),

@@ -160,25 +160,40 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                DropdownButtonFormField<int>(
-                                  initialValue: _selectedAreaId,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Area de pesquisa',
-                                    prefixIcon: Icon(Icons.category_outlined),
-                                  ),
-                                  items: [
-                                    for (final area in provider.areas)
-                                      DropdownMenuItem(
-                                        value: area.id,
-                                        child: Text(area.name),
+                                LayoutBuilder(
+                                  builder: (context, fieldConstraints) {
+                                    // Mobile-only: mede o espaco real do campo.
+                                    final isMobile =
+                                        fieldConstraints.maxWidth <= 480;
+                                    return DropdownButtonFormField<int>(
+                                      initialValue: _selectedAreaId,
+                                      // Mobile-only: limita nomes longos ao campo.
+                                      isExpanded: isMobile,
+                                      isDense: !isMobile,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Area de pesquisa',
+                                        prefixIcon:
+                                            Icon(Icons.category_outlined),
                                       ),
-                                  ],
-                                  onChanged: (value) => setState(
-                                    () => _selectedAreaId = value,
-                                  ),
-                                  validator: (value) => value == null
-                                      ? 'Area de pesquisa obrigatoria'
-                                      : null,
+                                      items: [
+                                        for (final area in provider.areas)
+                                          DropdownMenuItem(
+                                            value: area.id,
+                                            child: Text(
+                                              area.name,
+                                              maxLines: isMobile ? 2 : 1,
+                                              softWrap: isMobile,
+                                            ),
+                                          ),
+                                      ],
+                                      onChanged: (value) => setState(
+                                        () => _selectedAreaId = value,
+                                      ),
+                                      validator: (value) => value == null
+                                          ? 'Area de pesquisa obrigatoria'
+                                          : null,
+                                    );
+                                  },
                                 ),
                                 if (_isAdvisor) ...[
                                   const SizedBox(height: 16),
