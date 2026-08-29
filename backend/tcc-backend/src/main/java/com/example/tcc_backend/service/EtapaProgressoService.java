@@ -77,6 +77,7 @@ public class EtapaProgressoService {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
         validarParticipacaoProjeto(projeto, usuarioLogado.getId());
+        validarProjetoEditavel(projeto);
 
         if (request == null || request.getStatus() == null || !"done".equalsIgnoreCase(request.getStatus().trim())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status invalido");
@@ -120,6 +121,7 @@ public class EtapaProgressoService {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
         projectAccessPolicy.requireResponsibleAdvisor(projeto, usuarioLogado);
+        validarProjetoEditavel(projeto);
         validarDadosEtapa(request);
 
         List<EtapaProgresso> etapasExistentes = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId);
@@ -152,6 +154,7 @@ public class EtapaProgressoService {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
         projectAccessPolicy.requireResponsibleAdvisor(projeto, usuarioLogado);
+        validarProjetoEditavel(projeto);
         validarDadosEtapa(request);
 
         EtapaProgresso etapa = etapaProgressoRepository.findByProjetoIdAndId(projetoId, etapaId)
@@ -176,6 +179,7 @@ public class EtapaProgressoService {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
         projectAccessPolicy.requireResponsibleAdvisor(projeto, usuarioLogado);
+        validarProjetoEditavel(projeto);
 
         EtapaProgresso etapa = etapaProgressoRepository.findByProjetoIdAndId(projetoId, etapaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Etapa nao encontrada"));
@@ -196,6 +200,7 @@ public class EtapaProgressoService {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
         validarParticipacaoProjeto(projeto, usuarioLogado.getId());
+        validarProjetoEditavel(projeto);
 
         if (request == null || request.getStatus() == null || !"done".equalsIgnoreCase(request.getStatus().trim())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status invalido");
@@ -221,6 +226,7 @@ public class EtapaProgressoService {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
         validarParticipacaoProjeto(projeto, usuarioLogado.getId());
+        validarProjetoEditavel(projeto);
 
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dados invalidos");
@@ -386,6 +392,11 @@ public class EtapaProgressoService {
         }
     }
 
+    private void validarProjetoEditavel(Projeto projeto) {
+        if (projeto.getStatus() == StatusProjeto.FINALIZADO) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Projeto finalizado nao permite alteracoes de progresso");
+        }
+    }
     private void validarDadosEtapa(EtapaRequest request) {
         if (request.getPeso() != null && (request.getPeso() < 0 || request.getPeso() > 100)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Peso deve estar entre 0 e 100");

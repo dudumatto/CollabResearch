@@ -7,6 +7,7 @@ import com.example.tcc_backend.dto.response.MensagemResponse;
 import com.example.tcc_backend.dto.response.PageResponse;
 import com.example.tcc_backend.security.AuthHelper;
 import com.example.tcc_backend.service.ConversaService;
+import com.example.tcc_backend.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,6 +30,11 @@ public class ConversaController {
 
     private final ConversaService conversaService;
     private final AuthHelper authHelper;
+    private final UsuarioService usuarioService;
+
+    private ConversaResponse toConversaResponse(com.example.tcc_backend.model.Conversa conversa, Integer usuarioLogadoId) {
+        return ConversaResponse.fromEntity(conversa, usuarioLogadoId, usuarioService::resolverFotoPerfilParaExibicao);
+    }
 
     @Operation(summary = "Criar conversa", description = "Cria uma nova conversa vinculada a um projeto.")
     @ApiResponses({
@@ -38,7 +44,7 @@ public class ConversaController {
     @PostMapping
     public ResponseEntity<ConversaResponse> criar(@RequestBody @Valid ConversaRequest dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ConversaResponse.fromEntity(
+                .body(toConversaResponse(
                         conversaService.criar(dto.getProjetoId()),
                         authHelper.getCurrentUser().getId()
                 ));
@@ -47,7 +53,7 @@ public class ConversaController {
     @Operation(summary = "Abrir ou criar conversa por projeto")
     @PostMapping("/projeto/{projetoId}/abrir")
     public ResponseEntity<ConversaResponse> abrirPorProjeto(@PathVariable Integer projetoId) {
-        return ResponseEntity.ok(ConversaResponse.fromEntity(
+        return ResponseEntity.ok(toConversaResponse(
                 conversaService.abrirOuCriarPorProjeto(projetoId),
                 authHelper.getCurrentUser().getId()
         ));
@@ -56,7 +62,7 @@ public class ConversaController {
     @Operation(summary = "Buscar conversa por projeto")
     @GetMapping("/projeto/{projetoId}")
     public ResponseEntity<ConversaResponse> buscarPorProjeto(@PathVariable Integer projetoId) {
-        return ResponseEntity.ok(ConversaResponse.fromEntity(
+        return ResponseEntity.ok(toConversaResponse(
                 conversaService.buscarPorProjeto(projetoId),
                 authHelper.getCurrentUser().getId()
         ));
@@ -69,7 +75,7 @@ public class ConversaController {
     })
     @PostMapping("/privada/{outroUsuarioId}")
     public ResponseEntity<ConversaResponse> abrirPrivada(@PathVariable Integer outroUsuarioId) {
-        return ResponseEntity.ok(ConversaResponse.fromEntity(
+        return ResponseEntity.ok(toConversaResponse(
                 conversaService.abrirOuCriarPrivada(outroUsuarioId),
                 authHelper.getCurrentUser().getId()
         ));
@@ -81,7 +87,7 @@ public class ConversaController {
         Integer logadoId = authHelper.getCurrentUser().getId();
         return ResponseEntity.ok(
                 conversaService.listarConversasDoUsuario(usuarioId)
-                        .stream().map(c -> ConversaResponse.fromEntity(c, logadoId)).toList()
+                        .stream().map(c -> toConversaResponse(c, logadoId)).toList()
         );
     }
 
@@ -91,7 +97,7 @@ public class ConversaController {
         Integer logadoId = authHelper.getCurrentUser().getId();
         return ResponseEntity.ok(
                 conversaService.listarTodasConversasDoUsuario(logadoId)
-                        .stream().map(c -> ConversaResponse.fromEntity(c, logadoId)).toList()
+                        .stream().map(c -> toConversaResponse(c, logadoId)).toList()
         );
     }
 
@@ -101,7 +107,7 @@ public class ConversaController {
         Integer logadoId = authHelper.getCurrentUser().getId();
         return ResponseEntity.ok(
                 conversaService.listarTodasConversasDoUsuario(usuarioId)
-                        .stream().map(c -> ConversaResponse.fromEntity(c, logadoId)).toList()
+                        .stream().map(c -> toConversaResponse(c, logadoId)).toList()
         );
     }
 
@@ -120,7 +126,7 @@ public class ConversaController {
                         conversaService.listarConversasDoUsuario(
                                 usuarioId,
                                 PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort))
-                        ).map(c -> ConversaResponse.fromEntity(c, logadoId))
+                        ).map(c -> toConversaResponse(c, logadoId))
                 )
         );
     }
@@ -130,7 +136,7 @@ public class ConversaController {
     public ResponseEntity<List<MensagemResponse>> listarMensagens(@PathVariable Integer id) {
         return ResponseEntity.ok(
                 conversaService.listarMensagens(id)
-                        .stream().map(MensagemResponse::fromEntity).toList()
+                        .stream().map(this::toMensagemResponse).toList()
         );
     }
 
@@ -148,7 +154,7 @@ public class ConversaController {
                         conversaService.listarMensagens(
                                 id,
                                 PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort))
-                        ).map(MensagemResponse::fromEntity)
+                        ).map(this::toMensagemResponse)
                 )
         );
     }
@@ -159,7 +165,7 @@ public class ConversaController {
             @PathVariable Integer id,
             @RequestBody @Valid MensagemRequest dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(MensagemResponse.fromEntity(
+                .body(toMensagemResponse(
                         conversaService.enviarMensagem(id, dto.getConteudo())
                 ));
     }
@@ -189,5 +195,8 @@ public class ConversaController {
     public ResponseEntity<Void> excluirMensagem(@PathVariable Integer mensagemId) {
         conversaService.excluirMensagem(mensagemId);
         return ResponseEntity.noContent().build();
+    }
+    private MensagemResponse toMensagemResponse(com.example.tcc_backend.model.Mensagem mensagem) {
+        return MensagemResponse.fromEntity(mensagem, usuarioService::resolverFotoPerfilParaExibicao);
     }
 }

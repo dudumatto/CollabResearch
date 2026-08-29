@@ -33,6 +33,9 @@ function ChatAvatar({ name, src, className }) {
 function getMessagePhotoUrl(message, currentUser, mine, conversation) {
   const senderPhoto =
     message?.remetenteFotoPerfilUrl ||
+    message?.remetente?.fotoPerfilUrl ||
+    message?.remetente?.avatarUrl ||
+    message?.remetente?.usuario?.fotoPerfilUrl ||
     message?.remetenteProfilePhotoUrl ||
     message?.remetenteImagemPerfilUrl ||
     message?.remetenteFotoUrl ||
@@ -497,6 +500,8 @@ export default function ChatPage() {
       remetenteNome: user?.nome,
       dataEnvio: new Date().toISOString(),
       editada: false,
+      remetenteFotoPerfilUrl: getUserPhotoUrl(user),
+      remetenteAvatarUrl: getUserPhotoUrl(user),
       _temporaria: true,
     };
 

@@ -10,6 +10,73 @@ import { formatEtapaResponsavel, formatEtapaStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import "./AdvisorWorkspace.css";
 
+const Sk = ({ w = "100%", h = 14, r = "0.5rem", style }) => (
+  <div className="skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />
+);
+
+function CalendarSkeleton() {
+  return (
+    <div className="calendario-pagina" aria-busy="true" aria-label="Carregando calendário">
+      <header className="calendario-cabecalho">
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Sk w={150} h={13} r={999} />
+          <Sk w="52%" h={30} r={10} style={{ maxWidth: 340, marginTop: 12 }} />
+          <Sk w="76%" h={14} r={999} style={{ maxWidth: 560, marginTop: 14 }} />
+        </div>
+        <div className="calendario-cabecalho__resumo">
+          <Sk w={44} h={32} r={10} style={{ margin: "0 auto" }} />
+          <Sk w={118} h={12} r={999} style={{ marginTop: 8 }} />
+        </div>
+      </header>
+
+      <div className="calendario-layout">
+        <section className="calendario-card calendario-card--principal">
+          <div className="calendario-card__topo">
+            <Sk w={36} h={36} r="50%" />
+            <Sk w={190} h={24} r={999} />
+            <Sk w={36} h={36} r="50%" />
+          </div>
+
+          <div className="calendario-grade calendario-grade--semana">
+            {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => <span key={day}>{day}</span>)}
+          </div>
+          <div className="calendario-grade">
+            {Array.from({ length: 42 }).map((_, index) => (
+              <div key={index} className={`calendario-dia ${index < 3 || index > 35 ? "calendario-dia--fora" : ""}`}>
+                <Sk w={24} h={14} r={999} />
+                <div className="calendario-dia__eventos">
+                  {[6, 12, 19, 27, 33].includes(index) && <Sk w="74%" h={16} r={999} />}
+                  {[19, 27].includes(index) && <Sk w="52%" h={16} r={999} />}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <aside className="calendario-lateral">
+          {[0, 1].map((section) => (
+            <section key={section} className={`calendario-card calendario-card--lateral ${section === 1 ? "calendario-card--alerta" : ""}`}>
+              <Sk w={section === 0 ? 96 : 148} h={20} r={999} />
+              <div className="calendario-lista calendario-lista--rolagem">
+                {[0, 1, 2].map((item) => (
+                  <article key={item} className="calendario-prazo">
+                    <Sk w={36} h={36} r="50%" />
+                    <div className="calendario-prazo__conteudo">
+                      <Sk w="72%" h={15} r={999} />
+                      <Sk w="54%" h={12} r={999} style={{ marginTop: 8 }} />
+                      {section === 0 && <Sk w="88%" h={12} r={999} style={{ marginTop: 10 }} />}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ))}
+        </aside>
+      </div>
+    </div>
+  );
+}
+
 function parseDate(value) {
   if (!value) return null;
   const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -63,10 +130,10 @@ function buildMonthDays(monthDate) {
 }
 
 function statusClass(status) {
-  if (status === "DONE") return "advisor-etiqueta--vermelho";
+  if (status === "DONE") return "advisor-etiqueta--verde";
   if (status === "ACTIVE") return "advisor-etiqueta--amarelo";
   if (status === "REJECTED") return "advisor-etiqueta--vermelho";
-  return "advisor-etiqueta--verde";
+  return "advisor-etiqueta--vermelho";
 }
 
 function DeadlineItem({ item, compact = false }) {
@@ -177,7 +244,7 @@ export default function StudentDeadlinesPage() {
     ));
   };
 
-  if (loading) return <div className="skeleton" style={{ width: "100%", height: 360, borderRadius: "var(--raio-grande)" }} />;
+  if (loading) return <CalendarSkeleton />;
   if (error) return <StatusView title="Falha ao carregar calendário" description="Não foi possível carregar as etapas dos seus projetos." />;
 
   return (

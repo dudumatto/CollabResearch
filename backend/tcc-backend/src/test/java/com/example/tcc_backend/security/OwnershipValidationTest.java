@@ -73,7 +73,7 @@ class OwnershipValidationTest {
         conversaService = new ConversaService(
                 conversaRepository, mensagemRepository, projetoRepository,
                 inscricaoRepository, usuarioRepository, authHelper,
-                notificacaoService, chatRealtimeService);
+                notificacaoService, chatRealtimeService, usuarioService);
     }
 
     // ── UsuarioController ──────────────────────────────────────────

@@ -27,6 +27,7 @@ public class ConversaService {
     private final AuthHelper authHelper;
     private final NotificacaoService notificacaoService;
     private final ChatRealtimeService chatRealtimeService;
+    private final UsuarioService usuarioService;
 
     public Conversa criar(Integer projetoId) {
         return abrirOuCriarPorProjeto(projetoId);
@@ -262,7 +263,7 @@ public class ConversaService {
         mensagem.setEditada(true);
         mensagem.setDataEdicao(OffsetDateTime.now());
 
-        MensagemResponse response = MensagemResponse.fromEntity(mensagemRepository.save(mensagem));
+        MensagemResponse response = MensagemResponse.fromEntity(mensagemRepository.save(mensagem), usuarioService::resolverFotoPerfilParaExibicao);
         chatRealtimeService.publicarMensagemEditada(response);
         return response;
     }

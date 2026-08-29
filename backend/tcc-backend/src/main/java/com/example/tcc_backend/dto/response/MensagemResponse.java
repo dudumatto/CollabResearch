@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
+import java.util.function.Function;
 
 @Data
 @Builder
@@ -26,6 +27,13 @@ public class MensagemResponse {
     private OffsetDateTime dataEdicao;
 
     public static MensagemResponse fromEntity(Mensagem mensagem) {
+        return fromEntity(mensagem, Function.identity());
+    }
+
+    public static MensagemResponse fromEntity(Mensagem mensagem, Function<String, String> fotoResolver) {
+        String fotoPerfilUrl = mensagem.getRemetente() != null ? mensagem.getRemetente().getFotoPerfilUrl() : null;
+        String fotoExibicao = fotoResolver != null ? fotoResolver.apply(fotoPerfilUrl) : fotoPerfilUrl;
+
         return MensagemResponse.builder()
                 .id(mensagem.getId())
                 .conversaId(mensagem.getConversa() != null ? mensagem.getConversa().getId() : null)
@@ -33,8 +41,8 @@ public class MensagemResponse {
                 .dataEnvio(mensagem.getDataEnvio())
                 .remetenteId(mensagem.getRemetente() != null ? mensagem.getRemetente().getId() : null)
                 .remetenteNome(mensagem.getRemetente() != null ? mensagem.getRemetente().getNome() : null)
-                .remetenteFotoPerfilUrl(mensagem.getRemetente() != null ? mensagem.getRemetente().getFotoPerfilUrl() : null)
-                .remetenteAvatarUrl(mensagem.getRemetente() != null ? mensagem.getRemetente().getFotoPerfilUrl() : null)
+                .remetenteFotoPerfilUrl(fotoExibicao)
+                .remetenteAvatarUrl(fotoExibicao)
                 .editada(mensagem.getEditada())
                 .dataEdicao(mensagem.getDataEdicao())
                 .build();

@@ -28,6 +28,44 @@ function projectStatusClass(status) {
   return "";
 }
 
+
+function UpdatesPanelSkeleton() {
+  return (
+    <>
+      <div className="progress-page__collapsed-form progress-page__collapsed-form--skeleton" aria-hidden="true">
+        <Sk w="58%" h={15} style={{ maxWidth: 320 }} />
+        <Sk w="82%" h={13} style={{ maxWidth: 520, marginTop: 12 }} />
+      </div>
+
+      <div className="progress-page__updates" aria-busy="true" aria-label="Carregando atualizações">
+        <h3>Atualizações recentes</h3>
+        <div className="update-feed update-feed--skeleton">
+          {[0, 1, 2].map((item) => (
+            <article key={item} className="update-feed__item update-feed__item--skeleton">
+              <div className="update-feed__header">
+                <div className="update-feed__author">
+                  <Sk w={36} h={36} r="50%" />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <Sk w="46%" h={14} style={{ maxWidth: 170 }} />
+                    <Sk w="32%" h={11} style={{ maxWidth: 120, marginTop: 8 }} />
+                  </div>
+                </div>
+                <Sk w={92} h={26} r={999} />
+              </div>
+              <Sk w="68%" h={18} style={{ maxWidth: 360, marginTop: 18 }} />
+              <Sk w="100%" h={12} style={{ maxWidth: 560, marginTop: 12 }} />
+              <Sk w="76%" h={12} style={{ maxWidth: 430, marginTop: 8 }} />
+              <div className="update-feed__meta">
+                <Sk w={130} h={13} />
+                <Sk w={116} h={13} />
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
 function ProgressSkeleton() {
   return (
     <div className="progress-page">

@@ -12,9 +12,10 @@ import org.springframework.stereotype.Service;
 public class ChatRealtimeService {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final UsuarioService usuarioService;
 
     public void publicarMensagemCriada(Mensagem mensagem) {
-        MensagemResponse response = MensagemResponse.fromEntity(mensagem);
+        MensagemResponse response = MensagemResponse.fromEntity(mensagem, usuarioService::resolverFotoPerfilParaExibicao);
         publicar(response.getConversaId(), ChatMessageEvent.criada(response));
     }
 

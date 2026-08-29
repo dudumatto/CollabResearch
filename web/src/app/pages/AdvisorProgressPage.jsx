@@ -20,10 +20,10 @@ const RESPONSAVEIS = [
 ];
 
 const ETAPA_PILL = {
-  DONE: "advisor-etiqueta--vermelho",
+  DONE: "advisor-etiqueta--verde",
   ACTIVE: "advisor-etiqueta--amarelo",
   REJECTED: "advisor-etiqueta--vermelho",
-  PENDING: "advisor-etiqueta--verde",
+  PENDING: "advisor-etiqueta--vermelho",
 };
 
 function etapaPillClass(status) {
@@ -101,6 +101,7 @@ export default function AdvisorProgressPage() {
 
   const listaEtapas = useMemo(() => (Array.isArray(etapas) ? etapas : []), [etapas]);
   const projetoAtivo = projetosAtivos.find((p) => p.id === activeProjectId) ?? null;
+  const projetoFinalizado = projetoAtivo?.status === "FINALIZADO";
   const concluidas = listaEtapas.filter((e) => e.status === "DONE").length;
   const progresso = listaEtapas.length > 0 ? Math.round((concluidas / listaEtapas.length) * 100) : 0;
 
@@ -114,6 +115,12 @@ export default function AdvisorProgressPage() {
   const normErroEtapas = erroEtapas ? normalizeError(erroEtapas) : null;
 
   const abrirModal = (tipo, etapa = null) => {
+    const editaProgresso = ["nova", "editar", "excluir"].includes(tipo);
+    if (projetoFinalizado && editaProgresso) {
+      toast.warning("Projeto finalizado não permite alterações de progresso.");
+      return;
+    }
+
     if (tipo === "nova") {
       setCampos(camposVazios());
     } else if (tipo === "editar" && etapa) {
@@ -137,6 +144,11 @@ export default function AdvisorProgressPage() {
   };
 
   const salvarEtapa = async () => {
+    if (projetoFinalizado) {
+      toast.warning("Projeto finalizado não permite alterações de progresso.");
+      fecharModal();
+      return;
+    }
     if (!campos.titulo.trim()) {
       setCampoErro("Informe o título da etapa.");
       return;
@@ -172,6 +184,10 @@ export default function AdvisorProgressPage() {
   };
 
   const concluirEtapa = async (etapa) => {
+    if (projetoFinalizado) {
+      toast.warning("Projeto finalizado não permite alterações de progresso.");
+      return;
+    }
     if (!activeProjectId) return;
     setMutando(true);
     try {
@@ -186,6 +202,11 @@ export default function AdvisorProgressPage() {
   };
 
   const excluirEtapa = async () => {
+    if (projetoFinalizado) {
+      toast.warning("Projeto finalizado não permite alterações de progresso.");
+      fecharModal();
+      return;
+    }
     if (!modal || modal.tipo !== "excluir" || !modal.etapa || !activeProjectId) return;
     setMutando(true);
     try {
@@ -264,10 +285,12 @@ export default function AdvisorProgressPage() {
             options={projetosAtivos.map((p) => ({ value: p.id, label: p.title }))}
           />
         </div>
-        <button type="button" className="advisor-botao advisor-botao--primario" onClick={() => abrirModal("nova")}>
-          <Plus size={16} />
-          Nova etapa
-        </button>
+        {!projetoFinalizado && (
+          <button type="button" className="advisor-botao advisor-botao--primario" onClick={() => abrirModal("nova")}>
+            <Plus size={16} />
+            Nova etapa
+          </button>
+        )}
       </div>
 
       {projetoAtivo && (
@@ -293,7 +316,8 @@ export default function AdvisorProgressPage() {
               ? `${concluidas} de ${listaEtapas.length} etapas concluídas`
               : "Nenhuma etapa cadastrada ainda."}
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {!projetoFinalizado && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {projetoAtivo.status === "ABERTO" && (
               <button type="button" className="advisor-botao advisor-botao--sucesso" onClick={() => setModal({ tipo: "iniciar" })}>
                 <Play size={16} />
@@ -306,7 +330,11 @@ export default function AdvisorProgressPage() {
                 Finalizar projeto
               </button>
             )}
-          </div>
+            </div>
+          )}
+          {projetoFinalizado && (
+            <div className="advisor-linha-card__meta">Projeto finalizado: progresso disponível apenas para consulta.</div>
+          )}
         </div>
       )}
 
@@ -368,7 +396,7 @@ export default function AdvisorProgressPage() {
                   )}
                 </div>
                 <div className="advisor-etapa__acoes">
-                  {!concluida && (
+                  {!concluida && !projetoFinalizado && (
                     <button
                       type="button"
                       className="advisor-botao advisor-botao--sucesso"
@@ -379,13 +407,13 @@ export default function AdvisorProgressPage() {
                       Concluir
                     </button>
                   )}
-                  {!concluida && (
+                  {!concluida && !projetoFinalizado && (
                     <button type="button" className="advisor-botao advisor-botao--secundario" onClick={() => abrirModal("editar", etapa)}>
                       <Pencil size={15} />
                       Editar
                     </button>
                   )}
-                  {!concluida && (
+                  {!concluida && !projetoFinalizado && (
                     <button type="button" className="advisor-botao advisor-botao--perigo" onClick={() => setModal({ tipo: "excluir", etapa })}>
                       <Trash2 size={15} />
                       Excluir

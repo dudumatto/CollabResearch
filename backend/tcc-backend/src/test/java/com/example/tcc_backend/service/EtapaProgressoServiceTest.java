@@ -239,4 +239,42 @@ class EtapaProgressoServiceTest {
         assertThat(response.getConcluidaPorId()).isEqualTo(1);
         verify(etapaProgressoRepository).save(any());
     }
+
+    @Test
+    void criarEtapaDeveBloquearProjetoFinalizado() {
+        Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(1, orientadorUsuario));
+        projeto.setStatus(StatusProjeto.FINALIZADO);
+
+        EtapaRequest request = new EtapaRequest();
+        request.setTitulo("Etapa bloqueada");
+
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> etapaProgressoService.criarEtapa(10, request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> {
+                    ResponseStatusException response = (ResponseStatusException) ex;
+                    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+                    assertThat(response.getReason()).isEqualTo("Projeto finalizado nao permite alteracoes de progresso");
+                });
+    }
+
+    @Test
+    void concluirEtapaDeveBloquearProjetoFinalizado() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.FINALIZADO);
+
+        AdvanceProgressStepRequest request = new AdvanceProgressStepRequest();
+        request.setStatus("done");
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> etapaProgressoService.concluirEtapa(10, 1, request))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+    }
 }

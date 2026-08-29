@@ -837,18 +837,34 @@
 
 @media (max-width: 767px) {
   .pagina-chat {
-    height: calc(100dvh - 7rem);
+    height: auto;
     min-height: 0;
     flex-direction: column;
-    border-radius: 16px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+    background: transparent;
   }
 
   .pagina-chat__lista-conversas,
   .pagina-chat__area-conversa {
     width: 100%;
-    height: 100%;
-    border-right: none;
+    min-height: 0;
+    border: 0;
     display: none;
+  }
+
+  .pagina-chat__lista-conversas {
+    height: auto;
+    max-height: none;
+    border-radius: 0;
+    background: var(--cor-superficie);
+  }
+
+  .pagina-chat__area-conversa {
+    height: calc(100dvh - 7rem);
+    background: var(--cor-superficie);
   }
 
   .pagina-chat__lista-conversas--visivel,
@@ -856,8 +872,13 @@
     display: flex;
   }
 
+  .pagina-chat__lista-conversas--visivel {
+    flex: 0 0 auto;
+  }
+
   .pagina-chat__cabecalho-lista {
     padding: 12px;
+    border-bottom: 0;
   }
 
   .pagina-chat__titulo-lista {
@@ -872,6 +893,15 @@
   .conversa-item {
     padding: 12px;
     gap: 8px;
+  }
+
+  .pagina-chat__rolagem-conversas {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .pagina-chat__rolagem-conversas .conversa-item:last-child {
+    border-bottom: 0;
   }
 
   .conversa-item__avatar {

@@ -23,10 +23,10 @@ function situacaoPillClass(situacao) {
 }
 
 function statusEtapaClass(status) {
-  if (status === "DONE") return "advisor-etiqueta--vermelho";
+  if (status === "DONE") return "advisor-etiqueta--verde";
   if (status === "ACTIVE") return "advisor-etiqueta--amarelo";
   if (status === "REJECTED") return "advisor-etiqueta--vermelho";
-  return "advisor-etiqueta--verde";
+  return "advisor-etiqueta--vermelho";
 }
 
 function iniciais(nome = "") {
