@@ -83,6 +83,10 @@ export default function ProjectsPage() {
   const areas = ["Todas", ...(Array.isArray(areaNames) ? areaNames : [])];
   const cursos = ["Todos", ...(Array.isArray(courseNames) ? courseNames : [])];
   const statuses = ["Todos", "ABERTO", "EM_ANDAMENTO", "FINALIZADO"];
+  const activeFiltersCount =
+    (selectedArea !== "Todas" ? 1 : 0) +
+    (selectedCourse ? 1 : 0) +
+    (selectedStatus !== "Todos" ? 1 : 0);
 
   const filtered = useMemo(
     () =>
@@ -142,9 +146,9 @@ export default function ProjectsPage() {
           >
             <SlidersHorizontal size={16} />
             Filtros
-            {(selectedArea !== "Todas" || selectedStatus !== "Todos") && (
+            {activeFiltersCount > 0 && (
               <span className="pagina-projetos__contador-filtros">
-                {(selectedArea !== "Todas" ? 1 : 0) + (selectedStatus !== "Todos" ? 1 : 0)}
+                {activeFiltersCount}
               </span>
             )}
           </motion.button>
@@ -229,10 +233,11 @@ export default function ProjectsPage() {
               </div>
             </div>
           </div>
-          {(selectedArea !== "Todas" || selectedStatus !== "Todos") && (
+          {activeFiltersCount > 0 && (
             <button
               onClick={() => {
                 setSelectedArea("Todas");
+                setSelectedCourse("");
                 setSelectedStatus("Todos");
               }}
               className="pagina-projetos__botao-limpar-filtros"
