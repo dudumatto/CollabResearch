@@ -3,6 +3,7 @@ package com.example.tcc_backend.functional;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Map;
 
@@ -185,5 +186,79 @@ class ProjetoFunctionalTest extends FunctionalTestSupport {
         );
         assertThat(colaboradores.isArray()).isTrue();
         assertThat(colaboradores.size()).isGreaterThanOrEqualTo(1);
+    }
+    @Test
+    void orientadorSolicitadoNaoPodeEditarOuExcluirProjetoAntesDeAceitar() throws Exception {
+        TestUser aluno = registerAluno("proj-pending-owner");
+        TestUser orientador = registerOrientador("proj-pending-advisor");
+        Integer areaId = createArea("Seguranca", createCurso("CC"));
+
+        Integer projetoId = createProjetoAsAluno(aluno.token(), orientador.userId(), "Projeto Pendente", areaId);
+
+        mockMvc.perform(put("/api/projetos/" + projetoId)
+                        .header("Authorization", authHeader(orientador.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(projectUpdateBody("Tentativa indevida", areaId)))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(delete("/api/projetos/" + projetoId)
+                        .header("Authorization", authHeader(orientador.token())))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/aceitar-orientacao")
+                        .header("Authorization", authHeader(orientador.token())))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId)
+                        .header("Authorization", authHeader(orientador.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(projectUpdateBody("Agora pode editar", areaId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.titulo").value("Agora pode editar"));
+    }
+
+    @Test
+    void alunoAprovadoNaoPodeEditarProjetoQueNaoCriou() throws Exception {
+        TestUser orientador = registerOrientador("proj-approved-member-advisor");
+        TestUser aluno = registerAluno("proj-approved-member-student");
+        Integer areaId = createArea("Banco de Dados", createCurso("ES"));
+        Integer projetoId = createProjetoAsOrientador(orientador.token(), "Projeto do Orientador", areaId);
+        Integer inscricaoId = inscreverAluno(aluno.token(), projetoId);
+        aprovarInscricao(orientador.token(), inscricaoId);
+
+        mockMvc.perform(put("/api/projetos/" + projetoId)
+                        .header("Authorization", authHeader(aluno.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(projectUpdateBody("Aluno nao deve editar", areaId)))
+                .andExpect(status().isForbidden());
+    }
+
+    private Integer createProjetoAsAluno(String token, Integer orientadorId, String titulo, Integer areaId) throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/projetos")
+                        .header("Authorization", authHeader(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "titulo", titulo,
+                                "descricao", "Descricao do projeto",
+                                "requisitos", "Java",
+                                "vagas", 2,
+                                "areaId", areaId,
+                                "orientadorId", orientadorId
+                        ))))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
+        return json.get("id").asInt();
+    }
+
+    private String projectUpdateBody(String titulo, Integer areaId) throws Exception {
+        return objectMapper.writeValueAsString(Map.of(
+                "titulo", titulo,
+                "descricao", "Nova descricao",
+                "requisitos", "Python",
+                "vagas", 3,
+                "areaId", areaId
+        ));
     }
 }

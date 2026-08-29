@@ -293,13 +293,11 @@ public class ProjetoService {
         Projeto projeto = projetoRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
         ProjectAccessPolicy.Relationship relacao = projectAccessPolicy.relationship(projeto, usuario);
-        boolean orientador = relacao == ProjectAccessPolicy.Relationship.RESPONSIBLE_ADVISOR;
-        boolean alunoVinculado = relacao == ProjectAccessPolicy.Relationship.STUDENT_CREATOR
-                || relacao == ProjectAccessPolicy.Relationship.APPROVED_MEMBER;
-        if (!orientador && !alunoVinculado) {
+        boolean orientador = canResponsibleAdvisorManage(projeto, relacao);
+        boolean alunoCriador = relacao == ProjectAccessPolicy.Relationship.STUDENT_CREATOR;
+        if (!orientador && !alunoCriador) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para editar este projeto");
-        }
-        AreaPesquisa area = areaPesquisaRepository.findById(dto.getAreaId())
+        }        AreaPesquisa area = areaPesquisaRepository.findById(dto.getAreaId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Area nao encontrada"));
         projeto.setTitulo(dto.getTitulo());
         projeto.setDescricao(dto.getDescricao());
@@ -353,12 +351,17 @@ public class ProjetoService {
         ProjectAccessPolicy.Relationship relacao = projectAccessPolicy.relationship(projeto, usuario);
         boolean retiradaPropria = relacao == ProjectAccessPolicy.Relationship.STUDENT_CREATOR
                 && projeto.getStatus() == StatusProjeto.PENDENTE_ORIENTADOR;
-        if (relacao != ProjectAccessPolicy.Relationship.RESPONSIBLE_ADVISOR && !retiradaPropria) {
+        if (!canResponsibleAdvisorManage(projeto, relacao) && !retiradaPropria) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para excluir este projeto");
         }
         projetoRepository.delete(projeto);
     }
 
+    private boolean canResponsibleAdvisorManage(Projeto projeto, ProjectAccessPolicy.Relationship relacao) {
+        return relacao == ProjectAccessPolicy.Relationship.RESPONSIBLE_ADVISOR
+                && projeto.getStatus() != StatusProjeto.PENDENTE_ORIENTADOR
+                && projeto.getStatus() != StatusProjeto.REJEITADO_ORIENTADOR;
+    }
     @Transactional
     public Inscricao recrutar(Integer projetoId, Integer usuarioId) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
