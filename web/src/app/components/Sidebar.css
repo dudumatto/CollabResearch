@@ -6,6 +6,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
 }
 
 /* ---- Barra lateral (desktop) ---- */
@@ -69,6 +70,7 @@
 
 /* ---- Cabeçalho / Logo ---- */
 .barra-lateral__cabecalho {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: var(--espaco-3);
@@ -124,11 +126,14 @@
 /* ---- Navegação ---- */
 .barra-lateral__navegacao {
   flex: 1;
+  min-height: 0;
   padding: var(--espaco-4) var(--espaco-3);
   display: flex;
   flex-direction: column;
   gap: var(--espaco-1);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 
@@ -308,6 +313,7 @@
 
 /* ---- Rodapé ---- */
 .barra-lateral__rodape {
+  flex: 0 0 auto;
   padding: var(--espaco-3);
   border-top: 1px solid var(--cor-separador-suave);
   display: flex;
@@ -351,14 +357,41 @@
   position: fixed;
   top: 0;
   left: 0;
-  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   background-color: var(--cor-superficie);
   border-right: 1px solid var(--cor-separador-suave);
   z-index: 50;
-  width: 16rem;
+  width: min(16rem, calc(100vw - 2.5rem));
+  max-width: 100vw;
   display: flex;
   flex-direction: column;
   box-shadow: var(--sombra-extra);
+  overflow: hidden;
+}
+
+@media (max-height: 640px) {
+  .barra-lateral-mobile .barra-lateral__cabecalho {
+    min-height: 3.5rem;
+    padding: var(--espaco-3) var(--espaco-4);
+  }
+
+  .barra-lateral-mobile .barra-lateral__navegacao {
+    padding: var(--espaco-3);
+  }
+
+  .barra-lateral-mobile .barra-lateral__setor {
+    padding: 0.3rem 0;
+  }
+
+  .barra-lateral-mobile .barra-lateral__item-nav,
+  .barra-lateral-mobile .barra-lateral__item-configuracoes {
+    padding-block: 0.5rem;
+  }
+
+  .barra-lateral-mobile .barra-lateral__rodape {
+    padding: var(--espaco-2) var(--espaco-3);
+  }
 }
 
 @media (min-width: 1024px) {
