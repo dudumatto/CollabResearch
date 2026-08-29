@@ -123,6 +123,10 @@
   transform: translateX(0);
 }
 
+.dark .barra-lateral__marca--completa {
+  filter: brightness(0) invert(1);
+}
+
 /* ---- Navegação ---- */
 .barra-lateral__navegacao {
   flex: 1;
