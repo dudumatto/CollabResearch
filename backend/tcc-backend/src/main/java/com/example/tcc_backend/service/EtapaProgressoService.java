@@ -108,7 +108,9 @@ public class EtapaProgressoService {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
         projectAccessPolicy.requireCanViewTeam(projeto, usuarioLogado);
-        return etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId).stream()
+        List<EtapaProgresso> etapas = carregarOuCriarEtapas(projeto);
+        sincronizarEtapasAtivas(etapas);
+        return etapas.stream()
                 .map(EtapaResponse::fromEntity)
                 .toList();
     }

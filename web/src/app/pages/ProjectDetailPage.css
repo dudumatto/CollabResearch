@@ -276,8 +276,9 @@
 }
 
 .detalhe-card__badge-status--andamento {
-  background-color: var(--cor-primaria-clara);
-  color: var(--cor-primaria-texto);
+  background-color: var(--cor-atencao-clara);
+  color: var(--cor-atencao-escura);
+  border-color: var(--cor-atencao-leve);
 }
 
 .detalhe-card__badge-status--pendente {

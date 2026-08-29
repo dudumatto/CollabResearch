@@ -36,6 +36,10 @@ function getDisplayDate(item) {
   return parseDate(item.prazo) ?? parseDate(item.criadaEm);
 }
 
+function getDueDate(item) {
+  return parseDate(item.prazo);
+}
+
 function formatCalendarDate(item) {
   if (parseDate(item.prazo)) return formatLocalDate(item.prazo);
   const criadaEm = parseDate(item.criadaEm);
@@ -59,10 +63,10 @@ function buildMonthDays(monthDate) {
 }
 
 function statusClass(status) {
-  if (status === "DONE") return "advisor-etiqueta--verde";
-  if (status === "ACTIVE") return "advisor-etiqueta--roxo";
+  if (status === "DONE") return "advisor-etiqueta--vermelho";
+  if (status === "ACTIVE") return "advisor-etiqueta--amarelo";
   if (status === "REJECTED") return "advisor-etiqueta--vermelho";
-  return "advisor-etiqueta--cinza";
+  return "advisor-etiqueta--verde";
 }
 
 function DeadlineItem({ item, compact = false }) {
@@ -129,12 +133,12 @@ export default function StudentDeadlinesPage() {
     [data],
   );
 
-  const scheduled = deadlines.filter((item) => getDisplayDate(item));
-  const withoutDate = deadlines.filter((item) => !parseDate(item.prazo));
+  const scheduled = deadlines.filter((item) => getDueDate(item));
+  const withoutDate = deadlines.filter((item) => !getDueDate(item));
   const byDay = useMemo(() => {
     const map = new Map();
     scheduled.forEach((item) => {
-      const key = toDateKey(getDisplayDate(item));
+      const key = toDateKey(getDueDate(item));
       map.set(key, [...(map.get(key) ?? []), item]);
     });
     return map;
@@ -143,7 +147,7 @@ export default function StudentDeadlinesPage() {
   const todayKey = toDateKey(new Date());
   const monthDays = useMemo(() => buildMonthDays(visibleMonth), [visibleMonth]);
   const monthItems = scheduled.filter((item) => {
-    const date = getDisplayDate(item);
+    const date = getDueDate(item);
     return date && date.getFullYear() === visibleMonth.getFullYear() && date.getMonth() === visibleMonth.getMonth();
   });
 

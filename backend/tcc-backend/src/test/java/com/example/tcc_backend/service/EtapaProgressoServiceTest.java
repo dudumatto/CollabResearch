@@ -70,6 +70,26 @@ class EtapaProgressoServiceTest {
     }
 
     @Test
+    void listarEtapasDeveCriarEtapasPadraoQuandoNaoExistirem() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));
+        EtapaProgresso etapaPadrao = TestDataFactory.etapaProgresso(1, projeto, null, 1, 10, EtapaProgressoStatus.ACTIVE);
+        etapaPadrao.setTitulo("Proposta aprovada");
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(10))
+                .thenReturn(List.of(), List.of(etapaPadrao));
+
+        var etapas = etapaProgressoService.listarEtapas(10);
+
+        assertThat(etapas).hasSize(1);
+        assertThat(etapas.get(0).getTitulo()).isEqualTo("Proposta aprovada");
+        verify(projectAccessPolicy).requireCanViewTeam(projeto, alunoUsuario);
+        verify(etapaProgressoRepository).saveAll(any());
+    }
+
+    @Test
     void avancarEtapaDeveNegarAlunoEmEtapaDoOrientador() {
         Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
         Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));

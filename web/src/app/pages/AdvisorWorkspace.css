@@ -750,6 +750,18 @@
   flex-shrink: 0;
 }
 
+.advisor-fila-item__status--verde {
+  color: var(--cor-sucesso-escura);
+}
+
+.advisor-fila-item__status--amarelo {
+  color: var(--cor-atencao-escura);
+}
+
+.advisor-fila-item__status--vermelho {
+  color: var(--cor-erro-escura);
+}
+
 .advisor-card__vazio {
   display: flex;
   align-items: center;
@@ -2047,6 +2059,11 @@
   .calendario-card--lateral {
     height: auto;
     max-height: 22rem;
+  }
+
+  .calendario-card--lateral .calendario-lista--rolagem {
+    flex: 0 1 auto;
+    max-height: 16rem;
   }
 }
 

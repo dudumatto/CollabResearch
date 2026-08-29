@@ -496,6 +496,9 @@
 .inscricao-item__status--aprovado  { background-color: var(--cor-sucesso-clara);  color: var(--cor-sucesso-escura); }
 .inscricao-item__status--pendente  { background-color: var(--cor-atencao-clara);  color: var(--cor-atencao-escura); }
 .inscricao-item__status--rejeitado { background-color: var(--cor-erro-clara);     color: var(--cor-erro-escura); }
+.inscricao-item__status--aberto    { background-color: var(--cor-sucesso-clara);  color: var(--cor-sucesso-escura); }
+.inscricao-item__status--andamento { background-color: var(--cor-atencao-clara);  color: var(--cor-atencao-escura); }
+.inscricao-item__status--finalizado{ background-color: var(--cor-erro-clara);     color: var(--cor-erro-escura); }
 
 /* ================================================================
    Gráfico de atividade

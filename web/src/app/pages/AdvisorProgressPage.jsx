@@ -20,14 +20,21 @@ const RESPONSAVEIS = [
 ];
 
 const ETAPA_PILL = {
-  DONE: "advisor-etiqueta--verde",
-  ACTIVE: "advisor-etiqueta--roxo",
+  DONE: "advisor-etiqueta--vermelho",
+  ACTIVE: "advisor-etiqueta--amarelo",
   REJECTED: "advisor-etiqueta--vermelho",
-  PENDING: "advisor-etiqueta--cinza",
+  PENDING: "advisor-etiqueta--verde",
 };
 
 function etapaPillClass(status) {
   return ETAPA_PILL[status] ?? "advisor-etiqueta--cinza";
+}
+
+function projetoPillClass(status) {
+  if (status === "FINALIZADO") return "advisor-etiqueta--vermelho";
+  if (status === "EM_ANDAMENTO") return "advisor-etiqueta--amarelo";
+  if (status === "ABERTO") return "advisor-etiqueta--verde";
+  return "advisor-etiqueta--cinza";
 }
 
 function camposVazios() {
@@ -270,7 +277,7 @@ export default function AdvisorProgressPage() {
               <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>
                 {projetoAtivo.title}
               </p>
-              <span className={`advisor-etiqueta ${projetoAtivo.status === "ABERTO" ? "advisor-etiqueta--verde" : "advisor-etiqueta--roxo"}`}>
+              <span className={`advisor-etiqueta ${projetoPillClass(projetoAtivo.status)}`}>
                 {formatProjectStatus(projetoAtivo.status)}
               </span>
             </div>

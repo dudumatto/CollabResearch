@@ -117,6 +117,12 @@ const statusClassMap = {
   REJEITADO: "inscricao-item__status--rejeitado",
 };
 
+const projectStatusClassMap = {
+  ABERTO: "inscricao-item__status--aberto",
+  EM_ANDAMENTO: "inscricao-item__status--andamento",
+  FINALIZADO: "inscricao-item__status--finalizado",
+};
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -292,7 +298,7 @@ export default function DashboardPage() {
                         <p className="inscricao-item__titulo">{project.title}</p>
                         <p className="inscricao-item__orientador">{project.advisor?.name ?? "Sem orientador"}</p>
                       </div>
-                      <span className="inscricao-item__status inscricao-item__status--pendente">
+                      <span className={`inscricao-item__status ${projectStatusClassMap[project.status] ?? "inscricao-item__status--pendente"}`}>
                         {formatProjectStatus(project.status)}
                       </span>
                     </div>

@@ -15,7 +15,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { mapOrientadorDashboard } from "../utils/adapters";
-import { formatProjectStatus, formatApplicationStatus, formatEntregaStatus } from "../utils/formatters";
+import { formatProjectStatus, formatApplicationStatus, formatEntregaStatus, formatEtapaStatus } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
 import { WelcomeBanner } from "../components/WelcomeBanner";
@@ -66,8 +66,24 @@ function statusLabelFor(status, kind) {
   if (kind === "project") return formatProjectStatus(status);
   if (kind === "application") return formatApplicationStatus(status);
   if (kind === "delivery") return formatEntregaStatus(status);
-  if (kind === "etapa") return formatProjectStatus(status);
+  if (kind === "etapa") return formatEtapaStatus(status);
   return status ?? "";
+}
+
+function statusClassFor(status, kind) {
+  if (kind === "project") {
+    if (status === "ABERTO") return "advisor-fila-item__status--verde";
+    if (status === "EM_ANDAMENTO") return "advisor-fila-item__status--amarelo";
+    if (status === "FINALIZADO") return "advisor-fila-item__status--vermelho";
+  }
+
+  if (kind === "etapa") {
+    if (status === "PENDING") return "advisor-fila-item__status--verde";
+    if (status === "ACTIVE") return "advisor-fila-item__status--amarelo";
+    if (status === "DONE" || status === "REJECTED") return "advisor-fila-item__status--vermelho";
+  }
+
+  return "";
 }
 
 function buildMetricCards(metricas) {
@@ -172,7 +188,9 @@ function QueueCard({ title, icon: Icon, items, kind, onNavigate }) {
                 {item.subtitulo && <p className="advisor-fila-item__subtitulo">{item.subtitulo}</p>}
               </div>
               {item.status && (
-                <span className="advisor-fila-item__status">{statusLabelFor(item.status, kind)}</span>
+                <span className={`advisor-fila-item__status ${statusClassFor(item.status, kind)}`}>
+                  {statusLabelFor(item.status, kind)}
+                </span>
               )}
             </motion.button>
           ))

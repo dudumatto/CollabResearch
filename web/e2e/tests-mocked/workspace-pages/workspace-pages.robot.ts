@@ -26,6 +26,8 @@ export async function runDeadlinesFlow(page: Page) {
     await expect(page.getByRole("heading", { name: "Prazos das etapas", exact: true })).toBeVisible();
     await expect(page.getByText("Este mês", { exact: true })).toBeVisible();
     await expect(page.locator(".calendario-lista").getByText("Entrega parcial com titulo muito longo")).toBeVisible();
+    await expect(page.locator(".calendario-card--lateral").filter({ hasText: "Este mês" }).getByText("Revisao final")).toBeVisible();
+    await expect(page.locator(".calendario-card--alerta").getByText("Etapa sem data sem prazo")).toBeVisible();
     await expect(page.locator(".calendario-evento__rotulo").first()).toHaveCSS("text-overflow", "clip");
     await expect
       .poll(async () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth))

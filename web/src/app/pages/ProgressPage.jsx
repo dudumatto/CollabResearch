@@ -21,6 +21,13 @@ const Sk = ({ w = "100%", h = 14, r = "0.5rem", style }) => (
   <div className="skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />
 );
 
+function projectStatusClass(status) {
+  if (status === "FINALIZADO") return "progress-page__status-chip--finalizado";
+  if (status === "EM_ANDAMENTO") return "progress-page__status-chip--andamento";
+  if (status === "ABERTO") return "progress-page__status-chip--aberto";
+  return "";
+}
+
 function ProgressSkeleton() {
   return (
     <div className="progress-page">
@@ -324,7 +331,9 @@ export default function ProgressPage() {
               <h2>{selectedProject.title}</h2>
               <p>Orientador: {selectedProject.advisor?.name ?? "Sem orientador"}</p>
             </div>
-            <span className="progress-page__status-chip">{formatProjectStatus(selectedProject.status)}</span>
+            <span className={`progress-page__status-chip ${projectStatusClass(selectedProject.status)}`}>
+              {formatProjectStatus(selectedProject.status)}
+            </span>
           </div>
 
           <div className="progress-page__stats-grid">

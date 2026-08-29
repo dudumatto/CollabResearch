@@ -19,9 +19,9 @@ const SITUACOES = [
 ];
 
 function situacaoPillClass(situacao) {
-  if (situacao === "EM_ANDAMENTO") return "advisor-etiqueta--roxo";
+  if (situacao === "EM_ANDAMENTO") return "advisor-etiqueta--amarelo";
   if (situacao === "ABERTO") return "advisor-etiqueta--verde";
-  if (situacao === "FINALIZADO") return "advisor-etiqueta--cinza";
+  if (situacao === "FINALIZADO") return "advisor-etiqueta--vermelho";
   return "advisor-etiqueta--vermelho";
 }
 

@@ -133,10 +133,10 @@
 
 .pagina-progresso__badge-status {
   padding: var(--espaco-1) var(--espaco-3);
-  background-color: var(--cor-primaria-clara);
-  color: var(--cor-primaria-texto);
+  background-color: var(--cor-atencao-clara);
+  color: var(--cor-atencao-escura);
   border-radius: var(--raio-grande);
-  border: 1px solid var(--cor-primaria-borda);
+  border: 1px solid var(--cor-atencao-leve);
   font-size: 0.75rem;
   font-weight: var(--peso-semi);
   flex-shrink: 0;
@@ -289,9 +289,9 @@
   height: 100%;
 }
 
-.marco-linha-do-tempo__conector--concluido { background-color: var(--cor-sucesso-media); }
-.marco-linha-do-tempo__conector--andamento { background-color: #b8d3a7; }
-.marco-linha-do-tempo__conector--pendente  { background-color: var(--cor-borda-clara); }
+.marco-linha-do-tempo__conector--concluido { background-color: var(--cor-erro-media); }
+.marco-linha-do-tempo__conector--andamento { background-color: var(--cor-atencao); }
+.marco-linha-do-tempo__conector--pendente  { background-color: var(--cor-sucesso-media); }
 
 .marco-linha-do-tempo__icone {
   width: 2.5rem;
@@ -306,23 +306,23 @@
 }
 
 .marco-linha-do-tempo__icone--concluido {
+  background-color: var(--cor-erro-clara);
+  border-color: var(--cor-erro-borda);
+}
+
+.marco-linha-do-tempo__icone--andamento {
+  background-color: var(--cor-atencao-clara);
+  border-color: var(--cor-atencao-leve);
+}
+
+.marco-linha-do-tempo__icone--pendente {
   background-color: var(--cor-sucesso-clara);
   border-color: var(--cor-sucesso-borda);
 }
 
-.marco-linha-do-tempo__icone--andamento {
-  background-color: var(--cor-primaria-clara);
-  border-color: var(--cor-primaria-borda);
-}
-
-.marco-linha-do-tempo__icone--pendente {
-  background-color: var(--cor-fundo-leve);
-  border-color: var(--cor-borda-clara);
-}
-
-.marco-linha-do-tempo__icone-svg--concluido { color: var(--cor-sucesso); }
-.marco-linha-do-tempo__icone-svg--andamento { color: var(--cor-primaria); }
-.marco-linha-do-tempo__icone-svg--pendente  { color: var(--cor-texto-mudo); }
+.marco-linha-do-tempo__icone-svg--concluido { color: var(--cor-erro); }
+.marco-linha-do-tempo__icone-svg--andamento { color: var(--cor-atencao); }
+.marco-linha-do-tempo__icone-svg--pendente  { color: var(--cor-sucesso); }
 
 .marco-linha-do-tempo__conteudo {
   flex: 1;
@@ -360,13 +360,13 @@
 }
 
 .marco-linha-do-tempo__etiqueta--concluido {
-  background-color: var(--cor-sucesso-clara);
-  color: var(--cor-sucesso);
+  background-color: var(--cor-erro-clara);
+  color: var(--cor-erro);
 }
 
 .marco-linha-do-tempo__etiqueta--andamento {
-  background-color: var(--cor-primaria-clara);
-  color: var(--cor-primaria);
+  background-color: var(--cor-atencao-clara);
+  color: var(--cor-atencao);
 }
 
 .marco-linha-do-tempo__descricao {
@@ -888,10 +888,25 @@
   gap: 0.35rem;
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
-  background: var(--progress-chip-bg);
-  color: var(--progress-text);
+  background: var(--cor-atencao-clara);
+  color: var(--cor-atencao-escura);
   font-size: 0.8rem;
   font-weight: 700;
+}
+
+.progress-page__status-chip--aberto {
+  background: var(--cor-sucesso-clara);
+  color: var(--cor-sucesso-escura);
+}
+
+.progress-page__status-chip--andamento {
+  background: var(--cor-atencao-clara);
+  color: var(--cor-atencao-escura);
+}
+
+.progress-page__status-chip--finalizado {
+  background: var(--cor-erro-clara);
+  color: var(--cor-erro-escura);
 }
 
 .progress-page__stats-grid {
@@ -1077,14 +1092,19 @@
 }
 
 .step-card--done {
-  border-color: rgba(31, 122, 90, 0.26);
-  background: rgba(31, 122, 90, 0.07);
+  border-color: var(--cor-erro-borda);
+  background: var(--cor-erro-clara);
 }
 
 .step-card--active {
-  border-color: rgba(126, 160, 106, 0.34);
-  background: rgba(126, 160, 106, 0.1);
+  border-color: var(--cor-atencao-leve);
+  background: var(--cor-atencao-clara);
   box-shadow: none;
+}
+
+.step-card--pending {
+  border-color: var(--cor-sucesso-borda);
+  background: var(--cor-sucesso-clara);
 }
 
 .step-card--highlighted {
@@ -1105,13 +1125,18 @@
 }
 
 .step-card--done .step-card__marker {
-  background: var(--progress-success-soft);
-  color: var(--progress-success-text);
+  background: var(--cor-erro-leve);
+  color: var(--cor-erro);
 }
 
 .step-card--active .step-card__marker {
-  background: var(--progress-accent-soft);
-  color: var(--progress-accent);
+  background: var(--cor-atencao-leve);
+  color: var(--cor-atencao);
+}
+
+.step-card--pending .step-card__marker {
+  background: var(--cor-sucesso-leve);
+  color: var(--cor-sucesso);
 }
 
 .step-card__drag-handle {
@@ -1195,13 +1220,18 @@
 }
 
 .step-card--done .step-card__status {
-  background: var(--progress-success-soft);
-  color: var(--progress-success-strong);
+  background: var(--cor-erro-leve);
+  color: var(--cor-erro-escura);
 }
 
 .step-card--active .step-card__status {
-  background: var(--progress-accent-soft);
-  color: var(--progress-accent);
+  background: var(--cor-atencao-leve);
+  color: var(--cor-atencao-escura);
+}
+
+.step-card--pending .step-card__status {
+  background: var(--cor-sucesso-leve);
+  color: var(--cor-sucesso-escura);
 }
 
 .step-card__action {

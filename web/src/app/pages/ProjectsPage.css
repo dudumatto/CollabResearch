@@ -489,9 +489,9 @@
 }
 
 .projeto-card__status--andamento {
-  background-color: var(--cor-primaria-clara);
-  color: var(--cor-primaria);
-  border-color: var(--cor-primaria-borda);
+  background-color: var(--cor-atencao-clara);
+  color: var(--cor-atencao-escura);
+  border-color: var(--cor-atencao-leve);
 }
 
 .projeto-card__status--encerrado {

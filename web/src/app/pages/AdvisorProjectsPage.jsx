@@ -32,8 +32,8 @@ const ABAS = [
 const STATUS_PILL = {
   PENDENTE_ORIENTADOR: "advisor-etiqueta--amarelo",
   ABERTO: "advisor-etiqueta--verde",
-  EM_ANDAMENTO: "advisor-etiqueta--roxo",
-  FINALIZADO: "advisor-etiqueta--cinza",
+  EM_ANDAMENTO: "advisor-etiqueta--amarelo",
+  FINALIZADO: "advisor-etiqueta--vermelho",
   REJEITADO_ORIENTADOR: "advisor-etiqueta--vermelho",
 };
 
