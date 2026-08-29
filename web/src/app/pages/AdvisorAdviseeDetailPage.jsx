@@ -74,7 +74,7 @@ export default function AdvisorAdviseeDetailPage() {
   const navigate = useNavigate();
   const [projectId, setProjectId] = useState(null);
 
-  const { data, loading, error, reload } = useAsyncData(
+  const { data, loading, error } = useAsyncData(
     async () => {
       const raw = await advisorService.detalheOrientando(id, projectId ?? undefined);
       return mapOrientandoDetalhe(raw);
@@ -261,10 +261,6 @@ export default function AdvisorAdviseeDetailPage() {
           </div>
         </div>
       </div>
-
-      <button type="button" className="advisor-botao advisor-botao--secundario" onClick={() => reload()}>
-        Atualizar dados
-      </button>
     </motion.div>
   );
 }
