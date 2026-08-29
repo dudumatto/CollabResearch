@@ -966,6 +966,36 @@
   box-shadow: 0 0 0 3px var(--cor-primaria-clara);
 }
 
+
+.advisor-toolbar--avaliacoes {
+  align-items: stretch;
+}
+
+.advisor-busca--avaliacoes {
+  flex: 1 1 22rem;
+  max-width: 28rem;
+}
+
+.advisor-busca--avaliacoes .app-combobox {
+  min-height: 3rem;
+}
+
+@media (max-width: 639px) {
+  .advisor-toolbar--avaliacoes {
+    gap: var(--espaco-3);
+  }
+
+  .advisor-busca--avaliacoes {
+    flex-basis: auto;
+    max-width: none;
+    width: 100%;
+  }
+
+  .advisor-busca--avaliacoes .app-combobox {
+    min-height: 3.25rem;
+    padding-right: 1rem;
+  }
+}
 /* ---- Cards de lista (projetos, orientandos, inscrições) ---- */
 .advisor-lista {
   display: flex;
@@ -2426,4 +2456,3 @@
 @keyframes girar-perfil {
   to { transform: rotate(360deg); }
 }
-

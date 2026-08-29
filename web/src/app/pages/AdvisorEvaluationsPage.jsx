@@ -238,8 +238,8 @@ export default function AdvisorEvaluationsPage() {
         </p>
       </div>
 
-      <div className="advisor-toolbar">
-        <div className="advisor-busca" style={{ maxWidth: 360 }}>
+      <div className="advisor-toolbar advisor-toolbar--avaliacoes">
+        <div className="advisor-busca advisor-busca--avaliacoes">
           <FolderOpen size={16} className="advisor-busca__icone" />
           <AppCombobox
             ariaLabel="Selecionar projeto"
