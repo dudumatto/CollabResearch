@@ -27,15 +27,18 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final CronSecretAuthFilter cronSecretAuthFilter;
+    private final RateLimitFilter rateLimitFilter;
     private final ObjectMapper objectMapper;
     private final boolean swaggerEnabled;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
                           CronSecretAuthFilter cronSecretAuthFilter,
+                          RateLimitFilter rateLimitFilter,
                           ObjectMapper objectMapper,
                           @Value("${SWAGGER_ENABLED:false}") boolean swaggerEnabled) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.cronSecretAuthFilter = cronSecretAuthFilter;
+        this.rateLimitFilter = rateLimitFilter;
         this.objectMapper = objectMapper;
         this.swaggerEnabled = swaggerEnabled;
     }
@@ -79,7 +82,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .addFilterBefore(cronSecretAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthFilter, CronSecretAuthFilter.class);
+                .addFilterBefore(jwtAuthFilter, CronSecretAuthFilter.class)
+                .addFilterAfter(rateLimitFilter, JwtAuthFilter.class);
 
         return http.build();
     }
