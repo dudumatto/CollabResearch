@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "framer-motion";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { areaService } from "../services/areaService";
 import { projectService } from "../services/projectService";
 import { StatusView } from "../components/StatusView";
@@ -30,7 +30,6 @@ export default function EditProjectPage() {
           descricao: raw.descricao ?? "",
           requisitos: raw.requisitos ?? "",
           tecnologias: raw.tecnologias ?? "",
-          fotoProjetoUrl: raw.fotoProjetoUrl ?? "",
           areaId: String(raw.areaId ?? ""),
           vagas: String(raw.vagas ?? ""),
           dataInicio: raw.dataInicio ?? "",
@@ -73,7 +72,6 @@ export default function EditProjectPage() {
         descricao: form.descricao.trim() || undefined,
         requisitos: form.requisitos.trim() || undefined,
         tecnologias: form.tecnologias.trim() || undefined,
-        fotoProjetoUrl: form.fotoProjetoUrl.trim() || undefined,
         areaId: Number(form.areaId),
         vagas: Number(form.vagas),
         dataInicio: form.dataInicio || undefined,
@@ -161,13 +159,6 @@ export default function EditProjectPage() {
               className="formulario-projeto__input" disabled={isDisabled} />
           </div>
 
-          <div className="formulario-projeto__campo">
-            <label htmlFor="fotoProjetoUrl" className="formulario-projeto__rotulo">URL da foto do projeto</label>
-            <input id="fotoProjetoUrl" name="fotoProjetoUrl" type="url" value={form.fotoProjetoUrl} onChange={handleChange}
-              placeholder="https://..."
-              className="formulario-projeto__input" disabled={isDisabled} />
-          </div>
-
           <div className="formulario-projeto__grade-2">
             <div className="formulario-projeto__campo">
               <label htmlFor="areaId" className="formulario-projeto__rotulo">
@@ -230,7 +221,7 @@ export default function EditProjectPage() {
               disabled={isDisabled}>
               {loading
                 ? <><Loader2 size={16} className="formulario-projeto__spinner" /> Salvando...</>
-                : <><Save size={16} /> Salvar alterações</>}
+                : "Salvar alterações"}
             </motion.button>
           </div>
         </form>

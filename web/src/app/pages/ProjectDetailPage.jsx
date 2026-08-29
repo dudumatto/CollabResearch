@@ -3,7 +3,7 @@ import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   ArrowLeft, Users, Clock, BookOpen, Send, Mail, MessageSquare,
-  Share2, Bookmark, BarChart2, CheckCircle, Pencil, Trash2,
+  BarChart2, CheckCircle, Pencil, Trash2,
   UserPlus, UserMinus, Loader2, AlertTriangle,
   XCircle,
 } from "lucide-react";
@@ -194,7 +194,6 @@ export default function ProjectDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [saved, setSaved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [motivation, setMotivation] = useState("");
   const [loadingApply, setLoadingApply] = useState(false);
@@ -480,17 +479,6 @@ export default function ProjectDetailPage() {
                   {formatProjectStatus(project.status)}
                 </span>
                 <span className="detalhe-card__badge-area">{project.area}</span>
-              </div>
-              <div className="detalhe-card__acoes-topo">
-                <button
-                  onClick={() => setSaved(!saved)}
-                  className={`detalhe-card__botao-acao ${saved ? "detalhe-card__botao-acao--salvo" : "detalhe-card__botao-acao--normal"}`}
-                >
-                  <Bookmark size={16} fill={saved ? "currentColor" : "none"} />
-                </button>
-                <button className="detalhe-card__botao-acao detalhe-card__botao-acao--normal">
-                  <Share2 size={16} />
-                </button>
               </div>
             </div>
 
