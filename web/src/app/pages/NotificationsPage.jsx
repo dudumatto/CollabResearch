@@ -155,6 +155,12 @@ export default function NotificationsPage() {
     [visibleNotifications],
   );
 
+  const notificationStatusText = unreadCount > 0
+    ? `${unreadCount} não lidas`
+    : visibleNotifications.length > 0
+      ? `${visibleNotifications.length} notificações disponíveis`
+      : "Nenhuma notificação";
+
   const hideNotificationsLocally = (ids) => {
     setHiddenIds((prev) => {
       const next = new Set(prev);
@@ -257,7 +263,7 @@ export default function NotificationsPage() {
         <div className="pagina-notificacoes__contagem">
           <Bell size={18} className="pagina-notificacoes__icone-contagem" />
           <span className="pagina-notificacoes__texto-contagem">
-            {unreadCount > 0 ? `${unreadCount} não lidas` : "Nenhuma nova notificação"}
+            {notificationStatusText}
           </span>
         </div>
         <div className="pagina-notificacoes__botoes-acao">
