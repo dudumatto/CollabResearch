@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.function.Function;
 
 @Data
 @Builder
@@ -40,6 +41,14 @@ public class ProjetoResponse {
     private Integer vagasOcupadas;
 
     public static ProjetoResponse fromEntity(Projeto projeto) {
+        return fromEntity(projeto, Function.identity());
+    }
+
+    public static ProjetoResponse fromEntity(Projeto projeto, Function<String, String> fotoPerfilResolver) {
+        Function<String, String> resolver = fotoPerfilResolver != null ? fotoPerfilResolver : Function.identity();
+        String orientadorFotoPerfilUrl = projeto.getOrientador() != null ? resolver.apply(projeto.getOrientador().getUsuario().getFotoPerfilUrl()) : null;
+        String alunoCriadorFotoPerfilUrl = projeto.getAlunoCriador() != null ? resolver.apply(projeto.getAlunoCriador().getUsuario().getFotoPerfilUrl()) : null;
+
         return ProjetoResponse.builder()
                 .id(projeto.getId())
                 .titulo(projeto.getTitulo())
@@ -58,15 +67,19 @@ public class ProjetoResponse {
                 .cursoNome(projeto.getArea() != null && projeto.getArea().getCurso() != null ? projeto.getArea().getCurso().getNome() : null)
                 .orientadorId(projeto.getOrientador() != null ? projeto.getOrientador().getUsuario().getId() : null)
                 .orientadorNome(projeto.getOrientador() != null ? projeto.getOrientador().getUsuario().getNome() : null)
-                .orientadorFotoPerfilUrl(projeto.getOrientador() != null ? projeto.getOrientador().getUsuario().getFotoPerfilUrl() : null)
+                .orientadorFotoPerfilUrl(orientadorFotoPerfilUrl)
                 .alunoCriadorId(projeto.getAlunoCriador() != null ? projeto.getAlunoCriador().getUsuario().getId() : null)
                 .alunoCriadorNome(projeto.getAlunoCriador() != null ? projeto.getAlunoCriador().getUsuario().getNome() : null)
-                .alunoCriadorFotoPerfilUrl(projeto.getAlunoCriador() != null ? projeto.getAlunoCriador().getUsuario().getFotoPerfilUrl() : null)
+                .alunoCriadorFotoPerfilUrl(alunoCriadorFotoPerfilUrl)
                 .build();
     }
 
     public static ProjetoResponse fromEntity(Projeto projeto, Integer vagasOcupadas) {
-        ProjetoResponse response = fromEntity(projeto);
+        return fromEntity(projeto, vagasOcupadas, Function.identity());
+    }
+
+    public static ProjetoResponse fromEntity(Projeto projeto, Integer vagasOcupadas, Function<String, String> fotoPerfilResolver) {
+        ProjetoResponse response = fromEntity(projeto, fotoPerfilResolver);
         response.setVagasOcupadas(vagasOcupadas);
         return response;
     }

@@ -42,7 +42,16 @@
   justify-content: center;
   font-weight: var(--peso-negrito);
   flex-shrink: 0;
+  overflow: hidden;
 }
+
+.cfg-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
  
 /* ── Section ──────────────────────────────────────────── */
 .cfg-section {
@@ -107,6 +116,7 @@
   justify-content: center;
   flex-shrink: 0;
 }
+
  
 .icon-blue   { background-color: color-mix(in srgb, var(--cor-primaria) 15%, transparent); color: var(--cor-primaria); }
 .icon-purple { background-color: #2e2a4a20; color: #9b72e0; }
@@ -151,11 +161,13 @@
   margin-right: 4px;
   flex-shrink: 0;
 }
+
  
 .cfg-nav-item__chevron {
   color: var(--cor-texto-fraco);
   flex-shrink: 0;
 }
+
  
 /* ── Toggle ───────────────────────────────────────────── */
 .cfg-toggle {

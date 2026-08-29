@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -263,9 +264,13 @@ public class ConversaService {
         mensagem.setEditada(true);
         mensagem.setDataEdicao(OffsetDateTime.now());
 
-        MensagemResponse response = MensagemResponse.fromEntity(mensagemRepository.save(mensagem), usuarioService::resolverFotoPerfilParaExibicao);
+        MensagemResponse response = MensagemResponse.fromEntity(mensagemRepository.save(mensagem), fotoPerfilResolver());
         chatRealtimeService.publicarMensagemEditada(response);
         return response;
+    }
+
+    private Function<String, String> fotoPerfilResolver() {
+        return usuarioService != null ? usuarioService::resolverFotoPerfilParaExibicao : Function.identity();
     }
 
     public void excluirMensagem(Integer mensagemId) {

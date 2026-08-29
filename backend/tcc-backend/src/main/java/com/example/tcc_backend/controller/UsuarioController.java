@@ -42,13 +42,17 @@ public class UsuarioController {
     private final InscricaoService inscricaoService;
 
     private ProjetoResponse projetoResponse(com.example.tcc_backend.model.Projeto projeto) {
-        return ProjetoResponse.fromEntity(projeto, projetoService.contarVagasOcupadas(projeto.getId()));
+        return ProjetoResponse.fromEntity(projeto, projetoService.contarVagasOcupadas(projeto.getId()), usuarioService::resolverFotoPerfilParaExibicao);
     }
 
     private InscricaoResponse inscricaoResponse(com.example.tcc_backend.model.Inscricao inscricao) {
         Integer projetoId = inscricao.getProjeto() != null ? inscricao.getProjeto().getId() : null;
         Integer vagasOcupadas = projetoId != null ? projetoService.contarVagasOcupadas(projetoId) : null;
         return InscricaoResponse.fromEntity(inscricao, vagasOcupadas);
+    }
+
+    private UsuarioResponse usuarioResponse(com.example.tcc_backend.model.Usuario usuario) {
+        return UsuarioResponse.fromEntity(usuario, usuarioService::resolverFotoPerfilParaExibicao);
     }
 
     @Operation(
@@ -63,7 +67,7 @@ public class UsuarioController {
     public ResponseEntity<List<UsuarioResponse>> findAll() {
         return ResponseEntity.ok(
                 usuarioService.findAll().stream()
-                        .map(UsuarioResponse::fromEntity)
+                        .map(this::usuarioResponse)
                         .toList()
         );
     }
@@ -85,7 +89,7 @@ public class UsuarioController {
         return ResponseEntity.ok(
                 PageResponse.from(
                         usuarioService.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort)))
-                                .map(UsuarioResponse::fromEntity)
+                                .map(this::usuarioResponse)
                 )
         );
     }
@@ -99,7 +103,7 @@ public class UsuarioController {
     public ResponseEntity<List<UsuarioResponse>> findOrientadores() {
         return ResponseEntity.ok(
                 usuarioService.findOrientadoresAtivos().stream()
-                        .map(UsuarioResponse::fromEntity)
+                        .map(this::usuarioResponse)
                         .toList()
         );
     }
@@ -155,7 +159,7 @@ public class UsuarioController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponse> findById(@PathVariable Integer id) {
-        return ResponseEntity.ok(UsuarioResponse.fromEntity(usuarioService.findById(id)));
+        return ResponseEntity.ok(usuarioResponse(usuarioService.findById(id)));
     }
 
     @Operation(
@@ -183,7 +187,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponse> update(@PathVariable Integer id,
                                                   @RequestBody @Valid UsuarioRequest dto) {
-        return ResponseEntity.ok(UsuarioResponse.fromEntity(usuarioService.update(id, dto)));
+        return ResponseEntity.ok(usuarioResponse(usuarioService.update(id, dto)));
     }
 
     @Operation(

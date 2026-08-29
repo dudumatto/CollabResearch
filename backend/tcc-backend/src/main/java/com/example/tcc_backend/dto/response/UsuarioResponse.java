@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.function.Function;
 
 @Data
 @Builder
@@ -25,6 +26,13 @@ public class UsuarioResponse {
     private String avatarUrl;
 
     public static UsuarioResponse fromEntity(Usuario usuario) {
+        return fromEntity(usuario, Function.identity());
+    }
+
+    public static UsuarioResponse fromEntity(Usuario usuario, Function<String, String> fotoPerfilResolver) {
+        Function<String, String> resolver = fotoPerfilResolver != null ? fotoPerfilResolver : Function.identity();
+        String fotoPerfilUrl = resolver.apply(usuario.getFotoPerfilUrl());
+
         return UsuarioResponse.builder()
                 .id(usuario.getId())
                 .nome(usuario.getNome())
@@ -32,8 +40,8 @@ public class UsuarioResponse {
                 .tipo(usuario.getTipo())
                 .dataCadastro(usuario.getDataCadastro())
                 .ativo(usuario.getAtivo())
-                .fotoPerfilUrl(usuario.getFotoPerfilUrl())
-                .avatarUrl(usuario.getFotoPerfilUrl())
+                .fotoPerfilUrl(fotoPerfilUrl)
+                .avatarUrl(fotoPerfilUrl)
                 .build();
     }
 }

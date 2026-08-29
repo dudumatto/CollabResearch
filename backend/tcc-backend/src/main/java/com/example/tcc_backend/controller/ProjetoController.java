@@ -9,6 +9,7 @@ import com.example.tcc_backend.dto.response.ProjetoResponse;
 import com.example.tcc_backend.dto.response.UsuarioResponse;
 import com.example.tcc_backend.model.StatusProjeto;
 import com.example.tcc_backend.service.ProjetoService;
+import com.example.tcc_backend.service.UsuarioService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +36,10 @@ import java.util.List;
 public class ProjetoController {
 
     private final ProjetoService projetoService;
+    private final UsuarioService usuarioService;
 
     private ProjetoResponse toResponse(com.example.tcc_backend.model.Projeto projeto) {
-        return ProjetoResponse.fromEntity(projeto, projetoService.contarVagasOcupadas(projeto.getId()));
+        return ProjetoResponse.fromEntity(projeto, projetoService.contarVagasOcupadas(projeto.getId()), usuarioService::resolverFotoPerfilParaExibicao);
     }
 
     private InscricaoResponse toInscricaoResponse(com.example.tcc_backend.model.Inscricao inscricao) {
@@ -246,7 +248,7 @@ public class ProjetoController {
     public ResponseEntity<List<UsuarioResponse>> listarColaboradores(@PathVariable Integer id) {
         return ResponseEntity.ok(
                 projetoService.listarColaboradores(id).stream()
-                        .map(UsuarioResponse::fromEntity)
+                        .map(usuario -> UsuarioResponse.fromEntity(usuario, usuarioService::resolverFotoPerfilParaExibicao))
                         .toList()
         );
     }

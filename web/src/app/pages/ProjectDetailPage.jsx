@@ -189,6 +189,33 @@ function ConfirmationDialog({
   );
 }
 
+function UserPhotoAvatar({ className, name, src, fallbackClassName, fallback = "?" }) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  const showPhoto = Boolean(src) && !failed;
+  const initials = String(name || fallback)
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || fallback;
+
+  return (
+    <div className={className}>
+      {showPhoto ? (
+        <img src={src} alt={name ? `Foto de perfil de ${name}` : "Foto de perfil"} onError={() => setFailed(true)} />
+      ) : fallbackClassName ? (
+        <span className={fallbackClassName}>{initials}</span>
+      ) : (
+        initials
+      )}
+    </div>
+  );
+}
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -678,15 +705,13 @@ export default function ProjectDetailPage() {
           <div className="card-orientador">
             <h3 className="card-orientador__titulo">Orientador do projeto</h3>
             <div className="card-orientador__cabecalho">
-              <div className="card-orientador__avatar">
-                {getUserPhotoUrl(project.advisor) ? (
-                  <img src={getUserPhotoUrl(project.advisor)} alt={`Foto de perfil de ${project.advisor?.name ?? "orientador"}`} />
-                ) : (
-                  <span className="card-orientador__avatar-inicial">
-                    {(project.advisor?.name ?? "IC").split(" ").slice(0, 2).map((p) => p[0]).join("")}
-                  </span>
-                )}
-              </div>
+              <UserPhotoAvatar
+                className="card-orientador__avatar"
+                name={project.advisor?.name}
+                src={getUserPhotoUrl(project.advisor)}
+                fallbackClassName="card-orientador__avatar-inicial"
+                fallback="IC"
+              />
               <div>
                 <p className="card-orientador__nome">{project.advisor?.name ?? "Sem orientador"}</p>
                 <p className="card-orientador__departamento">{project.advisor?.specialty || project.area}</p>
@@ -722,13 +747,12 @@ export default function ProjectDetailPage() {
               <ul className="card-colaboradores__lista">
                 {collaborators.map((c) => (
                   <li key={getCollaboratorId(c) ?? c} className="card-colaboradores__item">
-                    <div className="card-colaboradores__avatar">
-                      {getCollaboratorPhotoUrl(c) ? (
-                        <img src={getCollaboratorPhotoUrl(c)} alt={`Foto de perfil de ${getCollaboratorName(c)}`} />
-                      ) : (
-                        getCollaboratorName(c).charAt(0).toUpperCase()
-                      )}
-                    </div>
+                    <UserPhotoAvatar
+                      className="card-colaboradores__avatar"
+                      name={getCollaboratorName(c)}
+                      src={getCollaboratorPhotoUrl(c)}
+                      fallback={getCollaboratorName(c).charAt(0).toUpperCase() || "?"}
+                    />
                     <span className="card-colaboradores__nome">
                       {getCollaboratorName(c)}  
                       {isProjectAdvisor(project, c) && (

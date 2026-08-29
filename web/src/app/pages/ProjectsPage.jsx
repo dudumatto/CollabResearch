@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { Search, FolderOpen, Users, Clock, ChevronRight, SlidersHorizontal, X, Plus } from "lucide-react";
@@ -23,10 +23,18 @@ function normalizeValue(value) {
 
 function AdvisorAvatar({ advisor }) {
   const photoUrl = getUserPhotoUrl(advisor);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [photoUrl]);
+
+  const showPhoto = Boolean(photoUrl) && !failed;
+
   return (
     <div className="projeto-card__avatar-orientador">
-      {photoUrl ? (
-        <img src={photoUrl} alt={`Foto de perfil de ${advisor?.name ?? "orientador"}`} />
+      {showPhoto ? (
+        <img src={photoUrl} alt={`Foto de perfil de ${advisor?.name ?? "orientador"}`} onError={() => setFailed(true)} />
       ) : (
         <span className="projeto-card__iniciais-orientador">
           {(advisor?.name ?? "IC").split(" ").slice(0, 2).map((part) => part[0]).join("")}

@@ -12,16 +12,27 @@ import { useTheme } from "../providers/ThemeProvider";
 import { userService } from "../services/userService";
 import { authService } from "../services/authService";
 import { formatUserType } from "../utils/formatters";
+import { getUserPhotoUrl } from "../utils/adapters";
 import "./SettingsPage.css";
 
 function getInitials(name = "") {
   return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
 }
 
-function Avatar({ name, size = 52 }) {
+function Avatar({ name, src, size = 52 }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => setImageFailed(false), [src]);
+
+  const showImage = Boolean(src) && !imageFailed;
+
   return (
     <div className="cfg-avatar" style={{ width: size, height: size, fontSize: size * 0.33 }}>
-      {getInitials(name) || "?"}
+      {showImage ? (
+        <img src={src} alt={name ? `Foto de perfil de ${name}` : "Foto de perfil"} onError={() => setImageFailed(true)} />
+      ) : (
+        getInitials(name) || "?"
+      )}
     </div>
   );
 }
@@ -178,7 +189,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    nome: "", email: "",
+    nome: "", email: "", fotoPerfilUrl: "",
     senhaAtual: "", senhaNova: "", confirmarSenha: "",
   });
   const [tipoPerfil, setTipoPerfil] = useState("ALUNO");
@@ -194,6 +205,7 @@ export default function SettingsPage() {
       ...prev,
       nome: readProfileValue(user, "nome", ""),
       email: readProfileValue(user, "email", ""),
+      fotoPerfilUrl: getUserPhotoUrl(user),
     }));
     setTipoPerfil(user?.tipo ?? "ALUNO");
     setMatricula(resolveRegistration(user, user));
@@ -204,6 +216,7 @@ export default function SettingsPage() {
           ...prev,
           nome: readProfileValue(profile, "nome", user?.nome ?? ""),
           email: readProfileValue(profile, "email", user?.email ?? ""),
+          fotoPerfilUrl: getUserPhotoUrl(profile) || getUserPhotoUrl(user),
         }));
         setTipoPerfil(profile.tipo ?? user?.tipo ?? "ALUNO");
         setMatricula(resolveRegistration(profile, user));
@@ -285,7 +298,7 @@ export default function SettingsPage() {
     <div className="pagina-configuracoes">
 
       <div className="cfg-profile-card">
-        <Avatar name={form.nome} size={52} />
+        <Avatar name={form.nome} src={form.fotoPerfilUrl} size={52} />
         <div>
           <p className="cfg-profile-card__name">{form.nome || "—"}</p>
           <p className="cfg-profile-card__sub">{form.email} · {formatUserType(tipoPerfil)}</p>
@@ -320,7 +333,7 @@ export default function SettingsPage() {
       {/* Panels */}
       <Panel panelId="conta" title="Informações da conta" {...panelProps}>
         <div className="cfg-panel-avatar-row">
-          <Avatar name={form.nome} size={64} />
+          <Avatar name={form.nome} src={form.fotoPerfilUrl} size={64} />
           <div>
             <p className="cfg-profile-card__name">{form.nome}</p>
           </div>

@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
+import java.util.function.Function;
 
 @Data
 @Builder
@@ -43,6 +44,11 @@ public class ConversaResponse {
     private OffsetDateTime ultimaMensagemHorario;
 
     public static ConversaResponse fromEntity(Conversa conversa, Integer usuarioLogadoId) {
+        return fromEntity(conversa, usuarioLogadoId, Function.identity());
+    }
+
+    public static ConversaResponse fromEntity(Conversa conversa, Integer usuarioLogadoId, Function<String, String> fotoPerfilResolver) {
+        Function<String, String> resolver = fotoPerfilResolver != null ? fotoPerfilResolver : Function.identity();
         ConversaResponseBuilder builder = ConversaResponse.builder()
                 .id(conversa.getId())
                 .dataCriacao(conversa.getDataCriacao())
@@ -65,14 +71,14 @@ public class ConversaResponse {
             builder
                     .outroUsuarioId(outro != null ? outro.getId() : null)
                     .outroUsuarioNome(outro != null ? outro.getNome() : null)
-                    .fotoPerfilUrl(outro != null ? outro.getFotoPerfilUrl() : null)
-                    .avatarUrl(outro != null ? outro.getFotoPerfilUrl() : null)
+                    .fotoPerfilUrl(outro != null ? resolver.apply(outro.getFotoPerfilUrl()) : null)
+                    .avatarUrl(outro != null ? resolver.apply(outro.getFotoPerfilUrl()) : null)
                     .titulo(outro != null ? outro.getNome() : "Conversa privada");
         } else {
             String fotoConversa = conversa.getProjeto() != null && conversa.getProjeto().getFotoProjetoUrl() != null
                     ? conversa.getProjeto().getFotoProjetoUrl()
                     : conversa.getProjeto() != null && conversa.getProjeto().getOrientador() != null
-                            ? conversa.getProjeto().getOrientador().getUsuario().getFotoPerfilUrl()
+                            ? resolver.apply(conversa.getProjeto().getOrientador().getUsuario().getFotoPerfilUrl())
                             : null;
 
             builder
