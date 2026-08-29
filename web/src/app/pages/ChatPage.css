@@ -6,9 +6,9 @@
   height: calc(100vh - 8rem);
   background: var(--cor-superficie);
   border-radius: 12px;
-  border: 1px solid var(--cor-separador-suave);
+  border: 1px solid transparent;
   overflow: hidden;
-  box-shadow: var(--sombra-pequena);
+  box-shadow: none;
 }
 
 .pagina-chat__lista-conversas,
@@ -840,7 +840,7 @@
     height: auto;
     min-height: 0;
     flex-direction: column;
-    border: 0;
+    border-color: transparent;
     border-radius: 0;
     box-shadow: none;
     overflow: visible;
