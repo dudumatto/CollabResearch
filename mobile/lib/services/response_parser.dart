@@ -16,7 +16,23 @@ Map<String, dynamic> parseObjectPayload(dynamic payload) {
 dynamic _unwrapList(dynamic payload) {
   if (payload is List) return payload;
   if (payload is Map) {
-    for (final key in const ['content', 'data', 'items', 'results', 'notifications', 'projects', 'messages', 'conversations']) {
+    for (final key in const [
+      'content',
+      'data',
+      'items',
+      'results',
+      'notifications',
+      'projects',
+      'messages',
+      'conversations',
+      'etapas',
+      'entregas',
+      'avaliacoes',
+      'orientandos',
+      'documentos',
+      'versoes',
+      'inscricoes',
+    ]) {
       final value = payload[key];
       if (value is List) return value;
       if (value is Map || value is List) {
@@ -30,7 +46,13 @@ dynamic _unwrapList(dynamic payload) {
 
 dynamic _unwrapObject(dynamic payload) {
   if (payload is Map) {
-    for (final key in const ['data', 'project', 'notification', 'message', 'conversation']) {
+    for (final key in const [
+      'data',
+      'project',
+      'notification',
+      'message',
+      'conversation'
+    ]) {
       final value = payload[key];
       if (value is Map) return value;
     }

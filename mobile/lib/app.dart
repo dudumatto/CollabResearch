@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
+import 'providers/academic_workspace_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/dashboard_provider.dart';
 import 'providers/notification_provider.dart';
@@ -48,6 +49,9 @@ class _TccMobileAppState extends State<TccMobileApp> {
         ),
         ChangeNotifierProvider<ResearchActivityProvider>(
           create: (_) => ResearchActivityProvider(),
+        ),
+        ChangeNotifierProvider<AcademicWorkspaceProvider>(
+          create: (_) => AcademicWorkspaceProvider(),
         ),
       ],
       child: MaterialApp.router(

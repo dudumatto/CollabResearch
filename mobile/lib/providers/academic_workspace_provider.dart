@@ -1,0 +1,307 @@
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+
+import '../core/api/api_client.dart';
+import '../models/academic_workspace.dart';
+import '../models/project.dart';
+import '../models/subscription.dart';
+import '../models/user.dart';
+import '../services/academic_workspace_service.dart';
+
+class AcademicWorkspaceProvider extends ChangeNotifier {
+  final AcademicWorkspaceService _service = AcademicWorkspaceService();
+
+  final Map<String, List<ProjectStage>> stagesByProject = {};
+  final Map<String, List<DeliveryItem>> deliveriesByProject = {};
+  final Map<String, List<AcademicEvaluation>> evaluationsByProject = {};
+  final Map<String, List<DeliveryVersion>> versionsByDelivery = {};
+  final List<AdviseeSummary> advisees = [];
+  final List<Subscription> advisorApplications = [];
+  final List<AcademicDocument> documents = [];
+  final List<Project> profileProjects = [];
+
+  AdvisorDashboard? advisorSummary;
+  AdviseeDetail? selectedAdvisee;
+  User? selectedUser;
+  bool isLoading = false;
+  String? errorMessage;
+
+  List<ProjectStage> stagesFor(String projectId) =>
+      stagesByProject[projectId] ?? const [];
+  List<DeliveryItem> deliveriesFor(String projectId) =>
+      deliveriesByProject[projectId] ?? const [];
+  List<AcademicEvaluation> evaluationsFor(String projectId) =>
+      evaluationsByProject[projectId] ?? const [];
+
+  Future<void> loadStages(String projectId) => _run(() async {
+        stagesByProject[projectId] = await _service.stages(projectId);
+      });
+
+  Future<void> loadDeliveries(String projectId) => _run(() async {
+        deliveriesByProject[projectId] = await _service.deliveries(projectId);
+      });
+
+  Future<void> loadEvaluations(String projectId) => _run(() async {
+        evaluationsByProject[projectId] = await _service.evaluations(projectId);
+      });
+
+  Future<void> loadProjectWorkspace(String projectId) => _run(() async {
+        final results = await Future.wait<dynamic>([
+          _service.stages(projectId),
+          _service.deliveries(projectId),
+          _service.evaluations(projectId),
+        ]);
+        stagesByProject[projectId] = results[0] as List<ProjectStage>;
+        deliveriesByProject[projectId] = results[1] as List<DeliveryItem>;
+        evaluationsByProject[projectId] =
+            results[2] as List<AcademicEvaluation>;
+      });
+
+  Future<void> loadAgenda(List<Project> projects) => _run(() async {
+        final collections = await Future.wait(
+          projects.map((project) async {
+            final stages = await _service.stages(project.id);
+            return MapEntry(
+              project.id,
+              stages.map((stage) => stage.withProject(project)).toList(),
+            );
+          }),
+        );
+        stagesByProject.addEntries(collections);
+      });
+
+  Future<void> loadDeliveriesForProjects(List<Project> projects) =>
+      _run(() async {
+        final collections = await Future.wait(
+          projects.map((project) async {
+            final items = await _service.deliveries(project.id);
+            return MapEntry(
+              project.id,
+              items.map((item) => item.withProject(project)).toList(),
+            );
+          }),
+        );
+        deliveriesByProject.addEntries(collections);
+      });
+
+  Future<void> loadEvaluationsForProjects(List<Project> projects) =>
+      _run(() async {
+        final collections = await Future.wait(
+          projects.map((project) async {
+            final items = await _service.evaluations(project.id);
+            return MapEntry(
+              project.id,
+              items.map((item) => item.withProject(project)).toList(),
+            );
+          }),
+        );
+        evaluationsByProject.addEntries(collections);
+      });
+
+  Future<bool> completeStage(String projectId, String stageId) =>
+      _action(() async {
+        await _service.completeStage(projectId, stageId);
+        stagesByProject[projectId] = await _service.stages(projectId);
+      });
+
+  Future<bool> saveStage(
+    String projectId,
+    Map<String, dynamic> data, {
+    String? stageId,
+  }) =>
+      _action(() async {
+        await _service.saveStage(projectId, data, stageId: stageId);
+        stagesByProject[projectId] = await _service.stages(projectId);
+      });
+
+  Future<bool> deleteStage(String projectId, String stageId) =>
+      _action(() async {
+        await _service.deleteStage(projectId, stageId);
+        stagesByProject[projectId] = await _service.stages(projectId);
+      });
+
+  Future<bool> createDelivery({
+    required String projectId,
+    required String title,
+    required String category,
+    required PlatformFile file,
+    String? stageId,
+  }) =>
+      _action(() async {
+        await _service.createDelivery(
+          projectId: projectId,
+          title: title,
+          category: category,
+          file: file,
+          stageId: stageId,
+        );
+        deliveriesByProject[projectId] = await _service.deliveries(projectId);
+      });
+
+  Future<void> loadVersions(String projectId, String deliveryId) =>
+      _run(() async {
+        versionsByDelivery[deliveryId] =
+            await _service.deliveryVersions(projectId, deliveryId);
+      });
+
+  Future<bool> resubmitDelivery(
+    String projectId,
+    String deliveryId,
+    PlatformFile file,
+  ) =>
+      _action(() async {
+        await _service.resubmitDelivery(
+          projectId: projectId,
+          deliveryId: deliveryId,
+          file: file,
+        );
+        deliveriesByProject[projectId] = await _service.deliveries(projectId);
+      });
+
+  Future<bool> reviewDelivery({
+    required String projectId,
+    required String deliveryId,
+    required String versionId,
+    required String decision,
+    String? comment,
+  }) =>
+      _action(() async {
+        await _service.reviewDelivery(
+          projectId: projectId,
+          deliveryId: deliveryId,
+          versionId: versionId,
+          decision: decision,
+          comment: comment,
+        );
+        deliveriesByProject[projectId] = await _service.deliveries(projectId);
+        versionsByDelivery[deliveryId] =
+            await _service.deliveryVersions(projectId, deliveryId);
+      });
+
+  Future<bool> saveEvaluation(
+    String projectId,
+    Map<String, dynamic> data, {
+    String? evaluationId,
+  }) =>
+      _action(() async {
+        await _service.saveEvaluation(
+          projectId: projectId,
+          data: data,
+          evaluationId: evaluationId,
+        );
+        evaluationsByProject[projectId] = await _service.evaluations(projectId);
+      });
+
+  Future<bool> acknowledgeEvaluation(
+    String projectId,
+    String evaluationId,
+    String? comment,
+  ) =>
+      _action(() async {
+        await _service.acknowledgeEvaluation(
+          projectId,
+          evaluationId,
+          comment,
+        );
+        evaluationsByProject[projectId] = await _service.evaluations(projectId);
+      });
+
+  Future<void> loadAdvisorDashboard() => _run(() async {
+        advisorSummary = await _service.advisorDashboard();
+      });
+
+  Future<void> loadAdvisorApplications({
+    String? status,
+    String? projectId,
+  }) =>
+      _run(() async {
+        advisorApplications
+          ..clear()
+          ..addAll(await _service.advisorApplications(
+            status: status,
+            projectId: projectId,
+          ));
+      });
+
+  Future<void> loadProjectApplications(String projectId) => _run(() async {
+        advisorApplications
+          ..clear()
+          ..addAll(await _service.projectApplications(projectId));
+      });
+
+  Future<void> loadAdvisees({String? search}) => _run(() async {
+        advisees
+          ..clear()
+          ..addAll(await _service.advisees(search: search));
+      });
+
+  Future<void> loadAdvisee(String studentId, {String? projectId}) =>
+      _run(() async {
+        selectedAdvisee =
+            await _service.advisee(studentId, projectId: projectId);
+      });
+
+  Future<void> loadDocuments(String userId) => _run(() async {
+        documents
+          ..clear()
+          ..addAll(await _service.documents(userId));
+      });
+
+  Future<bool> deleteDocument(String id, String userId) => _action(() async {
+        await _service.deleteDocument(id);
+        documents
+          ..clear()
+          ..addAll(await _service.documents(userId));
+      });
+
+  Future<void> loadUserProfile(String userId) => _run(() async {
+        final results = await Future.wait<dynamic>([
+          _service.userProfile(userId),
+          _service.userProjects(userId),
+          _service.documents(userId),
+        ]);
+        selectedUser = results[0] as User;
+        profileProjects
+          ..clear()
+          ..addAll(results[1] as List<Project>);
+        documents
+          ..clear()
+          ..addAll(results[2] as List<AcademicDocument>);
+      });
+
+  Future<void> _run(Future<void> Function() operation) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      await operation();
+    } on DioException catch (error) {
+      errorMessage = ApiClient.instance.friendlyError(error);
+    } catch (_) {
+      errorMessage = 'Nao foi possivel carregar os dados academicos.';
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> _action(Future<void> Function() operation) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      await operation();
+      return true;
+    } on DioException catch (error) {
+      errorMessage = ApiClient.instance.friendlyError(error);
+      return false;
+    } catch (_) {
+      errorMessage = 'Nao foi possivel concluir esta acao.';
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+}
