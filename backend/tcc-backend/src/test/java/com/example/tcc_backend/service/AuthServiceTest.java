@@ -13,6 +13,7 @@ import com.example.tcc_backend.repository.CursoRepository;
 import com.example.tcc_backend.repository.OrientadorRepository;
 import com.example.tcc_backend.repository.UsuarioRepository;
 import com.example.tcc_backend.security.AuthHelper;
+import com.example.tcc_backend.security.LoginBruteForceProtectionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -53,6 +54,8 @@ class AuthServiceTest {
     private AuthenticationManager authenticationManager;
     @Mock
     private AuthHelper authHelper;
+    @Mock
+    private LoginBruteForceProtectionService bruteForceProtectionService;
 
     @InjectMocks
     private AuthService authService;

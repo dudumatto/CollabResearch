@@ -437,13 +437,32 @@
   flex-direction: column;
   gap: var(--espaco-3);
   align-items: flex-start;
+  border: 0;
   border-bottom: 1px solid var(--cor-fundo);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   transition: var(--transicao-normal);
-  cursor: default;
+  width: 100%;
 }
 
-.inscricao-item:hover {
+.inscricao-item--clicavel {
+  cursor: pointer;
+}
+
+.inscricao-item--clicavel:hover,
+.inscricao-item--clicavel:focus-visible {
   background-color: var(--cor-fundo);
+}
+
+.inscricao-item--clicavel:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cor-primaria) 55%, transparent);
+  outline: none;
+}
+
+.inscricao-item:disabled {
+  cursor: default;
 }
 
 @media (min-width: 640px) {
@@ -499,6 +518,18 @@
 .inscricao-item__status--aberto    { background-color: var(--cor-sucesso-clara);  color: var(--cor-sucesso-escura); }
 .inscricao-item__status--andamento { background-color: var(--cor-atencao-clara);  color: var(--cor-atencao-escura); }
 .inscricao-item__status--finalizado{ background-color: var(--cor-erro-clara);     color: var(--cor-erro-escura); }
+
+.inscricao-item__seta {
+  color: var(--cor-borda-media);
+  flex-shrink: 0;
+  transition: var(--transicao-normal);
+}
+
+.inscricao-item--clicavel:hover .inscricao-item__seta,
+.inscricao-item--clicavel:focus-visible .inscricao-item__seta {
+  color: var(--cor-texto-fraco);
+  transform: translateX(2px);
+}
 
 /* ================================================================
    Gráfico de atividade
@@ -610,12 +641,28 @@
   display: flex;
   align-items: flex-start;
   gap: var(--espaco-3);
+  border: 0;
   border-bottom: 1px solid var(--cor-fundo);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   transition: var(--transicao-normal);
+  width: 100%;
 }
 
-.notificacao-resumo:hover {
+.notificacao-resumo--clicavel {
+  cursor: pointer;
+}
+
+.notificacao-resumo--clicavel:hover,
+.notificacao-resumo--clicavel:focus-visible {
   background-color: var(--cor-fundo);
+}
+
+.notificacao-resumo--clicavel:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cor-primaria) 55%, transparent);
+  outline: none;
 }
 
 .notificacao-resumo--nao-lida {
@@ -664,6 +711,19 @@
   margin-top: var(--espaco-1);
 }
 
+.notificacao-resumo__seta {
+  color: var(--cor-borda-media);
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+  transition: var(--transicao-normal);
+}
+
+.notificacao-resumo--clicavel:hover .notificacao-resumo__seta,
+.notificacao-resumo--clicavel:focus-visible .notificacao-resumo__seta {
+  color: var(--cor-texto-fraco);
+  transform: translateX(2px);
+}
+
 /* ================================================================
    Espaçamento interno dos cards sugeridos e notificações
    ================================================================ */
@@ -702,3 +762,5 @@
     opacity: 0.55;
   }
 }
+
+

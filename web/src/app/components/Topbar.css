@@ -240,3 +240,105 @@
 .barra-topo__item-menu--sair:hover {
   background-color: var(--cor-erro-clara);
 }
+.barra-topo__logout-overlay {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.42);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: var(--espaco-4);
+  position: fixed;
+  z-index: 200;
+}
+
+.barra-topo__logout-modal {
+  align-items: center;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-separador-suave);
+  border-radius: var(--raio-grande);
+  box-shadow: var(--sombra-extra);
+  color: var(--cor-texto);
+  display: flex;
+  flex-direction: column;
+  max-width: 22rem;
+  padding: var(--espaco-6) var(--espaco-5);
+  text-align: center;
+  width: min(100%, 22rem);
+}
+
+.barra-topo__logout-icon {
+  align-items: center;
+  background-color: color-mix(in srgb, var(--cor-erro) 15%, transparent);
+  border-radius: 999px;
+  color: var(--cor-erro);
+  display: flex;
+  height: 4rem;
+  justify-content: center;
+  margin-bottom: var(--espaco-4);
+  width: 4rem;
+}
+
+.barra-topo__logout-title {
+  color: var(--cor-texto);
+  font-size: var(--tamanho-normal);
+  font-weight: var(--peso-negrito);
+  line-height: 1.25;
+  margin: 0 0 var(--espaco-2);
+}
+
+.barra-topo__logout-desc {
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-pequeno);
+  line-height: 1.6;
+  margin: 0 0 var(--espaco-5);
+  max-width: 17.5rem;
+}
+
+.barra-topo__logout-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  width: 100%;
+}
+
+.barra-topo__logout-confirm,
+.barra-topo__logout-cancel {
+  align-items: center;
+  border-radius: var(--raio-medio);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--fonte-principal);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  transition: var(--transicao-normal);
+  width: 100%;
+}
+
+.barra-topo__logout-confirm {
+  background: var(--cor-erro);
+  border: 1px solid var(--cor-erro);
+  color: var(--cor-branco);
+}
+
+.barra-topo__logout-confirm:hover,
+.barra-topo__logout-confirm:focus-visible {
+  background: var(--cor-erro-escura);
+  border-color: var(--cor-erro-escura);
+  outline: none;
+}
+
+.barra-topo__logout-cancel {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--cor-texto-fraco);
+}
+
+.barra-topo__logout-cancel:hover,
+.barra-topo__logout-cancel:focus-visible {
+  background: var(--cor-superficie-brand);
+  color: var(--cor-texto);
+  outline: none;
+}

@@ -30,7 +30,7 @@ class RateLimitFilterTest {
 
     @Test
     void deveBloquearQuandoExcedeLimiteNaJanela() throws Exception {
-        RateLimitFilter filter = new RateLimitFilter(objectMapper, clock, true, 2, 60_000);
+        RateLimitFilter filter = new RateLimitFilter(objectMapper, clock, new ClientIpResolver(""), true, 2, 60_000);
 
         MockHttpServletResponse first = perform(filter, requestFromIp("10.0.0.1"));
         MockHttpServletResponse second = perform(filter, requestFromIp("10.0.0.1"));
@@ -46,7 +46,7 @@ class RateLimitFilterTest {
 
     @Test
     void deveLiberarNovamenteQuandoJanelaExpira() throws Exception {
-        RateLimitFilter filter = new RateLimitFilter(objectMapper, clock, true, 1, 60_000);
+        RateLimitFilter filter = new RateLimitFilter(objectMapper, clock, new ClientIpResolver(""), true, 1, 60_000);
 
         MockHttpServletResponse first = perform(filter, requestFromIp("10.0.0.2"));
         MockHttpServletResponse blocked = perform(filter, requestFromIp("10.0.0.2"));
@@ -60,7 +60,7 @@ class RateLimitFilterTest {
 
     @Test
     void deveLimitarPorUsuarioAutenticadoQuandoDisponivel() throws Exception {
-        RateLimitFilter filter = new RateLimitFilter(objectMapper, clock, true, 1, 60_000);
+        RateLimitFilter filter = new RateLimitFilter(objectMapper, clock, new ClientIpResolver(""), true, 1, 60_000);
         authenticate(1);
 
         MockHttpServletResponse first = perform(filter, requestFromIp("10.0.0.3"));
@@ -77,7 +77,7 @@ class RateLimitFilterTest {
 
     @Test
     void naoDeveFiltrarHealthcheck() throws Exception {
-        RateLimitFilter filter = new RateLimitFilter(objectMapper, clock, true, 1, 60_000);
+        RateLimitFilter filter = new RateLimitFilter(objectMapper, clock, new ClientIpResolver(""), true, 1, 60_000);
         MockHttpServletRequest request = requestFromIp("10.0.0.5");
         request.setRequestURI("/api/health");
 

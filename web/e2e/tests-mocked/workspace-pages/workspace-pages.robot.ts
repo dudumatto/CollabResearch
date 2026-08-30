@@ -11,6 +11,10 @@ export async function runDashboardFlow(page: Page) {
   await expect(page.locator(".painel__card--inscricoes .inscricao-item")).toHaveCount(2);
   await expect(page.locator(".painel__card-projetos-sugeridos .projeto-sugerido")).toHaveCount(2);
   await expect(page.locator(".painel__card--notificacoes .notificacao-resumo")).toHaveCount(2);
+  await page.locator(".painel__card--recentes").getByRole("button", { name: /Abrir informações do projeto Projeto E2E Autoria/ }).click();
+  await expect(page).toHaveURL(/\/app\/projects\/1$/);
+  await expect(page.getByRole("heading", { name: "Projeto E2E Autoria", exact: true })).toBeVisible();
+  await page.goto("/app");
   await page.getByRole("button", { name: /Buscar projetos/ }).click();
   await expect(page).toHaveURL(/\/app\/projects$/);
 }
@@ -34,6 +38,15 @@ export async function runDeadlinesFlow(page: Page) {
       .toBeLessThanOrEqual(2);
 
     const calendarBox = await page.locator(".calendario-card--principal").boundingBox();
+    const originalUrl = page.url();
+    await page.locator(".calendario-dia--com-evento").first().click();
+    const tooltip = page.locator(".calendario-dia__tooltip").first();
+    await expect(tooltip).toBeVisible();
+    const tooltipBox = await tooltip.boundingBox();
+    expect(tooltipBox?.x ?? 0).toBeGreaterThanOrEqual(0);
+    expect((tooltipBox?.x ?? 0) + (tooltipBox?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
+    await expect(page).toHaveURL(originalUrl);
+
     if (viewport.width > 1119) {
       await expect
         .poll(async () => page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight))
@@ -45,11 +58,6 @@ export async function runDeadlinesFlow(page: Page) {
       );
       expect(Math.abs((calendarBox?.height ?? 0) - (lateralBox?.height ?? 0))).toBeLessThanOrEqual(2);
       expect(Math.abs((lateralCards[0] ?? 0) - (lateralCards[1] ?? 0))).toBeLessThanOrEqual(2);
-
-      const originalUrl = page.url();
-      await page.locator(".calendario-dia--com-evento").first().click();
-      await expect(page.locator(".calendario-dia__tooltip").first()).toBeVisible();
-      await expect(page).toHaveURL(originalUrl);
     } else {
       expect(calendarBox?.height ?? 0).toBeLessThanOrEqual(430);
     }
@@ -57,6 +65,45 @@ export async function runDeadlinesFlow(page: Page) {
 }
 
 export async function runChatFlow(page: Page, browser: Browser) {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app/chat");
+  await expect(page.locator(".barra-topo__titulo")).toHaveText("Mensagens");
+  await page.locator(".conversa-item", { hasText: "Projeto E2E Candidatura" }).click();
+  await expect(page.locator(".pagina-chat__topo-conversa")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Voltar para a lista de conversas" })).toBeVisible();
+  const mobileChatLayout = await page.evaluate(() => {
+    const topbar = document.querySelector(".barra-topo");
+    const content = document.querySelector(".pagina-app__conteudo");
+    const messages = document.querySelector(".pagina-chat__mensagens");
+    const input = document.querySelector(".pagina-chat__area-input");
+    const conversationTop = document.querySelector(".pagina-chat__topo-conversa");
+    if (!topbar || !content || !messages || !input || !conversationTop) return null;
+    messages.scrollTop = messages.scrollHeight;
+    const contentStyle = window.getComputedStyle(content);
+    const messagesStyle = window.getComputedStyle(messages);
+    const topbarRect = topbar.getBoundingClientRect();
+    const contentRect = content.getBoundingClientRect();
+    const topRect = conversationTop.getBoundingClientRect();
+    const inputRect = input.getBoundingClientRect();
+    return {
+      contentOverflow: contentStyle.overflowY,
+      messagesOverflow: messagesStyle.overflowY,
+      messagesHeight: messages.getBoundingClientRect().height,
+      topbarVisible: topbarRect.top >= 0 && topbarRect.bottom <= window.innerHeight,
+      topVisible: topRect.top >= 0 && topRect.bottom <= window.innerHeight,
+      inputVisible: inputRect.top >= 0 && inputRect.bottom <= window.innerHeight,
+      contentFitsViewport: contentRect.bottom <= window.innerHeight + 2,
+    };
+  });
+  expect(mobileChatLayout?.contentOverflow).toBe("hidden");
+  expect(mobileChatLayout?.messagesOverflow).toBe("auto");
+  expect(mobileChatLayout?.messagesHeight ?? 0).toBeGreaterThan(120);
+  expect(mobileChatLayout?.topbarVisible).toBeTruthy();
+  expect(mobileChatLayout?.topVisible).toBeTruthy();
+  expect(mobileChatLayout?.inputVisible).toBeTruthy();
+  expect(mobileChatLayout?.contentFitsViewport).toBeTruthy();
+
+  await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/app/chat");
   await expect(page.locator(".barra-topo__titulo")).toHaveText("Mensagens");
   await expect(page.getByText("Projeto E2E Candidatura").first()).toBeVisible();
@@ -67,13 +114,15 @@ export async function runChatFlow(page: Page, browser: Browser) {
   await expect(page.getByText("Mensagem nova E2E")).toBeVisible();
   const lastUserMessage = page.locator(".mensagem-linha--usuario").last();
   await lastUserMessage.hover();
-  await lastUserMessage.locator(".mensagem-acao-btn").first().click();
+  await lastUserMessage.getByRole("button", { name: "Ações da mensagem" }).click();
+  await lastUserMessage.getByRole("menuitem", { name: "Editar mensagem" }).click();
   await expect(page.getByText("Editar mensagem")).toBeVisible();
   await page.locator(".modal__textarea").fill("Mensagem editada E2E");
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByText("Mensagem editada E2E")).toBeVisible();
   await lastUserMessage.hover();
-  await lastUserMessage.locator(".mensagem-acao-btn--excluir").click();
+  await lastUserMessage.getByRole("button", { name: "Ações da mensagem" }).click();
+  await lastUserMessage.getByRole("menuitem", { name: "Excluir mensagem" }).click();
   await expect(page.getByText("Excluir mensagem")).toBeVisible();
   await page.locator(".modal").getByRole("button", { name: "Excluir" }).click();
   await expect(page.getByText("Mensagem editada E2E")).toBeHidden();
@@ -140,18 +189,32 @@ export async function runProfileFlow(page: Page) {
   });
   await page.goto("/app/profile");
   await expect(page.getByRole("heading", { name: "Meu Perfil", exact: true })).toBeVisible();
-  await expect(page.getByText("Informações do perfil")).toBeVisible();
+  await expect(page.getByText("Dados do perfil")).toBeVisible();
   await expect(page.getByText("Conta autenticada via API")).toHaveCount(0);
   await expect(page.getByText("Tema visual")).toHaveCount(0);
-  await expect(page.locator(".cartao-perfil__avatar-inicial")).toHaveText("AE");
-  await expect(page.locator(".cartao-perfil__avatar img")).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const emailWrap = page.locator(".student-profile-standard__input-wrap", { has: page.locator("#perfil-email") });
+  const spacing = await emailWrap.evaluate((element) => {
+    const icon = element.querySelector(".student-profile-standard__input-icon");
+    const input = element.querySelector("#perfil-email");
+    if (!icon || !input) return null;
+    const iconRect = icon.getBoundingClientRect();
+    const inputStyle = getComputedStyle(input);
+    return {
+      reservedLeft: Number.parseFloat(inputStyle.paddingLeft),
+      iconRight: iconRect.left - input.getBoundingClientRect().left + iconRect.width,
+    };
+  });
+  expect(spacing?.reservedLeft ?? 0).toBeGreaterThan((spacing?.iconRight ?? 0) + 8);
+  await expect(page.locator(".advisor-perfil-cartao__avatar")).toHaveText("AE");
+  await expect(page.locator(".advisor-perfil-cartao__foto")).toHaveCount(0);
   await page.unroute("**/api/usuarios/me");
   await page.getByRole("button", { name: "Editar perfil" }).click();
-  await page.locator(".campo-perfil__input--editando").first().fill("Aluno E2E Atualizado");
+  await page.locator("#perfil-nome").fill("Aluno E2E Atualizado");
   await page.getByRole("button", { name: "Salvar" }).click();
   await expectToast(page, "Perfil atualizado com sucesso.");
-  await expect(page.locator(".campo-perfil__input").first()).toHaveValue("Aluno E2E Atualizado");
-  await expect(page.getByText("Histórico acadêmico")).toBeVisible();
+  await expect(page.locator("#perfil-nome")).toHaveValue("Aluno E2E Atualizado");
+  await expect(page.getByText("Currículos e documentos")).toBeVisible();
 }
 
 export async function runDocumentsFlow(page: Page, browser: Browser) {
@@ -223,3 +286,6 @@ export async function runSettingsFlow(page: Page, expectedRole = "Aluno") {
   await page.getByRole("button", { name: "Confirmar saída" }).click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("tcc_auth_token"))).toBeNull();
 }
+
+
+

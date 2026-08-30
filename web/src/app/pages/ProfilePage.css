@@ -780,19 +780,44 @@
 
 .student-profile-standard__input-wrap {
   position: relative;
+  min-width: 0;
 }
 
 .student-profile-standard__input-icon {
+  color: var(--cor-texto-mudo);
+  left: 1rem;
+  pointer-events: none;
   position: absolute;
-  left: var(--espaco-3);
   top: 50%;
   transform: translateY(-50%);
-  color: var(--cor-texto-mudo);
-  pointer-events: none;
+  z-index: 1;
 }
 
-.student-profile-standard__input {
-  padding-left: 2.25rem;
+.student-profile-standard .student-profile-standard__input,
+.student-profile-standard .app-combobox--with-leading-icon.student-profile-standard__input {
+  min-width: 0;
+  padding-left: 2.75rem;
+}
+
+.student-profile-standard .app-combobox--with-leading-icon.student-profile-standard__input {
+  padding-right: 2.5rem;
+}
+
+.student-profile-standard .student-profile-standard__input::placeholder {
+  color: var(--cor-texto-mudo);
+}
+
+@media (max-width: 520px) {
+  .student-profile-standard__input-icon {
+    height: 0.9rem;
+    left: 0.9rem;
+    width: 0.9rem;
+  }
+
+  .student-profile-standard .student-profile-standard__input,
+  .student-profile-standard .app-combobox--with-leading-icon.student-profile-standard__input {
+    padding-left: 2.55rem;
+  }
 }
 
 .student-profile-standard .advisor-campo__input:disabled {

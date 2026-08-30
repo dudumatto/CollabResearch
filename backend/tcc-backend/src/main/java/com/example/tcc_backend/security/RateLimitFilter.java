@@ -28,6 +28,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
     private final Clock clock;
+    private final ClientIpResolver clientIpResolver;
     private final boolean enabled;
     private final int maxRequests;
     private final long windowMillis;
@@ -36,11 +37,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
     public RateLimitFilter(
             ObjectMapper objectMapper,
             Clock clock,
+            ClientIpResolver clientIpResolver,
             @Value("${app.rate-limit.enabled:true}") boolean enabled,
             @Value("${app.rate-limit.max-requests:120}") int maxRequests,
             @Value("${app.rate-limit.window-ms:60000}") long windowMillis) {
         this.objectMapper = objectMapper;
         this.clock = clock;
+        this.clientIpResolver = clientIpResolver;
         this.enabled = enabled;
         this.maxRequests = Math.max(1, maxRequests);
         this.windowMillis = Math.max(1000, windowMillis);
@@ -122,21 +125,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return "user:" + usuario.getId();
         }
 
-        return "ip:" + resolveClientIp(request);
-    }
-
-    private String resolveClientIp(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
-        }
-
-        return request.getRemoteAddr() != null ? request.getRemoteAddr() : "unknown";
+        return "ip:" + clientIpResolver.resolve(request);
     }
 
     private void writeRateLimitHeaders(HttpServletResponse response, RateLimitDecision decision) {

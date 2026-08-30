@@ -922,6 +922,11 @@
   min-width: 0;
 }
 
+.advisor-busca--projeto {
+  max-width: 22.5rem;
+  width: 100%;
+}
+
 .advisor-busca__icone {
   position: absolute;
   left: 0.875rem;
@@ -981,6 +986,27 @@
 }
 
 @media (max-width: 639px) {
+  .advisor-toolbar {
+    align-items: stretch;
+  }
+
+  .advisor-busca--projeto {
+    max-width: none;
+    width: 100%;
+  }
+
+  .advisor-busca--projeto .app-combobox {
+    min-height: 3.25rem;
+    padding-left: 2.6rem;
+    padding-right: 1rem;
+  }
+
+  .advisor-busca--projeto .app-combobox__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .advisor-toolbar--avaliacoes {
     gap: var(--espaco-3);
   }
@@ -1933,8 +1959,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-2);
-  left: 0;
+  left: var(--calendario-tooltip-left, 0);
   min-width: min(18rem, calc(100vw - 2rem));
+  width: max-content;
   max-width: min(22rem, calc(100vw - 2rem));
   opacity: 0;
   padding: var(--espaco-3);
@@ -1956,20 +1983,16 @@
 .calendario-dia__tooltip::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
+  left: calc(var(--calendario-tooltip-arrow-left, 1rem) - 1rem);
+  right: auto;
   bottom: 100%;
+  width: 2rem;
   height: 0.4rem;
 }
 
 .calendario-dia--tooltip-acima .calendario-dia__tooltip::before {
   bottom: auto;
   top: 100%;
-}
-.calendario-dia:nth-child(7n) .calendario-dia__tooltip,
-.calendario-dia:nth-child(7n - 1) .calendario-dia__tooltip {
-  left: auto;
-  right: 0;
 }
 
 .calendario-dia:hover .calendario-dia__tooltip,
@@ -2348,8 +2371,9 @@
 }
 
 .student-evaluations-page__actions {
-  gap: var(--espaco-4);
-  margin-top: var(--espaco-2);
+  align-items: flex-start;
+  gap: var(--espaco-5);
+  margin-top: var(--espaco-4);
 }
 
 .advisor-profile-standard__avatar-wrap {
@@ -2456,3 +2480,4 @@
 @keyframes girar-perfil {
   to { transform: rotate(360deg); }
 }
+

@@ -19,6 +19,20 @@ test.describe("paginas internas", () => {
   });
 
   test("dashboard renderiza resumos e navega para secoes principais", async ({ page }) => runDashboardFlow(page));
+  test("aluno confirma logout pelo menu do topo", async ({ page }) => {
+    await page.goto("/app");
+    await page.getByRole("button", { name: "Abrir menu de perfil" }).click();
+    await page.getByRole("button", { name: "Sair" }).click();
+    await expect(page.getByRole("dialog", { name: "Sair da conta?" })).toBeVisible();
+    await page.getByRole("button", { name: "Cancelar" }).click();
+    await expect(page.getByRole("dialog", { name: "Sair da conta?" })).toBeHidden();
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("tcc_auth_token"))).not.toBeNull();
+
+    await page.getByRole("button", { name: "Abrir menu de perfil" }).click();
+    await page.getByRole("button", { name: "Sair" }).click();
+    await page.getByRole("button", { name: "Confirmar saída" }).click();
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("tcc_auth_token"))).toBeNull();
+  });
   test("calendario adapta layout e corta texto sem reticencias", async ({ page }) => runDeadlinesFlow(page));
   test("chat envia, edita, exclui, busca e lida com lista vazia", async ({ page, browser }) => runChatFlow(page, browser));
   test("progresso publica atualizacao e cobre estado sem projetos", async ({ page, browser }) => runProgressFlow(page, browser));

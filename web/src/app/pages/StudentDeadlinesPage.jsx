@@ -163,12 +163,29 @@ async function loadProjectsForUser(user) {
     ? await advisorService.meusProjetos()
     : await userService.getProjects(user.id);
 
-  return (Array.isArray(raw) ? raw : []).map(mapProject);
+  return (Array.isArray(raw) ? raw : [])
+    .map(mapProject)
+    .filter((project) => project?.id);
+}
+
+async function loadProjectStages(project) {
+  if (!project?.id) return [];
+
+  const stages = await etapaService.list(project.id);
+  return (Array.isArray(stages) ? stages : [])
+    .map(mapEtapa)
+    .filter(Boolean)
+    .map((stage) => ({
+      ...stage,
+      status: String(stage.status ?? "PENDING").toUpperCase(),
+      projectId: project.id,
+      projectTitle: project.title,
+    }));
 }
 
 export default function StudentDeadlinesPage() {
   const { user } = useAuth();
-  const [tooltipDirections, setTooltipDirections] = useState({});
+  const [tooltipPlacements, setTooltipPlacements] = useState({});
   const [activeTooltipKey, setActiveTooltipKey] = useState(null);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const today = new Date();
@@ -177,22 +194,11 @@ export default function StudentDeadlinesPage() {
 
   const { data, loading, error } = useAsyncData(async () => {
     const projects = await loadProjectsForUser(user);
-    const collections = await Promise.all(projects.map(async (project) => ({
-      project,
-      stages: await etapaService.list(project.id).catch(() => []),
-    })));
+    const collections = await Promise.allSettled(projects.map(loadProjectStages));
 
-    return collections.flatMap(({ project, stages }) =>
-      (Array.isArray(stages) ? stages : [])
-        .map(mapEtapa)
-        .filter(Boolean)
-        .map((stage) => ({
-          ...stage,
-          status: String(stage.status ?? "PENDING").toUpperCase(),
-          projectId: project.id,
-          projectTitle: project.title,
-        })),
-    );
+    return collections.flatMap((result) => (
+      result.status === "fulfilled" ? result.value : []
+    ));
   }, [user?.id, user?.tipo], { initialData: [] });
 
   const deadlines = useMemo(
@@ -234,16 +240,29 @@ export default function StudentDeadlinesPage() {
     if (!tooltip) return;
 
     const gap = 10;
+    const viewportMargin = 16;
     const tooltipHeight = tooltip.scrollHeight;
+    const tooltipWidth = Math.min(tooltip.scrollWidth, window.innerWidth - (viewportMargin * 2));
     const spaceBelow = window.innerHeight - dayRect.bottom;
     const spaceAbove = dayRect.top;
     const direction = spaceBelow < tooltipHeight + gap && spaceAbove > spaceBelow ? "acima" : "abaixo";
+    const centeredLeft = dayRect.left + (dayRect.width / 2) - (tooltipWidth / 2);
+    const viewportLeft = Math.min(
+      Math.max(centeredLeft, viewportMargin),
+      window.innerWidth - tooltipWidth - viewportMargin,
+    );
+    const left = Math.round(viewportLeft - dayRect.left);
+    const arrowLeft = Math.round(dayRect.left + (dayRect.width / 2) - viewportLeft);
+    const placement = { direction, left, arrowLeft };
 
-    setTooltipDirections((current) => (
-      current[key] === direction ? current : { ...current, [key]: direction }
+    setTooltipPlacements((current) => (
+      current[key]?.direction === placement.direction
+      && current[key]?.left === placement.left
+      && current[key]?.arrowLeft === placement.arrowLeft
+        ? current
+        : { ...current, [key]: placement }
     ));
   };
-
   if (loading) return <CalendarSkeleton />;
   if (error) return <StatusView title="Falha ao carregar calendário" description="Não foi possível carregar as etapas dos seus projetos." />;
 
@@ -292,10 +311,15 @@ export default function StudentDeadlinesPage() {
                 const outside = date.getMonth() !== visibleMonth.getMonth();
                 const hasItems = items.length > 0;
                 const isTooltipOpen = activeTooltipKey === key;
+                const tooltipPlacement = tooltipPlacements[key];
                 return (
                   <div
                     key={key}
-                    className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""} ${hasItems ? "calendario-dia--com-evento" : ""} ${isTooltipOpen ? "calendario-dia--tooltip-aberto" : ""} ${tooltipDirections[key] === "acima" ? "calendario-dia--tooltip-acima" : ""}`}
+                    className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""} ${hasItems ? "calendario-dia--com-evento" : ""} ${isTooltipOpen ? "calendario-dia--tooltip-aberto" : ""} ${tooltipPlacement?.direction === "acima" ? "calendario-dia--tooltip-acima" : ""}`}
+                    style={tooltipPlacement ? {
+                      "--calendario-tooltip-left": `${tooltipPlacement.left}px`,
+                      "--calendario-tooltip-arrow-left": `${tooltipPlacement.arrowLeft}px`,
+                    } : undefined}
                     aria-label={hasItems ? `${date.getDate()} com ${items.length} ${items.length === 1 ? "evento" : "eventos"}` : undefined}
                     aria-expanded={hasItems ? isTooltipOpen : undefined}
                     tabIndex={hasItems ? 0 : undefined}

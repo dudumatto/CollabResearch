@@ -1,4 +1,4 @@
-import { Bell, Menu, ChevronDown } from "lucide-react";
+import { Bell, Menu, ChevronDown, LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,6 +20,7 @@ function getInitials(name) {
 
 export function Topbar({ onMenuClick, title, subtitle }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -51,6 +52,7 @@ export function Topbar({ onMenuClick, title, subtitle }) {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
         setDropdownOpen(false);
+        setLogoutConfirmOpen(false);
       }
     };
 
@@ -75,99 +77,150 @@ export function Topbar({ onMenuClick, title, subtitle }) {
     };
   }, [reload]);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setDropdownOpen(false);
+    setLogoutConfirmOpen(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setLogoutConfirmOpen(false);
     await logout();
   };
 
   return (
-    <header className="barra-topo">
-      <div className="barra-topo__secao-esquerda">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={onMenuClick}
-          className="barra-topo__botao-menu"
-        >
-          <Menu size={20} className="barra-topo__botao-menu-icone" />
-        </motion.button>
-        <div className="barra-topo__area-titulo">
-          <h1 className="barra-topo__titulo">{title}</h1>
-          {subtitle && <p className="barra-topo__subtitulo">{subtitle}</p>}
-        </div>
-      </div>
-
-      <div className="barra-topo__secao-direita">
-
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => navigate("/app/notifications")}
-          className="barra-topo__botao-notificacoes"
-        >
-          <Bell size={18} className="barra-topo__icone-notificacoes" />
-          {unreadCount > 0 && (
-            <span className="barra-topo__contador-notificacoes">{unreadCount}</span>
-          )}
-        </motion.button>
-
-        <div className="barra-topo__area-perfil" ref={profileMenuRef}>
+    <>
+      <header className="barra-topo">
+        <div className="barra-topo__secao-esquerda">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="barra-topo__botao-perfil"
-            aria-expanded={dropdownOpen}
-            aria-haspopup="menu"
-            aria-label="Abrir menu de perfil"
+            onClick={onMenuClick}
+            className="barra-topo__botao-menu"
           >
-            <div className="barra-topo__avatar">
-              {avatarUrl && !avatarFailed ? (
-                <img src={avatarUrl} alt="Foto de perfil" onError={() => setAvatarFailed(true)} />
-              ) : (
-                <span className="barra-topo__iniciais-avatar">{getInitials(user?.nome)}</span>
-              )}
-            </div>
-            <div className="barra-topo__info-perfil">
-              <p className="barra-topo__nome-perfil">{user?.nome?.split(" ")[0] ?? "Usuário"}</p>
-              <p className="barra-topo__tipo-perfil">{formatUserType(user?.tipo)}</p>
-            </div>
-            <ChevronDown size={14} className="barra-topo__icone-dropdown" />
+            <Menu size={20} className="barra-topo__botao-menu-icone" />
+          </motion.button>
+          <div className="barra-topo__area-titulo">
+            <h1 className="barra-topo__titulo">{title}</h1>
+            {subtitle && <p className="barra-topo__subtitulo">{subtitle}</p>}
+          </div>
+        </div>
+
+        <div className="barra-topo__secao-direita">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/app/notifications")}
+            className="barra-topo__botao-notificacoes"
+          >
+            <Bell size={18} className="barra-topo__icone-notificacoes" />
+            {unreadCount > 0 && (
+              <span className="barra-topo__contador-notificacoes">{unreadCount}</span>
+            )}
           </motion.button>
 
-          <AnimatePresence>
-            {dropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="barra-topo__menu-dropdown"
-              >
-                <button
-                  onClick={() => { navigate("/app/profile"); setDropdownOpen(false); }}
-                  className="barra-topo__item-menu"
+          <div className="barra-topo__area-perfil" ref={profileMenuRef}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="barra-topo__botao-perfil"
+              aria-expanded={dropdownOpen}
+              aria-haspopup="menu"
+              aria-label="Abrir menu de perfil"
+            >
+              <div className="barra-topo__avatar">
+                {avatarUrl && !avatarFailed ? (
+                  <img src={avatarUrl} alt="Foto de perfil" onError={() => setAvatarFailed(true)} />
+                ) : (
+                  <span className="barra-topo__iniciais-avatar">{getInitials(user?.nome)}</span>
+                )}
+              </div>
+              <div className="barra-topo__info-perfil">
+                <p className="barra-topo__nome-perfil">{user?.nome?.split(" ")[0] ?? "Usuário"}</p>
+                <p className="barra-topo__tipo-perfil">{formatUserType(user?.tipo)}</p>
+              </div>
+              <ChevronDown size={14} className="barra-topo__icone-dropdown" />
+            </motion.button>
+
+            <AnimatePresence>
+              {dropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="barra-topo__menu-dropdown"
                 >
-                  Meu Perfil
-                </button>
-                <button
-                  onClick={() => { navigate("/app/configuracoes"); setDropdownOpen(false); }}
-                  className="barra-topo__item-menu"
-                >
-                  Configurações
-                </button>
-                <hr className="barra-topo__divisor-menu" />
-                <button
-                  onClick={handleLogout}
-                  className="barra-topo__item-menu barra-topo__item-menu--sair"
-                >
-                  Sair
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <button
+                    onClick={() => { navigate("/app/profile"); setDropdownOpen(false); }}
+                    className="barra-topo__item-menu"
+                  >
+                    Meu Perfil
+                  </button>
+                  <button
+                    onClick={() => { navigate("/app/configuracoes"); setDropdownOpen(false); }}
+                    className="barra-topo__item-menu"
+                  >
+                    Configurações
+                  </button>
+                  <hr className="barra-topo__divisor-menu" />
+                  <button
+                    onClick={handleLogout}
+                    className="barra-topo__item-menu barra-topo__item-menu--sair"
+                  >
+                    Sair
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <AnimatePresence>
+        {logoutConfirmOpen && (
+          <motion.div
+            className="barra-topo__logout-overlay"
+            role="presentation"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setLogoutConfirmOpen(false);
+            }}
+          >
+            <motion.div
+              className="barra-topo__logout-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="topbar-logout-title"
+              aria-describedby="topbar-logout-description"
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ duration: 0.18 }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="barra-topo__logout-icon" aria-hidden="true">
+                <LogOut size={28} />
+              </div>
+              <h2 id="topbar-logout-title" className="barra-topo__logout-title">Sair da conta?</h2>
+              <p id="topbar-logout-description" className="barra-topo__logout-desc">
+                Você precisará fazer login novamente para acessar a plataforma.
+              </p>
+              <div className="barra-topo__logout-actions">
+                <button type="button" className="barra-topo__logout-confirm" onClick={handleConfirmLogout}>
+                  Confirmar saída
+                </button>
+                <button type="button" className="barra-topo__logout-cancel" onClick={() => setLogoutConfirmOpen(false)}>
+                  Cancelar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

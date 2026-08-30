@@ -34,7 +34,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.flyway.enabled=false",
-        "jwt.secret=test-secret-value-with-at-least-32-bytes!!"
+        "jwt.secret=test-secret-value-with-at-least-32-bytes!!",
+        "app.rate-limit.max-requests=100000",
+        "app.rate-limit.window-ms=60000"
 })
 @AutoConfigureMockMvc
 class ProjetoCriacaoPersistenceE2ETest {

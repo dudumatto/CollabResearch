@@ -4,8 +4,10 @@ import com.example.tcc_backend.dto.request.ChangePasswordRequest;
 import com.example.tcc_backend.dto.request.LoginRequest;
 import com.example.tcc_backend.dto.request.RegisterRequest;
 import com.example.tcc_backend.dto.response.AuthResponse;
+import com.example.tcc_backend.security.ClientIpResolver;
 import com.example.tcc_backend.service.AuthService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -22,9 +24,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class AuthController {
 
     private final AuthService service;
+    private final ClientIpResolver clientIpResolver;
 
-    public AuthController(AuthService service) {
+    public AuthController(AuthService service, ClientIpResolver clientIpResolver) {
         this.service = service;
+        this.clientIpResolver = clientIpResolver;
     }
 
     @Operation(summary = "Registrar usuário", description = "Cria uma nova conta no sistema.")
@@ -40,11 +44,12 @@ public class AuthController {
     @Operation(summary = "Login", description = "Autentica o usuário e retorna token de acesso.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
-            @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
+            @ApiResponse(responseCode = "401", description = "Credenciais inválidas"),
+            @ApiResponse(responseCode = "429", description = "Muitas tentativas de login")
     })
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest dto) {
-        return ResponseEntity.ok(service.login(dto));
+    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest dto, HttpServletRequest request) {
+        return ResponseEntity.ok(service.login(dto, clientIpResolver.resolve(request)));
     }
 
     @Operation(summary = "Alterar senha", description = "Permite ao usuário alterar sua senha.")

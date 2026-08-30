@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, Search, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { ArrowUp, Search, Pencil, Trash2, ArrowLeft, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { conversationService } from "../services/conversationService";
@@ -709,19 +709,35 @@ export default function ChatPage() {
                           {mine && !m._temporaria && (
                             <div className="mensagem-acoes">
                               <button
-                                className="mensagem-acao-btn"
-                                onClick={() => abrirModalEdicao(m)}
-                                title="Editar mensagem"
+                                type="button"
+                                className="mensagem-acoes__gatilho"
+                                aria-label="Ações da mensagem"
+                                title="Ações da mensagem"
                               >
-                                <Pencil size={13} />
+                                <MoreVertical size={18} />
                               </button>
-                              <button
-                                className="mensagem-acao-btn mensagem-acao-btn--excluir"
-                                onClick={() => abrirModalExclusao(m)}
-                                title="Excluir mensagem"
-                              >
-                                <Trash2 size={13} />
-                              </button>
+                              <div className="mensagem-acoes__menu" role="menu" aria-label="Ações da mensagem">
+                                <button
+                                  type="button"
+                                  className="mensagem-acao-btn"
+                                  onClick={() => abrirModalEdicao(m)}
+                                  title="Editar mensagem"
+                                  aria-label="Editar mensagem"
+                                  role="menuitem"
+                                >
+                                  <Pencil size={20} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="mensagem-acao-btn mensagem-acao-btn--excluir"
+                                  onClick={() => abrirModalExclusao(m)}
+                                  title="Excluir mensagem"
+                                  aria-label="Excluir mensagem"
+                                  role="menuitem"
+                                >
+                                  <Trash2 size={20} />
+                                </button>
+                              </div>
                             </div>
                           )}
 

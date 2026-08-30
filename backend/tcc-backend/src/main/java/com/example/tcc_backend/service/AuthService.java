@@ -15,10 +15,12 @@ import com.example.tcc_backend.repository.CursoRepository;
 import com.example.tcc_backend.repository.OrientadorRepository;
 import com.example.tcc_backend.repository.UsuarioRepository;
 import com.example.tcc_backend.security.AuthHelper;
+import com.example.tcc_backend.security.LoginBruteForceProtectionService;
 import com.example.tcc_backend.security.TokenRevocationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final AuthHelper authHelper;
     private final TokenRevocationService tokenRevocationService;
+    private final LoginBruteForceProtectionService bruteForceProtectionService;
 
     public AuthService(UsuarioRepository usuarioRepository,
                        AlunoRepository alunoRepository,
@@ -46,7 +49,8 @@ public class AuthService {
                        JwtService jwtService,
                        AuthenticationManager authenticationManager,
                        AuthHelper authHelper,
-                       TokenRevocationService tokenRevocationService) {
+                       TokenRevocationService tokenRevocationService,
+                       LoginBruteForceProtectionService bruteForceProtectionService) {
         this.usuarioRepository = usuarioRepository;
         this.alunoRepository = alunoRepository;
         this.orientadorRepository = orientadorRepository;
@@ -56,6 +60,7 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
         this.authHelper = authHelper;
         this.tokenRevocationService = tokenRevocationService;
+        this.bruteForceProtectionService = bruteForceProtectionService;
     }
 
     @Transactional
@@ -113,13 +118,26 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest dto) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
-        );
+        return login(dto, "unknown");
+    }
 
-        Usuario usuario = usuarioRepository.findByEmail(dto.getEmail()).orElseThrow();
+    public AuthResponse login(LoginRequest dto, String clientIp) {
+        String email = normalizarEmail(dto.getEmail());
+        bruteForceProtectionService.assertAllowed(email, clientIp);
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, dto.getSenha())
+            );
+        } catch (AuthenticationException ex) {
+            bruteForceProtectionService.recordFailure(email, clientIp);
+            throw ex;
+        }
+
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow();
         Aluno aluno = alunoRepository.findByUsuarioId(usuario.getId()).orElse(null);
         Orientador orientador = orientadorRepository.findByUsuarioId(usuario.getId()).orElse(null);
+        bruteForceProtectionService.recordSuccess(email, clientIp);
         return new AuthResponse(jwtService.generateToken(usuario), UsuarioProfileResponse.from(usuario, aluno, orientador));
     }
 
@@ -155,6 +173,10 @@ public class AuthService {
         }
         String token = value.substring(7).trim();
         return token.isEmpty() ? null : token;
+    }
+
+    private String normalizarEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase();
     }
 
     private String normalizarTexto(String valor) {

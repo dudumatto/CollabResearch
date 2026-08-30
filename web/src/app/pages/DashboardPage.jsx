@@ -289,8 +289,17 @@ export default function DashboardPage() {
                 {derived.recentProjects.length === 0 ? (
                   <StatusView title="Nenhum projeto encontrado" description="A API ainda não retornou projetos para exibir aqui." />
                 ) : (
-                  derived.recentProjects.map((project) => (
-                    <div key={project.id} className="inscricao-item">
+                  derived.recentProjects.map((project, index) => (
+                    <motion.button
+                      key={project.id}
+                      type="button"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, delay: index * 0.04 }}
+                      onClick={() => navigate(`/app/projects/${project.id}`)}
+                      className="inscricao-item inscricao-item--clicavel"
+                      aria-label={`Abrir informações do projeto ${project.title}`}
+                    >
                       <div className="inscricao-item__icone-area">
                         <FolderOpen size={15} style={{ color: "var(--cor-texto-fraco)" }} />
                       </div>
@@ -301,7 +310,8 @@ export default function DashboardPage() {
                       <span className={`inscricao-item__status ${projectStatusClassMap[project.status] ?? "inscricao-item__status--pendente"}`}>
                         {formatProjectStatus(project.status)}
                       </span>
-                    </div>
+                      <ChevronRight size={14} className="inscricao-item__seta" aria-hidden="true" />
+                    </motion.button>
                   ))
                 )}
               </div>
@@ -318,26 +328,34 @@ export default function DashboardPage() {
                 {derived.recentApplications.length === 0 ? (
                   <StatusView title="Sem inscrições" description="Quando você se candidatar a projetos, elas aparecerão aqui." />
                 ) : (
-                  derived.recentApplications.map((application, index) => (
-                    <motion.div
-                      key={application.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25, delay: index * 0.04 }}
-                      className="inscricao-item"
-                    >
-                      <div className="inscricao-item__icone-area">
-                        <FileText size={15} style={{ color: "var(--cor-texto-fraco)" }} />
-                      </div>
-                      <div className="inscricao-item__info">
-                        <p className="inscricao-item__titulo">{application.project?.title ?? "Projeto"}</p>
-                        <p className="inscricao-item__orientador">{application.project?.advisor?.name ?? "Sem orientador"}</p>
-                      </div>
-                      <span className={`inscricao-item__status ${statusClassMap[application.status] ?? "inscricao-item__status--pendente"}`}>
-                        {formatApplicationStatus(application.status)}
-                      </span>
-                    </motion.div>
-                  ))
+                  derived.recentApplications.map((application, index) => {
+                    const projectId = application.project?.id ?? application.projectId;
+                    return (
+                      <motion.button
+                        key={application.id}
+                        type="button"
+                        disabled={projectId == null}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, delay: index * 0.04 }}
+                        onClick={projectId != null ? () => navigate(`/app/projects/${projectId}`) : undefined}
+                        className={`inscricao-item ${projectId != null ? "inscricao-item--clicavel" : ""}`}
+                        aria-label={projectId != null ? `Abrir informações do projeto ${application.project?.title ?? "Projeto"}` : undefined}
+                      >
+                        <div className="inscricao-item__icone-area">
+                          <FileText size={15} style={{ color: "var(--cor-texto-fraco)" }} />
+                        </div>
+                        <div className="inscricao-item__info">
+                          <p className="inscricao-item__titulo">{application.project?.title ?? "Projeto"}</p>
+                          <p className="inscricao-item__orientador">{application.project?.advisor?.name ?? "Sem orientador"}</p>
+                        </div>
+                        <span className={`inscricao-item__status ${statusClassMap[application.status] ?? "inscricao-item__status--pendente"}`}>
+                          {formatApplicationStatus(application.status)}
+                        </span>
+                        {projectId != null && <ChevronRight size={14} className="inscricao-item__seta" aria-hidden="true" />}
+                      </motion.button>
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -393,12 +411,15 @@ export default function DashboardPage() {
                   <StatusView title="Sem notificações" description="As notificações do sistema aparecerão aqui." />
                 ) : (
                   derived.recentNotifications.map((notif, index) => (
-                    <motion.div
+                    <motion.button
                       key={notif.id}
+                      type="button"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: index * 0.05 }}
-                      className={`notificacao-resumo ${!notif.read ? "notificacao-resumo--nao-lida" : ""}`}
+                      onClick={() => navigate(notif.actionUrl || "/app/notifications")}
+                      className={`notificacao-resumo notificacao-resumo--clicavel ${!notif.read ? "notificacao-resumo--nao-lida" : ""}`}
+                      aria-label={`Abrir notificação ${notif.title}`}
                     >
                       <div className="notificacao-resumo__icone-area notificacao-resumo__icone-area--info">
                         <Bell size={14} style={{ color: "var(--cor-primaria)" }} />
@@ -412,7 +433,8 @@ export default function DashboardPage() {
                         </p>
                       </div>
                       {!notif.read && <div className="notificacao-resumo__ponto-nao-lido" />}
-                    </motion.div>
+                      <ChevronRight size={14} className="notificacao-resumo__seta" aria-hidden="true" />
+                    </motion.button>
                   ))
                 )}
               </div>
@@ -423,3 +445,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+

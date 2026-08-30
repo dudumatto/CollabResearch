@@ -37,7 +37,7 @@ public class DeadlineNotificationService {
 
     @Transactional
     public DeadlineNotificationResult processarAlertasDePrazo() {
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = LocalDate.now(ZoneOffset.UTC);
         List<EtapaProgresso> etapas = etapaProgressoRepository.findByPrazoIsNotNull().stream()
                 .filter(etapa -> etapa.getStatus() != EtapaProgressoStatus.DONE
                         && etapa.getStatus() != EtapaProgressoStatus.REJECTED)

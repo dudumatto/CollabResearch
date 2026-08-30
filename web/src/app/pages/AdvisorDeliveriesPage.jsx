@@ -214,7 +214,7 @@ export default function AdvisorDeliveriesPage() {
       </div>
 
       <div className="advisor-toolbar">
-        <div className="advisor-busca" style={{ maxWidth: 360 }}>
+        <div className="advisor-busca advisor-busca--projeto">
           <FolderOpen size={16} className="advisor-busca__icone" />
           <AppCombobox
             ariaLabel="Selecionar projeto"

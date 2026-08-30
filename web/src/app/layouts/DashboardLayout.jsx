@@ -57,6 +57,7 @@ export function DashboardLayout() {
   const location = useLocation();
   const { user } = useAuth();
 
+  const isChatPage = location.pathname === "/app/chat";
   const baseInfo = pageInfoFor(location, user);
   const pageInfo = {
     ...baseInfo,
@@ -76,13 +77,13 @@ export function DashboardLayout() {
           setMobileOpen={setMobileOpen}
         />
 
-        <div className={`pagina-app__principal ${collapsed ? "pagina-app__principal--recolhida" : ""}`}>
+        <div className={`pagina-app__principal ${collapsed ? "pagina-app__principal--recolhida" : ""} ${isChatPage ? "pagina-app__principal--chat" : ""}`}>
           <Topbar
             onMenuClick={() => setMobileOpen(true)}
             title={pageInfo.title}
             subtitle={pageInfo.subtitle}
           />
-          <main className="pagina-app__conteudo">
+          <main className={`pagina-app__conteudo ${isChatPage ? "pagina-app__conteudo--chat" : ""}`}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
@@ -90,7 +91,7 @@ export function DashboardLayout() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="pagina-app__pagina"
+                className={`pagina-app__pagina ${isChatPage ? "pagina-app__pagina--chat" : ""}`}
               >
                 <Suspense fallback={<div className="pagina-app__rota-carregando" aria-label="Carregando página" />}>
                   <Outlet />
@@ -103,3 +104,5 @@ export function DashboardLayout() {
     </SidebarContext.Provider>
   );
 }
+
+

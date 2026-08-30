@@ -136,7 +136,8 @@ test.describe("jornada 6 — equipe colabora", () => {
       const editedMsg = `Editado ${Date.now()}`;
       const msgBubble = senderPage.locator(".mensagem-texto", { hasText: originalMsg });
       await msgBubble.hover();
-      await senderPage.locator(".mensagem-acao-btn[title='Editar mensagem']").click();
+      await senderPage.getByRole("button", { name: "Ações da mensagem" }).last().click();
+      await senderPage.getByRole("menuitem", { name: "Editar mensagem" }).click();
       await senderPage.locator(".modal__textarea").fill(editedMsg);
       await senderPage.locator(".modal__btn--confirmar").click();
       await expect(senderPage.getByText(editedMsg)).toBeVisible();

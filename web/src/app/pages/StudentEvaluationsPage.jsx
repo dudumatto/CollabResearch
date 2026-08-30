@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MessageSquare } from "lucide-react";
+import { CheckCircle, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -150,9 +150,12 @@ export default function StudentEvaluationsPage() {
           </div>
 
           {item.cienciaRegistrada ? (
-            <span className="advisor-etiqueta advisor-etiqueta--verde student-evaluations-page__acknowledged">
-              Ciência registrada
-            </span>
+            <div className="advisor-entrega__acoes student-evaluations-page__actions student-evaluations-page__actions--acknowledged">
+              <button className="advisor-botao advisor-botao--sucesso" type="button" disabled>
+                <CheckCircle size={15} />
+                Ciência registrada
+              </button>
+            </div>
           ) : (
             <div className="advisor-entrega__acoes student-evaluations-page__actions">
               <input
@@ -173,3 +176,4 @@ export default function StudentEvaluationsPage() {
     </div>
   );
 }
+
