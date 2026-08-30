@@ -17,6 +17,7 @@ type MockOptions = {
   user?: MockUser;
   empty?: Partial<Record<"projects" | "applications" | "documents" | "notifications" | "conversations" | "progress" | "feedbacks", boolean>>;
   fail?: Array<string | RegExp>;
+  delay?: Array<{ rule: string | RegExp; ms: number }>;
 };
 
 const jsonHeaders = { "Content-Type": "application/json" };
@@ -88,6 +89,15 @@ function shouldFail(url: URL, options: MockOptions): boolean {
   });
 }
 
+
+function delayFor(url: URL, options: MockOptions): number {
+  const target = `${url.pathname}${url.search}`;
+  const match = (options.delay ?? []).find(({ rule }) => {
+    if (typeof rule === "string") return target.includes(rule);
+    return rule.test(target);
+  });
+  return match?.ms ?? 0;
+}
 async function readJson(route: Route): Promise<Record<string, unknown>> {
   try {
     return (await route.request().postDataJSON()) as Record<string, unknown>;
@@ -358,6 +368,8 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
     const url = new URL(request.url());
     const path = url.pathname;
     const method = request.method();
+    const delayMs = delayFor(url, options);
+    if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
 
     if (shouldFail(url, options)) {
       await fulfill(route, 500, { message: "Falha simulada pela API E2E." });
@@ -514,7 +526,7 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
         areaNome: areas.find((item) => item.id === Number(body.areaId))?.nome ?? "Ciencia da Computacao",
         cursoNome: String(body.curso ?? "Ciencia da Computacao"),
         vagas: Number(body.vagas ?? 1),
-        status: "ABERTO",
+        status: state.currentUser.tipo === "ALUNO" ? "PENDENTE_ORIENTADOR" : "ABERTO",
         dataCriacao: new Date().toISOString(),
         alunoCriadorId: state.currentUser.id,
         alunoCriadorNome: state.currentUser.nome,

@@ -6,14 +6,18 @@ import {
   runProjectsEmptyAndErrorFlow,
   runProjectApplicationsAccessFlow,
   runProjectOwnerConfirmationsFlow,
+  runProjectDetailSkeletonMobileFlow,
 } from "./projects.robot";
 
 test.describe("projetos", () => {
   test.beforeEach(async ({ page }) => {
-    await setupApiMock(page);
+    await setupApiMock(page, test.info().title.includes("skeleton do detalhe") ? { delay: [{ rule: /^\/api\/projetos\/2$/, ms: 450 }] } : undefined);
     await authenticateAs(page, mockUsers.student);
   });
 
+  test("skeleton do detalhe do projeto fica responsivo no mobile", async ({ page }) => {
+    await runProjectDetailSkeletonMobileFlow(page);
+  });
   test("lista, busca, filtros, detalhe e candidatura feliz", async ({ page }) => {
     await runProjectsListAndApplyFlow(page);
   });

@@ -145,3 +145,26 @@ export async function runProjectApplicationsAccessFlow(browser: Browser) {
   await expectToast(advisorPage, "Inscrição aprovada.");
   await advisorContext.close();
 }
+
+export async function runProjectDetailSkeletonMobileFlow(page: Page) {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app/projects/2");
+  const skeleton = page.locator(".pagina-detalhe-projeto--skeleton");
+  await expect(skeleton).toBeVisible();
+  const layout = await skeleton.evaluate((element) => {
+    const viewportWidth = window.innerWidth;
+    const rects = Array.from(element.querySelectorAll(".skeleton, .detalhe-card--skeleton"))
+      .map((item) => item.getBoundingClientRect());
+    return {
+      viewportWidth,
+      pageWidth: element.getBoundingClientRect().width,
+      maxRight: Math.max(...rects.map((rect) => rect.right)),
+      minLeft: Math.min(...rects.map((rect) => rect.left)),
+    };
+  });
+  expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewportWidth);
+  expect(layout.minLeft).toBeGreaterThanOrEqual(0);
+  expect(layout.maxRight).toBeLessThanOrEqual(layout.viewportWidth);
+
+  await expect(page.getByRole("heading", { name: "Projeto E2E Candidatura" })).toBeVisible();
+}

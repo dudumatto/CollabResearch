@@ -26,63 +26,67 @@ import { formatProjectStatus } from "../utils/formatters";
 import "./ProjectDetailPage.css";
 
 function ProjectDetailSkeleton() {
-  const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
-    <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
+  const Sk = ({ w = "100%", h = 14, r = "0.5rem", className = "", style = {} }) => (
+    <div className={`skeleton ${className}`.trim()} style={{ width: w, height: h, borderRadius: r, ...style }} />
   );
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-5)", padding: "var(--espaco-4)" }}>
-      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+    <div className="pagina-detalhe-projeto pagina-detalhe-projeto--skeleton" aria-busy="true" aria-label="Carregando projeto">
+      <div className="pagina-detalhe-projeto__barra-topo detalhe-skeleton__barra">
         <Sk w={32} h={32} r="var(--raio-medio)" />
-        <Sk w={200} h={16} />
-        <Sk w={70} h={22} r="var(--raio-completo)" />
+        <Sk w="min(48vw, 200px)" h={16} />
+        <Sk w={70} h={22} r="var(--raio-completo)" className="detalhe-skeleton__status" />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "var(--espaco-5)" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-4)" }}>
-          <div style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-5)" }}>
-            <Sk w="70%" h={22} mb={12} />
-            <Sk w="100%" h={13} mb={6} />
-            <Sk w="95%" h={13} mb={6} />
-            <Sk w="80%" h={13} mb={16} />
-            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+
+      <div className="pagina-detalhe-projeto__grade detalhe-skeleton__grade">
+        <div className="pagina-detalhe-projeto__conteudo-principal">
+          <section className="detalhe-card detalhe-card--skeleton">
+            <Sk w="70%" h={22} style={{ marginBottom: 12 }} />
+            <Sk h={13} style={{ marginBottom: 6 }} />
+            <Sk w="95%" h={13} style={{ marginBottom: 6 }} />
+            <Sk w="80%" h={13} style={{ marginBottom: 16 }} />
+            <div className="detalhe-skeleton__chips">
               {[1, 2, 3].map((i) => <Sk key={i} w={70} h={24} r="var(--raio-completo)" />)}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "var(--espaco-3)" }}>
+            <div className="detalhe-skeleton__stats">
               {[1, 2, 3].map((i) => (
-                <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div key={i} className="detalhe-skeleton__stat">
                   <Sk w="60%" h={12} />
                   <Sk w="80%" h={16} />
                 </div>
               ))}
             </div>
-          </div>
-          <div style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-5)" }}>
-            <Sk w={160} h={16} mb={16} />
+          </section>
+
+          <section className="detalhe-card detalhe-card--skeleton">
+            <Sk w={160} h={16} style={{ marginBottom: 16 }} />
             {[1, 2].map((i) => (
-              <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--cor-borda-clara)" }}>
-                <Sk w={36} h={36} r="50%" />
-                <div style={{ flex: 1 }}>
-                  <Sk w="55%" h={13} mb={6} />
+              <div key={i} className="detalhe-skeleton__linha">
+                <Sk w={36} h={36} r="50%" className="detalhe-skeleton__avatar" />
+                <div className="detalhe-skeleton__texto">
+                  <Sk w="55%" h={13} style={{ marginBottom: 6 }} />
                   <Sk w="40%" h={11} />
                 </div>
-                <Sk w={70} h={22} r="var(--raio-completo)" />
+                <Sk w={70} h={22} r="var(--raio-completo)" className="detalhe-skeleton__status" />
               </div>
             ))}
-          </div>
+          </section>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-4)" }}>
-          <div style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-5)", display: "flex", flexDirection: "column", gap: 14 }}>
+
+        <aside className="pagina-detalhe-projeto__sidebar detalhe-skeleton__sidebar">
+          <section className="card-inscricao detalhe-card--skeleton">
             <Sk w={110} h={15} />
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <Sk w={48} h={48} r="50%" />
-              <div style={{ flex: 1 }}>
-                <Sk w="65%" h={14} mb={6} />
+            <div className="detalhe-skeleton__orientador">
+              <Sk w={48} h={48} r="50%" className="detalhe-skeleton__avatar" />
+              <div className="detalhe-skeleton__texto">
+                <Sk w="65%" h={14} style={{ marginBottom: 6 }} />
                 <Sk w="50%" h={12} />
               </div>
             </div>
-            <Sk w="100%" h={40} r="var(--raio-medio)" />
-            <Sk w="100%" h={40} r="var(--raio-medio)" />
-          </div>
-        </div>
+            <Sk h={40} r="var(--raio-medio)" />
+            <Sk h={40} r="var(--raio-medio)" />
+          </section>
+        </aside>
       </div>
     </div>
   );

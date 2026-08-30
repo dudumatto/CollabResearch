@@ -245,6 +245,115 @@
   overflow-wrap: anywhere;
 }
 
+
+/* ================================================================
+   Skeleton responsivo
+   ================================================================ */
+.pagina-detalhe-projeto--skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  min-width: 0;
+}
+
+.detalhe-skeleton__barra {
+  justify-content: flex-start;
+  margin-bottom: 0;
+}
+
+.detalhe-card--skeleton {
+  overflow: hidden;
+}
+
+.detalhe-skeleton__grade {
+  align-items: start;
+}
+
+.detalhe-skeleton__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+  margin-bottom: var(--espaco-4);
+}
+
+.detalhe-skeleton__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-3);
+}
+
+.detalhe-skeleton__stat,
+.detalhe-skeleton__texto {
+  min-width: 0;
+}
+
+.detalhe-skeleton__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detalhe-skeleton__linha,
+.detalhe-skeleton__orientador {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.detalhe-skeleton__linha {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--cor-borda-clara);
+}
+
+.detalhe-skeleton__linha:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.detalhe-skeleton__orientador {
+  margin: var(--espaco-3) 0;
+}
+
+.detalhe-skeleton__avatar,
+.detalhe-skeleton__status {
+  flex-shrink: 0;
+}
+
+.detalhe-skeleton__sidebar .card-inscricao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+@media (max-width: 767px) {
+  .pagina-detalhe-projeto--skeleton {
+    gap: var(--espaco-4);
+  }
+
+  .detalhe-skeleton__barra {
+    align-items: center;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .detalhe-skeleton__barra .detalhe-skeleton__status {
+    grid-column: 1 / -1;
+    width: 6rem !important;
+  }
+
+  .detalhe-skeleton__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .detalhe-skeleton__linha {
+    align-items: flex-start;
+  }
+
+  .detalhe-skeleton__linha .detalhe-skeleton__status {
+    width: 3rem !important;
+  }
+}
 /* ================================================================
    Card de cabeçalho do projeto
    ================================================================ */
