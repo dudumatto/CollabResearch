@@ -41,5 +41,15 @@ void main() {
       ApiEndpoints.cancelSubscription('8'),
       '/api/inscricoes/8/cancelar',
     );
+    expect(ApiEndpoints.projectStages('4'), '/api/projetos/4/etapas');
+    expect(ApiEndpoints.projectDeliveries('4'), '/api/projetos/4/entregas');
+    expect(ApiEndpoints.projectEvaluations('4'), '/api/projetos/4/avaliacoes');
+    expect(
+      ApiEndpoints.acknowledgeEvaluation('4', '9'),
+      '/api/projetos/4/avaliacoes/9/ciencia',
+    );
+    expect(ApiEndpoints.advisorDashboard(), '/api/orientador/dashboard');
+    expect(ApiEndpoints.advisees(), '/api/orientador/orientandos');
+    expect(ApiEndpoints.userDocuments('3'), '/api/documentos/usuario/3');
   });
 }

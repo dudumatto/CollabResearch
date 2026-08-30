@@ -33,6 +33,14 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     Subscription subscription, {
     required bool approve,
   }) async {
+    final confirmed = await _confirm(
+      title: approve ? 'Aprovar inscrição?' : 'Recusar inscrição?',
+      message: approve
+          ? '${subscription.studentName ?? 'O aluno'} será vinculado ao projeto ${subscription.projectTitle}.'
+          : 'A inscrição de ${subscription.studentName ?? 'este aluno'} será recusada.',
+      action: approve ? 'Aprovar' : 'Recusar',
+    );
+    if (!confirmed || !mounted) return;
     final success = await provider.review(subscription.id, approve: approve);
     if (!mounted) return;
     _showMessage(
@@ -48,6 +56,13 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     SubscriptionProvider provider,
     Subscription subscription,
   ) async {
+    final confirmed = await _confirm(
+      title: 'Cancelar inscrição?',
+      message:
+          'Sua inscrição em ${subscription.projectTitle} será removida da lista.',
+      action: 'Cancelar inscrição',
+    );
+    if (!confirmed || !mounted) return;
     final success = await provider.cancel(subscription.id);
     if (!mounted) return;
     _showMessage(
@@ -55,6 +70,31 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
           ? 'Inscricao cancelada.'
           : provider.errorMessage ?? 'Nao foi possivel cancelar a inscricao.',
     );
+  }
+
+  Future<bool> _confirm({
+    required String title,
+    required String message,
+    required String action,
+  }) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Voltar'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(action),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   void _showMessage(String message) {
@@ -218,7 +258,7 @@ class _SubscriptionCard extends StatelessWidget {
                   child: const Text('Recusar'),
                 ),
               ],
-              if (userType == 'ALUNO')
+              if (userType == 'ALUNO' && pending)
                 TextButton(
                   onPressed: isLoading ? null : onCancel,
                   child: const Text('Cancelar inscricao'),

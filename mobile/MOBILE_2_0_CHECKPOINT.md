@@ -1,45 +1,35 @@
-# CollabResearch Mobile 2.0 — checkpoint interrompido
+# CollabResearch Mobile 2.0 — checkpoint de conclusão
 
-Data do checkpoint: 2026-08-30.
+Data da retomada: 2026-08-30.
 
-O trabalho foi interrompido a pedido do usuário antes da conclusão da paridade funcional. Este arquivo registra o ponto exato para retomada sem ambiguidade.
+Este checkpoint substitui o registro de interrupção anterior. A retomada foi concluída mantendo as alterações restritas a `mobile/`.
 
-## Concluído neste checkpoint
+## Entregue
 
-- Auditoria de `web/`, `mobile/`, contratos relevantes de `backend/` e vídeo de referência.
-- Matriz de paridade levantada: Entregas, Avaliações, Agenda, Documentos, Orientandos e perfil de terceiros não existiam no Flutter.
-- Direção visual definida a partir do vídeo: mobile-first, navegação inferior com cinco destinos, verde da marca, pouco relevo e cards acadêmicos.
-- Tokens de spacing, radius e elevação adicionados.
-- Paleta e tipografia do tema refinadas.
-- Model `Project` ampliado para preservar requisitos, tecnologias, imagem e datas.
-- Edição de projeto protegida contra apagar campos que antes não eram modelados pelo Flutter.
-- Formulário de criação ampliado com requisitos, tecnologias, imagem e datas.
-- Dependência `file_picker` adicionada para anexos reais de entregas.
-- Models, endpoints, service e provider do workspace acadêmico criados.
-- Telas de Agenda e Entregas implementadas em arquivos próprios.
+- Agenda, Entregas e Avaliações conectadas ao GoRouter, aos projetos, ao dashboard e ao perfil.
+- Fluxos de avaliação do aluno e do orientador, incluindo ciência, edição antes da ciência, notas e comentários.
+- Orientandos, detalhe do orientando, perfil de terceiros e conversa privada.
+- Documentos próprios e públicos, com exclusão, abertura externa e separação de estado entre perfis.
+- Dashboard acadêmico específico para aluno e orientador.
+- Reenvio, revisão e download de versões de entregas com regras de autorização e validação.
+- Estado e confirmações de inscrições/orientações.
+- Redesign responsivo de cards de projeto, notificações e componentes acadêmicos.
+- Proteções contra overflow em 320 px e escala de texto ampliada.
+- Testes de endpoints, parsing, regras acadêmicas e widgets responsivos.
 
-## Ponto exato de parada
+## Verificação deste checkpoint
 
-As telas abaixo existem, mas ainda **não foram conectadas ao GoRouter nem aos atalhos do Perfil/Projeto**:
+- `dart analyze lib test`: sem problemas.
+- `flutter test --no-pub`: 51 testes aprovados.
+- `flutter build web --no-pub`: concluído; artefatos em `build/web`.
+- Build Android não executado porque o ambiente não possui Android SDK.
 
-- `lib/screens/agenda/agenda_screen.dart`
-- `lib/screens/deliveries/deliveries_screen.dart`
+## Limitações externas conhecidas
 
-O próximo passo planejado era criar a tela de Avaliações e depois conectar as novas rotas.
+- O backend não oferece upload binário de documentos. A versão web envia o arquivo diretamente ao Supabase e só depois registra a URL; por isso o mobile informa essa indisponibilidade em vez de simular um upload incompleto.
+- Downloads de entregas que retornam redirecionamento/URL assinada são abertos externamente. Uma resposta local direta (`200` com o binário) ainda exige uma estratégia de armazenamento local específica por plataforma.
+- O build web emite avisos de Wasm para `flutter_secure_storage_web` e de fonte Cupertino, sem impedir o build JavaScript atual.
 
-## Ainda não iniciado ou não concluído
+## Próxima ação segura
 
-- Tela e fluxo de Avaliações acadêmicas.
-- Orientandos e detalhe do orientando.
-- Perfil de terceiros.
-- Documentos (listar/excluir é possível; upload binário depende da integração Supabase que o backend não oferece diretamente).
-- Dashboard específico do ORIENTADOR usando `/api/orientador/dashboard`.
-- Redesign final de Dashboard, Projetos, Detalhe do projeto, Chat, Notificações e Perfil.
-- Correção completa do estado de inscrição atual e das confirmações de cancelar/aprovar/rejeitar.
-- Rotas/deep links das novas áreas.
-- Testes de widget específicos para os novos fluxos.
-- Build Android: o ambiente atual não possui Android SDK.
-
-## Regra para retomada
-
-Continuar alterando somente `mobile/`. Não modificar `web/` nem `backend/`. Antes de retomar, executar `flutter analyze` e `flutter test` para confirmar que este checkpoint continua íntegro.
+Revisar o diff, criar um commit desta retomada e fazer push somente quando autorizado pelo usuário.

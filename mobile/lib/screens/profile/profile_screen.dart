@@ -9,6 +9,7 @@ import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/academic/academic_widgets.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -261,6 +262,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Área acadêmica',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _userType(user) == 'Orientador'
+                          ? 'Revise entregas e acompanhe avaliações da equipe.'
+                          : 'Acompanhe seus prazos, entregas e avaliações.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 12),
+                    AcademicActionTile(
+                      icon: Icons.event_note_outlined,
+                      title: 'Agenda',
+                      description: 'Etapas e prazos dos projetos.',
+                      onTap: () => context.push('/agenda'),
+                    ),
+                    const SizedBox(height: 8),
+                    AcademicActionTile(
+                      icon: Icons.upload_file_outlined,
+                      title: 'Entregas',
+                      description: _userType(user) == 'Orientador'
+                          ? 'Arquivos aguardando revisão.'
+                          : 'Arquivos enviados e novas versões.',
+                      onTap: () => context.push('/deliveries'),
+                    ),
+                    const SizedBox(height: 8),
+                    AcademicActionTile(
+                      icon: Icons.fact_check_outlined,
+                      title: 'Avaliações',
+                      description: _userType(user) == 'Orientador'
+                          ? 'Notas por etapa e ciência dos alunos.'
+                          : 'Notas e comentários do orientador.',
+                      onTap: () => context.push('/evaluations'),
+                    ),
+                    const SizedBox(height: 8),
+                    if (_userType(user) == 'Orientador') ...[
+                      AcademicActionTile(
+                        icon: Icons.groups_outlined,
+                        title: 'Orientandos',
+                        description: 'Progresso e pendências dos estudantes.',
+                        onTap: () => context.push('/advisees'),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    AcademicActionTile(
+                      icon: Icons.description_outlined,
+                      title: 'Documentos',
+                      description: 'Arquivos vinculados ao perfil acadêmico.',
+                      onTap: () => context.push('/documents'),
                     ),
                   ],
                 ),

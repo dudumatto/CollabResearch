@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_tokens.dart';
 import '../../models/academic_workspace.dart';
@@ -22,9 +23,11 @@ class DeliveriesScreen extends StatefulWidget {
 class _DeliveriesScreenState extends State<DeliveriesScreen> {
   String? _selectedProjectId;
 
-  bool get _isAdvisor =>
-      (context.read<AuthProvider>().currentUser?.type ?? '').toUpperCase() ==
-      'ORIENTADOR';
+  bool get _isAdvisor {
+    final user = context.read<AuthProvider>().currentUser;
+    final role = user?.type ?? user?.roles.firstOrNull ?? '';
+    return role.toUpperCase() == 'ORIENTADOR';
+  }
 
   @override
   void initState() {
@@ -38,9 +41,11 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
     await related.loadRelatedProjects();
     if (!mounted) return;
     setState(() {
-      _selectedProjectId ??= related.relatedProjects.isEmpty
-          ? null
-          : related.relatedProjects.first.id;
+      final requestedExists = related.relatedProjects
+          .any((project) => project.id == _selectedProjectId);
+      if (!requestedExists) {
+        _selectedProjectId = related.relatedProjects.firstOrNull?.id;
+      }
     });
     final id = _selectedProjectId;
     if (id != null) {
@@ -66,7 +71,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
       isScrollControlled: true,
       useSafeArea: true,
       builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setSheetState) => Padding(
+        builder: (context, setSheetState) => SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
             20,
             20,
@@ -82,6 +87,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: title,
+                onChanged: (_) => setSheetState(() {}),
                 decoration: const InputDecoration(labelText: 'Título'),
               ),
               const SizedBox(height: 12),
@@ -126,6 +132,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
 
   Future<void> _openVersions(DeliveryItem delivery) async {
     final academic = context.read<AcademicWorkspaceProvider>();
+    final currentUserId = context.read<AuthProvider>().currentUser?.id;
     await academic.loadVersions(delivery.projectId, delivery.id);
     if (!mounted) return;
     final versions = academic.versionsByDelivery[delivery.id] ?? const [];
@@ -156,31 +163,63 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                             ? 'Aguardando revisão'
                             : version.decision!),
                   ),
-                  trailing: _isAdvisor && version.decision == null
-                      ? IconButton(
-                          tooltip: 'Revisar',
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _review(delivery, version);
-                          },
-                          icon: const Icon(Icons.rate_review_outlined),
-                        )
-                      : AcademicStatusBadge(
-                          version.decision ?? 'PENDING_REVIEW',
+                  trailing: PopupMenuButton<String>(
+                    tooltip: 'Ações da versão',
+                    onSelected: (action) {
+                      Navigator.pop(context);
+                      if (action == 'open') {
+                        _openDeliveryFile(delivery, version);
+                      } else if (action == 'review') {
+                        _review(delivery, version);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'open',
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.open_in_new),
+                          title: Text('Abrir arquivo'),
                         ),
+                      ),
+                      if (_isAdvisor && version.decision == null)
+                        const PopupMenuItem(
+                          value: 'review',
+                          child: ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(Icons.rate_review_outlined),
+                            title: Text('Revisar'),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            if (!_isAdvisor) ...[
+            if (delivery.canResubmit(
+              userId: currentUserId,
+              isAdvisor: _isAdvisor,
+            )) ...[
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: () async {
                   final file = await _pickFile();
                   if (file == null || !context.mounted) return;
                   Navigator.pop(context);
-                  await academic.resubmitDelivery(
+                  final success = await academic.resubmitDelivery(
                     delivery.projectId,
                     delivery.id,
                     file,
+                  );
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? 'Nova versão enviada.'
+                            : academic.errorMessage ??
+                                'Não foi possível enviar a nova versão.',
+                      ),
+                    ),
                   );
                 },
                 icon: const Icon(Icons.upload_file_outlined),
@@ -193,9 +232,40 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
     );
   }
 
+  Future<void> _openDeliveryFile(
+    DeliveryItem delivery,
+    DeliveryVersion version,
+  ) async {
+    final academic = context.read<AcademicWorkspaceProvider>();
+    final url = await academic.deliveryDownloadUrl(
+      delivery.projectId,
+      delivery.id,
+      version.id,
+    );
+    if (!mounted) return;
+    if (url == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            academic.errorMessage ??
+                'O servidor não forneceu um link externo para este arquivo.',
+          ),
+        ),
+      );
+      return;
+    }
+    final opened = await launchUrl(url, mode: LaunchMode.externalApplication);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível abrir o arquivo.')),
+      );
+    }
+  }
+
   Future<void> _review(DeliveryItem delivery, DeliveryVersion version) async {
     final comment = TextEditingController();
     String decision = 'APPROVED';
+    String? formError;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
@@ -213,14 +283,24 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                     child: Text('Solicitar ajustes'),
                   ),
                 ],
-                onChanged: (value) =>
-                    setDialogState(() => decision = value ?? decision),
+                onChanged: (value) => setDialogState(() {
+                  decision = value ?? decision;
+                  formError = null;
+                }),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: comment,
+                onChanged: (_) {
+                  if (formError != null) {
+                    setDialogState(() => formError = null);
+                  }
+                },
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Comentário'),
+                decoration: InputDecoration(
+                  labelText: 'Comentário',
+                  errorText: formError,
+                ),
               ),
             ],
           ),
@@ -230,7 +310,19 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
               child: const Text('Cancelar'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
+              onPressed: () {
+                final validation = validateDeliveryReviewComment(
+                  decision,
+                  comment.text,
+                );
+                if (validation != null) {
+                  setDialogState(
+                    () => formError = validation,
+                  );
+                  return;
+                }
+                Navigator.pop(dialogContext, true);
+              },
               child: const Text('Salvar revisão'),
             ),
           ],
@@ -238,13 +330,24 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
       ),
     );
     if (confirmed != true || !mounted) return;
-    await context.read<AcademicWorkspaceProvider>().reviewDelivery(
-          projectId: delivery.projectId,
-          deliveryId: delivery.id,
-          versionId: version.id,
-          decision: decision,
-          comment: comment.text.trim(),
-        );
+    final academic = context.read<AcademicWorkspaceProvider>();
+    final success = await academic.reviewDelivery(
+      projectId: delivery.projectId,
+      deliveryId: delivery.id,
+      versionId: version.id,
+      decision: decision,
+      comment: comment.text.trim(),
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Revisão registrada.'
+              : academic.errorMessage ?? 'Não foi possível salvar a revisão.',
+        ),
+      ),
+    );
   }
 
   @override
@@ -269,95 +372,105 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
           : null,
       body: RefreshIndicator(
         onRefresh: _load,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: AppSpacing.page,
-          children: [
-            AcademicPageHeader(
-              eyebrow: _isAdvisor ? 'Revisão' : 'Produção acadêmica',
-              title: _isAdvisor ? 'Entregas da equipe' : 'Minhas entregas',
-              description: _isAdvisor
-                  ? 'Acompanhe versões e registre a decisão da revisão.'
-                  : 'Envie arquivos e acompanhe o retorno do orientador.',
-            ),
-            if (related.relatedProjects.isNotEmpty)
-              DropdownButtonFormField<String>(
-                initialValue: _selectedProjectId,
-                isExpanded: true,
-                decoration: const InputDecoration(
-                  labelText: 'Projeto',
-                  prefixIcon: Icon(Icons.folder_outlined),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final horizontal = constraints.maxWidth > 760
+                ? (constraints.maxWidth - 720) / 2
+                : AppSpacing.page.left;
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 88),
+              children: [
+                AcademicPageHeader(
+                  eyebrow: _isAdvisor ? 'Revisão' : 'Produção acadêmica',
+                  title: _isAdvisor ? 'Entregas da equipe' : 'Minhas entregas',
+                  description: _isAdvisor
+                      ? 'Acompanhe versões e registre a decisão da revisão.'
+                      : 'Envie arquivos e acompanhe o retorno do orientador.',
                 ),
-                items: [
-                  for (final project in related.relatedProjects)
-                    DropdownMenuItem(
-                      value: project.id,
-                      child:
-                          Text(project.title, overflow: TextOverflow.ellipsis),
+                if (related.relatedProjects.isNotEmpty)
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedProjectId,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Projeto',
+                      prefixIcon: Icon(Icons.folder_outlined),
                     ),
-                ],
-                onChanged: (value) async {
-                  setState(() => _selectedProjectId = value);
-                  if (value != null) await academic.loadProjectWorkspace(value);
-                },
-              ),
-            const SizedBox(height: 20),
-            if (academic.isLoading && deliveries.isEmpty)
-              const AcademicSkeletonList()
-            else if (academic.errorMessage != null && deliveries.isEmpty)
-              AcademicErrorState(
-                  message: academic.errorMessage!, onRetry: _load)
-            else if (deliveries.isEmpty)
-              const AcademicEmptyState(
-                icon: Icons.upload_file_outlined,
-                title: 'Nenhuma entrega registrada',
-                description:
-                    'As entregas e versões deste projeto aparecerão aqui.',
-              )
-            else
-              for (final delivery in deliveries) ...[
-                Card(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    onTap: () => _openVersions(delivery),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(children: [
-                            Expanded(
-                              child: Text(delivery.title,
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium),
-                            ),
-                            AcademicStatusBadge(delivery.status),
-                          ]),
-                          const SizedBox(height: 8),
-                          Text(
-                            [delivery.stageTitle, delivery.category]
-                                .whereType<String>()
-                                .where((item) => item.isNotEmpty)
-                                .join(' · '),
-                            style: Theme.of(context).textTheme.bodySmall,
+                    items: [
+                      for (final project in related.relatedProjects)
+                        DropdownMenuItem(
+                          value: project.id,
+                          child: Text(project.title,
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                    ],
+                    onChanged: (value) async {
+                      setState(() => _selectedProjectId = value);
+                      if (value != null) {
+                        await academic.loadProjectWorkspace(value);
+                      }
+                    },
+                  ),
+                const SizedBox(height: 20),
+                if (academic.isLoading && deliveries.isEmpty)
+                  const AcademicSkeletonList()
+                else if (academic.errorMessage != null && deliveries.isEmpty)
+                  AcademicErrorState(
+                      message: academic.errorMessage!, onRetry: _load)
+                else if (deliveries.isEmpty)
+                  const AcademicEmptyState(
+                    icon: Icons.upload_file_outlined,
+                    title: 'Nenhuma entrega registrada',
+                    description:
+                        'As entregas e versões deste projeto aparecerão aqui.',
+                  )
+                else
+                  for (final delivery in deliveries) ...[
+                    Card(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        onTap: () => _openVersions(delivery),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(children: [
+                                Expanded(
+                                  child: Text(delivery.title,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium),
+                                ),
+                                AcademicStatusBadge(delivery.status),
+                              ]),
+                              const SizedBox(height: 8),
+                              Text(
+                                [delivery.stageTitle, delivery.category]
+                                    .whereType<String>()
+                                    .where((item) => item.isNotEmpty)
+                                    .join(' · '),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              const SizedBox(height: 12),
+                              Row(children: [
+                                const Icon(Icons.history, size: 16),
+                                const SizedBox(width: 6),
+                                Text('${delivery.totalVersions} versões'),
+                                const Spacer(),
+                                const Icon(Icons.chevron_right),
+                              ]),
+                            ],
                           ),
-                          const SizedBox(height: 12),
-                          Row(children: [
-                            const Icon(Icons.history, size: 16),
-                            const SizedBox(width: 6),
-                            Text('${delivery.totalVersions} versões'),
-                            const Spacer(),
-                            const Icon(Icons.chevron_right),
-                          ]),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                  ],
+                const SizedBox(height: 72),
               ],
-            const SizedBox(height: 72),
-          ],
+            );
+          },
         ),
       ),
     );

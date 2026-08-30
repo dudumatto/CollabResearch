@@ -71,72 +71,82 @@ class _AgendaScreenState extends State<AgendaScreen> {
   Widget build(BuildContext context) {
     final projects = context.watch<ResearchActivityProvider>();
     final academic = context.watch<AcademicWorkspaceProvider>();
-    final role =
-        (context.watch<AuthProvider>().currentUser?.type ?? '').toUpperCase();
+    final user = context.watch<AuthProvider>().currentUser;
+    final role = (user?.type ?? user?.roles.firstOrNull ?? '').toUpperCase();
     final items = _items(projects, academic);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Agenda')),
       body: RefreshIndicator(
         onRefresh: _load,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: AppSpacing.page,
-          children: [
-            const AcademicPageHeader(
-              eyebrow: 'Prazos reais',
-              title: 'Agenda acadêmica',
-              description:
-                  'Etapas e datas dos seus projetos em uma única visão.',
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SegmentedButton<_AgendaFilter>(
-                segments: const [
-                  ButtonSegment(
-                      value: _AgendaFilter.upcoming, label: Text('Próximos')),
-                  ButtonSegment(
-                      value: _AgendaFilter.overdue, label: Text('Atrasados')),
-                  ButtonSegment(
-                      value: _AgendaFilter.done, label: Text('Concluídos')),
-                  ButtonSegment(value: _AgendaFilter.all, label: Text('Todos')),
-                ],
-                selected: {_filter},
-                onSelectionChanged: (value) =>
-                    setState(() => _filter = value.first),
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (academic.isLoading && items.isEmpty)
-              const AcademicSkeletonList()
-            else if (academic.errorMessage != null && items.isEmpty)
-              AcademicErrorState(
-                message: academic.errorMessage!,
-                onRetry: _load,
-              )
-            else if (items.isEmpty)
-              const AcademicEmptyState(
-                icon: Icons.event_available_outlined,
-                title: 'Nenhum prazo nesta categoria',
-                description:
-                    'As datas definidas nas etapas dos projetos aparecerão aqui.',
-              )
-            else
-              for (final stage in items) ...[
-                _StageCard(
-                  stage: stage,
-                  canComplete: !stage.isDone &&
-                      (stage.responsible == 'AMBOS' ||
-                          stage.responsible == role),
-                  busy: academic.isLoading,
-                  onComplete: () => academic.completeStage(
-                    stage.projectId,
-                    stage.id,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final horizontal = constraints.maxWidth > 760
+                ? (constraints.maxWidth - 720) / 2
+                : AppSpacing.page.left;
+            return ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 32),
+              children: [
+                const AcademicPageHeader(
+                  eyebrow: 'Prazos reais',
+                  title: 'Agenda acadêmica',
+                  description:
+                      'Etapas e datas dos seus projetos em uma única visão.',
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SegmentedButton<_AgendaFilter>(
+                    segments: const [
+                      ButtonSegment(
+                          value: _AgendaFilter.upcoming,
+                          label: Text('Próximos')),
+                      ButtonSegment(
+                          value: _AgendaFilter.overdue,
+                          label: Text('Atrasados')),
+                      ButtonSegment(
+                          value: _AgendaFilter.done, label: Text('Concluídos')),
+                      ButtonSegment(
+                          value: _AgendaFilter.all, label: Text('Todos')),
+                    ],
+                    selected: {_filter},
+                    onSelectionChanged: (value) =>
+                        setState(() => _filter = value.first),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
+                if (academic.isLoading && items.isEmpty)
+                  const AcademicSkeletonList()
+                else if (academic.errorMessage != null && items.isEmpty)
+                  AcademicErrorState(
+                    message: academic.errorMessage!,
+                    onRetry: _load,
+                  )
+                else if (items.isEmpty)
+                  const AcademicEmptyState(
+                    icon: Icons.event_available_outlined,
+                    title: 'Nenhum prazo nesta categoria',
+                    description:
+                        'As datas definidas nas etapas dos projetos aparecerão aqui.',
+                  )
+                else
+                  for (final stage in items) ...[
+                    _StageCard(
+                      stage: stage,
+                      canComplete: !stage.isDone &&
+                          (stage.responsible == 'AMBOS' ||
+                              stage.responsible == role),
+                      busy: academic.isLoading,
+                      onComplete: () => academic.completeStage(
+                        stage.projectId,
+                        stage.id,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
               ],
-          ],
+            );
+          },
         ),
       ),
     );

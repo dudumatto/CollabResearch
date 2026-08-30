@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../../models/app_notification.dart';
 import '../../providers/notification_provider.dart';
-import '../../widgets/common/app_button.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/notifications/notification_tile.dart';
@@ -75,38 +74,62 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           return RefreshIndicator(
             onRefresh: provider.loadNotifications,
             child: ListView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
-                AppButton(
-                  label: 'Marcar todas como lidas',
-                  onPressed:
-                      provider.unreadCount == 0 ? null : provider.markAllAsRead,
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 720),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                provider.unreadCount == 0
+                                    ? 'Você está em dia.'
+                                    : '${provider.unreadCount} não lida(s)',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: provider.unreadCount == 0
+                                  ? null
+                                  : provider.markAllAsRead,
+                              icon: const Icon(Icons.done_all),
+                              label: const Text('Marcar todas'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (provider.errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Text(
+                              provider.errorMessage!,
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error),
+                            ),
+                          ),
+                        if (provider.notifications.isEmpty)
+                          const SizedBox(
+                            height: 280,
+                            child: EmptyState(
+                              title: 'Nenhuma notificacao encontrada',
+                              subtitle: 'Puxe para atualizar.',
+                            ),
+                          )
+                        else
+                          ...provider.notifications.map(
+                            (notification) => NotificationTile(
+                              notification: notification,
+                              onTap: () => _openNotification(notification),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                if (provider.errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      provider.errorMessage!,
-                      style:
-                          TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                  ),
-                if (provider.notifications.isEmpty)
-                  const SizedBox(
-                    height: 280,
-                    child: EmptyState(
-                      title: 'Nenhuma notificacao encontrada',
-                      subtitle: 'Puxe para atualizar.',
-                    ),
-                  )
-                else
-                  ...provider.notifications.map(
-                    (notification) => NotificationTile(
-                      notification: notification,
-                      onTap: () => _openNotification(notification),
-                    ),
-                  ),
               ],
             ),
           );

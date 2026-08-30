@@ -108,6 +108,30 @@ class AcademicWorkspaceService {
       ..sort((a, b) => b.number.compareTo(a.number));
   }
 
+  Future<Uri?> deliveryDownloadUrl(
+    String projectId,
+    String deliveryId,
+    String versionId,
+  ) async {
+    final response = await _dio.get<List<int>>(
+      ApiEndpoints.downloadDeliveryVersion(
+        projectId,
+        deliveryId,
+        versionId,
+      ),
+      options: Options(
+        followRedirects: false,
+        responseType: ResponseType.bytes,
+        validateStatus: (status) =>
+            status == 200 || status == 302 || status == 307,
+      ),
+    );
+    final location = response.headers.value('location');
+    if (location == null || location.isEmpty) return null;
+    final base = Uri.parse(_dio.options.baseUrl);
+    return base.resolve(location);
+  }
+
   Future<void> reviewDelivery({
     required String projectId,
     required String deliveryId,
@@ -186,11 +210,17 @@ class AcademicWorkspaceService {
     return parseListPayload(response.data).map(Subscription.fromJson).toList();
   }
 
-  Future<List<AdviseeSummary>> advisees({String? search}) async {
+  Future<List<AdviseeSummary>> advisees({
+    String? search,
+    String? projectId,
+    String? situation,
+  }) async {
     final response = await _dio.get<dynamic>(
       ApiEndpoints.advisees(),
       queryParameters: {
         if (search != null && search.isNotEmpty) 'busca': search,
+        if (projectId != null && projectId.isNotEmpty) 'projetoId': projectId,
+        if (situation != null && situation.isNotEmpty) 'situacao': situation,
       },
     );
     return parseListPayload(response.data)

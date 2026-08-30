@@ -5,10 +5,12 @@ import 'package:provider/provider.dart';
 import '../../core/utils/project_status.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
+import '../../providers/subscription_provider.dart';
 import '../../widgets/common/app_badge.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/academic/academic_widgets.dart';
 import '../../widgets/projects/collaborator_list.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
@@ -26,6 +28,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProjectProvider>().loadProject(widget.projectId);
+      context.read<SubscriptionProvider>().load();
     });
   }
 
@@ -48,6 +51,28 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     String projectId, {
     required bool accept,
   }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(accept ? 'Aceitar orientação?' : 'Recusar orientação?'),
+        content: Text(
+          accept
+              ? 'Você será registrado como orientador responsável por este projeto.'
+              : 'O projeto ficará sem esta solicitação de orientação.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Voltar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(accept ? 'Aceitar' : 'Recusar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
     final success = accept
         ? await provider.acceptOrientation(projectId)
         : await provider.rejectOrientation(projectId);
@@ -94,8 +119,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               project.status.toUpperCase() == 'PENDENTE_ORIENTADOR';
           final canReview =
               userType == 'ORIENTADOR' && isResponsibleAdvisor && isPending;
+          final subscriptions = context.watch<SubscriptionProvider>();
+          final currentSubscription = subscriptions.subscriptions
+              .where((item) => item.projectId == project.id)
+              .firstOrNull;
           final canSubscribe = userType == 'ALUNO' &&
               !isOwner &&
+              !subscriptions.isLoading &&
+              currentSubscription == null &&
               project.status.toUpperCase() == 'ABERTO' &&
               project.collaborators < project.vacancies;
           final canEdit = isOwner || isResponsibleAdvisor;
@@ -168,6 +199,19 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   onPressed: () => _subscribe(provider, project.id),
                 ),
               ],
+              if (userType == 'ALUNO' && currentSubscription != null) ...[
+                AppBadge(
+                  label:
+                      'Inscrição ${currentSubscription.status.toLowerCase()}',
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () => context.push('/subscriptions'),
+                  icon: const Icon(Icons.assignment_outlined),
+                  label: const Text('Ver minha inscrição'),
+                ),
+              ],
               if (canEdit) ...[
                 if (canReview || canSubscribe) const SizedBox(height: 8),
                 OutlinedButton.icon(
@@ -188,26 +232,49 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
+                AcademicActionTile(
+                  icon: Icons.event_note_outlined,
+                  title: 'Agenda do projeto',
+                  description: 'Etapas, responsáveis e prazos acadêmicos.',
+                  onTap: () => context.push('/agenda?projectId=${project.id}'),
+                ),
+                const SizedBox(height: 8),
+                AcademicActionTile(
+                  icon: Icons.upload_file_outlined,
+                  title: 'Entregas e versões',
+                  description: 'Arquivos enviados e decisões da revisão.',
+                  onTap: () =>
+                      context.push('/deliveries?projectId=${project.id}'),
+                ),
+                const SizedBox(height: 8),
+                AcademicActionTile(
+                  icon: Icons.fact_check_outlined,
+                  title: 'Avaliações acadêmicas',
+                  description: 'Notas por etapa e registro de ciência.',
+                  onTap: () =>
+                      context.push('/evaluations?projectId=${project.id}'),
+                ),
+                const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    OutlinedButton.icon(
+                    TextButton.icon(
                       onPressed: () =>
-                          context.go('/progress?projectId=${project.id}'),
+                          context.push('/progress?projectId=${project.id}'),
                       icon: const Icon(Icons.trending_up),
                       label: const Text('Progresso'),
                     ),
-                    OutlinedButton.icon(
+                    TextButton.icon(
                       onPressed: () =>
-                          context.go('/feedback?projectId=${project.id}'),
+                          context.push('/feedback?projectId=${project.id}'),
                       icon: const Icon(Icons.star_outline),
                       label: const Text('Feedback'),
                     ),
-                    OutlinedButton.icon(
-                      onPressed: () => context.go('/subscriptions'),
+                    TextButton.icon(
+                      onPressed: () => context.push('/subscriptions'),
                       icon: const Icon(Icons.assignment_outlined),
-                      label: const Text('Inscricoes'),
+                      label: const Text('Inscrições'),
                     ),
                   ],
                 ),

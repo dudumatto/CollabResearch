@@ -19,6 +19,7 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
   final List<AdviseeSummary> advisees = [];
   final List<Subscription> advisorApplications = [];
   final List<AcademicDocument> documents = [];
+  final List<AcademicDocument> profileDocuments = [];
   final List<Project> profileProjects = [];
 
   AdvisorDashboard? advisorSummary;
@@ -26,6 +27,7 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
   User? selectedUser;
   bool isLoading = false;
   String? errorMessage;
+  int _pendingOperations = 0;
 
   List<ProjectStage> stagesFor(String projectId) =>
       stagesByProject[projectId] ?? const [];
@@ -145,6 +147,30 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
             await _service.deliveryVersions(projectId, deliveryId);
       });
 
+  Future<Uri?> deliveryDownloadUrl(
+    String projectId,
+    String deliveryId,
+    String versionId,
+  ) async {
+    _beginOperation();
+    errorMessage = null;
+    try {
+      return await _service.deliveryDownloadUrl(
+        projectId,
+        deliveryId,
+        versionId,
+      );
+    } on DioException catch (error) {
+      errorMessage = ApiClient.instance.friendlyError(error);
+      return null;
+    } catch (_) {
+      errorMessage = 'Não foi possível abrir o arquivo da entrega.';
+      return null;
+    } finally {
+      _endOperation();
+    }
+  }
+
   Future<bool> resubmitDelivery(
     String projectId,
     String deliveryId,
@@ -230,17 +256,27 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
           ..addAll(await _service.projectApplications(projectId));
       });
 
-  Future<void> loadAdvisees({String? search}) => _run(() async {
+  Future<void> loadAdvisees({
+    String? search,
+    String? projectId,
+    String? situation,
+  }) =>
+      _run(() async {
         advisees
           ..clear()
-          ..addAll(await _service.advisees(search: search));
+          ..addAll(await _service.advisees(
+            search: search,
+            projectId: projectId,
+            situation: situation,
+          ));
       });
 
-  Future<void> loadAdvisee(String studentId, {String? projectId}) =>
-      _run(() async {
-        selectedAdvisee =
-            await _service.advisee(studentId, projectId: projectId);
-      });
+  Future<void> loadAdvisee(String studentId, {String? projectId}) {
+    selectedAdvisee = null;
+    return _run(() async {
+      selectedAdvisee = await _service.advisee(studentId, projectId: projectId);
+    });
+  }
 
   Future<void> loadDocuments(String userId) => _run(() async {
         documents
@@ -255,25 +291,29 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
           ..addAll(await _service.documents(userId));
       });
 
-  Future<void> loadUserProfile(String userId) => _run(() async {
-        final results = await Future.wait<dynamic>([
-          _service.userProfile(userId),
-          _service.userProjects(userId),
-          _service.documents(userId),
-        ]);
-        selectedUser = results[0] as User;
-        profileProjects
-          ..clear()
-          ..addAll(results[1] as List<Project>);
-        documents
-          ..clear()
-          ..addAll(results[2] as List<AcademicDocument>);
-      });
+  Future<void> loadUserProfile(String userId) {
+    selectedUser = null;
+    profileProjects.clear();
+    profileDocuments.clear();
+    return _run(() async {
+      final results = await Future.wait<dynamic>([
+        _service.userProfile(userId),
+        _service.userProjects(userId),
+        _service.documents(userId),
+      ]);
+      selectedUser = results[0] as User;
+      profileProjects
+        ..clear()
+        ..addAll(results[1] as List<Project>);
+      profileDocuments
+        ..clear()
+        ..addAll(results[2] as List<AcademicDocument>);
+    });
+  }
 
   Future<void> _run(Future<void> Function() operation) async {
-    isLoading = true;
+    _beginOperation();
     errorMessage = null;
-    notifyListeners();
     try {
       await operation();
     } on DioException catch (error) {
@@ -281,15 +321,13 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
     } catch (_) {
       errorMessage = 'Nao foi possivel carregar os dados academicos.';
     } finally {
-      isLoading = false;
-      notifyListeners();
+      _endOperation();
     }
   }
 
   Future<bool> _action(Future<void> Function() operation) async {
-    isLoading = true;
+    _beginOperation();
     errorMessage = null;
-    notifyListeners();
     try {
       await operation();
       return true;
@@ -300,8 +338,19 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
       errorMessage = 'Nao foi possivel concluir esta acao.';
       return false;
     } finally {
-      isLoading = false;
-      notifyListeners();
+      _endOperation();
     }
+  }
+
+  void _beginOperation() {
+    _pendingOperations += 1;
+    isLoading = true;
+    notifyListeners();
+  }
+
+  void _endOperation() {
+    if (_pendingOperations > 0) _pendingOperations -= 1;
+    isLoading = _pendingOperations > 0;
+    notifyListeners();
   }
 }

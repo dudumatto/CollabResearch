@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../core/utils/project_status.dart';
 import '../../models/project.dart';
 import '../common/app_card.dart';
@@ -30,26 +29,41 @@ class ProjectCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    project.title,
-                    // Mobile-only: preserva o titulo completo em cards estreitos.
-                    maxLines: mobile ? null : 2,
-                    overflow:
-                        mobile ? TextOverflow.visible : TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium,
+            if (mobile) ...[
+              Text(
+                project.title,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                statusLabel,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: statusColor,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+            ] else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      project.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ],
-            ),
+                  const SizedBox(width: 8),
+                  Text(
+                    statusLabel,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: statusColor,
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 8),
             if (mobile) ...[
               // Mobile-only: separa classificacoes longas sem ocultar dados.
@@ -99,28 +113,43 @@ class ProjectCard extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _InfoPill(
-                  icon: Icons.flag_outlined,
-                  label: statusLabel,
-                  color: statusColor,
-                  mobile: mobile,
-                ),
-                _InfoPill(
-                  icon: Icons.work_outline,
-                  label: '${project.vacancies} vagas',
-                  mobile: mobile,
-                ),
-                _InfoPill(
-                  icon: Icons.groups_outlined,
-                  label: '${project.collaborators} colaboradores',
-                  mobile: mobile,
-                ),
-              ],
-            ),
+            Divider(color: Theme.of(context).colorScheme.outlineVariant),
+            const SizedBox(height: 10),
+            if (mobile)
+              Wrap(
+                spacing: 14,
+                runSpacing: 8,
+                children: [
+                  _ProjectMetric(
+                    icon: Icons.work_outline,
+                    label: '${project.vacancies} vagas',
+                  ),
+                  _ProjectMetric(
+                    icon: Icons.groups_outlined,
+                    label: '${project.collaborators} na equipe',
+                  ),
+                ],
+              )
+            else
+              Row(
+                children: [
+                  _ProjectMetric(
+                    icon: Icons.work_outline,
+                    label: '${project.vacancies} vagas',
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: _ProjectMetric(
+                      icon: Icons.groups_outlined,
+                      label: '${project.collaborators} na equipe',
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ],
+              ),
           ],
         ),
       ),
@@ -128,60 +157,25 @@ class ProjectCard extends StatelessWidget {
   }
 }
 
-class _InfoPill extends StatelessWidget {
-  const _InfoPill({
-    required this.icon,
-    required this.label,
-    this.color = AppColors.muted,
-    this.mobile = false,
-  });
+class _ProjectMetric extends StatelessWidget {
+  const _ProjectMetric({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
-  final Color color;
-  final bool mobile;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.18)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        child: Row(
-          // Mobile-only: cada pill respeita a largura do card.
-          mainAxisSize: mobile ? MainAxisSize.max : MainAxisSize.min,
-          children: [
-            Icon(icon, size: 15, color: color),
-            const SizedBox(width: 6),
-            if (mobile)
-              Expanded(
-                child: Text(
-                  label,
-                  softWrap: true,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              )
-            else
-              Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-          ],
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 17,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-      ),
+        const SizedBox(width: 6),
+        Text(label),
+      ],
     );
   }
 }

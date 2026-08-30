@@ -111,6 +111,9 @@ class DeliveryItem {
   final int totalVersions;
   final String? projectTitle;
 
+  bool canResubmit({required String? userId, required bool isAdvisor}) =>
+      !isAdvisor && userId != null && userId.isNotEmpty && authorId == userId;
+
   factory DeliveryItem.fromJson(Map<String, dynamic> json) => DeliveryItem(
         id: '${json['id'] ?? ''}',
         projectId: '${json['projetoId'] ?? ''}',
@@ -386,6 +389,15 @@ class AcademicDocument {
   final String? url;
   final DateTime? sentAt;
 
+  Uri? get externalUri {
+    final parsed = Uri.tryParse(url ?? '');
+    if (parsed == null ||
+        (parsed.scheme != 'http' && parsed.scheme != 'https')) {
+      return null;
+    }
+    return parsed;
+  }
+
   factory AcademicDocument.fromJson(Map<String, dynamic> json) =>
       AcademicDocument(
         id: '${json['id'] ?? ''}',
@@ -395,6 +407,14 @@ class AcademicDocument {
         url: _text(json['url'] ?? json['downloadUrl']),
         sentAt: _date(json['dataEnvio'] ?? json['dataUpload']),
       );
+}
+
+String? validateDeliveryReviewComment(String decision, String? comment) {
+  if (decision.toUpperCase() == 'CHANGES_REQUESTED' &&
+      (comment == null || comment.trim().isEmpty)) {
+    return 'Informe os ajustes necessários.';
+  }
+  return null;
 }
 
 class AdvisorDashboard {
