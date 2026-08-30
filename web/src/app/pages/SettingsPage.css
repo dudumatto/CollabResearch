@@ -119,12 +119,12 @@
 
  
 .icon-blue   { background-color: color-mix(in srgb, var(--cor-primaria) 15%, transparent); color: var(--cor-primaria); }
-.icon-purple { background-color: #2e2a4a20; color: #9b72e0; }
+.icon-purple { background-color: color-mix(in srgb, #9b72e0 15%, transparent); color: #9b72e0; }
 .icon-teal   { background-color: #1a303520; color: #4ab8c8; }
 .icon-green  { background-color: #1a3a2a20; color: #4caf82; }
 .icon-red    { background-color: color-mix(in srgb, var(--cor-erro) 15%, transparent); color: var(--cor-erro); }
 .icon-yellow { background-color: #35301820; color: #d4b84a; }
-.icon-pink   { background-color: #3a1e2e20; color: #d46898; }
+.icon-pink   { background-color: color-mix(in srgb, #d46898 15%, transparent); color: #d46898; }
 .icon-gray   { background-color: var(--cor-superficie-2, #2e2e2e20); color: var(--cor-texto-fraco); }
  
 .cfg-nav-item__text {

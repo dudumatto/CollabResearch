@@ -75,7 +75,7 @@ export default function ProjectsPage() {
 
   const { data, loading, error } = useAsyncData(
     async () => {
-      const result = await projectService.listMine({
+      const result = await projectService.listPaged({
         curso: selectedCourse === "Todos" ? "" : selectedCourse,
         area: selectedArea === "Todas" ? "" : selectedArea,
         status: selectedStatus === "Todos" ? "" : selectedStatus,
@@ -133,8 +133,8 @@ export default function ProjectsPage() {
     >
       <div className="pagina-projetos__cabecalho">
         <div>
-          <h2 className="pagina-projetos__titulo">{filtered.length} projetos vinculados</h2>
-          <p className="pagina-projetos__subtitulo">Acompanhe projetos em andamento e mantenha finalizados como histórico de consulta.</p>
+          <h2 className="pagina-projetos__titulo">{filtered.length} projetos disponíveis</h2>
+          <p className="pagina-projetos__subtitulo">Explore projetos abertos, acompanhe vinculados e mantenha finalizados como histórico de consulta.</p>
         </div>
         <div className="pagina-projetos__acoes-cabecalho">
           <motion.button

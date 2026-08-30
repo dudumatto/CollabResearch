@@ -105,7 +105,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
 
   const notifications = Array.isArray(data) ? data : [];
   const unreadCount = notifications.filter((item) => !item.read).length;
-  const isAdvisor = features.advisorWorkspaceV2 && user?.tipo === "ORIENTADOR";
+  const isAdvisor = user?.tipo === "ORIENTADOR";
   const activeSections = (isAdvisor ? advisorSections : studentSections)
     .map((section) => ({
       ...section,

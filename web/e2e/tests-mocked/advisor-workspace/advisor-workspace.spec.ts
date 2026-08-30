@@ -13,7 +13,7 @@ const PAGINAS = [
   { nome: "projetos", rota: "/app/projects", pistas: ["Projeto E2E Autoria"] },
   { nome: "inscricoes", rota: "/app/applications", pistas: ["Analise novas candidaturas"] },
   { nome: "orientandos", rota: "/app/advisees", pistas: ["Aluno E2E"] },
-  { nome: "orientando-detalhe", rota: "/app/advisees/1", pistas: ["Histórico de participação"] },
+  { nome: "orientando-detalhe", rota: "/app/advisees/1", pistas: ["Etapas"] },
   { nome: "progresso", rota: "/app/progress", pistas: ["Organize etapas e prazos"] },
   { nome: "entregas", rota: "/app/deliveries", pistas: ["Monografia"] },
   { nome: "avaliacoes", rota: "/app/avaliacoes", pistas: ["Registre desempenho acadêmico"] },
@@ -70,3 +70,4 @@ test.describe("area do orientador (mockada)", () => {
     await expect(page.getByRole("button", { name: "Recarregar página" })).toBeVisible();
   });
 });
+

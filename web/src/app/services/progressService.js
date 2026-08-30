@@ -22,6 +22,8 @@ function normalizeStep(step) {
     stepOrder: Number(step.stepOrder ?? step.ordem ?? 0),
     status: String(step.status ?? "PENDING").toUpperCase(),
     responsible: String(step.responsible ?? step.responsavel ?? "AMBOS").toUpperCase(),
+    deadline: step.deadline ?? step.prazo ?? step.dataPrazo ?? null,
+    prazo: step.prazo ?? step.deadline ?? step.dataPrazo ?? null,
     completedAt: step.completedAt ?? step.concluidaEm ?? null,
     completedBy: step.completedBy ?? step.concluidaPor ?? null,
   };
@@ -38,6 +40,8 @@ function normalizeLegacyStage(stage) {
     weight: Number(stage?.peso ?? normalized.weight ?? 0),
     stepOrder: Number(stage?.ordem ?? normalized.stepOrder ?? 0),
     responsible: String(stage?.responsavel ?? normalized.responsible ?? "AMBOS").toUpperCase(),
+    deadline: stage?.prazo ?? normalized.deadline ?? null,
+    prazo: stage?.prazo ?? normalized.prazo ?? null,
     completedAt: stage?.concluidaEm ?? normalized.completedAt ?? null,
     completedBy: stage?.concluidaPor ?? normalized.completedBy ?? null,
   };

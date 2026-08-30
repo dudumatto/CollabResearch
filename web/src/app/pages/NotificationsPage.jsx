@@ -214,17 +214,18 @@ export default function NotificationsPage() {
     const conversationId = notification.conversationId ?? urlTarget?.conversationId ?? null;
     const messageId = notification.messageId ?? urlTarget?.messageId ?? null;
 
-    if (!notification.read) {
-      try {
+    try {
+      if (!notification.read) {
         await notificationService.markAsRead(notification.id);
         setData((prev) =>
           prev.map((item) => (item.id === notification.id ? { ...item, read: true } : item)),
         );
-        notifyNotificationsUpdated();
-      } catch (err) {
-        toast.error(err.message || "Não foi possível marcar como lida.");
-        return;
       }
+      hideNotificationsLocally([notification.id]);
+      notifyNotificationsUpdated();
+    } catch (err) {
+      toast.error(err.message || "Não foi possível visualizar a notificação.");
+      return;
     }
 
     if (notification.type === "MENSAGEM_RECEBIDA") {
@@ -248,7 +249,6 @@ export default function NotificationsPage() {
       navigate(notification.actionUrl);
     }
   };
-
   if (loading) return <NotificationsSkeleton />;
 
   if (error) {
@@ -364,3 +364,4 @@ export default function NotificationsPage() {
     </div>
   );
 }
+

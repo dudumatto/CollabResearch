@@ -44,7 +44,9 @@ export async function runDeadlinesFlow(page: Page) {
     await expect(tooltip).toBeVisible();
     const tooltipBox = await tooltip.boundingBox();
     expect(tooltipBox?.x ?? 0).toBeGreaterThanOrEqual(0);
+    expect(tooltipBox?.y ?? 0).toBeGreaterThanOrEqual(0);
     expect((tooltipBox?.x ?? 0) + (tooltipBox?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
+    expect((tooltipBox?.y ?? 0) + (tooltipBox?.height ?? 0)).toBeLessThanOrEqual(viewport.height);
     await expect(page).toHaveURL(originalUrl);
 
     if (viewport.width > 1119) {
@@ -239,11 +241,11 @@ export async function runNotificationsFlow(page: Page) {
   await expect(page.getByRole("heading", { name: "Notificações", exact: true })).toBeVisible();
   await expect(page.getByText("Inscrição aprovada", { exact: true })).toBeVisible();
   await page.getByTitle("Marcar como lida").click();
-  await expect(page.getByText("Nenhuma nova notificação")).toBeVisible();
-  await page.getByRole("button", { name: /Mensagem recebida/ }).click();
-  await expect(page.getByText("Nova mensagem", { exact: true })).toBeVisible();
+  await expect(page.getByText("2 notificações disponíveis")).toBeVisible();
+  await page.locator(".notificacao-item").filter({ hasText: "Nova mensagem" }).click();
+  await expect(page.getByText("Nova mensagem", { exact: true })).toBeHidden();
   await page.getByRole("button", { name: "Limpar vista local" }).click();
-  await expect(page.getByText("Nenhuma notificação", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Nenhuma notificação", exact: true })).toBeVisible();
 }
 
 export async function runSettingsFlow(page: Page, expectedRole = "Aluno") {
@@ -286,6 +288,3 @@ export async function runSettingsFlow(page: Page, expectedRole = "Aluno") {
   await page.getByRole("button", { name: "Confirmar saída" }).click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("tcc_auth_token"))).toBeNull();
 }
-
-
-

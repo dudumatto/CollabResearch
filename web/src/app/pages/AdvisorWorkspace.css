@@ -1485,6 +1485,7 @@
 
 /* ---- Etapas ---- */
 .advisor-etapa {
+  background: color-mix(in srgb, var(--cor-fundo-leve) 78%, var(--cor-primaria-clara));
   border: 1px solid var(--cor-borda-clara);
   border-radius: var(--raio-medio);
   padding: var(--espaco-4);
@@ -1550,6 +1551,10 @@
   color: var(--cor-erro-escura);
 }
 
+.dark .advisor-etapa {
+  background: color-mix(in srgb, var(--cor-superficie-3, #102018) 88%, var(--cor-primaria) 12%);
+  border-color: color-mix(in srgb, var(--cor-primaria) 24%, var(--cor-borda-clara));
+}
 /* ---- Entregas ---- */
 .advisor-entrega {
   border: 1px solid var(--cor-borda-clara);
@@ -1959,24 +1964,23 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-2);
-  left: var(--calendario-tooltip-left, 0);
+  left: var(--calendario-tooltip-left, 1rem);
   min-width: min(18rem, calc(100vw - 2rem));
   width: max-content;
   max-width: min(22rem, calc(100vw - 2rem));
   opacity: 0;
   padding: var(--espaco-3);
   pointer-events: none;
-  position: absolute;
-  top: 100%;
+  position: fixed;
+  top: var(--calendario-tooltip-top, 1rem);
   transform: translateY(-0.15rem);
   transition: opacity 0.15s ease, transform 0.15s ease;
   white-space: normal;
-  z-index: 40;
+  z-index: 120;
 }
 
 .calendario-dia--tooltip-acima .calendario-dia__tooltip {
-  bottom: 100%;
-  top: auto;
+  bottom: auto;
   transform: translateY(0.15rem);
 }
 
@@ -2480,4 +2484,3 @@
 @keyframes girar-perfil {
   to { transform: rotate(360deg); }
 }
-

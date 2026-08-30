@@ -10,9 +10,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--espaco-4);
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 20;
+  left: 0;
+  right: 0;
+  z-index: 90;
   overflow: visible;
   backdrop-filter: blur(20px);
 }
@@ -23,6 +25,15 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .barra-topo {
+    left: var(--largura-sidebar);
+  }
+
+  .pagina-app__principal--recolhida .barra-topo {
+    left: var(--largura-sidebar-recolhida);
+  }
+}
 /* ---- Seção esquerda (título) ---- */
 .barra-topo__secao-esquerda {
   display: flex;

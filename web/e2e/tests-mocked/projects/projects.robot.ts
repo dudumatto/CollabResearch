@@ -14,7 +14,7 @@ async function selectComboboxOption(page: Page, name: string | RegExp, option: s
 
 export async function runProjectsListAndApplyFlow(page: Page) {
   await page.goto("/app/projects");
-  await expect(page.getByText("projetos vinculados")).toBeVisible();
+  await expect(page.getByText("projetos disponíveis")).toBeVisible();
   await expect(page.getByText("Projeto E2E Candidatura")).toBeVisible();
   await expect(page.getByText("Projeto E2E Finalizado")).toBeVisible();
   await page.getByPlaceholder("Buscar projetos por título, área ou tecnologia...").fill("Candidatura");
@@ -23,8 +23,8 @@ export async function runProjectsListAndApplyFlow(page: Page) {
   await page.getByRole("button", { name: "Filtros" }).click();
   await expect(page.getByText("Área de pesquisa")).toBeVisible();
   await selectComboboxOption(page, "Filtrar por curso", "Sistemas de Informacao");
-  await expect(page.getByText("0 / 3")).toBeVisible();
-  await expect(page.getByText("Prof Ana Orientadora (orientador)")).toBeVisible();
+  await expect(page.locator(".projeto-card", { hasText: "Projeto E2E Candidatura" }).getByText("0 / 3")).toBeVisible();
+  await expect(page.locator(".projeto-card", { hasText: "Projeto E2E Candidatura" }).getByText("Prof Ana Orientadora (orientador)")).toBeVisible();
   await page.getByText("Projeto E2E Candidatura").click();
   await expect(page).toHaveURL(/\/app\/projects\/2$/);
   await expect(page.getByRole("heading", { name: "Projeto E2E Candidatura" })).toBeVisible();

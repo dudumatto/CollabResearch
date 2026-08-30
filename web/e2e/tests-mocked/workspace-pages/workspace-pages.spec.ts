@@ -33,6 +33,12 @@ test.describe("paginas internas", () => {
     await page.getByRole("button", { name: "Confirmar saída" }).click();
     await expect.poll(() => page.evaluate(() => localStorage.getItem("tcc_auth_token"))).toBeNull();
   });
+  test("aluno nao acessa rota de entregas do orientador", async ({ page }) => {
+    await page.goto("/app/deliveries");
+    await expect(page).toHaveURL(/\/app\/?$/);
+    await expect(page.getByRole("heading", { name: /Olá/i })).toBeVisible();
+    await expect(page.getByText("Entregas para revisar")).toHaveCount(0);
+  });
   test("calendario adapta layout e corta texto sem reticencias", async ({ page }) => runDeadlinesFlow(page));
   test("chat envia, edita, exclui, busca e lida com lista vazia", async ({ page, browser }) => runChatFlow(page, browser));
   test("progresso publica atualizacao e cobre estado sem projetos", async ({ page, browser }) => runProgressFlow(page, browser));
@@ -79,3 +85,4 @@ test.describe("configuracoes compartilhadas", () => {
     await runSettingsFlow(page, "Orientador");
   });
 });
+

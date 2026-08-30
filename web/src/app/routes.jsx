@@ -3,7 +3,6 @@ import { createBrowserRouter, Navigate, useLocation, useParams, useRouteError } 
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { RouteErrorFallback } from "./components/AppErrorBoundary";
-import { features } from "./config/features";
 import { useAuth } from "./hooks/useAuth";
 import { StatusView } from "./components/StatusView";
 
@@ -102,13 +101,12 @@ const AdvisorProgressPage = lazyRoute(() => import("./pages/AdvisorProgressPage"
 const AdvisorDeliveriesPage = lazyRoute(() => import("./pages/AdvisorDeliveriesPage"));
 const AdvisorEvaluationsPage = lazyRoute(() => import("./pages/AdvisorEvaluationsPage"));
 const AdvisorProfilePage = lazyRoute(() => import("./pages/AdvisorProfilePage"));
-const StudentDeliveriesPage = lazyRoute(() => import("./pages/StudentDeliveriesPage"));
 const StudentEvaluationsPage = lazyRoute(() => import("./pages/StudentEvaluationsPage"));
 const StudentDeadlinesPage = lazyRoute(() => import("./pages/StudentDeadlinesPage"));
 
 function useIsAdvisor() {
   const { user } = useAuth();
-  return Boolean(features.advisorWorkspaceV2 && user?.tipo === "ORIENTADOR");
+  return user?.tipo === "ORIENTADOR";
 }
 
 function RoleAware({ advisor: AdvisorComponent, student: StudentComponent }) {
@@ -227,7 +225,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "deliveries",
-        element: <RoleAware advisor={AdvisorDeliveriesPage} student={StudentDeliveriesPage} />,
+        element: (
+          <AdvisorOnly>
+            <AdvisorDeliveriesPage />
+          </AdvisorOnly>
+        ),
       },
       {
         path: "avaliacoes",
@@ -285,3 +287,5 @@ function NavigateToChatConversation() {
   params.set("conversationId", id);
   return <Navigate to={`/app/chat?${params.toString()}`} replace />;
 }
+
+

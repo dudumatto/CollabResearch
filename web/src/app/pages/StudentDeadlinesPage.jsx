@@ -5,6 +5,7 @@ import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { userService } from "../services/userService";
 import { etapaService } from "../services/etapaService";
+import { applicationService } from "../services/applicationService";
 import { mapEtapa, mapProject } from "../utils/adapters";
 import { formatEtapaResponsavel, formatEtapaStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
@@ -159,13 +160,30 @@ function DeadlineItem({ item, compact = false }) {
 
 async function loadProjectsForUser(user) {
   if (!user?.id) return [];
-  const raw = user.tipo === "ORIENTADOR"
-    ? await advisorService.meusProjetos()
-    : await userService.getProjects(user.id);
 
-  return (Array.isArray(raw) ? raw : [])
+  if (user.tipo === "ORIENTADOR") {
+    const raw = await advisorService.meusProjetos();
+    return (Array.isArray(raw) ? raw : [])
+      .map(mapProject)
+      .filter((project) => project?.id);
+  }
+
+  const [ownedProjects, applications] = await Promise.all([
+    userService.getProjects(user.id).catch(() => []),
+    applicationService.listMine().catch(() => []),
+  ]);
+  const approvedApplicationProjects = (Array.isArray(applications) ? applications : [])
+    .filter((application) => application?.status === "APROVADO")
+    .map((application) => application?.projeto ?? application?.project)
+    .filter(Boolean);
+  const projectsById = new Map();
+
+  [...(Array.isArray(ownedProjects) ? ownedProjects : []), ...approvedApplicationProjects]
     .map(mapProject)
-    .filter((project) => project?.id);
+    .filter((project) => project?.id)
+    .forEach((project) => projectsById.set(Number(project.id), project));
+
+  return [...projectsById.values()];
 }
 
 async function loadProjectStages(project) {
@@ -243,21 +261,27 @@ export default function StudentDeadlinesPage() {
     const viewportMargin = 16;
     const tooltipHeight = tooltip.scrollHeight;
     const tooltipWidth = Math.min(tooltip.scrollWidth, window.innerWidth - (viewportMargin * 2));
+    const maxLeft = Math.max(viewportMargin, window.innerWidth - tooltipWidth - viewportMargin);
+    const centeredLeft = dayRect.left + (dayRect.width / 2) - (tooltipWidth / 2);
+    const viewportLeft = Math.min(Math.max(centeredLeft, viewportMargin), maxLeft);
     const spaceBelow = window.innerHeight - dayRect.bottom;
     const spaceAbove = dayRect.top;
     const direction = spaceBelow < tooltipHeight + gap && spaceAbove > spaceBelow ? "acima" : "abaixo";
-    const centeredLeft = dayRect.left + (dayRect.width / 2) - (tooltipWidth / 2);
-    const viewportLeft = Math.min(
-      Math.max(centeredLeft, viewportMargin),
-      window.innerWidth - tooltipWidth - viewportMargin,
-    );
-    const left = Math.round(viewportLeft - dayRect.left);
+    const preferredTop = direction === "acima" ? dayRect.top - tooltipHeight - gap : dayRect.bottom + gap;
+    const maxTop = Math.max(viewportMargin, window.innerHeight - tooltipHeight - viewportMargin);
+    const viewportTop = Math.min(Math.max(preferredTop, viewportMargin), maxTop);
     const arrowLeft = Math.round(dayRect.left + (dayRect.width / 2) - viewportLeft);
-    const placement = { direction, left, arrowLeft };
+    const placement = {
+      direction,
+      left: Math.round(viewportLeft),
+      top: Math.round(viewportTop),
+      arrowLeft,
+    };
 
     setTooltipPlacements((current) => (
       current[key]?.direction === placement.direction
       && current[key]?.left === placement.left
+      && current[key]?.top === placement.top
       && current[key]?.arrowLeft === placement.arrowLeft
         ? current
         : { ...current, [key]: placement }
@@ -318,6 +342,7 @@ export default function StudentDeadlinesPage() {
                     className={`calendario-dia ${outside ? "calendario-dia--fora" : ""} ${key === todayKey ? "calendario-dia--hoje" : ""} ${hasItems ? "calendario-dia--com-evento" : ""} ${isTooltipOpen ? "calendario-dia--tooltip-aberto" : ""} ${tooltipPlacement?.direction === "acima" ? "calendario-dia--tooltip-acima" : ""}`}
                     style={tooltipPlacement ? {
                       "--calendario-tooltip-left": `${tooltipPlacement.left}px`,
+                      "--calendario-tooltip-top": `${tooltipPlacement.top}px`,
                       "--calendario-tooltip-arrow-left": `${tooltipPlacement.arrowLeft}px`,
                     } : undefined}
                     aria-label={hasItems ? `${date.getDate()} com ${items.length} ${items.length === 1 ? "evento" : "eventos"}` : undefined}
@@ -403,4 +428,3 @@ export default function StudentDeadlinesPage() {
     </div>
   );
 }
-

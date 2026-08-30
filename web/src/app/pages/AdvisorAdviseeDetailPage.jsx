@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "framer-motion";
-import { ArrowLeft, Mail, Hash, BookOpen, ChevronRight, Clock, CheckCircle2, History, FolderOpen } from "lucide-react";
+import { ArrowLeft, Mail, Hash, BookOpen, ChevronRight, Clock, CheckCircle2, FolderOpen } from "lucide-react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { mapOrientandoDetalhe } from "../utils/adapters";
@@ -239,28 +239,10 @@ export default function AdvisorAdviseeDetailPage() {
             </div>
           </div>
 
-          <div className="advisor-card-conteudo">
-            <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>
-              Histórico de participação {data.historico.length > 0 && `(${data.historico.length})`}
-            </p>
-            {data.historico.length === 0 && (
-              <p className="advisor-linha-card__meta">Ainda não há registros de atualização deste projeto.</p>
-            )}
-            <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-2)" }}>
-              {data.historico.map((h) => (
-                <div key={h.id ?? h.dataRegistro} className="advisor-versao">
-                  <History size={14} className="advisor-versao__meta" />
-                  <div className="advisor-versao__info">
-                    <p className="advisor-versao__nome">{h.titulo}</p>
-                    {h.descricao && <p className="advisor-versao__meta">{h.descricao}</p>}
-                  </div>
-                  <span className="advisor-versao__meta">{h.dataRegistro ? formatDate(h.dataRegistro) : ""}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </motion.div>
   );
 }
+
+

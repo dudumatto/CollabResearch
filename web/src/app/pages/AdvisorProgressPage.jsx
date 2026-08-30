@@ -45,13 +45,7 @@ function toDeliveryDatePayload(value) {
   if (!value) return null;
   const [year, month, day] = value.split("-").map(Number);
   if (!year || !month || !day) return null;
-  const date = new Date(year, month - 1, day, 23, 59, 0, 0);
-  const offsetMinutes = -date.getTimezoneOffset();
-  const sign = offsetMinutes >= 0 ? "+" : "-";
-  const abs = Math.abs(offsetMinutes);
-  const hours = String(Math.floor(abs / 60)).padStart(2, "0");
-  const minutes = String(abs % 60).padStart(2, "0");
-  return `${value}T23:59:00${sign}${hours}:${minutes}`;
+  return `${value}T12:00:00Z`;
 }
 
 function SkeletonProgresso() {

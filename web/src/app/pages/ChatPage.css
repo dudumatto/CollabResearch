@@ -913,9 +913,9 @@
   }
 
   .pagina-app__conteudo--chat {
-    height: calc(100dvh - var(--altura-topbar));
+    height: 100dvh;
     overflow: hidden;
-    padding: 0;
+    padding: var(--altura-topbar) 0 0;
   }
 
   .pagina-app__pagina--chat {

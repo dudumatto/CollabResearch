@@ -31,7 +31,7 @@
 /* ---- Área de conteúdo ---- */
 .pagina-app__conteudo {
   flex: 1;
-  padding: var(--espaco-4);
+  padding: calc(var(--altura-topbar) + var(--espaco-4)) var(--espaco-4) var(--espaco-4);
   overflow: visible;
   overflow-x: clip;
   position: relative;
@@ -39,7 +39,7 @@
 
 @media (min-width: 768px) {
   .pagina-app__conteudo {
-    padding: var(--espaco-6);
+    padding: calc(var(--altura-topbar) + var(--espaco-6)) var(--espaco-6) var(--espaco-6);
   }
 }
 

@@ -261,6 +261,9 @@ export default function ProjectDetailPage() {
 
   const project = data?.project;
 
+  const getCollaboratorId = (c) =>
+    getUserId(c);
+
   const slots = useMemo(
     () => (project ? getProjectSlotsUsage(project, Array.isArray(collaborators) ? collaborators : null) : { total: 0, used: 0, remaining: 0 }),
     [project, collaborators],
@@ -299,6 +302,15 @@ export default function ProjectDetailPage() {
   }, [user, project]);
 
   const canViewTeam = isAdvisorOwner || isStudentCreator || user?.tipo === "ADMIN";
+  const isApprovedProjectCollaborator = useMemo(() => {
+    if (!user?.id || !Array.isArray(collaborators)) return false;
+    return collaborators.some((collaborator) => Number(getCollaboratorId(collaborator)) === Number(user.id));
+  }, [collaborators, user?.id]);
+
+  const canOpenGroupConversation = isAdvisorOwner
+    || isStudentCreator
+    || (user?.tipo === "ALUNO" && currentApplication?.status === "APROVADO")
+    || isApprovedProjectCollaborator;
 
   const loadCollaborators = useCallback(async () => {
     setCollabLoading(true);
@@ -441,9 +453,6 @@ export default function ProjectDetailPage() {
 
   const getCollaboratorName = (c) =>
     getUserName(c) || `Usuário #${getUserId(c) ?? "?"}`;
-
-  const getCollaboratorId = (c) =>
-    getUserId(c);
 
   const getCollaboratorPhotoUrl = (c) =>
     getUserPhotoUrl(c);
@@ -799,13 +808,14 @@ export default function ProjectDetailPage() {
               <p className="card-colaboradores__vazio">Nenhum colaborador ainda.</p>
             )}
 
-            {/* Botão conversa do grupo */}
-            <button
-              onClick={() => openConversation("group")}
-              className="card-colaboradores__botao-grupo"
-            >
-              <MessageSquare size={14} /> Mensagem do grupo
-            </button>
+            {canOpenGroupConversation && (
+              <button
+                onClick={() => openConversation("group")}
+                className="card-colaboradores__botao-grupo"
+              >
+                <MessageSquare size={14} /> Mensagem do grupo
+              </button>
+            )}
           </div>
 
         </div>

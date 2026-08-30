@@ -8,7 +8,7 @@ import { useProjectProgress } from "../hooks/useProjectProgress";
 import { userService } from "../services/userService";
 import { progressService } from "../services/progressService";
 import { getProjectSlotsUsage, mapProject } from "../utils/adapters";
-import { formatDate, formatProjectStatus, formatUserType } from "../utils/formatters";
+import { formatDate, formatProjectStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import { ProgressDonut } from "../components/progress/ProgressDonut";
@@ -28,6 +28,23 @@ function projectStatusClass(status) {
   return "";
 }
 
+function getStepDeadline(step) {
+  const value = step?.deadline ?? step?.prazo ?? step?.dataPrazo ?? null;
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.getTime();
+}
+
+function sortStepsByNearestDeadline(steps = []) {
+  return [...steps].sort((first, second) => {
+    const firstDeadline = getStepDeadline(first);
+    const secondDeadline = getStepDeadline(second);
+    if (firstDeadline !== null && secondDeadline !== null) return firstDeadline - secondDeadline;
+    if (firstDeadline !== null) return -1;
+    if (secondDeadline !== null) return 1;
+    return Number(first.stepOrder ?? 0) - Number(second.stepOrder ?? 0);
+  });
+}
 
 function UpdatesPanelSkeleton() {
   return (
@@ -284,6 +301,9 @@ export default function ProgressPage() {
 
   const currentUserRole = String(user?.tipo ?? user?.type ?? "").toUpperCase();
   const acceptedCollaborators = selectedProject?.acceptedCollaborators ?? [];
+  const advisorName = selectedProject?.advisor?.name ?? "Sem orientador";
+  const isProjectFinished = selectedProject?.status === "FINALIZADO";
+  const updateFormSteps = useMemo(() => sortStepsByNearestDeadline(steps), [steps]);
 
   useEffect(() => {
     if (!targetStageId || progressLoading) return;
@@ -400,8 +420,8 @@ export default function ProgressPage() {
           </div>
 
           <div className="progress-page__summary-line">
-            <span>Responsável atual:</span>
-            <strong>{formatUserType(currentUserRole) || "Usuário autenticado"}</strong>
+            <span>Responsável:</span>
+            <strong>{advisorName}</strong>
           </div>
         </div>
       </section>
@@ -417,24 +437,26 @@ export default function ProgressPage() {
           <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onReorderStep={handleReorderStep} highlightedStepId={targetStageId} />
         </div>
 
-        <div className="progress-page__panel">
+        <div className={`progress-page__panel progress-page__panel--updates${isProjectFinished ? " progress-page__panel--updates-finished" : ""}`}>
           <div className="progress-page__panel-header">
             <div>
               <h2>Nova atualização</h2>
-              <p>Adicione título, categoria e vínculo com a etapa quando fizer sentido.</p>
+              <p>{isProjectFinished ? "Projeto finalizado. As etapas ficam disponíveis apenas para consulta." : "Adicione título, categoria e vínculo com a etapa quando fizer sentido."}</p>
             </div>
-            <button
-              type="button"
-              className="progress-page__toggle-form"
-              onClick={() => setShowUpdateForm((current) => !current)}
-            >
-              <Plus size={15} />
-              {showUpdateForm ? "Ocultar" : "Nova atualização"}
-            </button>
+            {!isProjectFinished && (
+              <button
+                type="button"
+                className="progress-page__toggle-form"
+                onClick={() => setShowUpdateForm((current) => !current)}
+              >
+                <Plus size={15} />
+                {showUpdateForm ? "Ocultar" : "Nova atualização"}
+              </button>
+            )}
           </div>
 
-          {showUpdateForm ? (
-            <UpdateForm steps={steps} onSubmit={handleCreateUpdate} />
+          {isProjectFinished ? null : showUpdateForm ? (
+            <UpdateForm steps={updateFormSteps} onSubmit={handleCreateUpdate} />
           ) : (
             <div className="progress-page__collapsed-form">
               <p>O formulário está recolhido. Use o botão acima para publicar uma atualização.</p>

@@ -22,6 +22,12 @@ test.describe("projetos", () => {
     await runProjectsListAndApplyFlow(page);
   });
 
+  test("oculta mensagem do grupo para aluno que nao integra o projeto", async ({ page }) => {
+    await page.goto("/app/projects/4");
+    await expect(page.getByRole("heading", { name: "Projeto E2E Nova Inscricao" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Mensagem do grupo/i })).toHaveCount(0);
+  });
+
   test("cria projeto, valida campos obrigatorios, edita e exclui como dono", async ({ page }) => {
     await runProjectsCrudFlow(page);
   });
@@ -43,3 +49,4 @@ test.describe("projetos", () => {
     await context.close();
   });
 });
+
