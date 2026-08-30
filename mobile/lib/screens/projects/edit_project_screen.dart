@@ -25,6 +25,9 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _requirementsController = TextEditingController();
+  final _technologiesController = TextEditingController();
+  final _coverUrlController = TextEditingController();
   final _vacanciesController = TextEditingController();
   Project? _project;
   int? _selectedAreaId;
@@ -47,6 +50,9 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _requirementsController.dispose();
+    _technologiesController.dispose();
+    _coverUrlController.dispose();
     _vacanciesController.dispose();
     super.dispose();
   }
@@ -67,6 +73,9 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
       _project = project;
       _titleController.text = project.title;
       _descriptionController.text = project.description ?? '';
+      _requirementsController.text = project.requirements ?? '';
+      _technologiesController.text = project.technologies ?? '';
+      _coverUrlController.text = project.coverUrl ?? '';
       _vacanciesController.text = '${project.vacancies}';
       _selectedAreaId = (projectAreaAvailable ? project.areaId : null) ??
           (matchingArea.isEmpty ? null : matchingArea.first.id);
@@ -82,8 +91,14 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
     final project = await context.read<ProjectProvider>().updateProject(
       widget.projectId,
       {
+        ...?_project?.preservedUpdatePayload(),
         'titulo': _titleController.text.trim(),
         'descricao': _descriptionController.text.trim(),
+        'requisitos': _requirementsController.text.trim(),
+        'tecnologias': _technologiesController.text.trim(),
+        'fotoProjetoUrl': _coverUrlController.text.trim().isEmpty
+            ? null
+            : _coverUrlController.text.trim(),
         'areaId': areaId,
         if (_isAdvisor) 'vagas': int.parse(_vacanciesController.text.trim()),
       },
@@ -158,6 +173,27 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                     value,
                                     label: 'Descricao',
                                   ),
+                                ),
+                                const SizedBox(height: 16),
+                                AppTextField(
+                                  label: 'Requisitos',
+                                  controller: _requirementsController,
+                                  prefixIcon: Icons.checklist_outlined,
+                                  maxLines: 3,
+                                ),
+                                const SizedBox(height: 16),
+                                AppTextField(
+                                  label: 'Tecnologias e competencias',
+                                  controller: _technologiesController,
+                                  prefixIcon: Icons.science_outlined,
+                                  maxLines: 2,
+                                ),
+                                const SizedBox(height: 16),
+                                AppTextField(
+                                  label: 'URL da imagem do projeto (opcional)',
+                                  controller: _coverUrlController,
+                                  prefixIcon: Icons.image_outlined,
+                                  keyboardType: TextInputType.url,
                                 ),
                                 const SizedBox(height: 16),
                                 LayoutBuilder(

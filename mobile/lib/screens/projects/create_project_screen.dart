@@ -21,7 +21,13 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _requirementsController = TextEditingController();
+  final _technologiesController = TextEditingController();
+  final _coverUrlController = TextEditingController();
   final _vacanciesController = TextEditingController(text: '1');
+  DateTime? _startDate;
+  DateTime? _endDate;
+  DateTime? _applicationDeadline;
   int? _selectedAreaId;
   int? _selectedAdvisorId;
 
@@ -42,6 +48,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _requirementsController.dispose();
+    _technologiesController.dispose();
+    _coverUrlController.dispose();
     _vacanciesController.dispose();
     super.dispose();
   }
@@ -67,6 +76,14 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     final data = <String, dynamic>{
       'titulo': _titleController.text.trim(),
       'descricao': _descriptionController.text.trim(),
+      'requisitos': _requirementsController.text.trim(),
+      'tecnologias': _technologiesController.text.trim(),
+      'fotoProjetoUrl': _coverUrlController.text.trim().isEmpty
+          ? null
+          : _coverUrlController.text.trim(),
+      'dataInicio': _dateText(_startDate),
+      'dataFim': _dateText(_endDate),
+      'dataLimiteInscricao': _dateText(_applicationDeadline),
       'areaId': areaId,
       'vagas': int.parse(_vacanciesController.text.trim()),
       if (_isStudent) 'orientadorId': _selectedAdvisorId,
@@ -74,6 +91,26 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     final project = await context.read<ProjectProvider>().createProject(data);
     if (!mounted || project == null) return;
     context.go('/projects/${project.id}');
+  }
+
+  String? _dateText(DateTime? value) {
+    if (value == null) return null;
+    final month = value.month.toString().padLeft(2, '0');
+    final day = value.day.toString().padLeft(2, '0');
+    return '${value.year}-$month-$day';
+  }
+
+  Future<void> _pickDate(
+    DateTime? current,
+    ValueChanged<DateTime?> onSelected,
+  ) async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: current ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+    );
+    if (selected != null) setState(() => onSelected(selected));
   }
 
   @override
@@ -141,6 +178,29 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                 value,
                                 label: 'Descricao',
                               ),
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              label: 'Requisitos',
+                              controller: _requirementsController,
+                              prefixIcon: Icons.checklist_outlined,
+                              maxLines: 3,
+                              hintText: 'Separe os itens por virgula',
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              label: 'Tecnologias e competencias',
+                              controller: _technologiesController,
+                              prefixIcon: Icons.science_outlined,
+                              maxLines: 2,
+                              hintText: 'Ex.: Flutter, UX research',
+                            ),
+                            const SizedBox(height: 16),
+                            AppTextField(
+                              label: 'URL da imagem do projeto (opcional)',
+                              controller: _coverUrlController,
+                              prefixIcon: Icons.image_outlined,
+                              keyboardType: TextInputType.url,
                             ),
                             const SizedBox(height: 16),
                             LayoutBuilder(
@@ -233,6 +293,38 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                     );
                               },
                             ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Datas do projeto',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            _DateField(
+                              label: 'Inicio',
+                              value: _startDate,
+                              onTap: () => _pickDate(
+                                _startDate,
+                                (value) => _startDate = value,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _DateField(
+                              label: 'Fim',
+                              value: _endDate,
+                              onTap: () => _pickDate(
+                                _endDate,
+                                (value) => _endDate = value,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _DateField(
+                              label: 'Limite para inscricoes',
+                              value: _applicationDeadline,
+                              onTap: () => _pickDate(
+                                _applicationDeadline,
+                                (value) => _applicationDeadline = value,
+                              ),
+                            ),
                             const SizedBox(height: 24),
                             AppButton(
                               label: 'Salvar projeto',
@@ -259,6 +351,37 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+class _DateField extends StatelessWidget {
+  const _DateField({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String label;
+  final DateTime? value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = value == null
+        ? 'Nao definida'
+        : '${value!.day.toString().padLeft(2, '0')}/${value!.month.toString().padLeft(2, '0')}/${value!.year}';
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: const Icon(Icons.calendar_today_outlined),
+          suffixIcon: const Icon(Icons.chevron_right),
+        ),
+        child: Text(text),
+      ),
     );
   }
 }

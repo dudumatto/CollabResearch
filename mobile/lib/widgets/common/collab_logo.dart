@@ -16,9 +16,7 @@ class CollabLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SvgPicture.asset(
-      full
-          ? 'assets/brand/logo-full.svg'
-          : 'assets/brand/logo-icon.svg',
+      full ? 'assets/brand/logo-full.svg' : 'assets/brand/logo-icon.svg',
       height: height,
       colorFilter: inverted
           ? const ColorFilter.mode(Colors.white, BlendMode.srcIn)

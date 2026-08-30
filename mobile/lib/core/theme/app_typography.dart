@@ -9,9 +9,47 @@ class AppTypography {
     Color textColor = AppColors.text,
     Color mutedColor = AppColors.muted,
   }) {
-    return GoogleFonts.interTextTheme(base).copyWith(
-      bodyMedium: GoogleFonts.inter(color: textColor),
-      bodySmall: GoogleFonts.inter(color: mutedColor),
+    final body = GoogleFonts.manropeTextTheme(base).apply(
+      bodyColor: textColor,
+      displayColor: textColor,
+    );
+    return body.copyWith(
+      displayLarge: GoogleFonts.outfit(
+        color: textColor,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -1.4,
+      ),
+      headlineLarge: GoogleFonts.outfit(
+        color: textColor,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.8,
+      ),
+      headlineMedium: GoogleFonts.outfit(
+        color: textColor,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.5,
+      ),
+      headlineSmall: GoogleFonts.outfit(
+        color: textColor,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
+      ),
+      titleLarge: GoogleFonts.outfit(
+        color: textColor,
+        fontWeight: FontWeight.w700,
+      ),
+      titleMedium: GoogleFonts.manrope(
+        color: textColor,
+        fontWeight: FontWeight.w700,
+      ),
+      bodyLarge: GoogleFonts.manrope(color: textColor, height: 1.45),
+      bodyMedium: GoogleFonts.manrope(color: textColor, height: 1.45),
+      bodySmall: GoogleFonts.manrope(color: mutedColor, height: 1.4),
+      labelLarge: GoogleFonts.manrope(
+        color: textColor,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.1,
+      ),
     );
   }
 }

@@ -15,6 +15,12 @@ class Project {
     this.areaId,
     this.advisorId,
     this.ownerId,
+    this.requirements,
+    this.technologies,
+    this.coverUrl,
+    this.startDate,
+    this.endDate,
+    this.applicationDeadline,
   });
 
   final String id;
@@ -32,6 +38,12 @@ class Project {
   final int? areaId;
   final String? advisorId;
   final String? ownerId;
+  final String? requirements;
+  final String? technologies;
+  final String? coverUrl;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final DateTime? applicationDeadline;
 
   factory Project.fromJson(Map<String, dynamic> json) {
     return Project(
@@ -88,8 +100,29 @@ class Project {
             json['alunoCriadorId'] ??
             json['alunoCriador']?['usuario']?['id'],
       ),
+      requirements: _nullableString(json['requisitos'] ?? json['requirements']),
+      technologies: _nullableString(
+        json['tecnologias'] ?? json['technologies'] ?? json['competencias'],
+      ),
+      coverUrl: _nullableString(
+        json['fotoProjetoUrl'] ?? json['coverUrl'] ?? json['imageUrl'],
+      ),
+      startDate: _date(json['dataInicio'] ?? json['startDate']),
+      endDate: _date(json['dataFim'] ?? json['endDate']),
+      applicationDeadline: _date(
+        json['dataLimiteInscricao'] ?? json['applicationDeadline'],
+      ),
     );
   }
+
+  Map<String, dynamic> preservedUpdatePayload() => {
+        'requisitos': requirements,
+        'tecnologias': technologies,
+        'fotoProjetoUrl': coverUrl,
+        'dataInicio': _dateText(startDate),
+        'dataFim': _dateText(endDate),
+        'dataLimiteInscricao': _dateText(applicationDeadline),
+      };
 
   static String? _nullableString(dynamic value) {
     if (value == null) return null;
@@ -100,6 +133,18 @@ class Project {
   static int? _nestedInt(dynamic value) {
     if (value is! Map) return null;
     return (value['id'] as num?)?.toInt();
+  }
+
+  static DateTime? _date(dynamic value) {
+    if (value == null) return null;
+    return DateTime.tryParse('$value');
+  }
+
+  static String? _dateText(DateTime? value) {
+    if (value == null) return null;
+    final month = value.month.toString().padLeft(2, '0');
+    final day = value.day.toString().padLeft(2, '0');
+    return '${value.year}-$month-$day';
   }
 }
 

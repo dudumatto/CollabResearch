@@ -11,6 +11,10 @@ class AppTextField extends StatefulWidget {
     this.validator,
     this.prefixIcon,
     this.textInputAction,
+    this.readOnly = false,
+    this.onTap,
+    this.suffixIcon,
+    this.hintText,
   });
 
   final String label;
@@ -21,6 +25,10 @@ class AppTextField extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final IconData? prefixIcon;
   final TextInputAction? textInputAction;
+  final bool readOnly;
+  final VoidCallback? onTap;
+  final IconData? suffixIcon;
+  final String? hintText;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -51,9 +59,12 @@ class _AppTextFieldState extends State<AppTextField> {
       maxLines: widget.maxLines,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
+      readOnly: widget.readOnly,
+      onTap: widget.onTap,
       validator: widget.validator,
       decoration: InputDecoration(
         labelText: widget.label,
+        hintText: widget.hintText,
         prefixIcon: widget.prefixIcon == null ? null : Icon(widget.prefixIcon),
         suffixIcon: widget.obscureText
             ? IconButton(
@@ -65,7 +76,9 @@ class _AppTextFieldState extends State<AppTextField> {
                       : Icons.visibility_off_outlined,
                 ),
               )
-            : null,
+            : widget.suffixIcon == null
+                ? null
+                : Icon(widget.suffixIcon),
       ),
     );
   }
