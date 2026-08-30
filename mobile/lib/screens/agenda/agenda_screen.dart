@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_colors.dart';
 import '../../models/academic_workspace.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -21,6 +22,8 @@ class AgendaScreen extends StatefulWidget {
 
 class _AgendaScreenState extends State<AgendaScreen> {
   _AgendaFilter _filter = _AgendaFilter.upcoming;
+  DateTime _visibleMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime? _selectedDate;
 
   @override
   void initState() {
@@ -40,7 +43,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
     await context.read<AcademicWorkspaceProvider>().loadAgenda(projects);
   }
 
-  List<ProjectStage> _items(
+  List<ProjectStage> _allItems(
     ResearchActivityProvider projects,
     AcademicWorkspaceProvider academic,
   ) {
@@ -57,7 +60,18 @@ class _AgendaScreenState extends State<AgendaScreen> {
         if (b.deadline == null) return -1;
         return a.deadline!.compareTo(b.deadline!);
       });
+    return all;
+  }
+
+  List<ProjectStage> _items(
+    ResearchActivityProvider projects,
+    AcademicWorkspaceProvider academic,
+  ) {
+    final all = _allItems(projects, academic);
     return all.where((stage) {
+      if (_selectedDate != null && !_sameDay(stage.deadline, _selectedDate)) {
+        return false;
+      }
       return switch (_filter) {
         _AgendaFilter.upcoming => !stage.isDone && !stage.isOverdue,
         _AgendaFilter.overdue => stage.isOverdue,
@@ -73,6 +87,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
     final academic = context.watch<AcademicWorkspaceProvider>();
     final user = context.watch<AuthProvider>().currentUser;
     final role = (user?.type ?? user?.roles.firstOrNull ?? '').toUpperCase();
+    final allItems = _allItems(projects, academic);
     final items = _items(projects, academic);
 
     return Scaffold(
@@ -94,6 +109,34 @@ class _AgendaScreenState extends State<AgendaScreen> {
                   description:
                       'Etapas e datas dos seus projetos em uma única visão.',
                 ),
+                _MonthCalendar(
+                  visibleMonth: _visibleMonth,
+                  selectedDate: _selectedDate,
+                  stages: allItems,
+                  onPreviousMonth: () => setState(() {
+                    _visibleMonth = DateTime(
+                      _visibleMonth.year,
+                      _visibleMonth.month - 1,
+                    );
+                    _selectedDate = null;
+                  }),
+                  onNextMonth: () => setState(() {
+                    _visibleMonth = DateTime(
+                      _visibleMonth.year,
+                      _visibleMonth.month + 1,
+                    );
+                    _selectedDate = null;
+                  }),
+                  onToday: () => setState(() {
+                    final now = DateTime.now();
+                    _visibleMonth = DateTime(now.year, now.month);
+                    _selectedDate = DateTime(now.year, now.month, now.day);
+                  }),
+                  onSelectDate: (date) => setState(() {
+                    _selectedDate = _sameDay(date, _selectedDate) ? null : date;
+                  }),
+                ),
+                const SizedBox(height: 16),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: SegmentedButton<_AgendaFilter>(
@@ -114,6 +157,23 @@ class _AgendaScreenState extends State<AgendaScreen> {
                         setState(() => _filter = value.first),
                   ),
                 ),
+                if (_selectedDate != null) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Prazos de ${_formatDate(_selectedDate!)}',
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => setState(() => _selectedDate = null),
+                        child: const Text('Mostrar todos'),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 20),
                 if (academic.isLoading && items.isEmpty)
                   const AcademicSkeletonList()
@@ -149,6 +209,255 @@ class _AgendaScreenState extends State<AgendaScreen> {
           },
         ),
       ),
+    );
+  }
+}
+
+bool _sameDay(DateTime? a, DateTime? b) {
+  if (a == null || b == null) return false;
+  final localA = a.toLocal();
+  final localB = b.toLocal();
+  return localA.year == localB.year &&
+      localA.month == localB.month &&
+      localA.day == localB.day;
+}
+
+String _formatDate(DateTime date) {
+  return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+}
+
+class _MonthCalendar extends StatelessWidget {
+  const _MonthCalendar({
+    required this.visibleMonth,
+    required this.selectedDate,
+    required this.stages,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
+    required this.onToday,
+    required this.onSelectDate,
+  });
+
+  final DateTime visibleMonth;
+  final DateTime? selectedDate;
+  final List<ProjectStage> stages;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
+  final VoidCallback onToday;
+  final ValueChanged<DateTime> onSelectDate;
+
+  static const _months = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final first = DateTime(visibleMonth.year, visibleMonth.month);
+    final leading = first.weekday - 1;
+    final totalDays =
+        DateTime(visibleMonth.year, visibleMonth.month + 1, 0).day;
+    final cellCount = ((leading + totalDays + 6) ~/ 7) * 7;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final dayExtent = textScale > 1.3 ? 56.0 : 48.0;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${_months[visibleMonth.month - 1]} ${visibleMonth.year}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                TextButton(onPressed: onToday, child: const Text('Hoje')),
+                IconButton(
+                  onPressed: onPreviousMonth,
+                  icon: const Icon(Icons.chevron_left),
+                  tooltip: 'Mês anterior',
+                ),
+                IconButton(
+                  onPressed: onNextMonth,
+                  icon: const Icon(Icons.chevron_right),
+                  tooltip: 'Próximo mês',
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                for (final label in ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'])
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        label,
+                        style: const TextStyle(
+                          color: AppColors.mutedSoft,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: cellCount,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                mainAxisExtent: dayExtent,
+              ),
+              itemBuilder: (context, index) {
+                final day = index - leading + 1;
+                if (day < 1 || day > totalDays) return const SizedBox.shrink();
+                final date =
+                    DateTime(visibleMonth.year, visibleMonth.month, day);
+                final dayStages = stages
+                    .where((stage) => _sameDay(stage.deadline, date))
+                    .toList();
+                return _CalendarDay(
+                  date: date,
+                  selected: _sameDay(date, selectedDate),
+                  today: _sameDay(date, DateTime.now()),
+                  stages: dayStages,
+                  onTap: () => onSelectDate(date),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 14,
+              runSpacing: 6,
+              children: [
+                _LegendDot(
+                  color: Theme.of(context).colorScheme.primary,
+                  label: 'Próximo',
+                ),
+                const _LegendDot(color: AppColors.danger, label: 'Atrasado'),
+                const _LegendDot(color: AppColors.accent, label: 'Concluído'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CalendarDay extends StatelessWidget {
+  const _CalendarDay({
+    required this.date,
+    required this.selected,
+    required this.today,
+    required this.stages,
+    required this.onTap,
+  });
+
+  final DateTime date;
+  final bool selected;
+  final bool today;
+  final List<ProjectStage> stages;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    Color? marker;
+    if (stages.any((stage) => stage.isOverdue)) {
+      marker = AppColors.danger;
+    } else if (stages.any((stage) => stage.isDone)) {
+      marker = AppColors.accent;
+    } else if (stages.isNotEmpty) {
+      marker = AppColors.primary;
+    }
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '${date.day}/${date.month}/${date.year}',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(11),
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            width: 38,
+            height: 42,
+            decoration: BoxDecoration(
+              color: selected ? AppColors.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(11),
+              border: today && !selected
+                  ? Border.all(color: AppColors.primary)
+                  : null,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${date.day}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: selected
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : Theme.of(context).colorScheme.onSurface,
+                        fontWeight: selected || today
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
+                ),
+                if (marker != null)
+                  Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : marker,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 7,
+          height: 7,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 5),
+        Text(label, style: Theme.of(context).textTheme.labelSmall),
+      ],
     );
   }
 }

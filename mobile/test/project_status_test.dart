@@ -10,8 +10,8 @@ void main() {
   });
 
   test('define cores e progresso estimado por status', () {
-    expect(projectStatusColor('EM_ANDAMENTO'), AppColors.warning);
-    expect(projectStatusColor('FINALIZADO'), AppColors.danger);
+    expect(projectStatusColor('EM_ANDAMENTO'), AppColors.primary);
+    expect(projectStatusColor('FINALIZADO'), AppColors.accent);
     expect(estimatedProjectProgress('EM_ANDAMENTO'), 50);
     expect(estimatedProjectProgress('FINALIZADO'), 100);
   });

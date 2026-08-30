@@ -52,6 +52,10 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         return '/dashboard';
       }
 
+      if (authenticated && location == '/') {
+        return '/dashboard';
+      }
+
       return null;
     },
     routes: [
@@ -144,6 +148,18 @@ GoRouter createAppRouter(AuthProvider authProvider) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: '/agenda',
+                pageBuilder: (context, state) => NoTransitionPage(
+                  child: AgendaScreen(
+                    projectId: state.uri.queryParameters['projectId'],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: '/notifications',
                 pageBuilder: (context, state) => const NoTransitionPage(
                   child: NotificationsScreen(),
@@ -184,12 +200,6 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         path: '/users/:id',
         builder: (context, state) => UserProfileScreen(
           userId: state.pathParameters['id']!,
-        ),
-      ),
-      GoRoute(
-        path: '/agenda',
-        builder: (context, state) => AgendaScreen(
-          projectId: state.uri.queryParameters['projectId'],
         ),
       ),
       GoRoute(

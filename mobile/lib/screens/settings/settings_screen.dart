@@ -116,7 +116,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Voltar',
         ),
-        title: const Text('Configuracoes'),
+        title: const Text('Configurações'),
         actions: [
           TextButton.icon(
             onPressed: auth.isLoading ? null : _saveSettings,
@@ -126,7 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         children: [
           AppCard(
             child: Column(

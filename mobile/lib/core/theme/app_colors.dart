@@ -1,34 +1,38 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color color1 = Color(0xFFE7EFD6);
-  static const Color color2 = Color(0xFF9CB66F);
-  static const Color color3 = Color(0xFF4F7558);
-  static const Color color4 = Color(0xFF176B4D);
+  // Tokens oficiais da versao web e dos SVGs da marca.
+  static const Color color1 = Color(0xFFE0E7D2);
+  static const Color color2 = Color(0xFF7EA06A);
+  static const Color color3 = Color(0xFF557C55);
+  static const Color color4 = Color(0xFF1F7A5A);
   static const Color color5 = Colors.white;
 
   static const Color primary = color4;
-  static const Color primaryDark = Color(0xFF104D38);
+  static const Color primaryDark = Color(0xFF185E46);
   static const Color secondary = color3;
-  static const Color accent = Color(0xFFA9C85F);
-  static const Color highlight = Color(0xFFD8EF8B);
-  static const Color background = Color(0xFFF5F7F2);
+  static const Color accent = Color(0xFF0B9188);
+  static const Color highlight = Color(0xFFBDF3DD);
+  static const Color background = Color(0xFFF6F8F5);
   static const Color surface = Colors.white;
-  static const Color surfaceTint = Color(0xFFEDF3E7);
-  static const Color surfaceStrong = Color(0xFFE3EBDD);
-  static const Color text = Color(0xFF16231C);
-  static const Color muted = Color(0xFF637068);
+  static const Color surfaceTint = Color(0xFFEFF5EC);
+  static const Color surfaceStrong = Color(0xFFE0E7D2);
+  static const Color text = Color(0xFF17251D);
+  static const Color textStrong = Color(0xFF24382B);
+  static const Color textMedium = Color(0xFF4D5F53);
+  static const Color muted = Color(0xFF66736A);
+  static const Color mutedSoft = Color(0xFF8A978D);
   static const Color success = color4;
-  static const Color warning = Color(0xFF9B671B);
-  static const Color danger = Color(0xFFC6413C);
-  static const Color border = Color(0xFFD9E2D5);
+  static const Color warning = Color(0xFFD97706);
+  static const Color danger = Color(0xFFDC2626);
+  static const Color border = Color(0xFFDDE5DA);
 
-  static const Color darkPrimary = Color(0xFF7CCFA6);
-  static const Color darkPrimaryContainer = Color(0xFF163B2B);
-  static const Color darkBackground = Color(0xFF0D1411);
-  static const Color darkSurface = Color(0xFF151E1A);
-  static const Color darkSurfaceTint = Color(0xFF203329);
-  static const Color darkText = Color(0xFFEAF1EC);
-  static const Color darkMuted = Color(0xFFB0BBB4);
-  static const Color darkBorder = Color(0xFF2E3D35);
+  static const Color darkPrimary = Color(0xFFB8D3A7);
+  static const Color darkPrimaryContainer = Color(0xFF24382B);
+  static const Color darkBackground = Color(0xFF101A14);
+  static const Color darkSurface = Color(0xFF17251D);
+  static const Color darkSurfaceTint = Color(0xFF24382B);
+  static const Color darkText = Color(0xFFF6F8F5);
+  static const Color darkMuted = Color(0xFFC4D0BE);
+  static const Color darkBorder = Color(0xFF35493C);
 }

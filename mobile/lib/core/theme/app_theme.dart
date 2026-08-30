@@ -29,6 +29,8 @@ class AppTheme {
         centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 0,
+        toolbarHeight: 64,
+        titleSpacing: 20,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surface,
@@ -48,16 +50,18 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: 0,
+        elevation: 1.5,
+        margin: EdgeInsets.zero,
+        shadowColor: const Color(0x1217251D),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          side: const BorderSide(color: AppColors.border),
+          side: const BorderSide(color: AppColors.border, width: 0.8),
         ),
       ),
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: AppColors.surfaceTint,
         selectedColor: AppColors.color1,
-        side: const BorderSide(color: AppColors.border),
+        side: BorderSide.none,
         labelStyle: const TextStyle(color: AppColors.text),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -66,9 +70,9 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primaryDark,
-          side: const BorderSide(color: AppColors.border),
+          side: const BorderSide(color: AppColors.primary),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           minimumSize: const Size(0, 52),
         ),
@@ -80,7 +84,7 @@ class AppTheme {
           disabledBackgroundColor: AppColors.color1,
           disabledForegroundColor: AppColors.muted,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           minimumSize: const Size(0, 52),
         ),
@@ -92,14 +96,14 @@ class AppTheme {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
         ),
       ),

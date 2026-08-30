@@ -7,7 +7,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/notification_provider.dart';
-import '../../widgets/common/collab_logo.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/academic/academic_widgets.dart';
 import '../../widgets/dashboard/activity_chart.dart';
@@ -99,6 +98,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               subtitle: isAdvisor
                                   ? 'Pendências de orientação, revisões e prazos.'
                                   : 'Resumo dos seus projetos, conversas e alertas.',
+                              unreadCount: notificationProvider.unreadCount,
+                              onOpenAlerts: () => context.go('/notifications'),
                             ),
                             const SizedBox(height: 18),
                             if (dashboardProvider.errorMessage != null) ...[
@@ -161,25 +162,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           icon: Icons.notifications_none,
                                         ),
                                       ]),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 20),
+                            Text(
+                              'Ações rápidas',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 10),
                             Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
+                              spacing: 10,
+                              runSpacing: 10,
                               children: [
-                                OutlinedButton.icon(
+                                _QuickAction(
                                   onPressed: () => context.go('/subscriptions'),
                                   icon: const Icon(Icons.assignment_outlined),
-                                  label: const Text('Inscricoes'),
+                                  label: 'Inscrições',
                                 ),
-                                OutlinedButton.icon(
+                                _QuickAction(
                                   onPressed: () => context.go('/progress'),
-                                  icon: const Icon(Icons.trending_up),
-                                  label: const Text('Progresso'),
+                                  icon: const Icon(Icons.trending_up_outlined),
+                                  label: 'Progresso',
                                 ),
-                                OutlinedButton.icon(
+                                _QuickAction(
                                   onPressed: () => context.go('/feedback'),
                                   icon: const Icon(Icons.star_outline),
-                                  label: const Text('Feedback'),
+                                  label: 'Feedback',
                                 ),
                               ],
                             ),
@@ -314,107 +320,67 @@ class _DashboardHeader extends StatelessWidget {
   const _DashboardHeader({
     required this.name,
     required this.subtitle,
+    required this.unreadCount,
+    required this.onOpenAlerts,
     this.avatarUrl,
   });
 
   final String name;
   final String? avatarUrl;
   final String subtitle;
+  final int unreadCount;
+  final VoidCallback onOpenAlerts;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 360;
-
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: ColoredBox(
-            color: AppColors.primaryDark,
-            child: Stack(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Positioned(
-                  top: -22,
-                  right: -26,
-                  child: IgnorePointer(
-                    child: Opacity(
-                      opacity: 0.1,
-                      child: CollabLogo(
-                        full: false,
-                        height: isCompact ? 104 : 120,
-                        inverted: true,
-                      ),
-                    ),
+                Expanded(
+                  child: Text(
+                    'Início',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.all(isCompact ? 16 : 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: isCompact ? 19 : 21,
-                            backgroundColor: AppColors.surface,
-                            foregroundImage: avatarUrl != null
-                                ? NetworkImage(avatarUrl!)
-                                : null,
-                            child: Text(
-                              name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                              style: const TextStyle(
-                                color: AppColors.primaryDark,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text.rich(
-                              TextSpan(
-                                text: 'Olá, ',
-                                children: [
-                                  TextSpan(
-                                    text: name,
-                                    style: const TextStyle(
-                                      color: AppColors.color1,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(color: AppColors.surface),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: isCompact ? 16 : 18),
-                      Text(
-                        'Dashboard',
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  color: AppColors.surface,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.surface.withValues(alpha: 0.86),
-                            ),
-                      ),
-                    ],
+                Badge.count(
+                  count: unreadCount > 99 ? 99 : unreadCount,
+                  isLabelVisible: unreadCount > 0,
+                  child: IconButton.filledTonal(
+                    onPressed: onOpenAlerts,
+                    icon: const Icon(Icons.notifications_none_outlined),
+                    tooltip: 'Abrir alertas',
+                  ),
+                ),
+                const SizedBox(width: 10),
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  foregroundImage:
+                      avatarUrl == null ? null : NetworkImage(avatarUrl!),
+                  child: Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 26),
+            Text(
+              'Olá, $name 👋',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+          ],
         );
       },
     );
@@ -433,7 +399,7 @@ class _StatsGrid extends StatelessWidget {
         const spacing = 12.0;
         final columns = constraints.maxWidth >= 920
             ? 4
-            : constraints.maxWidth >= 560
+            : constraints.maxWidth >= 280
                 ? 2
                 : 1;
         final itemWidth =
@@ -451,6 +417,51 @@ class _StatsGrid extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  final VoidCallback onPressed;
+  final Widget icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 104,
+      child: Column(
+        children: [
+          SizedBox(
+            width: 50,
+            height: 50,
+            child: FilledButton(
+              onPressed: onPressed,
+              style: FilledButton.styleFrom(
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              child: icon,
+            ),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ],
+      ),
     );
   }
 }

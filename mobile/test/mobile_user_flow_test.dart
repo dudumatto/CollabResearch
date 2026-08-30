@@ -68,7 +68,7 @@ void main() {
 
     expect(find.text('CollabResearch'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(AppButton, 'Criar conta'));
+    await tester.tap(find.widgetWithText(AppButton, 'Começar agora'));
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Crie sua conta'), findsOneWidget);
@@ -132,17 +132,23 @@ void main() {
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
         2);
 
-    await tester.tap(_navigationLabel('Alertas'));
+    await tester.tap(_navigationLabel('Agenda'));
     await tester.pump(const Duration(milliseconds: 300));
     expect(
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
         3);
 
-    await tester.tap(_navigationLabel('Perfil'));
+    await tester.tap(_navigationLabel('Alertas'));
     await tester.pump(const Duration(milliseconds: 300));
     expect(
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
         4);
+
+    await tester.tap(_navigationLabel('Perfil'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        5);
     expect(find.text('Perfil'), findsWidgets);
     final settingsButton = tester.widget<IconButton>(
       find.ancestor(
@@ -154,7 +160,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
-    expect(find.text('Configuracoes'), findsOneWidget);
+    expect(find.text('Configurações'), findsOneWidget);
     final switchTiles = find.byType(SwitchListTile);
     expect(switchTiles, findsOneWidget);
 

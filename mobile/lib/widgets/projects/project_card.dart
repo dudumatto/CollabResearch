@@ -22,7 +22,7 @@ class ProjectCard extends StatelessWidget {
     final statusColor = projectStatusColor(project.status);
 
     return InkWell(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: AppCard(
         padding: const EdgeInsets.all(18),
@@ -30,17 +30,19 @@ class ProjectCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (mobile) ...[
-              Text(
-                project.title,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                statusLabel,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: statusColor,
-                      fontWeight: FontWeight.w800,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      project.title,
+                      overflow: TextOverflow.visible,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
+                  ),
+                  const SizedBox(width: 10),
+                  _StatusPill(label: statusLabel, color: statusColor),
+                ],
               ),
             ] else
               Row(
@@ -55,13 +57,7 @@ class ProjectCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    statusLabel,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: statusColor,
-                          fontWeight: FontWeight.w800,
-                        ),
-                  ),
+                  _StatusPill(label: statusLabel, color: statusColor),
                 ],
               ),
             const SizedBox(height: 8),
@@ -151,6 +147,39 @@ class ProjectCard extends StatelessWidget {
                 ],
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 116),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
         ),
       ),
     );

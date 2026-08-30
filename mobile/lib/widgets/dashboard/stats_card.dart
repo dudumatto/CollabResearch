@@ -21,8 +21,10 @@ class StatsCard extends StatelessWidget {
     return AppCard(
       padding: const EdgeInsets.all(16),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 74),
-        child: Row(
+        constraints: const BoxConstraints(minHeight: 118),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             DecoratedBox(
               decoration: BoxDecoration(
@@ -30,8 +32,8 @@ class StatsCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: SizedBox(
-                height: 44,
-                width: 44,
+                height: 38,
+                width: 38,
                 child: Icon(
                   icon,
                   size: 22,
@@ -39,27 +41,23 @@ class StatsCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium,
+            const SizedBox(height: 14),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontSize: 24,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface,
                   ),
-                ],
-              ),
             ),
           ],
         ),

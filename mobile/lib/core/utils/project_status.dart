@@ -16,11 +16,14 @@ String formatProjectStatus(String value) {
 
 Color projectStatusColor(String value) {
   final normalized = value.trim().toUpperCase();
-  if (normalized == 'FINALIZADO' || normalized.contains('REJEITADO')) {
+  if (normalized.contains('REJEITADO')) {
     return AppColors.danger;
   }
+  if (normalized == 'FINALIZADO' || normalized.contains('CONCLUID')) {
+    return AppColors.accent;
+  }
   if (normalized == 'EM_ANDAMENTO') {
-    return AppColors.warning;
+    return AppColors.primary;
   }
   if (normalized == 'ABERTO' || normalized.contains('ATIVO')) {
     return AppColors.success;

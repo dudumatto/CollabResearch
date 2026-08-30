@@ -19,9 +19,10 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell>
     with SingleTickerProviderStateMixin {
   static const _destinations = [
-    _ShellDestination(Icons.space_dashboard_outlined, 'Dashboard'),
+    _ShellDestination(Icons.home_outlined, 'Início'),
     _ShellDestination(Icons.folder_open_outlined, 'Projetos'),
     _ShellDestination(Icons.chat_bubble_outline, 'Chat'),
+    _ShellDestination(Icons.calendar_month_outlined, 'Agenda'),
     _ShellDestination(Icons.notifications_none, 'Alertas'),
     _ShellDestination(Icons.person_outline, 'Perfil'),
   ];
@@ -179,78 +180,67 @@ class _MobileNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isCompact = MediaQuery.sizeOf(context).width < 360;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final extraHeight = ((textScale - 1).clamp(0, 1)).toDouble() * 18;
 
     return SafeArea(
-      minimum:
-          EdgeInsets.fromLTRB(isCompact ? 8 : 12, 0, isCompact ? 8 : 12, 8),
+      top: false,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.7),
+          border: Border(
+            top: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.7),
+            ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.08),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
-            ),
-          ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: NavigationBarTheme(
-            data: NavigationBarThemeData(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              height: isCompact ? 68 : 72,
-              indicatorColor: colorScheme.primary,
-              indicatorShape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                final selected = states.contains(WidgetState.selected);
-                return TextStyle(
-                  color: selected
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  fontSize: isCompact ? 10 : 11,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                );
-              }),
-            ),
-            child: NavigationBar(
-              selectedIndex: selectedIndex,
-              onDestinationSelected: onDestinationSelected,
-              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-              destinations: [
-                for (final destination in destinations)
-                  NavigationDestination(
-                    icon: _AnimatedNavigationIcon(
-                      icon: destination.icon,
-                      selected: false,
-                      count: badgeCount(
-                        destination.label,
-                        chatUnreadCount,
-                        notificationUnreadCount,
-                      ),
-                      color: colorScheme.onSurfaceVariant,
+        child: NavigationBarTheme(
+          data: NavigationBarThemeData(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            height: (isCompact ? 66 : 70) + extraHeight,
+            indicatorColor: Colors.transparent,
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              final selected = states.contains(WidgetState.selected);
+              return TextStyle(
+                color: selected
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
+                fontSize: isCompact ? 9.5 : 10.5,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              );
+            }),
+          ),
+          child: NavigationBar(
+            selectedIndex: selectedIndex,
+            onDestinationSelected: onDestinationSelected,
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: [
+              for (final destination in destinations)
+                NavigationDestination(
+                  icon: _AnimatedNavigationIcon(
+                    icon: destination.icon,
+                    selected: false,
+                    count: badgeCount(
+                      destination.label,
+                      chatUnreadCount,
+                      notificationUnreadCount,
                     ),
-                    selectedIcon: _AnimatedNavigationIcon(
-                      icon: destination.icon,
-                      selected: true,
-                      count: badgeCount(
-                        destination.label,
-                        chatUnreadCount,
-                        notificationUnreadCount,
-                      ),
-                      color: colorScheme.onPrimary,
-                    ),
-                    label: destination.label,
+                    color: colorScheme.onSurfaceVariant,
                   ),
-              ],
-            ),
+                  selectedIcon: _AnimatedNavigationIcon(
+                    icon: destination.icon,
+                    selected: true,
+                    count: badgeCount(
+                      destination.label,
+                      chatUnreadCount,
+                      notificationUnreadCount,
+                    ),
+                    color: colorScheme.primary,
+                  ),
+                  label: destination.label,
+                ),
+            ],
           ),
         ),
       ),
@@ -277,11 +267,11 @@ class _AnimatedNavigationIcon extends StatelessWidget {
     return AnimatedSlide(
       duration: duration,
       curve: Curves.easeOutCubic,
-      offset: selected ? const Offset(0, -0.08) : Offset.zero,
+      offset: selected ? const Offset(0, -0.04) : Offset.zero,
       child: AnimatedScale(
         duration: duration,
         curve: Curves.easeOutBack,
-        scale: selected ? 1.12 : 1,
+        scale: selected ? 1.08 : 1,
         child: _NavigationIcon(icon: icon, count: count, color: color),
       ),
     );

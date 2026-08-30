@@ -153,16 +153,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   children: [
                     Container(
-                      height: 88,
+                      height: 64,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(8),
+                          top: Radius.circular(16),
                         ),
                       ),
                     ),
                     Transform.translate(
-                      offset: const Offset(0, -36),
+                      offset: const Offset(0, -28),
                       child: Padding(
                         // Mobile-only: impede textos longos de encostarem no card.
                         padding:
@@ -170,14 +170,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Column(
                           children: [
                             CircleAvatar(
-                              radius: 42,
+                              radius: 38,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
                               foregroundImage: user?.avatarUrl != null
                                   ? NetworkImage(user!.avatarUrl!)
                                   : null,
                               child: Text(
                                 _initials(user),
-                                style:
-                                    Theme.of(context).textTheme.headlineSmall,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                    ),
                               ),
                             ),
                             const SizedBox(height: 8),

@@ -63,7 +63,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       appBar: AppBar(
         titleSpacing: 24,
         title: Text(
-          'Conversas',
+          'Chat',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),

@@ -13,18 +13,18 @@ abstract final class AppSpacing {
 }
 
 abstract final class AppRadius {
-  static const double sm = 10;
+  static const double sm = 12;
   static const double md = 16;
-  static const double lg = 22;
+  static const double lg = 20;
   static const double full = 999;
 }
 
 abstract final class AppElevation {
   static const List<BoxShadow> floating = [
     BoxShadow(
-      color: Color(0x14104D38),
-      blurRadius: 24,
-      offset: Offset(0, 8),
+      color: Color(0x1017251D),
+      blurRadius: 16,
+      offset: Offset(0, 5),
     ),
   ];
 }
