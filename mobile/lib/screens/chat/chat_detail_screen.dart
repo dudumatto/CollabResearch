@@ -279,6 +279,33 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     AppSnackbar.showError(context, message);
   }
 
+  /// Duas mensagens seguidas do mesmo remetente, no mesmo dia e a menos de
+  /// cinco minutos formam um grupo.
+  static const Duration _groupWindow = Duration(minutes: 5);
+
+  bool _continuesGroup(List<Message> messages, int index) {
+    if (index <= 0) return false;
+    final current = messages[index];
+    final previous = messages[index - 1];
+    if (current.senderId != previous.senderId) return false;
+    if (_shouldShowDateDivider(messages, index)) return false;
+    final gap = current.sentAt.difference(previous.sentAt);
+    // gap negativo indica horario invalido vindo da API; nesse caso nao agrupa.
+    if (gap.isNegative) return false;
+    return gap <= _groupWindow;
+  }
+
+  BubbleGroupPosition _groupPosition(List<Message> messages, int index) {
+    final continuesPrevious = _continuesGroup(messages, index);
+    final continuedByNext =
+        index + 1 < messages.length && _continuesGroup(messages, index + 1);
+
+    if (continuesPrevious && continuedByNext) return BubbleGroupPosition.middle;
+    if (continuesPrevious) return BubbleGroupPosition.last;
+    if (continuedByNext) return BubbleGroupPosition.first;
+    return BubbleGroupPosition.single;
+  }
+
   bool _shouldShowDateDivider(List<Message> messages, int index) {
     if (index == 0) return true;
     final current = messages[index].sentAt;
@@ -519,6 +546,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                                 child: MessageBubble(
                                                   message: message,
                                                   currentUserId: currentUserId,
+                                                  groupPosition: _groupPosition(
+                                                    provider.messages,
+                                                    messageIndex,
+                                                  ),
                                                   onEdit: isMine
                                                       ? () => _showEditDialog(
                                                           message)
