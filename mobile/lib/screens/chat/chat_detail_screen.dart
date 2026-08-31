@@ -10,6 +10,8 @@ import '../../widgets/chat/message_bubble.dart';
 import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
+import '../../widgets/common/app_snackbar.dart';
+import '../../widgets/common/app_avatar.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   const ChatDetailScreen({
@@ -180,9 +182,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    AppSnackbar.showError(context, message);
   }
 
   bool _shouldShowDateDivider(List<Message> messages, int index) {
@@ -279,20 +279,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             titleSpacing: 0,
             title: Row(
               children: [
-                CircleAvatar(
+                AppAvatar(
+                  name: conversationTitle,
+                  imageUrl: avatarUrl,
                   radius: 20,
                   backgroundColor: AppColors.surface,
-                  foregroundImage:
-                      avatarUrl != null ? NetworkImage(avatarUrl) : null,
-                  child: Text(
-                    conversationTitle.isEmpty
-                        ? 'C'
-                        : conversationTitle[0].toUpperCase(),
-                    style: const TextStyle(
-                      color: AppColors.primaryDark,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  foregroundColor: AppColors.primaryDark,
+                  initials: conversationTitle.isEmpty ? 'C' : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(

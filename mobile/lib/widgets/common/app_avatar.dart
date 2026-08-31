@@ -9,6 +9,7 @@ class AppAvatar extends StatelessWidget {
     this.radius = 24,
     this.backgroundColor,
     this.foregroundColor,
+    this.initials,
   });
 
   final String name;
@@ -17,12 +18,19 @@ class AppAvatar extends StatelessWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
 
+  /// Iniciais exibidas quando nao ha imagem. Quando nulo, usa a primeira
+  /// letra de [name].
+  final String? initials;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final background = backgroundColor ?? theme.colorScheme.primaryContainer;
     final foreground = foregroundColor ?? theme.colorScheme.onPrimaryContainer;
-    final initial = name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
+    final override = initials?.trim() ?? '';
+    final initial = override.isNotEmpty
+        ? override.toUpperCase()
+        : (name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase());
     final size = radius * 2;
 
     Widget fallback() => ColoredBox(

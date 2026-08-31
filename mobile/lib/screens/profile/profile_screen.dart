@@ -12,6 +12,8 @@ import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_snackbar.dart';
+import '../../widgets/common/app_avatar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -88,13 +90,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (!mounted) return;
     setState(() => _isSavingProfile = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(saved
-            ? 'Perfil atualizado.'
-            : errorMessage ?? 'Nao foi possivel salvar o perfil.'),
-      ),
-    );
+    if (saved) {
+      AppSnackbar.showSuccess(context, 'Perfil atualizado.');
+    } else {
+      AppSnackbar.showError(
+        context,
+        errorMessage ?? 'Nao foi possivel salvar o perfil.',
+      );
+    }
     if (saved) setState(() => _editing = false);
   }
 
@@ -184,26 +187,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   horizontal: isMobile ? 12 : 0),
                               child: Column(
                                 children: [
-                                  CircleAvatar(
+                                  AppAvatar(
+                                    name: user.name,
+                                    imageUrl: user.avatarUrl,
                                     radius: 38,
                                     backgroundColor:
                                         Theme.of(context).colorScheme.primary,
                                     foregroundColor:
                                         Theme.of(context).colorScheme.onPrimary,
-                                    foregroundImage: user.avatarUrl != null
-                                        ? NetworkImage(user.avatarUrl!)
-                                        : null,
-                                    child: Text(
-                                      _initials(user),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall
-                                          ?.copyWith(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimary,
-                                          ),
-                                    ),
+                                    initials: _initials(user),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(

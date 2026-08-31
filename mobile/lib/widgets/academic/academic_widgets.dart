@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../../core/animation/app_animations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
+import '../common/app_badge.dart';
+import '../common/app_error_state.dart';
+import '../common/app_skeleton.dart';
+import '../common/empty_state.dart';
 
 class AcademicPageHeader extends StatelessWidget {
   const AcademicPageHeader({
@@ -86,23 +90,9 @@ class AcademicStatusBadge extends StatelessWidget {
       'AGUARDANDO_CIENCIA' => 'AGUARDANDO CIÊNCIA',
       _ => normalized.replaceAll('_', ' '),
     };
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-    );
+    // Delega a aparencia para AppBadge: a logica de status/rotulo acima e
+    // dominio deste widget, o desenho e do design system.
+    return AppBadge(label: label, color: color);
   }
 }
 
@@ -198,38 +188,13 @@ class AcademicEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Icon(icon, color: Theme.of(context).colorScheme.primary),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            description,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          if (action != null) ...[
-            const SizedBox(height: 16),
-            action!,
-          ],
-        ],
-      ),
+    // Camada fina sobre EmptyState para que todas as telas usem o mesmo
+    // estado vazio, com a mesma animacao de entrada.
+    return EmptyState(
+      icon: icon,
+      title: title,
+      subtitle: description,
+      action: action,
     );
   }
 }
@@ -244,17 +209,11 @@ class AcademicErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
+  // Camada fina sobre AppErrorState: um unico estado de erro no app inteiro,
+  // com o mesmo botao de "Tentar novamente".
   @override
-  Widget build(BuildContext context) => AcademicEmptyState(
-        icon: Icons.cloud_off_outlined,
-        title: 'Não foi possível carregar',
-        description: message,
-        action: OutlinedButton.icon(
-          onPressed: onRetry,
-          icon: const Icon(Icons.refresh),
-          label: const Text('Tentar novamente'),
-        ),
-      );
+  Widget build(BuildContext context) =>
+      AppErrorState(message: message, onRetry: onRetry);
 }
 
 class AcademicSkeletonList extends StatelessWidget {
@@ -264,16 +223,16 @@ class AcademicSkeletonList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.surfaceContainerHighest;
+    // Usa AppSkeleton para ter o shimmer real do design system, mantendo as
+    // mesmas alturas para que a tela nao "pule" quando os dados chegam.
     return Column(
       children: List.generate(
         items,
-        (index) => Container(
-          height: index == 0 ? 118 : 96,
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(AppRadius.md),
+        (index) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AppSkeleton(
+            height: index == 0 ? 118 : 96,
+            borderRadius: AppRadius.md,
           ),
         ),
       ),

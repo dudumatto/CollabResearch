@@ -8,6 +8,7 @@ import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 enum _AgendaFilter { upcoming, overdue, done, all }
 
@@ -49,15 +50,14 @@ class _AgendaScreenState extends State<AgendaScreen> {
   ) async {
     final success = await academic.completeStage(stage.projectId, stage.id);
     if (!mounted) return success;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Etapa concluída.'
-              : academic.errorMessage ?? 'Não foi possível concluir a etapa.',
-        ),
-      ),
-    );
+    if (success) {
+      AppSnackbar.showSuccess(context, 'Etapa concluída.');
+    } else {
+      AppSnackbar.showError(
+        context,
+        academic.errorMessage ?? 'Não foi possível concluir a etapa.',
+      );
+    }
     return success;
   }
 

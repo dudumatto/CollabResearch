@@ -7,6 +7,7 @@ import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class EvaluationsScreen extends StatefulWidget {
   const EvaluationsScreen({super.key, this.projectId});
@@ -113,15 +114,14 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
       commentText,
     );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Ciência registrada.'
-              : academic.errorMessage ?? 'Não foi possível registrar ciência.',
-        ),
-      ),
-    );
+    if (success) {
+      AppSnackbar.showSuccess(context, 'Ciência registrada.');
+    } else {
+      AppSnackbar.showError(
+        context,
+        academic.errorMessage ?? 'Não foi possível registrar ciência.',
+      );
+    }
   }
 
   Future<void> _editEvaluation({AcademicEvaluation? evaluation}) async {
@@ -150,17 +150,19 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
       evaluationId: evaluation?.id,
     );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? evaluation == null
-                  ? 'Avaliação registrada.'
-                  : 'Avaliação atualizada.'
-              : academic.errorMessage ?? 'Não foi possível salvar a avaliação.',
-        ),
-      ),
-    );
+    if (success) {
+      AppSnackbar.showSuccess(
+        context,
+        evaluation == null
+            ? 'Avaliação registrada.'
+            : 'Avaliação atualizada.',
+      );
+    } else {
+      AppSnackbar.showError(
+        context,
+        academic.errorMessage ?? 'Não foi possível salvar a avaliação.',
+      );
+    }
   }
 
   @override

@@ -11,6 +11,7 @@ import '../../widgets/common/app_badge.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class SubscriptionsScreen extends StatefulWidget {
   const SubscriptionsScreen({super.key});
@@ -49,6 +50,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
               ? 'Inscricao aprovada.'
               : 'Inscricao recusada.'
           : provider.errorMessage ?? 'Nao foi possivel analisar a inscricao.',
+      success: success,
     );
   }
 
@@ -69,6 +71,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
       success
           ? 'Inscricao cancelada.'
           : provider.errorMessage ?? 'Nao foi possivel cancelar a inscricao.',
+      success: success,
     );
   }
 
@@ -97,9 +100,12 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
         false;
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+  void _showMessage(String message, {bool success = false}) {
+    if (success) {
+      AppSnackbar.showSuccess(context, message);
+    } else {
+      AppSnackbar.showError(context, message);
+    }
   }
 
   void _goBack() {

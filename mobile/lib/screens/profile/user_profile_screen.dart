@@ -8,6 +8,8 @@ import '../../models/academic_workspace.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_snackbar.dart';
+import '../../widgets/common/app_avatar.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key, required this.userId});
@@ -33,9 +35,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         await context.read<ChatProvider>().openPrivateConversation(user.id);
     if (!mounted) return;
     if (conversation == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível iniciar a conversa.')),
-      );
+      AppSnackbar.showError(context, 'Não foi possível iniciar a conversa.');
       return;
     }
     context.push('/chat/${conversation.id}', extra: user.name);
@@ -44,16 +44,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> _openDocument(String? url) async {
     final uri = Uri.tryParse(url ?? '');
     if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Link externo indisponível.')),
-      );
+      AppSnackbar.showError(context, 'Link externo indisponível.');
       return;
     }
     final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível abrir o documento.')),
-      );
+      AppSnackbar.showError(context, 'Não foi possível abrir o documento.');
     }
   }
 
@@ -189,11 +185,11 @@ class _UserHeader extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         child: Column(
           children: [
-            CircleAvatar(
+            AppAvatar(
+              name: user.name,
+              imageUrl: user.avatarUrl,
               radius: 40,
-              foregroundImage:
-                  user.avatarUrl == null ? null : NetworkImage(user.avatarUrl!),
-              child: Text(initials.isEmpty ? 'U' : initials),
+              initials: initials.isEmpty ? 'U' : initials,
             ),
             const SizedBox(height: 10),
             Text(user.name, style: Theme.of(context).textTheme.titleLarge),

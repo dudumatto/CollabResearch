@@ -9,6 +9,7 @@ import '../../widgets/chat/conversation_tile.dart';
 import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
+import '../../widgets/common/app_avatar.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -359,22 +360,12 @@ class _NewConversationSheetState extends State<_NewConversationSheet> {
                                         12,
                                         4,
                                       ),
-                                      leading: CircleAvatar(
-                                        backgroundColor:
-                                            colorScheme.primaryContainer,
-                                        foregroundImage: user.avatarUrl != null
-                                            ? NetworkImage(user.avatarUrl!)
-                                            : null,
-                                        child: Text(
-                                          user.name.isEmpty
-                                              ? 'U'
-                                              : user.name[0].toUpperCase(),
-                                          style: TextStyle(
-                                            color:
-                                                colorScheme.onPrimaryContainer,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
+                                      leading: AppAvatar(
+                                        name: user.name,
+                                        imageUrl: user.avatarUrl,
+                                        radius: 20,
+                                        initials:
+                                            user.name.isEmpty ? 'U' : null,
                                       ),
                                       title: Text(
                                         user.name,

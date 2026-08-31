@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -55,14 +56,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         theme: _theme,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Configuracoes salvas.')),
-      );
+      AppSnackbar.showSuccess(context, 'Configuracoes salvas.');
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Nao foi possivel salvar as configuracoes.')),
+      AppSnackbar.showError(
+        context,
+        'Nao foi possivel salvar as configuracoes.',
       );
     }
   }
@@ -91,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _currentPasswordController.clear();
       _newPasswordController.clear();
       _confirmPasswordController.clear();
-      _showMessage('Senha alterada com sucesso.');
+      _showMessage('Senha alterada com sucesso.', success: true);
     } catch (_) {
       _showMessage('Nao foi possivel alterar a senha.');
     } finally {
@@ -99,10 +98,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool success = false}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    if (success) {
+      AppSnackbar.showSuccess(context, message);
+    } else {
+      AppSnackbar.showError(context, message);
+    }
   }
 
   @override

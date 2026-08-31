@@ -10,6 +10,7 @@ import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class DeliveriesScreen extends StatefulWidget {
   const DeliveriesScreen({super.key, this.projectId});
@@ -129,9 +130,11 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
               file: file!,
             );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(success ? 'Entrega enviada.' : 'Não foi possível enviar.'),
-    ));
+    if (success) {
+      AppSnackbar.showSuccess(context, 'Entrega enviada.');
+    } else {
+      AppSnackbar.showError(context, 'Não foi possível enviar.');
+    }
   }
 
   Future<void> _openVersions(DeliveryItem delivery) async {
@@ -215,16 +218,18 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                     file,
                   );
                   if (!mounted) return;
-                  ScaffoldMessenger.of(this.context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        success
-                            ? 'Nova versão enviada.'
-                            : academic.errorMessage ??
-                                'Não foi possível enviar a nova versão.',
-                      ),
-                    ),
-                  );
+                  if (success) {
+                    AppSnackbar.showSuccess(
+                      this.context,
+                      'Nova versão enviada.',
+                    );
+                  } else {
+                    AppSnackbar.showError(
+                      this.context,
+                      academic.errorMessage ??
+                          'Não foi possível enviar a nova versão.',
+                    );
+                  }
                 },
                 icon: const Icon(Icons.upload_file_outlined),
                 label: const Text('Enviar nova versão'),
@@ -248,21 +253,16 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
     );
     if (!mounted) return;
     if (url == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            academic.errorMessage ??
-                'O servidor não forneceu um link externo para este arquivo.',
-          ),
-        ),
+      AppSnackbar.showError(
+        context,
+        academic.errorMessage ??
+            'O servidor não forneceu um link externo para este arquivo.',
       );
       return;
     }
     final opened = await launchUrl(url, mode: LaunchMode.externalApplication);
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível abrir o arquivo.')),
-      );
+      AppSnackbar.showError(context, 'Não foi possível abrir o arquivo.');
     }
   }
 
@@ -345,15 +345,14 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
       comment: commentText,
     );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Revisão registrada.'
-              : academic.errorMessage ?? 'Não foi possível salvar a revisão.',
-        ),
-      ),
-    );
+    if (success) {
+      AppSnackbar.showSuccess(context, 'Revisão registrada.');
+    } else {
+      AppSnackbar.showError(
+        context,
+        academic.errorMessage ?? 'Não foi possível salvar a revisão.',
+      );
+    }
   }
 
   @override

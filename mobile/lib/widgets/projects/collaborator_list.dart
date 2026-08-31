@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../common/app_avatar.dart';
 
 class CollaboratorList extends StatelessWidget {
   const CollaboratorList({
@@ -15,10 +16,7 @@ class CollaboratorList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: CircleAvatar(
-        foregroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-        child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?'),
-      ),
+      leading: AppAvatar(name: name, imageUrl: avatarUrl, radius: 20),
       title: Text(name),
       subtitle: Text(role),
     );

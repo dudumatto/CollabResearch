@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/utils/project_status.dart';
 import '../../models/project.dart';
 import '../common/app_card.dart';
+import '../common/app_avatar.dart';
 
 class ProjectCard extends StatelessWidget {
   const ProjectCard({
@@ -85,12 +86,10 @@ class ProjectCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                CircleAvatar(
+                AppAvatar(
                   radius: 15,
-                  foregroundImage: project.advisorAvatarUrl != null
-                      ? NetworkImage(project.advisorAvatarUrl!)
-                      : null,
-                  child: Text(project.advisorName![0].toUpperCase()),
+                  name: project.advisorName!,
+                  imageUrl: project.advisorAvatarUrl,
                 ),
                 const SizedBox(width: 8),
                 Expanded(

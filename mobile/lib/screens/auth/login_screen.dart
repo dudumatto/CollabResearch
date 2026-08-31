@@ -11,6 +11,7 @@ import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/collab_logo.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -93,12 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                           } on DioException catch (error) {
                             if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  ApiClient.instance.friendlyError(error),
-                                ),
-                              ),
+                            AppSnackbar.showError(
+                              context,
+                              ApiClient.instance.friendlyError(error),
                             );
                           }
                         },

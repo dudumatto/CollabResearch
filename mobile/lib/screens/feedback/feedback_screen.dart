@@ -8,6 +8,7 @@ import '../../providers/research_activity_provider.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -124,15 +125,14 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     final provider = context.read<ResearchActivityProvider>();
     final success = await provider.createFeedback(data);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Feedback enviado.'
-              : provider.errorMessage ?? 'Nao foi possivel enviar.',
-        ),
-      ),
-    );
+    if (success) {
+      AppSnackbar.showSuccess(context, 'Feedback enviado.');
+    } else {
+      AppSnackbar.showError(
+        context,
+        provider.errorMessage ?? 'Nao foi possivel enviar.',
+      );
+    }
   }
 
   void _goBack() {

@@ -10,6 +10,7 @@ import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/collab_logo.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -241,15 +242,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       await context.read<AuthProvider>().register(data);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Conta criada. Agora voce pode entrar.')),
-      );
+      AppSnackbar.showSuccess(context, 'Conta criada. Agora voce pode entrar.');
       context.go('/login');
     } on DioException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(ApiClient.instance.friendlyError(error))),
-      );
+      AppSnackbar.showError(context, ApiClient.instance.friendlyError(error));
     }
   }
 }

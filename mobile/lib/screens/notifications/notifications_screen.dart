@@ -8,6 +8,7 @@ import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/notifications/notification_tile.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -49,9 +50,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   void _showSnackBar(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    AppSnackbar.showError(context, message);
   }
 
   @override

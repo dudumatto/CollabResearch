@@ -13,6 +13,7 @@ import '../../widgets/academic/academic_widgets.dart';
 import '../../widgets/dashboard/activity_chart.dart';
 import '../../widgets/dashboard/recent_activity_list.dart';
 import '../../widgets/dashboard/stats_card.dart';
+import '../../widgets/common/app_avatar.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -404,16 +405,13 @@ class _DashboardHeader extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                CircleAvatar(
+                AppAvatar(
                   radius: 20,
+                  name: name,
+                  imageUrl: avatarUrl,
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  foregroundImage:
-                      avatarUrl == null ? null : NetworkImage(avatarUrl!),
-                  child: Text(
-                    name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
+                  initials: name.isNotEmpty ? null : 'U',
                 ),
               ],
             ),

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../models/academic_workspace.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_avatar.dart';
 
 class AdviseesScreen extends StatefulWidget {
   const AdviseesScreen({super.key});
@@ -159,12 +160,11 @@ class _AdviseeTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
+              AppAvatar(
+                name: advisee.name,
+                imageUrl: advisee.avatarUrl,
                 radius: 24,
-                foregroundImage: advisee.avatarUrl == null
-                    ? null
-                    : NetworkImage(advisee.avatarUrl!),
-                child: Text(_initials.isEmpty ? 'A' : _initials),
+                initials: _initials.isEmpty ? 'A' : _initials,
               ),
               const SizedBox(width: 12),
               Expanded(

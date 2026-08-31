@@ -7,6 +7,7 @@ import '../../providers/research_activity_provider.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -126,15 +127,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final provider = context.read<ResearchActivityProvider>();
     final success = await provider.createProgress(projectId, data);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Progresso registrado.'
-              : provider.errorMessage ?? 'Nao foi possivel registrar.',
-        ),
-      ),
-    );
+    if (success) {
+      AppSnackbar.showSuccess(context, 'Progresso registrado.');
+    } else {
+      AppSnackbar.showError(
+        context,
+        provider.errorMessage ?? 'Nao foi possivel registrar.',
+      );
+    }
   }
 
   void _goBack() {

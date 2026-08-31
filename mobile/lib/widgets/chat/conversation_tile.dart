@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/animation/app_animations.dart';
 import '../../core/utils/date_utils.dart';
 import '../../models/conversation.dart';
+import '../common/app_avatar.dart';
 
 class ConversationTile extends StatelessWidget {
   const ConversationTile({super.key, required this.conversation, this.onTap});
@@ -41,21 +42,15 @@ class ConversationTile extends StatelessWidget {
                       width: 1.5,
                     ),
                   ),
-                  child: CircleAvatar(
+                  child: AppAvatar(
                     radius: 23,
+                    name: conversation.title,
+                    imageUrl: conversation.avatarUrl,
                     backgroundColor: colorScheme.primaryContainer,
-                    foregroundImage: conversation.avatarUrl != null
-                        ? NetworkImage(conversation.avatarUrl!)
-                        : null,
-                    child: Text(
-                      conversation.title.isNotEmpty
-                          ? conversation.title[0].toUpperCase()
-                          : '?',
-                      style: TextStyle(
-                        color: colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    foregroundColor: colorScheme.onPrimaryContainer,
+                    initials: conversation.title.isNotEmpty
+                        ? conversation.title[0].toUpperCase()
+                        : '?',
                   ),
                 ),
                 const SizedBox(width: 12),

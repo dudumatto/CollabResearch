@@ -6,6 +6,8 @@ import '../../models/academic_workspace.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_snackbar.dart';
+import '../../widgets/common/app_avatar.dart';
 
 class AdviseeDetailScreen extends StatefulWidget {
   const AdviseeDetailScreen({
@@ -50,9 +52,7 @@ class _AdviseeDetailScreenState extends State<AdviseeDetailScreen> {
         .openPrivateConversation(advisee.userId);
     if (!mounted) return;
     if (conversation == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível iniciar a conversa.')),
-      );
+      AppSnackbar.showError(context, 'Não foi possível iniciar a conversa.');
       return;
     }
     context.push('/chat/${conversation.id}', extra: advisee.name);
@@ -177,11 +177,11 @@ class _ProfileSummary extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         child: Column(
           children: [
-            CircleAvatar(
+            AppAvatar(
+              name: user.name,
+              imageUrl: user.avatarUrl,
               radius: 38,
-              foregroundImage:
-                  user.avatarUrl == null ? null : NetworkImage(user.avatarUrl!),
-              child: Text(initials.isEmpty ? 'A' : initials),
+              initials: initials.isEmpty ? 'A' : initials,
             ),
             const SizedBox(height: 10),
             Text(user.name, style: Theme.of(context).textTheme.titleLarge),

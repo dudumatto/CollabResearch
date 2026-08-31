@@ -13,6 +13,7 @@ import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/academic/academic_widgets.dart';
 import '../../widgets/projects/collaborator_list.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
   const ProjectDetailScreen({super.key, required this.projectId});
@@ -45,15 +46,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       if (mounted) setState(() => _isSubscribing = false);
     }
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          subscribed
-              ? 'Inscricao realizada.'
-              : provider.errorMessage ?? 'Falha ao inscrever.',
-        ),
-      ),
-    );
+    if (subscribed) {
+      AppSnackbar.showSuccess(context, 'Inscricao realizada.');
+    } else {
+      AppSnackbar.showError(
+        context,
+        provider.errorMessage ?? 'Falha ao inscrever.',
+      );
+    }
   }
 
   Future<void> _reviewOrientation(
@@ -87,17 +87,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
         ? await provider.acceptOrientation(projectId)
         : await provider.rejectOrientation(projectId);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? accept
-                  ? 'Orientacao aceita.'
-                  : 'Orientacao recusada.'
-              : provider.errorMessage ?? 'Nao foi possivel analisar o projeto.',
-        ),
-      ),
-    );
+    if (success) {
+      AppSnackbar.showSuccess(
+        context,
+        accept ? 'Orientacao aceita.' : 'Orientacao recusada.',
+      );
+    } else {
+      AppSnackbar.showError(
+        context,
+        provider.errorMessage ?? 'Nao foi possivel analisar o projeto.',
+      );
+    }
   }
 
   @override

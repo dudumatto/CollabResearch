@@ -6,6 +6,7 @@ import '../../models/academic_workspace.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_snackbar.dart';
 
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key});
@@ -55,33 +56,28 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     final academic = context.read<AcademicWorkspaceProvider>();
     final success = await academic.deleteDocument(document.id, userId);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Documento excluído.'
-              : academic.errorMessage ??
-                  'Não foi possível excluir o documento.',
-        ),
-      ),
-    );
+    if (success) {
+      AppSnackbar.showSuccess(context, 'Documento excluído.');
+    } else {
+      AppSnackbar.showError(
+        context,
+        academic.errorMessage ?? 'Não foi possível excluir o documento.',
+      );
+    }
   }
 
   Future<void> _open(AcademicDocument document) async {
     final uri = document.externalUri;
     if (uri == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Este documento não possui um link externo.'),
-        ),
+      AppSnackbar.showError(
+        context,
+        'Este documento não possui um link externo.',
       );
       return;
     }
     final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível abrir o documento.')),
-      );
+      AppSnackbar.showError(context, 'Não foi possível abrir o documento.');
     }
   }
 
