@@ -9,6 +9,42 @@ import 'package:tcc_mobile/providers/dashboard_provider.dart';
 import 'package:tcc_mobile/screens/profile/profile_screen.dart';
 
 void main() {
+  // Acima de 480 px o ramo desktop usava Row(spaceEvenly) com _ProfileStat sem
+  // constraint, maxLines: null e TextOverflow.clip: um curso longo transbordava.
+  for (final width in [481.0, 600.0, 900.0]) {
+    testWidgets('perfil nao transborda em ${width.toInt()} px com curso longo',
+        (tester) async {
+      await tester.binding.setSurfaceSize(Size(width, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final auth = AuthProvider()
+        ..currentUser = const User(
+          id: '1',
+          name: 'Maria Fernanda de Oliveira Albuquerque',
+          email: 'maria@example.com',
+          institution: 'Centro Universitario de Tecnologia de Campinas',
+          type: 'ALUNO',
+          course: 'Engenharia de Computacao e Sistemas Distribuidos',
+          semester: 8,
+        );
+      final dashboard = DashboardProvider()
+        ..summary = const DashboardSummary(myProjects: 12);
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AuthProvider>.value(value: auth),
+            ChangeNotifierProvider<DashboardProvider>.value(value: dashboard),
+          ],
+          child: const MaterialApp(home: ProfileScreen()),
+        ),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final width in [320.0, 329.0, 360.0, 390.0, 480.0]) {
     testWidgets(
         'perfil nao apresenta overflow horizontal em ${width.toInt()} px',

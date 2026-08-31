@@ -186,6 +186,11 @@ void main() {
     );
     await tester.pump();
     await tester.tap(find.widgetWithText(ListTile, 'Sair da conta'));
+    await tester.pumpAndSettle();
+
+    // Sair agora pede confirmacao: antes um toque acidental derrubava a sessao.
+    expect(find.widgetWithText(FilledButton, 'Sair'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Sair'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 

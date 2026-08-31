@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_snackbar.dart';
+import '../../widgets/common/confirm_logout.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -245,10 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.logout),
                   title: const Text('Sair da conta'),
-                  onTap: () async {
-                    await context.read<AuthProvider>().logout();
-                    if (context.mounted) context.go('/login');
-                  },
+                  onTap: () => confirmLogout(context),
                 ),
               ],
             ),
