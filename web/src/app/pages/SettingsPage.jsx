@@ -79,8 +79,9 @@ function Panel({ panelId, activePanel, title, onBack, children, collapsed }) {
             transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
           >
             <div className="cfg-panel__header">
-              <button className="cfg-panel__back" onClick={onBack}>
-                <div className="cfg-panel__back-icon"><ArrowLeft size={16} /></div>
+              <button className="cfg-panel__back" onClick={onBack} aria-label="Voltar para configurações">
+                <span className="cfg-panel__back-icon"><ArrowLeft size={16} /></span>
+                <span className="cfg-panel__back-text">Voltar</span>
               </button>
               <span className="cfg-panel__title">{title}</span>
             </div>

@@ -260,7 +260,7 @@ export default function AdvisorProgressPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="advisor-pagina"
+      className="advisor-pagina advisor-pagina--progresso"
     >
       <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
         <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>

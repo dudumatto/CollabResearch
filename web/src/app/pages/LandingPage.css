@@ -2,7 +2,100 @@
    LandingPage.css — Estilos da landing page
    ============================================================ */
 
+html[data-landing-page="true"],
+html[data-landing-page="true"] body {
+  color-scheme: light !important;
+  background: #ffffff;
+}
+
 .landing {
+  --cor-fundo:          #f6f8f5;
+  --cor-branco:         #ffffff;
+  --cor-borda-clara:    #eff5ec;
+  --cor-borda:          #dde5da;
+  --cor-borda-media:    #c7d1c3;
+  --cor-texto-mudo:     #8a978d;
+  --cor-texto-fraco:    #66736a;
+  --cor-texto-medio:    #4d5f53;
+  --cor-texto-secundario: #35493c;
+  --cor-texto-forte:    #24382b;
+  --cor-texto:          #17251d;
+  --cor-fundo-leve:     #eff5ec;
+  --cor-fundo-medio:    #e0e7d2;
+
+  --cor-primaria:           #1f7a5a;
+  --cor-primaria-escura:    #185e46;
+  --cor-primaria-clara:     #eff5ec;
+  --cor-primaria-leve:      #e0e7d2;
+  --cor-primaria-borda:     #c7d7bd;
+  --cor-primaria-texto:     #185e46;
+
+  --cor-secundaria:         #557c55;
+  --cor-secundaria-escura:  #3f5f40;
+  --cor-secundaria-clara:   #f2f6ef;
+  --cor-secundaria-leve:    #d8e4cf;
+  --cor-secundaria-borda:   #bfd2b4;
+  --cor-secundaria-media:   #7ea06a;
+
+  --cor-sucesso:            #1f7a5a;
+  --cor-sucesso-escura:     #185e46;
+  --cor-sucesso-clara:      #eff5ec;
+  --cor-sucesso-leve:       #e0e7d2;
+  --cor-sucesso-borda:      #c7d7bd;
+  --cor-sucesso-media:      #7ea06a;
+
+  --cor-atencao:            #ca8a04;
+  --cor-atencao-escura:     #a16207;
+  --cor-atencao-clara:      #fefce8;
+  --cor-atencao-leve:       #fef9c3;
+  --cor-alerta:             #d97706;
+  --cor-alerta-clara:       #fffbeb;
+
+  --cor-laranja:            #ea580c;
+  --cor-laranja-escura:     #c2410c;
+  --cor-laranja-clara:      #fff7ed;
+  --cor-laranja-leve:       #fed7aa;
+  --cor-laranja-borda:      #fdba74;
+
+  --cor-erro:               #dc2626;
+  --cor-erro-escura:        #b91c1c;
+  --cor-erro-clara:         #fef2f2;
+  --cor-erro-leve:          #fee2e2;
+  --cor-erro-borda:         #fecaca;
+  --cor-erro-media:         #ef4444;
+
+  --cor-esmeralda:          #1f7a5a;
+  --cor-esmeralda-clara:    #eff5ec;
+  --cor-rosa:               #db2777;
+  --cor-rosa-clara:         #fdf2f8;
+  --cor-amarelo-estrela:    #facc15;
+
+  --gradiente-primario:     linear-gradient(to right, var(--cor-primaria), var(--cor-secundaria-media));
+  --gradiente-primario-br:  linear-gradient(to bottom right, var(--cor-primaria), var(--cor-secundaria));
+  --gradiente-suave:        linear-gradient(to bottom right, var(--cor-secundaria-clara), var(--cor-primaria-clara));
+  --gradiente-barra:        linear-gradient(to right, #1f7a5a, #7ea06a);
+  --gradiente-avatar:       linear-gradient(to bottom right, #1f7a5a, #7ea06a);
+  --gradiente-avatar-claro: linear-gradient(to bottom right, #557c55, #e0e7d2);
+
+  --cor-superficie:       #ffffff;
+  --cor-superficie-2:     #f6f8f5;
+  --cor-superficie-3:     #eff5ec;
+  --cor-superficie-brand: rgba(31, 122, 90, 0.08);
+  --cor-sobreposicao:     rgba(23, 37, 29, 0.55);
+  --cor-input:            #ffffff;
+  --cor-input-borda:      #e5e7eb;
+  --cor-separador-suave:  #f3f4f6;
+
+  --sombra-minima:    0 1px 2px rgba(0, 0, 0, 0.05);
+  --sombra-pequena:   0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --sombra-media:     0 4px 12px rgba(0, 0, 0, 0.08);
+  --sombra-grande:    0 8px 24px rgba(0, 0, 0, 0.12);
+  --sombra-extra:     0 20px 40px rgba(0, 0, 0, 0.15);
+  --sombra-primaria:  0 8px 24px rgba(31, 122, 90, 0.2);
+  --sombra-primaria-leve: 0 4px 16px rgba(31, 122, 90, 0.12);
+  --sombra-azul-card: 0 16px 30px rgba(31, 122, 90, 0.18);
+
+  color-scheme: light;
   min-height: 100vh;
   background-color: var(--cor-branco);
   overflow-x: hidden;
@@ -878,13 +971,16 @@
 }
 
 .landing__secao--escuro {
-  background-color: #111827;
+  background-color: var(--cor-fundo);
+  border-top: 1px solid var(--cor-borda-clara);
+  border-bottom: 1px solid var(--cor-borda-clara);
   position: relative;
   overflow: hidden;
 }
 
 .landing__secao--rodape {
-  background-color: #030712;
+  background-color: var(--cor-branco);
+  border-top: 1px solid var(--cor-borda-clara);
   padding: 3rem 0;
 }
 
@@ -1253,7 +1349,7 @@
 .landing__cta-decoracao {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom right, rgba(31, 122, 90, 0.3), rgba(126, 160, 106, 0.3));
+  background: linear-gradient(to bottom right, rgba(31, 122, 90, 0.08), rgba(126, 160, 106, 0.08));
   pointer-events: none;
 }
 
@@ -1265,7 +1361,7 @@
 }
 
 .landing__cta-titulo {
-  color: var(--cor-branco);
+  color: var(--cor-texto);
   margin-bottom: var(--espaco-4);
   font-size: clamp(2rem, 6vw, 2.5rem);
   font-weight: var(--peso-extra);
@@ -1273,7 +1369,7 @@
 }
 
 .landing__cta-subtitulo {
-  color: #9ca3af;
+  color: var(--cor-texto-fraco);
   margin-bottom: 2.5rem;
   font-size: 1rem;
   line-height: 1.7;
@@ -1335,11 +1431,11 @@
   justify-content: center;
   gap: var(--espaco-2);
   padding: var(--espaco-4) var(--espaco-8);
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: var(--cor-branco);
+  border: 1px solid var(--cor-borda);
   border-radius: var(--raio-grande);
   cursor: pointer;
-  color: var(--cor-branco);
+  color: var(--cor-texto-secundario);
   font-weight: var(--peso-semi);
   font-size: 0.95rem;
   font-family: var(--fonte-principal);
@@ -1353,7 +1449,7 @@
 }
 
 .landing__cta-botao-secundario:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--cor-fundo);
 }
 
 /* ================================================================
@@ -1400,19 +1496,18 @@
 
 .landing__rodape-logo-full {
   display: block;
-  filter: brightness(0) invert(1);
   height: 24px;
   width: auto;
 }
 
 .landing__rodape-logo-nome {
-  color: var(--cor-branco);
+  color: var(--cor-texto);
   font-weight: var(--peso-negrito);
   font-family: var(--fonte-titulo);
 }
 
 .landing__rodape-copyright {
-  color: #6b7280;
+  color: var(--cor-texto-fraco);
   text-align: center;
   font-size: 0.85rem;
 }
@@ -1475,12 +1570,12 @@
 }
 
 .landing__rodape-link {
-  color: #6b7280;
+  color: var(--cor-texto-fraco);
   text-decoration: none;
   font-size: 0.85rem;
   transition: var(--transicao-normal);
 }
 
 .landing__rodape-link:hover {
-  color: #d1d5db;
+  color: var(--cor-texto);
 }

@@ -9,7 +9,7 @@ function resolveInitialTheme() {
     return storedTheme;
   }
 
-  return "system";
+  return "light";
 }
 
 function resolveSystemTheme() {

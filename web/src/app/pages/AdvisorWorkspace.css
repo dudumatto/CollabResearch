@@ -1809,6 +1809,52 @@
   background: color-mix(in srgb, var(--cor-superficie-3, #102018) 88%, var(--cor-primaria) 12%);
   border-color: color-mix(in srgb, var(--cor-primaria) 24%, var(--cor-borda-clara));
 }
+
+.dark .advisor-pagina--progresso .advisor-card-conteudo,
+.dark .advisor-pagina--progresso .advisor-etapa {
+  background: var(--cor-superficie);
+  border-color: var(--cor-borda-clara);
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.14);
+}
+
+.dark .advisor-pagina--progresso .advisor-etapa__titulo {
+  color: var(--cor-texto-forte);
+}
+
+.dark .advisor-pagina--progresso .advisor-etapa__descricao,
+.dark .advisor-pagina--progresso .advisor-etapa__meta {
+  color: var(--cor-texto-fraco);
+}
+
+.dark .advisor-pagina--progresso .advisor-botao--secundario {
+  background-color: var(--cor-superficie-3);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto-forte);
+}
+
+.dark .advisor-pagina--progresso .advisor-botao--secundario:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--cor-superficie-3) 78%, var(--cor-primaria) 22%);
+}
+
+.dark .advisor-pagina--progresso .advisor-botao--sucesso {
+  background-color: color-mix(in srgb, var(--cor-superficie-3) 84%, var(--cor-primaria) 16%);
+  border-color: color-mix(in srgb, var(--cor-primaria) 28%, var(--cor-borda));
+  color: var(--cor-primaria-texto);
+}
+
+.dark .advisor-pagina--progresso .advisor-botao--sucesso:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--cor-superficie-3) 72%, var(--cor-primaria) 28%);
+}
+
+.dark .advisor-pagina--progresso .advisor-botao--perigo {
+  background-color: color-mix(in srgb, var(--cor-superficie-3) 82%, var(--cor-erro) 18%);
+  border-color: color-mix(in srgb, var(--cor-erro) 30%, var(--cor-borda));
+  color: #fca5a5;
+}
+
+.dark .advisor-pagina--progresso .advisor-botao--perigo:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--cor-superficie-3) 70%, var(--cor-erro) 30%);
+}
 /* ---- Entregas ---- */
 .advisor-entrega {
   border: 1px solid var(--cor-borda-clara);

@@ -143,6 +143,7 @@ export default function AdvisorDeliveriesPage() {
   const todosProjetos = useMemo(() => (Array.isArray(projetos) ? projetos : []), [projetos]);
   const projectIds = useMemo(() => todosProjetos.map((p) => p.id).filter(Boolean), [todosProjetos]);
   const projectIdsKey = projectIds.join("|");
+  const [entregasResolvidasKey, setEntregasResolvidasKey] = useState(null);
   const projectTitleById = useMemo(
     () => new Map(todosProjetos.map((p) => [Number(p.id), p.title])),
     [todosProjetos],
@@ -152,24 +153,30 @@ export default function AdvisorDeliveriesPage() {
     setProjectId(selectedProjectParam ? Number(selectedProjectParam) : null);
   }, [selectedProjectParam]);
 
+  const podeCarregarEntregas = Boolean(projectId) || !loadingProjetos;
+  const entregasRequestKey = useMemo(() => {
+    if (!podeCarregarEntregas) return null;
+    if (projectId) return `projeto:${projectId}`;
+    return `todos:${projectIdsKey || "sem-projetos"}`;
+  }, [podeCarregarEntregas, projectId, projectIdsKey]);
+
   const { data: entregas, loading: loadingEntregas, error: erroEntregas, reload } = useAsyncData(
     async () => {
       try {
-        const raw = await advisorService.entregas({ projetoId: projectId });
-        return (Array.isArray(raw) ? raw : [])
-          .map((item) => mapEntregaComProjeto(item, item?.projetoId ?? projectId))
-          .filter(Boolean);
-      } catch (err) {
-        if (err?.status !== 404) throw err;
-
         if (projectId) {
           const raw = await deliveryService.list(projectId);
-          return (Array.isArray(raw) ? raw : [])
+          const mapped = (Array.isArray(raw) ? raw : [])
             .map((item) => mapEntregaComProjeto(item, projectId))
             .filter(Boolean);
+          setEntregasResolvidasKey(entregasRequestKey);
+          return mapped;
         }
 
-        if (projectIds.length === 0) return [];
+        if (projectIds.length === 0) {
+          setEntregasResolvidasKey(entregasRequestKey);
+          return [];
+        }
+
         const results = await Promise.all(
           projectIds.map(async (id) => {
             const raw = await deliveryService.list(id);
@@ -178,13 +185,18 @@ export default function AdvisorDeliveriesPage() {
               .filter(Boolean);
           }),
         );
+        setEntregasResolvidasKey(entregasRequestKey);
         return results.flat();
+      } catch (err) {
+        setEntregasResolvidasKey(entregasRequestKey);
+        throw err;
       }
     },
-    [projectId, projectIdsKey],
-    { initialData: [] },
+    [projectId, projectIdsKey, podeCarregarEntregas, entregasRequestKey],
+    { initialData: [], immediate: podeCarregarEntregas },
   );
   const listaEntregas = useMemo(() => (Array.isArray(entregas) ? entregas : []), [entregas]);
+  const entregasAtualizadas = entregasRequestKey !== null && entregasResolvidasKey === entregasRequestKey;
 
   const filtradas = useMemo(() => {
     if (filtro === "todas") return listaEntregas;
@@ -280,11 +292,13 @@ export default function AdvisorDeliveriesPage() {
     }
   };
 
-  if (loadingProjetos && loadingEntregas) return <AdvisorDeliverySkeleton includeShell />;
+  if (loadingProjetos) return <AdvisorDeliverySkeleton includeShell />;
 
   if (normErroProjetos && listaEntregas.length === 0) {
     return <StatusView title="Falha ao carregar projetos" description={getErrorMessage(normErroProjetos)} />;
   }
+
+  if (!entregasAtualizadas || loadingEntregas) return <AdvisorDeliverySkeleton includeShell />;
 
   if (!loadingEntregas && !normErroEntregas && todosProjetos.length === 0 && listaEntregas.length === 0) {
     return (

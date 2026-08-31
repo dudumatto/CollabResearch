@@ -93,6 +93,11 @@ export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
+    document.documentElement.setAttribute("data-landing-page", "true");
+    return () => document.documentElement.removeAttribute("data-landing-page");
+  }, []);
+
+  useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -100,7 +105,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="landing tema-fixo-claro">
+    <div className="landing">
       {/* Navbar */}
       <motion.nav
         initial={{ opacity: 0, y: -12 }}
