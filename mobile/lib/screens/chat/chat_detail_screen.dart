@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/animation/app_animations.dart';
 import '../../core/animation/app_durations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -45,6 +46,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   /// Ids ja renderizados. Sem isso, todo o historico animaria ao abrir a
   /// conversa, que e justamente a animacao pesada que as regras proibem.
   final Set<String> _seenMessageIds = <String>{};
+
+  /// Subconjunto que chegou depois da primeira carga: so estes animam a
+  /// entrada.
+  final Set<String> _arrivedMessageIds = <String>{};
 
   ChatProvider? _provider;
   String? _lastScrolledTargetMessageId;
@@ -91,6 +96,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (oldWidget.conversationId != widget.conversationId) {
       _messageKeys.clear();
       _seenMessageIds.clear();
+      _arrivedMessageIds.clear();
       _lastScrolledTargetMessageId = null;
       _hasCompletedFirstLoad = false;
       _showJumpToLatest = false;
@@ -133,15 +139,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       }
     } else {
       final currentUserId = context.read<AuthProvider>().currentUser?.id;
-      var arrived = 0;
+      var arrivedFromOthers = 0;
       for (final message in messages) {
-        final isNew = _seenMessageIds.add(message.id);
+        if (!_seenMessageIds.add(message.id)) continue;
+        _arrivedMessageIds.add(message.id);
         final isMine = message.isMine ||
             (currentUserId != null && message.senderId == currentUserId);
-        if (isNew && !isMine) arrived++;
+        if (!isMine) arrivedFromOthers++;
       }
-      if (arrived > 0 && _showJumpToLatest) {
-        setState(() => _messagesWhileAway += arrived);
+      if (arrivedFromOthers > 0 && _showJumpToLatest) {
+        setState(() => _messagesWhileAway += arrivedFromOthers);
       }
     }
 
@@ -590,7 +597,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                               message.senderId == currentUserId;
                                           final isTarget = message.id ==
                                               widget.targetMessageId;
-                                          return Column(
+                                          // So mensagens que chegaram depois
+                                          // da primeira carga animam a entrada.
+                                          final isNew = _arrivedMessageIds
+                                              .contains(message.id);
+                                          final item = Column(
                                             key: message.id.isEmpty
                                                 ? null
                                                 : _messageKey(message.id),
@@ -641,6 +652,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                                 ),
                                               ),
                                             ],
+                                          );
+
+                                          if (!isNew) return item;
+                                          return FadeSlideIn(
+                                            beginOffset: const Offset(0, 0.06),
+                                            child: item,
                                           );
                                         },
                                       ),

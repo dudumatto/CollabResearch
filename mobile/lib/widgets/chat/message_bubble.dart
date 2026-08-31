@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -32,6 +34,7 @@ class MessageBubble extends StatelessWidget {
   /// proprias e o esquerdo nas recebidas.
   static const double _tightRadius = 6;
   static const double _freeRadius = 18;
+  static const double _minBubbleWidth = 72;
 
   bool get _startsGroup =>
       groupPosition == BubbleGroupPosition.single ||
@@ -76,8 +79,13 @@ class MessageBubble extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               constraints: BoxConstraints(
-                maxWidth: MediaQuery.sizeOf(context).width * 0.78,
-                minWidth: 72,
+                // max() protege contra larguras degeneradas: sem ele, um
+                // maxWidth menor que o minWidth gera constraints invalidas.
+                maxWidth: math.max(
+                  MediaQuery.sizeOf(context).width * 0.78,
+                  _minBubbleWidth,
+                ),
+                minWidth: _minBubbleWidth,
               ),
               decoration: BoxDecoration(
                 color: background,
