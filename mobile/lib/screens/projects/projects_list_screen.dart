@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
@@ -68,15 +69,6 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
     final canCreate = userType == 'ALUNO' || userType == 'ORIENTADOR';
 
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 24,
-        title: Text(
-          'Projetos',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-      ),
       floatingActionButton: canCreate
           ? FloatingActionButton.extended(
               onPressed: () => context.go('/projects/create'),
@@ -111,7 +103,12 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
           return RefreshIndicator(
             onRefresh: () => _loadProjects(provider),
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                MediaQuery.paddingOf(context).top + 12,
+                16,
+                24,
+              ),
               children: [
                 Center(
                   child: ConstrainedBox(
@@ -119,6 +116,12 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const AppPageHeader(
+                          eyebrow: 'Oportunidades',
+                          title: 'Projetos de pesquisa',
+                          description:
+                              'Encontre projetos abertos e acompanhe os seus.',
+                        ),
                         AppCard(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

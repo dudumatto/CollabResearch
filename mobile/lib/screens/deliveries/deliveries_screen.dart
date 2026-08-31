@@ -11,6 +11,7 @@ import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_snackbar.dart';
 
 class DeliveriesScreen extends StatefulWidget {
@@ -389,7 +390,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                 MediaQuery.paddingOf(context).top + 16,
                 horizontal, 88),
               children: [
-                AcademicPageHeader(
+                AppPageHeader(
                   onBack: () => context.canPop()
                       ? context.pop()
                       : context.go('/dashboard'),

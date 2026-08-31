@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../widgets/chat/conversation_tile.dart';
 import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/app_avatar.dart';
@@ -62,26 +63,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 24,
-        title: Text(
-          'Chat',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              onPressed: _showNewConversation,
-              tooltip: 'Nova conversa',
-              color: Theme.of(context).colorScheme.onSurface,
-              icon: const Icon(Icons.edit_square, size: 26),
-            ),
-          ),
-        ],
-      ),
       body: Consumer<ChatProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.conversations.isEmpty) {
@@ -125,19 +106,30 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 return ListView(
                   padding: EdgeInsets.fromLTRB(
                     horizontalPadding,
-                    8,
+                    MediaQuery.paddingOf(context).top + 12,
                     horizontalPadding,
                     24,
                   ),
                   children: [
-                    Text(
-                      'Acompanhe suas conversas acadêmicas.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                    AppPageHeader(
+                      eyebrow: 'Conversas',
+                      title: 'Chat',
+                      description: 'Acompanhe suas conversas acadêmicas.',
+                      trailing: Material(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        child: IconButton(
+                          onPressed: _showNewConversation,
+                          tooltip: 'Nova conversa',
+                          icon: const Icon(
+                            Icons.edit_square,
+                            color: Colors.white,
+                            size: 22,
                           ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 16),
                     TextField(
                       controller: _searchController,
                       onChanged: (value) => setState(() => _query = value),

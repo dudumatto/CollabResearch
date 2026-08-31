@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../models/app_notification.dart';
 import '../../providers/notification_provider.dart';
 import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/notifications/notification_tile.dart';
@@ -56,15 +57,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 24,
-        title: Text(
-          'Notificações',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-      ),
       body: Consumer<NotificationProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.notifications.isEmpty) {
@@ -92,7 +84,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           return RefreshIndicator(
             onRefresh: provider.loadNotifications,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                MediaQuery.paddingOf(context).top + 12,
+                16,
+                24,
+              ),
               children: [
                 Center(
                   child: ConstrainedBox(
@@ -100,6 +97,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const AppPageHeader(
+                          eyebrow: 'Alertas',
+                          title: 'Notificações',
+                          description:
+                              'Prazos, inscrições e mensagens do seu projeto.',
+                        ),
                         Row(
                           children: [
                             Expanded(

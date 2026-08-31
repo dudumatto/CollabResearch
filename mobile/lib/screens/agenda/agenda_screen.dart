@@ -8,6 +8,7 @@ import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_snackbar.dart';
 
 enum _AgendaFilter { upcoming, overdue, done, all }
@@ -125,7 +126,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 32),
               children: [
-                const AcademicPageHeader(
+                const AppPageHeader(
                   eyebrow: 'Prazos reais',
                   title: 'Agenda acadêmica',
                   description:

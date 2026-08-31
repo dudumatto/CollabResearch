@@ -6,6 +6,7 @@ import '../../core/utils/date_utils.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/app_snackbar.dart';
@@ -155,14 +156,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: _goBack,
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-        ),
-        title: const Text('Feedback'),
-      ),
       floatingActionButton: !_canCreateFeedback(provider)
           ? null
           : FloatingActionButton.extended(
@@ -171,8 +164,19 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               label: const Text('Avaliar'),
             ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          MediaQuery.paddingOf(context).top + 16,
+          20,
+          20,
+        ),
         children: [
+          AppPageHeader(
+            onBack: _goBack,
+            eyebrow: 'Retorno',
+            title: 'Feedback do projeto',
+            description: 'Avaliações e comentários registrados pelos participantes.',
+          ),
           if (provider.relatedProjects.isNotEmpty)
             DropdownButtonFormField<String>(
               initialValue: _selectedProjectId,

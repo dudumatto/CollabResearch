@@ -9,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/subscription_provider.dart';
 import '../../widgets/common/app_badge.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/app_snackbar.dart';
@@ -125,21 +126,25 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
         .toUpperCase();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: _goBack,
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-        ),
-        title: const Text('Inscrições'),
-      ),
       body: provider.isLoading && provider.subscriptions.isEmpty
           ? const LoadingIndicator(label: 'Carregando inscrições...')
           : RefreshIndicator(
               onRefresh: provider.load,
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  MediaQuery.paddingOf(context).top + 16,
+                  20,
+                  20,
+                ),
                 children: [
+                  AppPageHeader(
+                    onBack: _goBack,
+                    eyebrow: 'Participação',
+                    title: 'Inscrições',
+                    description:
+                        'Acompanhe os pedidos de participação nos projetos.',
+                  ),
                   if (provider.errorMessage != null) ...[
                     Text(
                       provider.errorMessage!,

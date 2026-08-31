@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../models/academic_workspace.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_avatar.dart';
 
 class AdviseesScreen extends StatefulWidget {
@@ -64,7 +65,7 @@ class _AdviseesScreenState extends State<AdviseesScreen> {
                 MediaQuery.paddingOf(context).top + 16,
                 horizontal, 32),
               children: [
-                AcademicPageHeader(
+                AppPageHeader(
                   onBack: () => context.canPop()
                       ? context.pop()
                       : context.go('/dashboard'),

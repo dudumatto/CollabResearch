@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/utils/date_utils.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/app_snackbar.dart';
@@ -157,14 +158,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: _goBack,
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-        ),
-        title: const Text('Progresso'),
-      ),
       floatingActionButton: _selectedProjectId == null
           ? null
           : FloatingActionButton.extended(
@@ -173,8 +166,19 @@ class _ProgressScreenState extends State<ProgressScreen> {
               label: const Text('Registrar'),
             ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          MediaQuery.paddingOf(context).top + 16,
+          20,
+          20,
+        ),
         children: [
+          AppPageHeader(
+            onBack: _goBack,
+            eyebrow: 'Acompanhamento',
+            title: 'Progresso do projeto',
+            description: 'Registre marcos, bloqueios e atualizações da pesquisa.',
+          ),
           if (provider.relatedProjects.isNotEmpty)
             DropdownButtonFormField<String>(
               initialValue: _selectedProjectId,

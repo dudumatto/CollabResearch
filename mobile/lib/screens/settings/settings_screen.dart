@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_snackbar.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -112,24 +113,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: _goBack,
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-        ),
-        title: const Text('Configurações'),
-        actions: [
-          TextButton.icon(
-            onPressed: auth.isLoading ? null : _saveSettings,
-            icon: const Icon(Icons.save_outlined),
-            label: const Text('Salvar'),
-          ),
-        ],
-      ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          MediaQuery.paddingOf(context).top + 16,
+          16,
+          28,
+        ),
         children: [
+          AppPageHeader(
+            onBack: _goBack,
+            eyebrow: 'Conta',
+            title: 'Configurações',
+            description: 'Preferências de notificação, tema e senha.',
+            trailing: Material(
+              color: Colors.white.withValues(alpha: 0.18),
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: IconButton(
+                onPressed: auth.isLoading ? null : _saveSettings,
+                tooltip: 'Salvar preferências',
+                icon: const Icon(
+                  Icons.save_outlined,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

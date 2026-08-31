@@ -7,6 +7,7 @@ import '../../models/academic_workspace.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_snackbar.dart';
 
 class DocumentsScreen extends StatefulWidget {
@@ -100,7 +101,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 MediaQuery.paddingOf(context).top + 16,
                 horizontal, 32),
               children: [
-                AcademicPageHeader(
+                AppPageHeader(
                   onBack: () => context.canPop()
                       ? context.pop()
                       : context.go('/dashboard'),

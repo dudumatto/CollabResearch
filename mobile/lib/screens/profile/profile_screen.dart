@@ -9,6 +9,7 @@ import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/academic/academic_widgets.dart';
@@ -131,22 +132,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _syncForm(user);
 
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 24,
-        title: Text(
-          'Perfil',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () => context.go('/settings'),
-            icon: const Icon(Icons.settings),
-            tooltip: 'Configurações',
-          ),
-        ],
-      ),
       body: user == null
           ? (auth.isLoading
               ? const ProfileSkeleton()
@@ -162,8 +147,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 return ListView(
                   // Mobile-only: recupera largura útil sem alterar tablet ou desktop.
-                  padding: EdgeInsets.all(isMobile ? 16 : 24),
+                  padding: EdgeInsets.fromLTRB(
+                    isMobile ? 16 : 24,
+                    MediaQuery.paddingOf(context).top + (isMobile ? 16 : 24),
+                    isMobile ? 16 : 24,
+                    isMobile ? 16 : 24,
+                  ),
                   children: [
+                    AppPageHeader(
+                      eyebrow: 'Conta',
+                      title: 'Perfil',
+                      description:
+                          'Seus dados acadêmicos e atalhos de acompanhamento.',
+                      trailing: Material(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        child: IconButton(
+                          onPressed: () => context.go('/settings'),
+                          tooltip: 'Configurações',
+                          icon: const Icon(
+                            Icons.settings,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ),
                     AppCard(
                       padding: EdgeInsets.zero,
                       child: Column(
