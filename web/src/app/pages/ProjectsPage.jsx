@@ -3,13 +3,15 @@ import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { Search, FolderOpen, Users, Clock, ChevronRight, SlidersHorizontal, X, Plus } from "lucide-react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
+import { useAuth } from "../hooks/useAuth";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { applicationService } from "../services/applicationService";
 import { projectService } from "../services/projectService";
 import { courseService } from "../services/courseService";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
-import { getProjectSlotsUsage, getUserPhotoUrl, mapProject } from "../utils/adapters";
+import { getProjectSlotsUsage, getUserId, getUserPhotoUrl, mapApplication, mapProject } from "../utils/adapters";
 import { formatProjectStatus } from "../utils/formatters";
 import "./ProjectsPage.css";
 
@@ -19,6 +21,37 @@ function normalizeValue(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+}
+
+function toComparableId(value) {
+  if (value == null) return "";
+  return String(value).trim();
+}
+
+function isSameId(left, right) {
+  const leftId = toComparableId(left);
+  const rightId = toComparableId(right);
+  return Boolean(leftId && rightId && leftId === rightId);
+}
+
+function hasCurrentUserInPeople(people, userId) {
+  return Array.isArray(people) && people.some((person) => isSameId(getUserId(person), userId));
+}
+
+function canShowProjectForUser(project, user, approvedProjectIds) {
+  if (project.status !== "FINALIZADO") return true;
+  if (!user) return false;
+  if (String(user.tipo ?? "").toUpperCase() === "ADMIN") return true;
+
+  const userId = getUserId(user);
+  return (
+    isSameId(project.ownerId, userId) ||
+    isSameId(project.advisorId, userId) ||
+    approvedProjectIds.has(toComparableId(project.id)) ||
+    hasCurrentUserInPeople(project.approvedParticipants, userId) ||
+    hasCurrentUserInPeople(project.participants, userId) ||
+    hasCurrentUserInPeople(project.acceptedCollaborators, userId)
+  );
 }
 
 function AdvisorAvatar({ advisor }) {
@@ -46,6 +79,7 @@ function AdvisorAvatar({ advisor }) {
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 350);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -86,7 +120,31 @@ export default function ProjectsPage() {
     [selectedCourse, selectedArea, selectedStatus, debouncedSearch],
     { initialData: [] },
   );
+
+  const { data: myApplications } = useAsyncData(
+    async () => {
+      if (String(user?.tipo ?? "").toUpperCase() !== "ALUNO") return [];
+      const result = await applicationService.listMine();
+      return Array.isArray(result) ? result.map(mapApplication) : [];
+    },
+    [user?.id, user?.tipo],
+    { initialData: [] },
+  );
+
   const projects = Array.isArray(data) ? data : [];
+  const approvedProjectIds = useMemo(
+    () => new Set(
+      (Array.isArray(myApplications) ? myApplications : [])
+        .filter((application) => application.status === "APROVADO")
+        .map((application) => toComparableId(application.project?.id))
+        .filter(Boolean),
+    ),
+    [myApplications],
+  );
+  const visibleProjects = useMemo(
+    () => projects.filter((project) => canShowProjectForUser(project, user, approvedProjectIds)),
+    [projects, user, approvedProjectIds],
+  );
 
   const areas = ["Todas", ...(Array.isArray(areaNames) ? areaNames : [])];
   const cursos = ["Todos", ...(Array.isArray(courseNames) ? courseNames : [])];
@@ -98,7 +156,7 @@ export default function ProjectsPage() {
 
   const filtered = useMemo(
     () =>
-      projects.filter((project) => {
+      visibleProjects.filter((project) => {
         const term = search.toLowerCase();
         // Mantemos a busca no cliente também para cobrir descrição e tags,
         // já que a API foca apenas no título por padrão.
@@ -108,16 +166,16 @@ export default function ProjectsPage() {
           project.tags.some((tag) => tag.toLowerCase().includes(term))
         );
       }),
-    [projects, search],
+    [visibleProjects, search],
   );
 
   const counts = useMemo(
     () => ({
-      total: projects.length,
-      active: projects.filter((project) => project.status !== "FINALIZADO").length,
-      finished: projects.filter((project) => project.status === "FINALIZADO").length,
+      total: visibleProjects.length,
+      active: visibleProjects.filter((project) => project.status !== "FINALIZADO").length,
+      finished: visibleProjects.filter((project) => project.status === "FINALIZADO").length,
     }),
-    [projects],
+    [visibleProjects],
   );
 
   if (error) {

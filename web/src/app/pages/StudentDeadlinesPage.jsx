@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CalendarClock, ChevronLeft, ChevronRight, CircleAlert, ClipboardList } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -9,7 +9,10 @@ import { applicationService } from "../services/applicationService";
 import { mapEtapa, mapProject } from "../utils/adapters";
 import { formatEtapaResponsavel, formatEtapaStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
+
+const ALL_PROJECTS_VALUE = "Todos";
 
 const Sk = ({ w = "100%", h = 14, r = "0.5rem", style }) => (
   <div className="skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />
@@ -23,6 +26,10 @@ function CalendarSkeleton() {
           <Sk w={150} h={13} r={999} />
           <Sk w="52%" h={30} r={10} style={{ maxWidth: 340, marginTop: 12 }} />
           <Sk w="76%" h={14} r={999} style={{ maxWidth: 560, marginTop: 14 }} />
+        </div>
+        <div className="calendario-cabecalho__filtro calendario-cabecalho__filtro--skeleton">
+          <Sk w={64} h={12} r={999} />
+          <Sk w="100%" h={42} r="var(--raio-medio)" style={{ marginTop: 8 }} />
         </div>
         <div className="calendario-cabecalho__resumo">
           <Sk w={44} h={32} r={10} style={{ margin: "0 auto" }} />
@@ -205,6 +212,7 @@ export default function StudentDeadlinesPage() {
   const { user } = useAuth();
   const [tooltipPlacements, setTooltipPlacements] = useState({});
   const [activeTooltipKey, setActiveTooltipKey] = useState(null);
+  const [selectedProjectId, setSelectedProjectId] = useState(ALL_PROJECTS_VALUE);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
@@ -213,16 +221,38 @@ export default function StudentDeadlinesPage() {
   const { data, loading, error } = useAsyncData(async () => {
     const projects = await loadProjectsForUser(user);
     const collections = await Promise.allSettled(projects.map(loadProjectStages));
-
-    return collections.flatMap((result) => (
+    const deadlines = collections.flatMap((result) => (
       result.status === "fulfilled" ? result.value : []
     ));
-  }, [user?.id, user?.tipo], { initialData: [] });
 
-  const deadlines = useMemo(
-    () => (Array.isArray(data) ? data : []).sort((a, b) => (getDisplayDate(a)?.getTime() ?? Infinity) - (getDisplayDate(b)?.getTime() ?? Infinity)),
-    [data],
+    return { projects, deadlines };
+  }, [user?.id, user?.tipo], { initialData: { projects: [], deadlines: [] } });
+
+  const projects = Array.isArray(data?.projects) ? data.projects : [];
+  const allDeadlines = Array.isArray(data?.deadlines) ? data.deadlines : [];
+  const projectFilterOptions = useMemo(
+    () => [
+      { value: ALL_PROJECTS_VALUE, label: "Todos" },
+      ...projects.map((project) => ({ value: project.id, label: project.title })),
+    ],
+    [projects],
   );
+  const selectedDeadlines = useMemo(
+    () => selectedProjectId === ALL_PROJECTS_VALUE
+      ? allDeadlines
+      : allDeadlines.filter((item) => String(item.projectId) === String(selectedProjectId)),
+    [allDeadlines, selectedProjectId],
+  );
+  const deadlines = useMemo(
+    () => [...selectedDeadlines].sort((a, b) => (getDisplayDate(a)?.getTime() ?? Infinity) - (getDisplayDate(b)?.getTime() ?? Infinity)),
+    [selectedDeadlines],
+  );
+
+  useEffect(() => {
+    if (selectedProjectId === ALL_PROJECTS_VALUE) return;
+    if (projects.some((project) => String(project.id) === String(selectedProjectId))) return;
+    setSelectedProjectId(ALL_PROJECTS_VALUE);
+  }, [projects, selectedProjectId]);
 
   const scheduled = deadlines.filter((item) => getDueDate(item));
   const withoutDate = deadlines.filter((item) => !getDueDate(item));
@@ -299,6 +329,19 @@ export default function StudentDeadlinesPage() {
           <p className="calendario-cabecalho__descricao">
             Acompanhe as datas de entrega cadastradas no progresso dos projetos.
           </p>
+        </div>
+        <div className="calendario-cabecalho__filtro">
+          <span>Projeto</span>
+          <AppCombobox
+            ariaLabel="Filtrar calendário por projeto"
+            className="calendario-projeto-select"
+            value={selectedProjectId}
+            onChange={(value) => {
+              setSelectedProjectId(value);
+              setActiveTooltipKey(null);
+            }}
+            options={projectFilterOptions}
+          />
         </div>
         <div className="calendario-cabecalho__resumo">
           <strong>{scheduled.length}</strong>

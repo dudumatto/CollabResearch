@@ -1022,6 +1022,202 @@
     padding-right: 1rem;
   }
 }
+
+.advisor-pagina--skeleton {
+  pointer-events: none;
+}
+
+.advisor-skeleton__block {
+  display: block;
+  flex-shrink: 0;
+}
+
+.advisor-hero--skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--espaco-3);
+  min-height: 9rem;
+}
+
+.advisor-skeleton__hero-title {
+  width: min(24rem, 72%);
+  height: 2rem;
+  border-radius: var(--raio-pequeno);
+}
+
+.advisor-skeleton__hero-text {
+  width: min(38rem, 88%);
+  height: 1rem;
+  border-radius: var(--raio-pequeno);
+}
+
+.advisor-toolbar--skeleton {
+  justify-content: space-between;
+}
+
+.advisor-skeleton__control {
+  width: min(25rem, 100%);
+  height: 3rem;
+  border-radius: var(--raio-medio);
+}
+
+.advisor-skeleton__primary-action {
+  width: 11rem;
+  height: 2.75rem;
+  border-radius: var(--raio-medio);
+}
+
+.advisor-abas--skeleton {
+  align-items: center;
+}
+
+.advisor-skeleton__tab {
+  width: 8.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+}
+
+.advisor-lista--skeleton {
+  gap: var(--espaco-3);
+}
+
+.advisor-entrega--skeleton,
+.advisor-avaliacao--skeleton {
+  cursor: default;
+}
+
+.advisor-skeleton__card-header {
+  gap: var(--espaco-3);
+}
+
+.advisor-skeleton__content {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.advisor-skeleton__line {
+  height: 0.875rem;
+  border-radius: var(--raio-pequeno);
+}
+
+.advisor-skeleton__line--lg {
+  width: min(28rem, 82%);
+  height: 1.125rem;
+}
+
+.advisor-skeleton__line--md {
+  width: min(20rem, 70%);
+}
+
+.advisor-skeleton__line--sm {
+  width: min(13rem, 48%);
+}
+
+.advisor-skeleton__line--xs {
+  width: min(8rem, 34%);
+}
+
+.advisor-skeleton__meta-row,
+.advisor-skeleton__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.advisor-skeleton__actions {
+  justify-content: flex-end;
+  margin-top: var(--espaco-3);
+}
+
+.advisor-skeleton__actions--compact {
+  margin-top: 0;
+}
+
+.advisor-skeleton__pill {
+  width: 7.5rem;
+  height: 1.625rem;
+  border-radius: 999px;
+}
+
+.advisor-skeleton__action {
+  width: 2.75rem;
+  height: 2.5rem;
+  border-radius: var(--raio-medio);
+}
+
+.advisor-skeleton__action--wide {
+  width: 9rem;
+}
+
+.advisor-versoes--skeleton {
+  margin-top: var(--espaco-3);
+}
+
+.advisor-versao--skeleton {
+  align-items: center;
+}
+
+.advisor-skeleton__notes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-3);
+}
+
+.advisor-skeleton__note {
+  min-height: 4.25rem;
+  border-radius: var(--raio-medio);
+}
+
+.advisor-skeleton__comment {
+  width: 100%;
+  height: 3.75rem;
+  margin-top: var(--espaco-3);
+  border-radius: var(--raio-medio);
+}
+
+.advisor-skeleton__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+@media (min-width: 640px) {
+  .advisor-skeleton__notes {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .advisor-toolbar--skeleton,
+  .advisor-skeleton__card-header,
+  .advisor-avaliacao--skeleton .advisor-avaliacao__cabecalho {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .advisor-skeleton__control,
+  .advisor-skeleton__primary-action,
+  .advisor-skeleton__action--wide,
+  .advisor-skeleton__pill {
+    width: 100%;
+  }
+
+  .advisor-skeleton__actions,
+  .advisor-skeleton__actions--compact {
+    justify-content: stretch;
+  }
+
+  .advisor-skeleton__actions .advisor-skeleton__action {
+    flex: 1;
+  }
+}
 /* ---- Cards de lista (projetos, orientandos, inscrições) ---- */
 .advisor-lista {
   display: flex;
@@ -1241,6 +1437,20 @@
   justify-content: center;
   padding: var(--espaco-4);
   z-index: 60;
+}
+
+.advisor-modal-overlay--conteudo {
+  backdrop-filter: blur(6px);
+}
+
+@media (min-width: 1024px) {
+  .advisor-modal-overlay--conteudo {
+    left: var(--largura-sidebar);
+  }
+
+  .advisor-modal-overlay--conteudo-recolhida {
+    left: var(--largura-sidebar-recolhida);
+  }
 }
 
 .advisor-modal {
@@ -1741,6 +1951,26 @@
   font-size: var(--tamanho-base);
 }
 
+.calendario-cabecalho__filtro {
+  width: min(18rem, 100%);
+  min-width: min(18rem, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.calendario-cabecalho__filtro > span {
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+}
+
+.calendario-projeto-select {
+  min-height: 2.65rem;
+  border-color: var(--cor-borda-clara);
+  background: var(--cor-superficie);
+  font-size: var(--tamanho-base);
+}
 .calendario-cabecalho__resumo {
   min-width: 8rem;
   padding: var(--espaco-2) var(--espaco-3);
@@ -2208,6 +2438,7 @@
     align-items: stretch;
   }
 
+  .calendario-cabecalho__filtro,
   .calendario-cabecalho__resumo {
     width: 100%;
   }

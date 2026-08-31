@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { FolderOpen, Plus, X, CheckCircle2, Pencil, Trash2, Calendar, Play, Flag } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ import { mapProject, mapEtapa } from "../utils/adapters";
 import { formatProjectStatus, formatEtapaStatus, formatEtapaResponsavel, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { useSidebarContext } from "../layouts/DashboardLayout";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
@@ -61,6 +63,7 @@ function SkeletonProgresso() {
 }
 
 export default function AdvisorProgressPage() {
+  const { collapsed } = useSidebarContext();
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [modal, setModal] = useState(null);
   const [campos, setCampos] = useState(camposVazios());
@@ -420,8 +423,8 @@ export default function AdvisorProgressPage() {
         </div>
       )}
 
-      {modal && (
-        <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Gerenciar etapas">
+      {modal && createPortal((
+        <div className={`advisor-modal-overlay advisor-modal-overlay--conteudo ${collapsed ? "advisor-modal-overlay--conteudo-recolhida" : ""}`} role="dialog" aria-modal="true" aria-label="Gerenciar etapas">
           <div className="advisor-modal">
             <div className="advisor-modal__cabecalho">
               <h3 className="advisor-modal__titulo">
@@ -571,7 +574,7 @@ export default function AdvisorProgressPage() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </motion.div>
   );
 }

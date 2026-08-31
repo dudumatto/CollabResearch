@@ -18,6 +18,7 @@ import com.example.tcc_backend.security.ProjectAccessPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -72,7 +73,9 @@ public class InscricaoService {
         Projeto projeto = projetoRepository.findById(projetoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
         projectAccessPolicy.requireCanViewApplications(projeto, usuario);
-        return inscricaoRepository.findByProjetoId(projetoId);
+        return inscricaoRepository.findByProjetoId(projetoId).stream()
+                .filter(i -> !inscricaoDoCriadorDoProjeto(i))
+                .toList();
     }
 
     /**
@@ -92,7 +95,11 @@ public class InscricaoService {
         Projeto projeto = projetoRepository.findById(projetoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
         projectAccessPolicy.requireCanViewApplications(projeto, usuario);
-        return inscricaoRepository.findByProjetoId(projetoId, pageable);
+        Page<Inscricao> page = inscricaoRepository.findByProjetoId(projetoId, pageable);
+        List<Inscricao> filtradas = page.getContent().stream()
+                .filter(i -> !inscricaoDoCriadorDoProjeto(i))
+                .toList();
+        return new PageImpl<>(filtradas, pageable, filtradas.size());
     }
 
     public Inscricao create(InscricaoRequest dto) {
@@ -235,6 +242,17 @@ public class InscricaoService {
     private void validarOrientador(Inscricao inscricao) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         projectAccessPolicy.requireResponsibleAdvisor(inscricao.getProjeto(), usuarioLogado);
+    }
+
+    private boolean inscricaoDoCriadorDoProjeto(Inscricao inscricao) {
+        if (inscricao == null || inscricao.getAluno() == null || inscricao.getProjeto() == null) {
+            return false;
+        }
+        Aluno criador = inscricao.getProjeto().getAlunoCriador();
+        if (criador == null || criador.getUsuario() == null || inscricao.getAluno().getUsuario() == null) {
+            return false;
+        }
+        return criador.getUsuario().getId().equals(inscricao.getAluno().getUsuario().getId());
     }
 
     private String normalizarTexto(String valor) {

@@ -62,6 +62,7 @@ public class OrientadorService {
                 .filter(p -> p.getStatus() == StatusProjeto.PENDENTE_ORIENTADOR)
                 .toList();
         List<Inscricao> pendentes = inscricoes.stream()
+                .filter(i -> !inscricaoDoCriadorDoProjeto(i))
                 .filter(i -> i.getStatus() == StatusInscricao.PENDENTE)
                 .toList();
         Set<Aluno> orientandos = orientandosAtivos(inscricoes, ativos);
@@ -118,6 +119,7 @@ public class OrientadorService {
         Integer filtroProjeto = projetoId;
 
         return inscricoesDoEscopo(usuario).stream()
+                .filter(i -> !inscricaoDoCriadorDoProjeto(i))
                 .filter(i -> filtroStatus == null || i.getStatus() == filtroStatus)
                 .filter(i -> filtroProjeto == null || i.getProjeto().getId().equals(filtroProjeto))
                 .sorted(Comparator.comparing(Inscricao::getDataInscricao,
@@ -377,6 +379,17 @@ public class OrientadorService {
                 && etapa.getStatus() != EtapaProgressoStatus.DONE
                 && etapa.getStatus() != EtapaProgressoStatus.REJECTED
                 && etapa.getPrazo().isBefore(OffsetDateTime.now());
+    }
+
+    private static boolean inscricaoDoCriadorDoProjeto(Inscricao inscricao) {
+        if (inscricao == null || inscricao.getAluno() == null || inscricao.getProjeto() == null) {
+            return false;
+        }
+        Aluno criador = inscricao.getProjeto().getAlunoCriador();
+        if (criador == null || criador.getUsuario() == null || inscricao.getAluno().getUsuario() == null) {
+            return false;
+        }
+        return criador.getUsuario().getId().equals(inscricao.getAluno().getUsuario().getId());
     }
 
     private static boolean contemIgnoreCase(String valor, String termo) {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, FolderKanban, Plus, TrendingUp, Users } from "lucide-react";
+import { CalendarDays, ClipboardList, FolderKanban, Plus, TrendingUp, Users } from "lucide-react";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
@@ -360,7 +360,15 @@ export default function ProgressPage() {
   }
 
   if (!selectedProject) {
-    return <StatusView title="Sem projetos vinculados" description="Não encontramos projetos associados ao usuário autenticado." />;
+    return (
+      <div className="progress-page">
+        <div className="progress-page__empty">
+          <div className="progress-page__empty-icon"><ClipboardList size={24} /></div>
+          <h2 className="progress-page__empty-title">Nenhum projeto vinculado</h2>
+          <p className="progress-page__empty-description">As etapas aparecerão aqui quando você participar de um projeto aprovado.</p>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -267,38 +267,40 @@ export default function ProjectApplicationsPage() {
             return (
               <div key={application.id} className="inscricao-card pagina-inscricoes-projeto__card">
                 <div className="inscricao-card__cabecalho pagina-inscricoes-projeto__card-cabecalho">
-                  <div className="inscricao-card__linha-principal">
-                    <div className={`inscricao-card__icone-status ${cfg.iconeClass}`}>
-                      <cfg.icon size={20} style={{ color: cfg.iconeColor }} />
-                    </div>
-                    <div className="inscricao-card__info">
-                      <div className="inscricao-card__linha-titulo">
-                        <h3 className="inscricao-card__titulo-projeto pagina-inscricoes-projeto__nome-aluno">{application.studentName}</h3>
-                        <span className={`inscricao-card__etiqueta-status ${cfg.etiquetaClass}`}>
-                          {formatApplicationStatus(application.status)}
-                        </span>
+                  <div className="pagina-inscricoes-projeto__card-topo">
+                    <div className="inscricao-card__linha-principal">
+                      <div className={`inscricao-card__icone-status ${cfg.iconeClass}`}>
+                        <cfg.icon size={20} style={{ color: cfg.iconeColor }} />
                       </div>
-                      <div className="inscricao-card__metadados">
-                        <span className="inscricao-card__metadado">
-                          <Calendar size={12} />
-                          Inscrito em{" "}
-                          {application.appliedAt ? new Date(application.appliedAt).toLocaleDateString("pt-BR") : "-"}
-                        </span>
+                      <div className="inscricao-card__info">
+                        <div className="inscricao-card__linha-titulo">
+                          <h3 className="inscricao-card__titulo-projeto pagina-inscricoes-projeto__nome-aluno">{application.studentName}</h3>
+                          <span className={`inscricao-card__etiqueta-status ${cfg.etiquetaClass}`}>
+                            {formatApplicationStatus(application.status)}
+                          </span>
+                        </div>
+                        <div className="inscricao-card__metadados">
+                          <span className="inscricao-card__metadado">
+                            <Calendar size={12} />
+                            Inscrito em{" "}
+                            {application.appliedAt ? new Date(application.appliedAt).toLocaleDateString("pt-BR") : "-"}
+                          </span>
+                        </div>
                       </div>
-                      {application.userId != null && (
-                        <button
-                          type="button"
-                          className="pagina-inscricoes-projeto__ver-perfil"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            navigate(`/app/users/${application.userId}`);
-                          }}
-                        >
-                          <UserRound size={13} />
-                          Ver perfil do aluno
-                        </button>
-                      )}
                     </div>
+                    {application.userId != null && (
+                      <button
+                        type="button"
+                        className="pagina-inscricoes-projeto__ver-perfil"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate(`/app/users/${application.userId}`);
+                        }}
+                      >
+                        <UserRound size={13} />
+                        Ver perfil do aluno
+                      </button>
+                    )}
                   </div>
                 </div>
 

@@ -98,6 +98,27 @@ class InscricaoServiceTest {
     }
 
     @Test
+    void findByProjetoNaoDeveExibirInscricaoDoCriadorDoProjeto() {
+        Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(2);
+        Usuario criadorUsuario = TestDataFactory.usuarioAluno(3);
+        Aluno criador = TestDataFactory.aluno(3, criadorUsuario);
+        Usuario outroAlunoUsuario = TestDataFactory.usuarioAluno(4);
+        Aluno outroAluno = TestDataFactory.aluno(4, outroAlunoUsuario);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientadorUsuario));
+        projeto.setAlunoCriador(criador);
+        Inscricao inscricaoCriador = Inscricao.builder()
+                .id(20).aluno(criador).projeto(projeto).status(StatusInscricao.PENDENTE).build();
+        Inscricao inscricaoReal = Inscricao.builder()
+                .id(21).aluno(outroAluno).projeto(projeto).status(StatusInscricao.PENDENTE).build();
+
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(inscricaoRepository.findByProjetoId(10)).thenReturn(List.of(inscricaoCriador, inscricaoReal));
+
+        assertThat(inscricaoService.findByProjeto(10)).containsExactly(inscricaoReal);
+    }
+
+    @Test
     void findByProjetoDeveNegarAlunoExterno() {
         Usuario externo = TestDataFactory.usuarioAluno(9);
         Projeto projeto = TestDataFactory.projetoComOrientador(

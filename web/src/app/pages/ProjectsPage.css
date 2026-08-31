@@ -180,9 +180,9 @@
    ================================================================ */
 .pagina-projetos__busca {
   position: relative;
-  width: calc(100% - clamp(1rem, 3vw, 3rem));
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .pagina-projetos__icone-busca {
@@ -194,6 +194,7 @@
 }
 
 .pagina-projetos__input-busca {
+  box-sizing: border-box;
   width: 100%;
   padding: 0.875rem var(--espaco-4) 0.875rem 2.75rem;
   background-color: var(--cor-branco);

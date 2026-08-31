@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { FolderOpen, Star, X, Pencil, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ import { mapProject, mapEtapa, mapOrientando, mapAvaliacaoAcademica } from "../u
 import { formatAvaliacaoNota, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { useSidebarContext } from "../layouts/DashboardLayout";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
@@ -20,12 +22,67 @@ const CRITERIOS = [
   { key: "comunicacao", rotulo: "Comunicação" },
 ];
 
-function Skeleton({ linhas = 4 }) {
+function SkeletonBlock({ className = "", style }) {
+  return <span className={`skeleton advisor-skeleton__block ${className}`} style={style} aria-hidden="true" />;
+}
+
+function EvaluationOptionsSkeleton() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
-      {Array.from({ length: linhas }).map((_, i) => (
-        <div key={i} className="skeleton" style={{ width: "100%", height: 90, borderRadius: "var(--raio-grande)" }} />
+    <div className="advisor-skeleton__form" aria-busy="true" aria-label="Carregando opcoes de avaliacao">
+      <SkeletonBlock className="advisor-skeleton__control" />
+      <div className="advisor-skeleton__notes">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <SkeletonBlock key={index} className="advisor-skeleton__note" />
+        ))}
+      </div>
+      <SkeletonBlock className="advisor-skeleton__comment" />
+    </div>
+  );
+}
+
+function AdvisorEvaluationSkeleton({ linhas = 4, includeShell = false }) {
+  const cards = (
+    <div className="advisor-lista advisor-lista--skeleton" aria-busy="true" aria-label="Carregando avaliacoes">
+      {Array.from({ length: linhas }).map((_, index) => (
+        <article key={index} className="advisor-avaliacao advisor-avaliacao--skeleton">
+          <div className="advisor-avaliacao__cabecalho advisor-skeleton__card-header">
+            <div className="advisor-skeleton__content">
+              <SkeletonBlock className="advisor-skeleton__line advisor-skeleton__line--lg" />
+              <SkeletonBlock className="advisor-skeleton__line advisor-skeleton__line--md" />
+            </div>
+            <div className="advisor-skeleton__actions advisor-skeleton__actions--compact">
+              <SkeletonBlock className="advisor-skeleton__pill" />
+              <SkeletonBlock className="advisor-skeleton__action" />
+            </div>
+          </div>
+          <div className="advisor-skeleton__notes">
+            {Array.from({ length: 4 }).map((_, noteIndex) => (
+              <SkeletonBlock key={noteIndex} className="advisor-skeleton__note" />
+            ))}
+          </div>
+          {index === 0 && <SkeletonBlock className="advisor-skeleton__comment" />}
+        </article>
       ))}
+    </div>
+  );
+
+  if (!includeShell) {
+    return cards;
+  }
+
+  return (
+    <div className="advisor-pagina advisor-pagina--skeleton" aria-busy="true" aria-label="Carregando pagina de avaliacoes">
+      <section className="advisor-hero advisor-hero--sem-sombra advisor-hero--skeleton">
+        <SkeletonBlock className="advisor-skeleton__hero-title" />
+        <SkeletonBlock className="advisor-skeleton__hero-text" />
+      </section>
+
+      <div className="advisor-toolbar advisor-toolbar--avaliacoes advisor-toolbar--skeleton">
+        <SkeletonBlock className="advisor-skeleton__control" />
+        <SkeletonBlock className="advisor-skeleton__primary-action" />
+      </div>
+
+      {cards}
     </div>
   );
 }
@@ -72,6 +129,7 @@ function StarPicker({ value, onChange }) {
 }
 
 export default function AdvisorEvaluationsPage() {
+  const { collapsed } = useSidebarContext();
   const [projectId, setProjectId] = useState(null);
   const [modal, setModal] = useState(null);
   const [campos, setCampos] = useState(null);
@@ -203,7 +261,7 @@ export default function AdvisorEvaluationsPage() {
     }
   };
 
-  if (loadingProjetos) return <Skeleton />;
+  if (loadingProjetos) return <AdvisorEvaluationSkeleton includeShell />;
 
   if (normErroProjetos) {
     return <StatusView title="Falha ao carregar projetos" description={getErrorMessage(normErroProjetos)} />;
@@ -254,7 +312,7 @@ export default function AdvisorEvaluationsPage() {
         </button>
       </div>
 
-      {loadingAvaliacoes && <Skeleton linhas={4} />}
+      {loadingAvaliacoes && <AdvisorEvaluationSkeleton linhas={4} />}
 
       {!loadingAvaliacoes && normErroAvaliacoes && (
         <StatusView title="Falha ao carregar avaliações" description={getErrorMessage(normErroAvaliacoes)} />
@@ -329,8 +387,8 @@ export default function AdvisorEvaluationsPage() {
         </div>
       )}
 
-      {modal && (
-        <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Avaliação acadêmica">
+      {modal && createPortal((
+        <div className={`advisor-modal-overlay advisor-modal-overlay--conteudo ${collapsed ? "advisor-modal-overlay--conteudo-recolhida" : ""}`} role="dialog" aria-modal="true" aria-label="Avaliação acadêmica">
           <div className="advisor-modal" style={{ maxWidth: "40rem" }}>
             <div className="advisor-modal__cabecalho">
               <div>
@@ -347,7 +405,7 @@ export default function AdvisorEvaluationsPage() {
             </div>
 
             <div className="advisor-modal__corpo">
-              {opcoes.loading && <Skeleton linhas={2} />}
+              {opcoes.loading && <EvaluationOptionsSkeleton />}
               {!opcoes.loading && (
                 <>
                   <div className="advisor-campo">
@@ -427,7 +485,7 @@ export default function AdvisorEvaluationsPage() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </motion.div>
   );
 }

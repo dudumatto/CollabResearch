@@ -130,13 +130,24 @@
   cursor: default;
 }
 
+.pagina-inscricoes-projeto__card-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+}
+
+.pagina-inscricoes-projeto__card-topo .inscricao-card__linha-principal {
+  flex: 1;
+  min-width: 0;
+}
+
 .pagina-inscricoes-projeto__nome-aluno {
   white-space: normal;
 }
 
 .pagina-inscricoes-projeto__corpo-card {
   padding: 0 var(--espaco-5) var(--espaco-5);
-  border-top: 1px solid var(--cor-borda-clara);
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
@@ -175,6 +186,8 @@
 .pagina-inscricoes-projeto__ver-perfil {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   gap: 0.375rem;
   width: fit-content;
   padding: 0.4rem 0.7rem;
@@ -184,11 +197,22 @@
   color: var(--cor-texto-medio);
   font: inherit;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .pagina-inscricoes-projeto__ver-perfil:hover {
   background: var(--cor-fundo-leve);
   color: var(--cor-texto);
+}
+
+@media (max-width: 640px) {
+  .pagina-inscricoes-projeto__card-topo {
+    flex-direction: column;
+  }
+
+  .pagina-inscricoes-projeto__ver-perfil {
+    width: 100%;
+  }
 }
 
 .inscricao-card__botao--aprovar {

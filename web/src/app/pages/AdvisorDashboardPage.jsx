@@ -30,7 +30,7 @@ const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
 
 function AdvisorDashboardSkeleton() {
   return (
-    <div className="advisor-pagina">
+    <div className="advisor-pagina advisor-pagina--dashboard">
       <Sk w="100%" h={128} r="var(--raio-grande)" mb={16} />
       <div className="advisor-dashboard-overview">
         {[1, 2, 3, 4, 5, 6].map((item) => (

@@ -315,6 +315,28 @@ class OrientadorServiceTest {
     }
 
     @Test
+    void inscricoesNaoDevemExibirInscricaoDoCriadorDoProjeto() {
+        Usuario criadorUsuario = TestDataFactory.usuarioAluno(3);
+        Aluno criador = TestDataFactory.aluno(3, criadorUsuario);
+        Usuario outroAlunoUsuario = TestDataFactory.usuarioAluno(4);
+        Aluno outroAluno = TestDataFactory.aluno(4, outroAlunoUsuario);
+        projetoAberto.setAlunoCriador(criador);
+
+        Inscricao inscricaoCriador = Inscricao.builder()
+                .id(30).aluno(criador).projeto(projetoAberto).status(StatusInscricao.PENDENTE).build();
+        Inscricao inscricaoReal = Inscricao.builder()
+                .id(31).aluno(outroAluno).projeto(projetoAberto).status(StatusInscricao.PENDENTE).build();
+
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+        when(inscricaoRepository.findByProjetoOrientadorUsuarioId(2))
+                .thenReturn(List.of(inscricaoCriador, inscricaoReal));
+
+        List<InscricaoResponse> resposta = orientadorService.inscricoes(null, null);
+
+        assertThat(resposta).extracting(InscricaoResponse::getId).containsExactly(31);
+    }
+
+    @Test
     void inscricoesDevemFiltrarPorStatus() {
         when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
         when(inscricaoRepository.findByProjetoOrientadorUsuarioId(2))

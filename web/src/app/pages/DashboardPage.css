@@ -207,7 +207,7 @@
 
 @media (min-width: 1024px) {
   .painel__grade-resumos {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(18rem, 21rem);
   }
 }
 
@@ -374,6 +374,24 @@
   border-radius: var(--raio-grande);
   border: 1px solid var(--cor-borda-clara);
   overflow: hidden;
+}
+
+.painel__card--inscricoes,
+.painel__card--notificacoes {
+  display: flex;
+  flex-direction: column;
+}
+
+.painel__card--inscricoes > :last-child,
+.painel__card--notificacoes > :last-child {
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .painel__card--inscricoes,
+  .painel__card--notificacoes {
+    min-height: 10rem;
+  }
 }
 .painel__card-cabecalho {
   padding: var(--espaco-4);

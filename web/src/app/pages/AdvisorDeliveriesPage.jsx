@@ -14,6 +14,8 @@ import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
+const ALL_PROJECTS_VALUE = "todos";
+
 const FILTROS = [
   { key: "todas", rotulo: "Todas" },
   { key: "PENDING_REVIEW", rotulo: "Aguardando revisão" },
@@ -35,12 +37,79 @@ function formatarTamanho(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function Skeleton({ linhas = 4 }) {
+function mapEntregaComProjeto(item, projetoId) {
+  const entrega = mapEntrega(item);
+  if (!entrega) return null;
+  return { ...entrega, projetoId: entrega.projetoId ?? projetoId };
+}
+
+function SkeletonBlock({ className = "", style }) {
+  return <span className={`skeleton advisor-skeleton__block ${className}`} style={style} aria-hidden="true" />;
+}
+
+function DeliveryVersionsSkeleton({ linhas = 2 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
-      {Array.from({ length: linhas }).map((_, i) => (
-        <div key={i} className="skeleton" style={{ width: "100%", height: 84, borderRadius: "var(--raio-grande)" }} />
+    <div className="advisor-versoes advisor-versoes--skeleton" aria-busy="true" aria-label="Carregando versoes da entrega">
+      {Array.from({ length: linhas }).map((_, index) => (
+        <div key={index} className="advisor-versao advisor-versao--skeleton">
+          <div className="advisor-versao__info">
+            <SkeletonBlock className="advisor-skeleton__line advisor-skeleton__line--md" />
+            <SkeletonBlock className="advisor-skeleton__line advisor-skeleton__line--sm" />
+          </div>
+          <SkeletonBlock className="advisor-skeleton__action" />
+        </div>
       ))}
+    </div>
+  );
+}
+
+function AdvisorDeliverySkeleton({ linhas = 4, includeShell = false }) {
+  const cards = (
+    <div className="advisor-lista advisor-lista--skeleton" aria-busy="true" aria-label="Carregando entregas">
+      {Array.from({ length: linhas }).map((_, index) => (
+        <article key={index} className="advisor-entrega advisor-entrega--skeleton">
+          <div className="advisor-entrega__cabecalho advisor-skeleton__card-header">
+            <div className="advisor-skeleton__content">
+              <SkeletonBlock className="advisor-skeleton__line advisor-skeleton__line--lg" />
+              <div className="advisor-skeleton__meta-row">
+                <SkeletonBlock className="advisor-skeleton__line advisor-skeleton__line--xs" />
+                <SkeletonBlock className="advisor-skeleton__line advisor-skeleton__line--sm" />
+              </div>
+            </div>
+            <SkeletonBlock className="advisor-skeleton__pill" />
+          </div>
+          <div className="advisor-skeleton__actions">
+            <SkeletonBlock className="advisor-skeleton__action advisor-skeleton__action--wide" />
+            <SkeletonBlock className="advisor-skeleton__action" />
+          </div>
+          {index === 0 && <DeliveryVersionsSkeleton linhas={2} />}
+        </article>
+      ))}
+    </div>
+  );
+
+  if (!includeShell) {
+    return cards;
+  }
+
+  return (
+    <div className="advisor-pagina advisor-pagina--skeleton" aria-busy="true" aria-label="Carregando pagina de entregas">
+      <section className="advisor-hero advisor-hero--sem-sombra advisor-hero--skeleton">
+        <SkeletonBlock className="advisor-skeleton__hero-title" />
+        <SkeletonBlock className="advisor-skeleton__hero-text" />
+      </section>
+
+      <div className="advisor-toolbar advisor-toolbar--skeleton">
+        <SkeletonBlock className="advisor-skeleton__control" />
+      </div>
+
+      <div className="advisor-abas advisor-abas--skeleton">
+        {FILTROS.map((filtro) => (
+          <SkeletonBlock key={filtro.id} className="advisor-skeleton__tab" />
+        ))}
+      </div>
+
+      {cards}
     </div>
   );
 }
@@ -70,18 +139,38 @@ export default function AdvisorDeliveriesPage() {
   );
 
   const todosProjetos = useMemo(() => (Array.isArray(projetos) ? projetos : []), [projetos]);
+  const projectIds = useMemo(() => todosProjetos.map((p) => p.id).filter(Boolean), [todosProjetos]);
+  const projectIdsKey = projectIds.join("|");
+  const projectTitleById = useMemo(
+    () => new Map(todosProjetos.map((p) => [Number(p.id), p.title])),
+    [todosProjetos],
+  );
+
   useEffect(() => {
-    if (queryProjectId) setProjectId(Number(queryProjectId));
+    setProjectId(queryProjectId ? Number(queryProjectId) : null);
   }, [queryProjectId]);
-  const activeProjectId = projectId ?? todosProjetos[0]?.id ?? null;
 
   const { data: entregas, loading: loadingEntregas, error: erroEntregas, reload } = useAsyncData(
     async () => {
-      if (!activeProjectId) return [];
-      const raw = await deliveryService.list(activeProjectId);
-      return (Array.isArray(raw) ? raw : []).map(mapEntrega);
+      if (projectId) {
+        const raw = await deliveryService.list(projectId);
+        return (Array.isArray(raw) ? raw : [])
+          .map((item) => mapEntregaComProjeto(item, projectId))
+          .filter(Boolean);
+      }
+
+      if (projectIds.length === 0) return [];
+      const results = await Promise.all(
+        projectIds.map(async (id) => {
+          const raw = await deliveryService.list(id);
+          return (Array.isArray(raw) ? raw : [])
+            .map((item) => mapEntregaComProjeto(item, id))
+            .filter(Boolean);
+        }),
+      );
+      return results.flat();
     },
-    [activeProjectId],
+    [projectId, projectIdsKey],
     { initialData: [] },
   );
 
@@ -106,7 +195,9 @@ export default function AdvisorDeliveriesPage() {
       setVersoesLoading((prev) => ({ ...prev, [entrega.id]: true }));
       setVersoesErro((prev) => ({ ...prev, [entrega.id]: null }));
       try {
-        const raw = await deliveryService.listVersions(activeProjectId, entrega.id);
+        const entregaProjectId = entrega.projetoId ?? projectId;
+        if (!entregaProjectId) throw new Error("Projeto da entrega nao identificado");
+        const raw = await deliveryService.listVersions(entregaProjectId, entrega.id);
         const versoes = (Array.isArray(raw) ? raw : []).map(mapDeliveryVersion);
         setVersoesPorEntrega((prev) => ({ ...prev, [entrega.id]: versoes }));
       } catch (err) {
@@ -119,7 +210,9 @@ export default function AdvisorDeliveriesPage() {
 
   const baixar = async (entrega, versao) => {
     try {
-      const blob = await api.getBlob(deliveryService.downloadUrl(activeProjectId, entrega.id, versao.id));
+      const entregaProjectId = entrega.projetoId ?? projectId;
+      if (!entregaProjectId) throw new Error("Projeto da entrega nao identificado");
+      const blob = await api.getBlob(deliveryService.downloadUrl(entregaProjectId, entrega.id, versao.id));
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -159,7 +252,9 @@ export default function AdvisorDeliveriesPage() {
     }
     setRevisando(true);
     try {
-      await deliveryService.review(activeProjectId, modal.entrega.id, modal.versao.id, {
+      const entregaProjectId = modal.entrega.projetoId ?? projectId;
+      if (!entregaProjectId) throw new Error("Projeto da entrega nao identificado");
+      await deliveryService.review(entregaProjectId, modal.entrega.id, modal.versao.id, {
         decisao,
         comentario: comentario.trim(),
       });
@@ -175,7 +270,7 @@ export default function AdvisorDeliveriesPage() {
     }
   };
 
-  if (loadingProjetos) return <Skeleton />;
+  if (loadingProjetos) return <AdvisorDeliverySkeleton includeShell />;
 
   if (normErroProjetos) {
     return <StatusView title="Falha ao carregar projetos" description={getErrorMessage(normErroProjetos)} />;
@@ -219,9 +314,12 @@ export default function AdvisorDeliveriesPage() {
           <AppCombobox
             ariaLabel="Selecionar projeto"
             className="advisor-busca__input app-combobox--with-leading-icon"
-            value={activeProjectId ?? ""}
-            onChange={(nextValue) => setProjectId(Number(nextValue))}
-            options={todosProjetos.map((p) => ({ value: p.id, label: p.title }))}
+            value={projectId ?? ALL_PROJECTS_VALUE}
+            onChange={(nextValue) => setProjectId(nextValue === ALL_PROJECTS_VALUE ? null : Number(nextValue))}
+            options={[
+              { value: ALL_PROJECTS_VALUE, label: "Todos" },
+              ...todosProjetos.map((p) => ({ value: p.id, label: p.title })),
+            ]}
           />
         </div>
       </div>
@@ -241,7 +339,7 @@ export default function AdvisorDeliveriesPage() {
         ))}
       </div>
 
-      {loadingEntregas && <Skeleton linhas={4} />}
+      {loadingEntregas && <AdvisorDeliverySkeleton linhas={4} />}
 
       {!loadingEntregas && normErroEntregas && (
         <StatusView title="Falha ao carregar entregas" description={getErrorMessage(normErroEntregas)} />
@@ -254,7 +352,7 @@ export default function AdvisorDeliveriesPage() {
           </div>
           <h3 className="advisor-estado-vazio__titulo">Nenhuma entrega encontrada</h3>
           <p className="advisor-estado-vazio__descricao">
-            Quando os alunos enviarem arquivos para este projeto, as entregas aparecerão aqui.
+            Quando os alunos enviarem arquivos para os projetos selecionados, as entregas aparecerão aqui.
           </p>
         </div>
       )}
@@ -283,6 +381,7 @@ export default function AdvisorDeliveriesPage() {
                     <p className="advisor-entrega__titulo">{entrega.titulo}</p>
                     <div className="advisor-entrega__meta">
                       <span>por {entrega.autorNome}</span>
+                      {!projectId && entrega.projetoId && <span>· {projectTitleById.get(Number(entrega.projetoId)) ?? "Projeto"}</span>}
                       {entrega.etapaTitulo && <span>· Etapa: {entrega.etapaTitulo}</span>}
                       {entrega.categoria && <span>· {entrega.categoria}</span>}
                       <span>· {formatDate(entrega.criadaEm)}</span>
@@ -313,7 +412,7 @@ export default function AdvisorDeliveriesPage() {
 
                 {expandida && (
                   <div className="advisor-versoes">
-                    {carregandoVersoes && <Skeleton linhas={2} />}
+                    {carregandoVersoes && <DeliveryVersionsSkeleton linhas={2} />}
                     {!carregandoVersoes && erroVersoes && (
                       <p style={{ fontSize: "var(--tamanho-base)", color: "var(--cor-erro)" }}>
                         Não foi possível carregar as versões.

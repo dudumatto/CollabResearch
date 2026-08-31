@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CheckCircle, MessageSquare } from "lucide-react";
+import { CheckCircle, ClipboardList, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -97,7 +97,15 @@ export default function StudentEvaluationsPage() {
   }
 
   if (!projects.length && !projectId) {
-    return <StatusView title="Sem projetos vinculados" description="Suas avaliações acadêmicas aparecerão aqui." />;
+    return (
+      <div className="advisor-pagina student-evaluations-page">
+        <div className="advisor-estado-vazio">
+          <div className="advisor-estado-vazio__icone"><ClipboardList size={24} /></div>
+          <h2 className="advisor-estado-vazio__titulo">Nenhum projeto vinculado</h2>
+          <p className="advisor-estado-vazio__descricao">As avaliações aparecerão aqui quando você participar de um projeto aprovado.</p>
+        </div>
+      </div>
+    );
   }
 
   return (

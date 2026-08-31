@@ -4,7 +4,7 @@ import { ArrowLeft, Mail, BookOpen, Building2, GraduationCap, Award, Calendar, M
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { userService } from "../services/userService";
 import { conversationService } from "../services/conversationService";
-import { formatUserType } from "../utils/formatters";
+import { formatProjectStatus, formatUserType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { ProfileDocuments } from "../components/ProfileDocuments";
 import { toast } from "sonner";
@@ -13,6 +13,18 @@ import "./ProfilePage.css";
 function getInitials(name) {
   if (!name) return "IC";
   return name.split(" ").slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
+}
+
+function getProjectStatusClass(status) {
+  const classes = {
+    ABERTO: "historico-item__etiqueta--aberto",
+    EM_ANDAMENTO: "historico-item__etiqueta--andamento",
+    FINALIZADO: "historico-item__etiqueta--finalizado",
+    PENDENTE_ORIENTADOR: "historico-item__etiqueta--pendente",
+    REJEITADO_ORIENTADOR: "historico-item__etiqueta--rejeitado",
+  };
+
+  return classes[status] ?? "historico-item__etiqueta--neutro";
 }
 
 export default function UserProfilePage() {
@@ -195,8 +207,8 @@ export default function UserProfilePage() {
                       <p className="historico-item__titulo">{p.titulo ?? p.title ?? "Projeto"}</p>
                       <p className="historico-item__meta">{p.area ?? "-"}</p>
                     </div>
-                    <span className="historico-item__etiqueta historico-item__etiqueta--aprovado">
-                      {p.status ?? ""}
+                    <span className={`historico-item__etiqueta ${getProjectStatusClass(p.status)}`}>
+                      {formatProjectStatus(p.status)}
                     </span>
                   </div>
                 ))}
