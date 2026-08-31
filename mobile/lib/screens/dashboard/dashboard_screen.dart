@@ -3,14 +3,16 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/research_activity_provider.dart';
 import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/academic/academic_widgets.dart';
-import '../../widgets/dashboard/activity_chart.dart';
+import '../../widgets/dashboard/project_status_chart.dart';
 import '../../widgets/dashboard/recent_activity_list.dart';
 import '../../widgets/dashboard/stats_card.dart';
 import '../../widgets/common/app_avatar.dart';
@@ -29,6 +31,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardProvider>().load();
       context.read<NotificationProvider>().loadNotifications();
+      // Alimenta o grafico de situacao dos projetos. Usa o endpoint que ja
+      // existe para "meus projetos", nao a listagem geral.
+      context.read<ResearchActivityProvider>().loadRelatedProjects();
       _loadAdvisorDashboard();
     });
   }
@@ -54,6 +59,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Future.wait([
       dashboardProvider.load(),
       notificationProvider.loadNotifications(),
+      context.read<ResearchActivityProvider>().loadRelatedProjects(),
       if (isAdvisor) academic.loadAdvisorDashboard(),
     ]);
   }
@@ -156,7 +162,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               unreadCount: notificationProvider.unreadCount,
                               onOpenAlerts: () => context.go('/notifications'),
                             ),
-                            const SizedBox(height: 18),
+                            const SizedBox(height: AppSpacing.xl),
                             _StatsGrid(
                                 children: isAdvisor
                                     ? [
@@ -164,78 +170,102 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           title: 'Projetos ativos',
                                           value:
                                               '${advisorSummary?.activeProjects ?? 0}',
+                                          icon: Icons.folder_open_outlined,
+                                          color: AppColors.chartGreen,
                                         ),
                                         StatsCard(
                                           title: 'Orientandos',
                                           value:
                                               '${advisorSummary?.activeAdvisees ?? 0}',
                                           icon: Icons.groups_outlined,
+                                          color: AppColors.chartIndigo,
                                         ),
                                         StatsCard(
                                           title: 'Para revisar',
                                           value:
                                               '${advisorSummary?.deliveriesToReview ?? 0}',
                                           icon: Icons.rate_review_outlined,
+                                          color: AppColors.chartAmber,
                                         ),
                                         StatsCard(
                                           title: 'Etapas atrasadas',
                                           value:
                                               '${advisorSummary?.overdueStages ?? 0}',
                                           icon: Icons.event_busy_outlined,
+                                          color: AppColors.danger,
                                         ),
                                       ]
                                     : [
                                         StatsCard(
                                           title: 'Projetos',
                                           value: '${summary?.myProjects ?? 0}',
+                                          icon: Icons.folder_open_outlined,
+                                          color: AppColors.chartGreen,
                                         ),
                                         StatsCard(
                                           title: 'Inscrições',
                                           value:
                                               '${summary?.mySubscriptions ?? 0}',
                                           icon: Icons.assignment_outlined,
+                                          color: AppColors.chartIndigo,
                                         ),
                                         StatsCard(
                                           title: 'Pendentes',
                                           value:
                                               '${summary?.pendingSubscriptions ?? 0}',
                                           icon: Icons.pending_actions_outlined,
+                                          color: AppColors.chartAmber,
                                         ),
                                         StatsCard(
                                           title: 'Não lidas',
                                           value:
                                               '${summary?.unreadNotifications ?? notificationProvider.unreadCount}',
                                           icon: Icons.notifications_none,
+                                          color: AppColors.danger,
                                         ),
                                       ]),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: AppSpacing.xl),
                             Text(
                               'Ações rápidas',
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            const SizedBox(height: 10),
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: [
-                                _QuickAction(
-                                  onPressed: () => context.go('/subscriptions'),
-                                  icon: const Icon(Icons.assignment_outlined),
-                                  label: 'Inscrições',
-                                ),
-                                _QuickAction(
-                                  onPressed: () => context.go('/progress'),
-                                  icon: const Icon(Icons.trending_up_outlined),
-                                  label: 'Progresso',
-                                ),
-                                _QuickAction(
-                                  onPressed: () => context.go('/feedback'),
-                                  icon: const Icon(Icons.star_outline),
-                                  label: 'Feedback',
-                                ),
-                              ],
+                            const SizedBox(height: AppSpacing.md),
+                            IntrinsicHeight(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Expanded(
+                                    child: _QuickAction(
+                                      onPressed: () =>
+                                          context.go('/subscriptions'),
+                                      icon: const Icon(
+                                        Icons.assignment_outlined,
+                                      ),
+                                      label: 'Inscrições',
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.md),
+                                  Expanded(
+                                    child: _QuickAction(
+                                      onPressed: () => context.go('/progress'),
+                                      icon: const Icon(
+                                        Icons.trending_up_outlined,
+                                      ),
+                                      label: 'Progresso',
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.md),
+                                  Expanded(
+                                    child: _QuickAction(
+                                      onPressed: () => context.go('/feedback'),
+                                      icon: const Icon(Icons.star_outline),
+                                      label: 'Feedback',
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: AppSpacing.xl),
                             Text(
                               'Acompanhamento acadêmico',
                               style: Theme.of(context).textTheme.titleMedium,
@@ -299,15 +329,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               context.push('/evaluations'),
                                         ),
                                       ]),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppSpacing.xl),
                             _DashboardContentGrid(
                               children: [
-                                ActivityChart(
-                                  projects: summary?.myProjects ?? 0,
-                                  conversations:
-                                      summary?.activeConversations ?? 0,
-                                  notifications:
-                                      summary?.unreadNotifications ?? 0,
+                                ProjectStatusChart(
+                                  projects: context
+                                      .watch<ResearchActivityProvider>()
+                                      .relatedProjects,
                                 ),
                                 RecentActivityList(
                                   notifications: notifications,
@@ -516,8 +544,8 @@ class _StatsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const spacing = 12.0;
-        final columns = constraints.maxWidth >= 920
+        const spacing = AppSpacing.md;
+        final columns = constraints.maxWidth >= AppBreakpoints.expanded
             ? 4
             : constraints.maxWidth >= 280
                 ? 2
@@ -525,15 +553,37 @@ class _StatsGrid extends StatelessWidget {
         final itemWidth =
             (constraints.maxWidth - (spacing * (columns - 1))) / columns;
 
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
+        // Agrupa por linha e usa IntrinsicHeight para que os cartoes de uma
+        // mesma linha fiquem com a mesma altura. Antes cada cartao crescia
+        // sozinho conforme o rotulo, e a grade saia desalinhada.
+        final rows = <List<Widget>>[];
+        for (var index = 0; index < children.length; index += columns) {
+          rows.add(
+            children.sublist(
+              index,
+              (index + columns).clamp(0, children.length),
+            ),
+          );
+        }
+
+        return Column(
           children: [
-            for (final child in children)
-              SizedBox(
-                width: itemWidth,
-                child: child,
+            for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) ...[
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < rows[rowIndex].length; i++) ...[
+                      SizedBox(width: itemWidth, child: rows[rowIndex][i]),
+                      if (i < rows[rowIndex].length - 1)
+                        const SizedBox(width: spacing),
+                    ],
+                  ],
+                ),
               ),
+              if (rowIndex < rows.length - 1)
+                const SizedBox(height: spacing),
+            ],
           ],
         );
       },
@@ -554,33 +604,52 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 104,
-      child: Column(
-        children: [
-          SizedBox(
-            width: 50,
-            height: 50,
-            child: FilledButton(
-              onPressed: onPressed,
-              style: FilledButton.styleFrom(
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+    final theme = Theme.of(context);
+    // Ocupa a largura que o pai der, para acompanhar a grade dos cartoes.
+    // Antes era uma caixa fixa de 104px dentro de um Wrap, que nao alinhava
+    // com as colunas acima.
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.md,
+            horizontal: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                child: IconTheme(
+                  data: const IconThemeData(color: Colors.white, size: 21),
+                  child: icon,
                 ),
               ),
-              child: icon,
-            ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelMedium,
+              ),
+            ],
           ),
-          const SizedBox(height: 7),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -595,23 +664,30 @@ class _DashboardContentGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth < 860) {
+        // Indexado em vez de comparar com children.last: a comparacao era por
+        // identidade e descartava o separador quando dois filhos eram iguais.
+        if (constraints.maxWidth < AppBreakpoints.expanded) {
           return Column(
             children: [
-              for (final child in children) ...[
-                child,
-                if (child != children.last) const SizedBox(height: 16),
+              for (var index = 0; index < children.length; index++) ...[
+                children[index],
+                if (index < children.length - 1)
+                  const SizedBox(height: AppSpacing.lg),
               ],
             ],
           );
         }
 
+        // Antes usava .first/.last, o que descartava em silencio um terceiro
+        // filho no layout largo.
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: children.first),
-            const SizedBox(width: 16),
-            Expanded(child: children.last),
+            for (var index = 0; index < children.length; index++) ...[
+              Expanded(child: children[index]),
+              if (index < children.length - 1)
+                const SizedBox(width: AppSpacing.lg),
+            ],
           ],
         );
       },

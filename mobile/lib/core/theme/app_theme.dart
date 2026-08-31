@@ -21,6 +21,11 @@ abstract final class AppTheme {
       onTertiary: AppColors.surface,
       surface: AppColors.surface,
       onSurface: AppColors.text,
+      // Sem estes tres, o Material 3 usa o padrao lilas (#F7F2FA), que
+      // aparecia no fundo do AcademicActionTile e destoava do verde.
+      surfaceContainerLow: AppColors.surfaceContainerLow,
+      surfaceContainer: AppColors.surfaceContainer,
+      surfaceContainerHigh: AppColors.surfaceContainerHigh,
       error: AppColors.danger,
       onError: AppColors.surface,
       outline: AppColors.border,
@@ -283,6 +288,9 @@ abstract final class AppTheme {
       onTertiary: AppColors.darkBackground,
       surface: AppColors.darkSurface,
       onSurface: AppColors.darkText,
+      surfaceContainerLow: AppColors.darkSurfaceContainerLow,
+      surfaceContainer: AppColors.darkSurfaceContainer,
+      surfaceContainerHigh: AppColors.darkSurfaceContainerHigh,
       error: AppColors.darkDanger,
       onError: AppColors.darkBackground,
       outline: AppColors.darkBorder,

@@ -11,6 +11,7 @@ import 'package:tcc_mobile/providers/chat_provider.dart';
 import 'package:tcc_mobile/providers/dashboard_provider.dart';
 import 'package:tcc_mobile/providers/notification_provider.dart';
 import 'package:tcc_mobile/providers/project_provider.dart';
+import 'package:tcc_mobile/providers/research_activity_provider.dart';
 import 'package:tcc_mobile/screens/chat/chat_detail_screen.dart';
 import 'package:tcc_mobile/screens/dashboard/dashboard_screen.dart';
 import 'package:tcc_mobile/screens/projects/projects_list_screen.dart';
@@ -57,6 +58,15 @@ class _FakeNotificationProvider extends NotificationProvider {
   }
 }
 
+class _FakeResearchActivityProvider extends ResearchActivityProvider {
+  int loadCalls = 0;
+
+  @override
+  Future<void> loadRelatedProjects() async {
+    loadCalls++;
+  }
+}
+
 class _FakeProjectProvider extends ProjectProvider {
   int loadCalls = 0;
 
@@ -99,6 +109,11 @@ Widget _dashboardApp({
       ChangeNotifierProvider<NotificationProvider>.value(value: notifications),
       ChangeNotifierProvider<AcademicWorkspaceProvider>(
         create: (_) => AcademicWorkspaceProvider(),
+      ),
+      // O painel usa este provider para o grafico de situacao dos projetos.
+      // Precisa ser fake: o real dispara HTTP e deixa timer pendente.
+      ChangeNotifierProvider<ResearchActivityProvider>.value(
+        value: _FakeResearchActivityProvider(),
       ),
     ],
     child: const MaterialApp(home: DashboardScreen()),
