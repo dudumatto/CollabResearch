@@ -8,6 +8,7 @@ import '../../providers/project_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/loading_indicator.dart';
 
@@ -71,6 +72,24 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_startDate != null &&
+        _endDate != null &&
+        _endDate!.isBefore(_startDate!)) {
+      AppSnackbar.showError(
+        context,
+        'A data de fim não pode ser anterior à data de início.',
+      );
+      return;
+    }
+    if (_applicationDeadline != null &&
+        _endDate != null &&
+        _applicationDeadline!.isAfter(_endDate!)) {
+      AppSnackbar.showError(
+        context,
+        'O limite de inscrições não pode ser posterior ao fim do projeto.',
+      );
+      return;
+    }
     final areaId = _selectedAreaId;
     if (areaId == null) return;
 
@@ -117,19 +136,26 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProjectProvider>();
+    final isMobile = MediaQuery.sizeOf(context).width < 600;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Criar projeto')),
       body: provider.isFormLoading
           ? const LoadingIndicator(label: 'Carregando opções...')
           : ListView(
-              padding: const EdgeInsets.all(20),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(
+                isMobile ? 16 : 20,
+                isMobile ? 16 : 20,
+                isMobile ? 16 : 20,
+                isMobile ? 112 : 20,
+              ),
               children: [
                 Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 720),
-                    child: AppCard(
-                      padding: const EdgeInsets.all(24),
+                    child: _ProjectFormSurface(
+                      mobile: isMobile,
                       child: Form(
                         key: _formKey,
                         child: Column(
@@ -203,10 +229,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                             ),
                             const SizedBox(height: 16),
                             LayoutBuilder(
-                              builder: (context, fieldConstraints) {
+                              builder: (context, _) {
                                 // Mobile-only: mede o espaco real do campo.
                                 final isMobile =
-                                    fieldConstraints.maxWidth <= 480;
+                                    MediaQuery.sizeOf(context).width < 600;
                                 return DropdownButtonFormField<int>(
                                   initialValue: _selectedAreaId,
                                   // Mobile-only: limita o item selecionado ao campo.
@@ -238,10 +264,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                             if (_isStudent) ...[
                               const SizedBox(height: 16),
                               LayoutBuilder(
-                                builder: (context, fieldConstraints) {
+                                builder: (context, _) {
                                   // Mobile-only: mede o espaco real do campo.
                                   final isMobile =
-                                      fieldConstraints.maxWidth <= 480;
+                                      MediaQuery.sizeOf(context).width < 600;
                                   return DropdownButtonFormField<int>(
                                     initialValue: _selectedAdvisorId,
                                     // Mobile-only: nomes longos podem quebrar linha.
@@ -353,6 +379,19 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
               ],
             ),
     );
+  }
+}
+
+class _ProjectFormSurface extends StatelessWidget {
+  const _ProjectFormSurface({required this.mobile, required this.child});
+
+  final bool mobile;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (mobile) return child;
+    return AppCard(padding: const EdgeInsets.all(24), child: child);
   }
 }
 

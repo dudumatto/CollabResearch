@@ -15,11 +15,25 @@ class SubscriptionService {
     return parseListPayload(response.data).map(Subscription.fromJson).toList();
   }
 
-  Future<void> create(String projectId) async {
-    await _dio.post<dynamic>(
+  Future<Subscription> create(
+    String projectId, {
+    String? motivation,
+  }) async {
+    final response = await _dio.post<dynamic>(
       ApiEndpoints.subscriptions,
-      data: {'projetoId': projectId},
+      data: {
+        'projetoId': projectId,
+        if (motivation != null && motivation.trim().isNotEmpty)
+          'motivacao': motivation.trim(),
+      },
     );
+    return Subscription.fromJson(parseObjectPayload(response.data));
+  }
+
+  Future<List<Subscription>> listByProject(String projectId) async {
+    final response =
+        await _dio.get<dynamic>(ApiEndpoints.projectApplications(projectId));
+    return parseListPayload(response.data).map(Subscription.fromJson).toList();
   }
 
   Future<Subscription> approve(String id) async {

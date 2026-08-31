@@ -10,6 +10,7 @@ import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
+import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/empty_state.dart';
 
@@ -32,6 +33,9 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
   final _vacanciesController = TextEditingController();
   Project? _project;
   int? _selectedAreaId;
+  DateTime? _startDate;
+  DateTime? _endDate;
+  DateTime? _applicationDeadline;
   bool _initialized = false;
 
   bool get _isAdvisor {
@@ -78,6 +82,9 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
       _technologiesController.text = project.technologies ?? '';
       _coverUrlController.text = project.coverUrl ?? '';
       _vacanciesController.text = '${project.vacancies}';
+      _startDate = project.startDate;
+      _endDate = project.endDate;
+      _applicationDeadline = project.applicationDeadline;
       _selectedAreaId = (projectAreaAvailable ? project.areaId : null) ??
           (matchingArea.isEmpty ? null : matchingArea.first.id);
       _initialized = true;
@@ -86,6 +93,27 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final isMobile = MediaQuery.sizeOf(context).width < 600;
+    if (isMobile &&
+        _startDate != null &&
+        _endDate != null &&
+        _endDate!.isBefore(_startDate!)) {
+      AppSnackbar.showError(
+        context,
+        'A data de fim não pode ser anterior à data de início.',
+      );
+      return;
+    }
+    if (isMobile &&
+        _applicationDeadline != null &&
+        _endDate != null &&
+        _applicationDeadline!.isAfter(_endDate!)) {
+      AppSnackbar.showError(
+        context,
+        'O limite de inscrições não pode ser posterior ao fim do projeto.',
+      );
+      return;
+    }
     final areaId = _selectedAreaId;
     if (areaId == null) return;
 
@@ -100,17 +128,45 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
         'fotoProjetoUrl': _coverUrlController.text.trim().isEmpty
             ? null
             : _coverUrlController.text.trim(),
+        'dataInicio': _dateText(_startDate),
+        'dataFim': _dateText(_endDate),
+        'dataLimiteInscricao': _dateText(_applicationDeadline),
         'areaId': areaId,
         if (_isAdvisor) 'vagas': int.parse(_vacanciesController.text.trim()),
       },
     );
     if (!mounted || project == null) return;
-    context.go('/projects/${project.id}');
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/projects/${project.id}');
+    }
+  }
+
+  String? _dateText(DateTime? value) {
+    if (value == null) return null;
+    final month = value.month.toString().padLeft(2, '0');
+    final day = value.day.toString().padLeft(2, '0');
+    return '${value.year}-$month-$day';
+  }
+
+  Future<void> _pickDate(
+    DateTime? current,
+    ValueChanged<DateTime?> onSelected,
+  ) async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: current ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+    );
+    if (selected != null) setState(() => onSelected(selected));
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProjectProvider>();
+    final isMobile = MediaQuery.sizeOf(context).width < 600;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Editar projeto')),
@@ -124,13 +180,20 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                     )
                   : const EmptyState(title: 'Projeto não encontrado')
               : ListView(
-                  padding: const EdgeInsets.all(20),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: EdgeInsets.fromLTRB(
+                    isMobile ? 16 : 20,
+                    isMobile ? 16 : 20,
+                    isMobile ? 16 : 20,
+                    isMobile ? 112 : 20,
+                  ),
                   children: [
                     Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 720),
-                        child: AppCard(
-                          padding: const EdgeInsets.all(24),
+                        child: _ProjectFormSurface(
+                          mobile: isMobile,
                           child: Form(
                             key: _formKey,
                             child: Column(
@@ -197,10 +260,10 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 LayoutBuilder(
-                                  builder: (context, fieldConstraints) {
+                                  builder: (context, _) {
                                     // Mobile-only: mede o espaco real do campo.
                                     final isMobile =
-                                        fieldConstraints.maxWidth <= 480;
+                                        MediaQuery.sizeOf(context).width < 600;
                                     return DropdownButtonFormField<int>(
                                       initialValue: _selectedAreaId,
                                       // Mobile-only: limita nomes longos ao campo.
@@ -252,6 +315,41 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                     },
                                   ),
                                 ],
+                                if (isMobile) ...[
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    'Datas do projeto',
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _DateField(
+                                    label: 'Início',
+                                    value: _startDate,
+                                    onTap: () => _pickDate(
+                                      _startDate,
+                                      (value) => _startDate = value,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _DateField(
+                                    label: 'Fim',
+                                    value: _endDate,
+                                    onTap: () => _pickDate(
+                                      _endDate,
+                                      (value) => _endDate = value,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _DateField(
+                                    label: 'Limite para inscrições',
+                                    value: _applicationDeadline,
+                                    onTap: () => _pickDate(
+                                      _applicationDeadline,
+                                      (value) => _applicationDeadline = value,
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(height: 24),
                                 AppButton(
                                   label: 'Atualizar projeto',
@@ -267,6 +365,51 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                     ),
                   ],
                 ),
+    );
+  }
+}
+
+class _ProjectFormSurface extends StatelessWidget {
+  const _ProjectFormSurface({required this.mobile, required this.child});
+
+  final bool mobile;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (mobile) return child;
+    return AppCard(padding: const EdgeInsets.all(24), child: child);
+  }
+}
+
+class _DateField extends StatelessWidget {
+  const _DateField({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String label;
+  final DateTime? value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = value == null
+        ? 'Não definida'
+        : '${value!.day.toString().padLeft(2, '0')}/'
+            '${value!.month.toString().padLeft(2, '0')}/${value!.year}';
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: const Icon(Icons.calendar_today_outlined),
+          suffixIcon: const Icon(Icons.chevron_right),
+        ),
+        child: Text(text),
+      ),
     );
   }
 }

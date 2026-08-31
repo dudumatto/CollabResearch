@@ -57,7 +57,11 @@ class _ResponsiveProjectProvider extends ProjectProvider {
   }
 
   @override
-  Future<Project?> loadProject(String id) async => _project;
+  Future<Project?> loadProject(
+    String id, {
+    bool forceRefresh = false,
+  }) async =>
+      _project;
 
   @override
   Future<void> loadProjects({
@@ -98,7 +102,10 @@ Widget _withProviders(Widget child, {ProjectProvider? projectProvider}) {
 
 Future<void> _pumpAtWidth(WidgetTester tester, double width, Widget child,
     {ProjectProvider? projectProvider}) async {
-  await tester.binding.setSurfaceSize(Size(width, 900));
+  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = Size(width, 900);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.view.resetPhysicalSize);
   await tester.pumpWidget(
     _withProviders(child, projectProvider: projectProvider),
   );
@@ -106,7 +113,7 @@ Future<void> _pumpAtWidth(WidgetTester tester, double width, Widget child,
 }
 
 void main() {
-  for (final width in [320.0, 360.0, 375.0]) {
+  for (final width in [320.0, 360.0, 375.0, 412.0, 480.0, 599.0]) {
     testWidgets('lista ativa o card mobile em $width px', (tester) async {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 

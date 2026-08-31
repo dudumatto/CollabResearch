@@ -29,19 +29,21 @@ class ProjectCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (mobile) ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    project.title,
-                    overflow: TextOverflow.visible,
-                    style: Theme.of(context).textTheme.titleMedium,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: _StatusPill(
+                label: statusLabel,
+                color: statusColor,
+                expanded: true,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              project.title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
                   ),
-                ),
-                const SizedBox(width: 10),
-                _StatusPill(label: statusLabel, color: statusColor),
-              ],
             ),
           ] else
             Row(
@@ -59,7 +61,7 @@ class ProjectCard extends StatelessWidget {
                 _StatusPill(label: statusLabel, color: statusColor),
               ],
             ),
-          const SizedBox(height: 8),
+          SizedBox(height: mobile ? 10 : 8),
           if (mobile) ...[
             // Mobile-only: separa classificacoes longas sem ocultar dados.
             if (project.area.trim().isNotEmpty)
@@ -105,7 +107,7 @@ class ProjectCard extends StatelessWidget {
               ],
             ),
           ],
-          const SizedBox(height: 14),
+          SizedBox(height: mobile ? 16 : 14),
           Divider(color: Theme.of(context).colorScheme.outlineVariant),
           const SizedBox(height: 10),
           if (mobile)
@@ -115,11 +117,19 @@ class ProjectCard extends StatelessWidget {
               children: [
                 _ProjectMetric(
                   icon: Icons.work_outline,
-                  label: '${project.vacancies} vagas',
+                  label:
+                      '${project.collaborators} de ${project.vacancies} vagas',
+                  wrap: true,
                 ),
                 _ProjectMetric(
                   icon: Icons.groups_outlined,
                   label: '${project.collaborators} na equipe',
+                  wrap: true,
+                ),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ],
             )
@@ -150,15 +160,20 @@ class ProjectCard extends StatelessWidget {
 }
 
 class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.label, required this.color});
+  const _StatusPill({
+    required this.label,
+    required this.color,
+    this.expanded = false,
+  });
 
   final String label;
   final Color color;
+  final bool expanded;
 
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 116),
+      constraints: BoxConstraints(maxWidth: expanded ? 148 : 116),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.12),
@@ -169,7 +184,7 @@ class _StatusPill extends StatelessWidget {
           child: Text(
             label,
             maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            overflow: expanded ? TextOverflow.visible : TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: color,
@@ -183,10 +198,15 @@ class _StatusPill extends StatelessWidget {
 }
 
 class _ProjectMetric extends StatelessWidget {
-  const _ProjectMetric({required this.icon, required this.label});
+  const _ProjectMetric({
+    required this.icon,
+    required this.label,
+    this.wrap = false,
+  });
 
   final IconData icon;
   final String label;
+  final bool wrap;
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +219,7 @@ class _ProjectMetric extends StatelessWidget {
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         const SizedBox(width: 6),
-        Text(label),
+        if (wrap) Flexible(child: Text(label)) else Text(label),
       ],
     );
   }

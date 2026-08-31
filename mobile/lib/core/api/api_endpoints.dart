@@ -19,6 +19,7 @@ class ApiEndpoints {
   static const String documents = '/api/documentos';
 
   static String project(String id) => '$projects/$id';
+  static String projectStatus(String id) => '${project(id)}/status';
   static String acceptProjectOrientation(String id) =>
       '${project(id)}/aceitar-orientacao';
   static String rejectProjectOrientation(String id) =>
@@ -27,6 +28,8 @@ class ApiEndpoints {
   static String projectFeedback(String id) => '$feedback/projeto/$id';
   static String projectCollaborators(String id) =>
       '${project(id)}/colaboradores';
+  static String projectCollaborator(String projectId, String userId) =>
+      '${projectCollaborators(projectId)}/$userId';
   static String projectApplications(String id) => '$subscriptions/projeto/$id';
   static String projectStages(String id) => '${project(id)}/etapas';
   static String projectStage(String projectId, String stageId) =>

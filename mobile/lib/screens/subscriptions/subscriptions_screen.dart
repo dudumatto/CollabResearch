@@ -168,7 +168,8 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                       _SubscriptionCard(
                         subscription: subscription,
                         userType: userType,
-                        isLoading: provider.isLoading,
+                        isLoading:
+                            provider.isLoading || provider.isActionLoading,
                         onOpenProject: () =>
                             context.go('/projects/${subscription.projectId}'),
                         onApprove: () => _review(

@@ -161,3 +161,62 @@ class ProjectOption {
     );
   }
 }
+
+class ProjectPage {
+  const ProjectPage({
+    required this.items,
+    required this.page,
+    required this.totalPages,
+    required this.totalElements,
+    required this.isLast,
+  });
+
+  final List<Project> items;
+  final int page;
+  final int totalPages;
+  final int totalElements;
+  final bool isLast;
+
+  factory ProjectPage.fromPayload(dynamic payload) {
+    if (payload is List) {
+      final items = _parseItems(payload);
+      return ProjectPage(
+        items: items,
+        page: 0,
+        totalPages: items.isEmpty ? 0 : 1,
+        totalElements: items.length,
+        isLast: true,
+      );
+    }
+
+    final data = payload is Map
+        ? payload.map((key, value) => MapEntry('$key', value))
+        : const <String, dynamic>{};
+    final rawItems = data['content'] is List
+        ? data['content'] as List
+        : data['data'] is List
+            ? data['data'] as List
+            : const <dynamic>[];
+    final items = _parseItems(rawItems);
+    final page = (data['page'] as num?)?.toInt() ?? 0;
+    final totalPages =
+        (data['totalPages'] as num?)?.toInt() ?? (items.isEmpty ? 0 : page + 1);
+
+    return ProjectPage(
+      items: items,
+      page: page,
+      totalPages: totalPages,
+      totalElements: (data['totalElements'] as num?)?.toInt() ?? items.length,
+      isLast: data['last'] as bool? ?? page + 1 >= totalPages,
+    );
+  }
+
+  static List<Project> _parseItems(List<dynamic> values) {
+    return values
+        .whereType<Map>()
+        .map((item) => Project.fromJson(
+              item.map((key, value) => MapEntry('$key', value)),
+            ))
+        .toList();
+  }
+}
