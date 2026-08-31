@@ -13,12 +13,17 @@ class AppPageHeader extends StatelessWidget {
     required this.description,
     this.trailing,
     this.onBack,
+    this.compact = false,
   });
 
   final String eyebrow;
   final String title;
   final String description;
   final Widget? trailing;
+
+  /// Versao mais baixa e discreta do cabecalho, para telas em que ele fica
+  /// fixo no topo e nao rola junto com o conteudo.
+  final bool compact;
 
   /// Quando informado, exibe o botao de voltar dentro do proprio cabecalho.
   /// Evita a AppBar repetindo o titulo que ja aparece aqui.
@@ -28,18 +33,27 @@ class AppPageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     // Cartao de destaque na cor da marca, no mesmo padrao do login, cadastro e
     // dashboard. Antes era texto solto sobre o fundo claro, sem peso visual.
+    final titleStyle = compact
+        ? Theme.of(context).textTheme.titleLarge
+        : Theme.of(context).textTheme.headlineSmall;
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: EdgeInsets.only(bottom: compact ? 12 : 20),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.fromLTRB(
+          compact ? 18 : 20,
+          compact ? 14 : 20,
+          compact ? 14 : 20,
+          compact ? 16 : 20,
+        ),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [AppColors.primary, AppColors.primaryDark],
           ),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(compact ? 20 : 24),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +84,9 @@ class AppPageHeader extends StatelessWidget {
                 ),
               ),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: compact
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Column(
@@ -84,20 +100,23 @@ class AppPageHeader extends StatelessWidget {
                               letterSpacing: 1.1,
                             ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: compact ? 4 : 8),
                       Text(
                         title,
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.15,
-                                ),
+                        style: titleStyle?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
+                        ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: compact ? 3 : 8),
                       Text(
                         description,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
+                              fontSize: compact ? 12.5 : null,
                               color: Colors.white.withValues(alpha: 0.85),
                             ),
                       ),
