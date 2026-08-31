@@ -201,14 +201,28 @@ class _MobileNavigationBarState extends State<_MobileNavigationBar> {
     final isUltraCompact = width <= 340;
     final isCompact = width <= 380;
     final textScale = MediaQuery.textScalerOf(context).scale(1);
-    final extraHeight = ((textScale - 1).clamp(0, 1)).toDouble() * 18;
-    final baseHeight = isUltraCompact ? 64.0 : (isCompact ? 68.0 : 72.0);
+    final extraHeight = ((textScale - 1).clamp(0, 1)).toDouble() * 20;
+    final baseHeight = isUltraCompact ? 66.0 : (isCompact ? 70.0 : 74.0);
     final iconSize = isUltraCompact ? 22.0 : (isCompact ? 23.0 : 24.0);
 
     return SafeArea(
       top: false,
-      child: ColoredBox(
-        color: colorScheme.surface,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          // Separa a barra do conteudo: borda fina no topo mais uma sombra
+          // curta para cima, em vez da barra flutuar sem delimitacao.
+          border: Border(
+            top: BorderSide(color: colorScheme.outlineVariant, width: 1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
         child: SizedBox(
           key: ValueKey('mobile-navigation-selected-${widget.selectedIndex}'),
           height: baseHeight + extraHeight,
@@ -235,9 +249,9 @@ class _MobileNavigationBarState extends State<_MobileNavigationBar> {
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(
                             isUltraCompact ? 1 : 2,
-                            4,
+                            8,
                             isUltraCompact ? 1 : 2,
-                            3,
+                            6,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -254,7 +268,7 @@ class _MobileNavigationBarState extends State<_MobileNavigationBar> {
                                 ),
                                 iconSize: iconSize,
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 5),
                               AnimatedDefaultTextStyle(
                                 duration: const Duration(milliseconds: 200),
                                 curve: Curves.easeInOut,
@@ -263,11 +277,12 @@ class _MobileNavigationBarState extends State<_MobileNavigationBar> {
                                       ? colorScheme.primary
                                       : colorScheme.onSurfaceVariant,
                                   fontSize: isUltraCompact
-                                      ? 8.5
-                                      : (isCompact ? 9.5 : 10.5),
+                                      ? 10.5
+                                      : (isCompact ? 11 : 11.5),
                                   fontWeight: widget.selectedIndex == index
                                       ? FontWeight.w700
                                       : FontWeight.w500,
+                                  letterSpacing: 0.1,
                                   height: 1.05,
                                 ),
                                 child: Text(
@@ -315,48 +330,29 @@ class _AnimatedNavigationIcon extends StatelessWidget {
         ? colorScheme.primary
         : colorScheme.onSurfaceVariant.withValues(alpha: 0.9);
 
-    return AnimatedSlide(
+    // Um unico indicador: a capsula atras do icone. O sublinhado anterior
+    // competia com ela e deixava o icone fora do centro.
+    return AnimatedScale(
       duration: duration,
-      curve: Curves.easeInOut,
-      offset: selected ? const Offset(0, -0.03) : Offset.zero,
-      child: AnimatedScale(
-        duration: duration,
-        curve: Curves.easeOutBack,
-        scale: pressed ? 1.14 : (selected ? 1.06 : 1),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 210),
-          curve: Curves.easeInOut,
-          height: 38,
-          constraints: const BoxConstraints(minWidth: 40),
-          padding: const EdgeInsets.fromLTRB(8, 5, 8, 3),
-          decoration: BoxDecoration(
-            color: selected
-                ? colorScheme.primary.withValues(alpha: 0.12)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _NavigationIcon(
-                icon: icon,
-                count: count,
-                color: foreground,
-                size: iconSize,
-              ),
-              const SizedBox(height: 2.5),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 210),
-                curve: Curves.easeInOut,
-                width: selected ? 18 : 0,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
-            ],
-          ),
+      curve: Curves.easeOutBack,
+      scale: pressed ? 1.10 : 1,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 210),
+        curve: Curves.easeInOut,
+        height: 32,
+        width: selected ? 58 : 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected
+              ? colorScheme.primary.withValues(alpha: 0.14)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: _NavigationIcon(
+          icon: icon,
+          count: count,
+          color: foreground,
+          size: iconSize,
         ),
       ),
     );
@@ -378,10 +374,40 @@ class _NavigationIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Badge.count(
-      count: count > 99 ? 99 : count,
-      isLabelVisible: count > 0,
-      child: Icon(icon, color: color, size: size),
+    final colorScheme = Theme.of(context).colorScheme;
+    // Stack em vez de Badge.count: o Badge reserva espaco a direita do
+    // filho e desloca o icone, tirando ele do centro da capsula.
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        Icon(icon, color: color, size: size),
+        if (count > 0)
+          Positioned(
+            top: -5,
+            right: -9,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 16),
+              height: 16,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: colorScheme.error,
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: colorScheme.surface, width: 1.5),
+              ),
+              child: Text(
+                count > 99 ? '99+' : '$count',
+                style: TextStyle(
+                  color: colorScheme.onError,
+                  fontSize: 9.5,
+                  height: 1,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

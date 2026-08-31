@@ -380,53 +380,129 @@ class _DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Início',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                  ),
+    // Cartao de destaque na cor da marca, no lugar do texto solto sobre fundo
+    // claro. Da o mesmo peso visual do cabecalho de login e cadastro.
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDark],
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Início',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        letterSpacing: 0.6,
+                      ),
                 ),
-                Badge.count(
-                  count: unreadCount > 99 ? 99 : unreadCount,
-                  isLabelVisible: unreadCount > 0,
-                  child: IconButton.filledTonal(
-                    onPressed: onOpenAlerts,
-                    icon: const Icon(Icons.notifications_none_outlined),
-                    tooltip: 'Abrir alertas',
-                  ),
+              ),
+              _HeaderIconButton(
+                icon: Icons.notifications_none_outlined,
+                tooltip: 'Abrir alertas',
+                onPressed: onOpenAlerts,
+                count: unreadCount,
+              ),
+              const SizedBox(width: 10),
+              AppAvatar(
+                radius: 20,
+                name: name,
+                imageUrl: avatarUrl,
+                backgroundColor: Colors.white.withValues(alpha: 0.22),
+                foregroundColor: Colors.white,
+                initials: name.isNotEmpty ? null : 'U',
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          Text(
+            'Olá, $name 👋',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
                 ),
-                const SizedBox(width: 10),
-                AppAvatar(
-                  radius: 20,
-                  name: name,
-                  imageUrl: avatarUrl,
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  initials: name.isNotEmpty ? null : 'U',
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
-              ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Botao de icone do cabecalho verde, com contador sobreposto sem deslocar o
+/// icone (mesmo problema que o Badge.count causava na barra inferior).
+class _HeaderIconButton extends StatelessWidget {
+  const _HeaderIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    required this.count,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Material(
+          color: Colors.white.withValues(alpha: 0.18),
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: IconButton(
+            onPressed: onPressed,
+            tooltip: tooltip,
+            icon: Icon(icon, color: Colors.white),
+          ),
+        ),
+        if (count > 0)
+          Positioned(
+            top: 2,
+            right: 2,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 18),
+              height: 18,
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.danger,
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: AppColors.primaryDark, width: 1.5),
+              ),
+              child: Text(
+                count > 99 ? '99+' : '$count',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  height: 1,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-            const SizedBox(height: 26),
-            Text(
-              'Olá, $name 👋',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 4),
-            Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
-          ],
-        );
-      },
+          ),
+      ],
     );
   }
 }

@@ -24,35 +24,61 @@ class AcademicPageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Cartao de destaque na cor da marca, no mesmo padrao do login, cadastro e
+    // dashboard. Antes era texto solto sobre o fundo claro, sem peso visual.
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 8, 4, 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  eyebrow.toUpperCase(),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.1,
-                      ),
-                ),
-                const SizedBox(height: 6),
-                Text(title, style: Theme.of(context).textTheme.headlineSmall),
-                const SizedBox(height: 6),
-                Text(description, style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.primary, AppColors.primaryDark],
           ),
-          if (trailing != null) ...[
-            const SizedBox(width: 12),
-            trailing!,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    eyebrow.toUpperCase(),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.1,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            if (trailing != null) ...[
+              const SizedBox(width: 12),
+              trailing!,
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
