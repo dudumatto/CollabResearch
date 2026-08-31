@@ -4,11 +4,13 @@ import 'package:provider/provider.dart';
 import '../../core/animation/app_durations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../models/conversation.dart';
 import '../../models/message.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../widgets/chat/chat_input_bar.dart';
 import '../../widgets/chat/message_bubble.dart';
+import '../../widgets/common/app_dialog.dart';
 import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
@@ -50,6 +52,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   bool _hasCompletedFirstLoad = false;
   bool _showJumpToLatest = false;
   int _messagesWhileAway = 0;
+
+  /// Erro ja dispensado pelo usuario. Guardar o texto, e nao um booleano, faz
+  /// um erro novo voltar a aparecer.
+  String? _dismissedError;
 
   @override
   void initState() {
@@ -196,8 +202,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final updated = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Editar mensagem'),
+        builder: (context, setDialogState) => AppDialog(
+          title: 'Editar mensagem',
+          icon: Icons.edit_outlined,
           content: TextField(
             controller: editController,
             autofocus: true,
@@ -246,10 +253,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final deleted = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Excluir mensagem'),
-          content: const Text(
-            'Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.',
+        builder: (context, setDialogState) => AppDialog(
+          title: 'Excluir mensagem',
+          icon: Icons.delete_outline,
+          content: Text(
+            'A mensagem "${_previewOf(message.content)}" sai da conversa para '
+            'todos os participantes. Não dá para desfazer.',
           ),
           actions: [
             TextButton(
@@ -286,6 +295,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _showSnackBar(String message) {
     AppSnackbar.showError(context, message);
+  }
+
+  /// Trecho curto da mensagem, para a confirmacao nomear o que sera apagado.
+  String _previewOf(String content) {
+    final normalized = content.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (normalized.length <= 40) return normalized;
+    return '${normalized.substring(0, 40)}…';
   }
 
   /// Duas mensagens seguidas do mesmo remetente, no mesmo dia e a menos de
@@ -376,13 +392,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return 'Conversa';
   }
 
-  String? _conversationAvatarUrl(ChatProvider provider) {
+  Conversation? _conversation(ChatProvider provider) {
     for (final conversation in provider.conversations) {
-      if (conversation.id == widget.conversationId) {
-        return conversation.avatarUrl;
-      }
+      if (conversation.id == widget.conversationId) return conversation;
     }
     return null;
+  }
+
+  /// Subtitulo da AppBar. So existe quando ha um dado real para mostrar: numa
+  /// conversa privada o titulo ja e o nome da pessoa e nada acrescenta.
+  String? _conversationSubtitle(Conversation? conversation) {
+    if (conversation?.type?.toUpperCase() != 'GRUPO') return null;
+    return 'Conversa do projeto';
   }
 
   @override
@@ -391,21 +412,26 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return Consumer<ChatProvider>(
       builder: (context, provider, _) {
         final colorScheme = Theme.of(context).colorScheme;
+        final conversation = _conversation(provider);
         final conversationTitle = _conversationTitle(provider);
-        final avatarUrl = _conversationAvatarUrl(provider);
+        final subtitle = _conversationSubtitle(conversation);
+        final avatarUrl = conversation?.avatarUrl;
+        final isLight = Theme.of(context).brightness == Brightness.light;
         final conversationBackground =
-            Theme.of(context).brightness == Brightness.light
-                ? AppColors.surfaceTint
-                : AppColors.darkBackground;
+            isLight ? AppColors.surfaceTint : AppColors.darkBackground;
+        // No tema escuro o verde claro da marca destoava da tela inteira.
+        final barColor =
+            isLight ? AppColors.primaryDark : AppColors.darkSurface;
+        final barForeground = isLight ? AppColors.surface : AppColors.darkText;
         final isSending = _isSending || provider.isSending;
 
         return Scaffold(
           backgroundColor: conversationBackground,
           appBar: AppBar(
-            backgroundColor: AppColors.primaryDark,
-            foregroundColor: AppColors.surface,
-            surfaceTintColor: AppColors.primaryDark,
-            iconTheme: const IconThemeData(color: AppColors.surface),
+            backgroundColor: barColor,
+            foregroundColor: barForeground,
+            surfaceTintColor: barColor,
+            iconTheme: IconThemeData(color: barForeground),
             toolbarHeight: 72,
             titleSpacing: 0,
             title: Row(
@@ -414,8 +440,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   name: conversationTitle,
                   imageUrl: avatarUrl,
                   radius: 20,
-                  backgroundColor: AppColors.surface,
-                  foregroundColor: AppColors.primaryDark,
+                  backgroundColor:
+                      isLight ? AppColors.surface : AppColors.darkSurfaceTint,
+                  foregroundColor:
+                      isLight ? AppColors.primaryDark : AppColors.darkPrimary,
                   initials: conversationTitle.isEmpty ? 'C' : null,
                 ),
                 const SizedBox(width: 12),
@@ -430,17 +458,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         overflow: TextOverflow.ellipsis,
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: AppColors.surface,
+                                  color: barForeground,
                                   fontWeight: FontWeight.w700,
                                 ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Conversa acadêmica',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.surface.withValues(alpha: 0.78),
-                            ),
-                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: barForeground.withValues(
+                                      alpha: 0.78,
+                                    ),
+                                  ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -456,19 +491,53 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             child: Column(
               children: [
                 if (provider.errorMessage != null &&
-                    provider.messages.isNotEmpty)
+                    provider.messages.isNotEmpty &&
+                    provider.errorMessage != _dismissedError)
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                      AppSpacing.lg,
+                      0,
+                    ),
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.sm,
+                        AppSpacing.sm,
+                        AppSpacing.sm,
+                      ),
                       decoration: BoxDecoration(
                         color: colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
                       ),
-                      child: Text(
-                        provider.errorMessage!,
-                        style: TextStyle(color: colorScheme.onErrorContainer),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              provider.errorMessage!,
+                              style: TextStyle(
+                                color: colorScheme.onErrorContainer,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          IconButton(
+                            onPressed: () => setState(
+                              () => _dismissedError = provider.errorMessage,
+                            ),
+                            tooltip: 'Dispensar aviso',
+                            visualDensity: VisualDensity.compact,
+                            constraints: const BoxConstraints(
+                              minWidth: 44,
+                              minHeight: 44,
+                            ),
+                            iconSize: 18,
+                            color: colorScheme.onErrorContainer,
+                            icon: const Icon(Icons.close_rounded),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -488,9 +557,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                   )
                                 : provider.messages.isEmpty
                                     ? const EmptyState(
-                                        title: 'Nenhuma mensagem',
+                                        icon: Icons.forum_outlined,
+                                        title: 'Comece a conversa',
                                         subtitle:
-                                            'Envie a primeira mensagem desta conversa.',
+                                            'Combine prazos, tire dúvidas e '
+                                            'acompanhe o trabalho por aqui.',
                                       )
                                     : ListView.builder(
                                         // Lista invertida: abre ancorada na mensagem
