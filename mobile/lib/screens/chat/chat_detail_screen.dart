@@ -164,19 +164,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   Future<void> _sendMessage() async {
     if (_isSending || context.read<ChatProvider>().isSending) return;
+    final text = _controller.text;
+    if (text.trim().isEmpty) return;
+
+    // O campo esvazia no toque, nao depois da ida e volta na rede. Em caso de
+    // falha o texto volta, para o usuario nao perder o que escreveu.
+    _controller.clear();
     setState(() => _isSending = true);
-    late final bool sent;
+    var sent = false;
     try {
       sent = await context
           .read<ChatProvider>()
-          .sendMessage(widget.conversationId, _controller.text);
+          .sendMessage(widget.conversationId, text);
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
     if (!mounted) return;
     if (sent) {
-      _controller.clear();
       _jumpToLatest();
+    } else {
+      _controller.text = text;
+      _controller.selection = TextSelection.collapsed(offset: text.length);
+      _showSnackBar('Não foi possível enviar. Sua mensagem foi restaurada.');
     }
   }
 
@@ -579,39 +588,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
-                  child: Stack(
-                    alignment: Alignment.centerRight,
-                    children: [
-                      AbsorbPointer(
-                        absorbing: isSending,
-                        child: ChatInputBar(
-                          controller: _controller,
-                          onSend: _sendMessage,
-                        ),
-                      ),
-                      if (isSending)
-                        Positioned(
-                          right: 5,
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: colorScheme.primary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: colorScheme.onPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.xs,
+                    AppSpacing.md,
+                    AppSpacing.sm,
+                  ),
+                  child: ChatInputBar(
+                    controller: _controller,
+                    onSend: _sendMessage,
+                    isSending: isSending,
                   ),
                 ),
               ],

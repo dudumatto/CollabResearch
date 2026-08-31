@@ -55,9 +55,15 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> loadMessages(String conversationId) async {
+    // Reentrar na mesma conversa nao deve piscar o esqueleto por cima de
+    // mensagens que ja estao na tela.
+    if (_requestedConversationId != conversationId) {
+      messages.clear();
+    }
     _requestedConversationId = conversationId;
-    messages.clear();
     isLoading = true;
+    // A lista de conversas e o detalhe compartilham errorMessage; sem limpar
+    // aqui, um erro da lista apareceria dentro da conversa.
     errorMessage = null;
     notifyListeners();
     try {
@@ -87,11 +93,11 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final loadedContacts = await _service.contacts();
-      final availableContacts =
-          loadedContacts.isEmpty && currentUserId != null &&
-                  currentUserId.isNotEmpty
-              ? await _service.projectContacts(currentUserId)
-              : loadedContacts;
+      final availableContacts = loadedContacts.isEmpty &&
+              currentUserId != null &&
+              currentUserId.isNotEmpty
+          ? await _service.projectContacts(currentUserId)
+          : loadedContacts;
       contacts
         ..clear()
         ..addAll(

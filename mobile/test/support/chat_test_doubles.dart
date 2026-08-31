@@ -27,6 +27,12 @@ class FakeChatProvider extends ChatProvider {
   }
 
   int loadMessagesCalls = 0;
+  int sendMessageCalls = 0;
+  String? lastSentContent;
+
+  /// Resultado que [sendMessage] deve devolver, para exercitar o caminho de
+  /// falha sem rede.
+  bool sendSucceeds = true;
 
   @override
   Future<void> loadConversations() async {}
@@ -35,6 +41,13 @@ class FakeChatProvider extends ChatProvider {
   Future<void> loadMessages(String conversationId) async {
     loadMessagesCalls++;
     notifyListeners();
+  }
+
+  @override
+  Future<bool> sendMessage(String conversationId, String content) async {
+    sendMessageCalls++;
+    lastSentContent = content;
+    return sendSucceeds;
   }
 
   /// Simula a chegada de uma mensagem pelo WebSocket.

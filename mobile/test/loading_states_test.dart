@@ -244,6 +244,9 @@ void main() {
     );
     await tester.pump();
     await tester.enterText(find.byType(TextField).last, 'Mensagem de teste');
+    // enterText faz idle(), nao pump(): sem este frame o botao ainda esta no
+    // estado desabilitado de campo vazio.
+    await tester.pump();
 
     final sendButton = find.byTooltip('Enviar mensagem');
     await tester.tap(sendButton);
