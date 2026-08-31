@@ -33,7 +33,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _interestsController = TextEditingController();
   bool _editing = false;
   bool _isSavingProfile = false;
-  String? _loadedUserId;
+
+  /// Assinatura do usuario ja carregado nos controllers. Chavear so pelo id
+  /// deixava o formulario preso aos dados magros do JWT: quando o
+  /// refreshProfile trazia instituicao, bio e semestre, os campos nao eram
+  /// atualizados e um "Salvar" gravava vazio por cima do servidor.
+  String? _syncedSignature;
 
   @override
   void dispose() {
@@ -47,9 +52,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _syncForm(User? user) {
-    if (user == null || _loadedUserId == user.id) return;
-    _loadedUserId = user.id;
+    if (user == null) return;
+    // Nunca sobrescrever o que o usuario esta digitando: um refreshProfile
+    // concluido no meio da edicao apagaria o formulario.
+    if (_editing) return;
+    final signature = _signatureOf(user);
+    if (_syncedSignature == signature) return;
+    _syncedSignature = signature;
     _populateForm(user);
+  }
+
+  String _signatureOf(User user) {
+    return [
+      user.id,
+      user.name,
+      user.email,
+      user.institution,
+      user.semester,
+      user.bio,
+      user.interests,
+    ].join('|');
   }
 
   void _populateForm(User user) {
@@ -438,12 +460,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               validator: Validators.email,
                             ),
                             _ProfileField(
+                              key: const ValueKey('profile-field-instituicao'),
                               label: 'Instituição',
                               icon: Icons.business_outlined,
                               controller: _institutionController,
                               enabled: _editing,
                             ),
                             _ProfileField(
+                              key: const ValueKey('profile-field-semestre'),
                               label: 'Semestre',
                               icon: Icons.school_outlined,
                               controller: _semesterController,
@@ -460,6 +484,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               enabled: _editing,
                             ),
                             _ProfileField(
+                              key: const ValueKey('profile-field-biografia'),
                               label: 'Biografia',
                               icon: Icons.notes_outlined,
                               controller: _bioController,
@@ -515,6 +540,7 @@ class _ProfileStat extends StatelessWidget {
 
 class _ProfileField extends StatelessWidget {
   const _ProfileField({
+    super.key,
     required this.label,
     required this.icon,
     required this.controller,
