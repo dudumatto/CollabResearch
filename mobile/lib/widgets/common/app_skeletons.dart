@@ -109,9 +109,17 @@ class ProjectDetailSkeleton extends StatelessWidget {
 }
 
 class ConversationListSkeleton extends StatelessWidget {
-  const ConversationListSkeleton({super.key, this.itemCount = 6});
+  const ConversationListSkeleton({
+    super.key,
+    this.itemCount = 6,
+    this.includeHeader = true,
+  });
 
   final int itemCount;
+
+  /// Quando o cabecalho e a busca ficam fixos fora da area rolavel, o
+  /// esqueleto cobre apenas as linhas da lista.
+  final bool includeHeader;
 
   @override
   Widget build(BuildContext context) {
@@ -119,10 +127,12 @@ class ConversationListSkeleton extends StatelessWidget {
       maxWidth: 760,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
-        const AppSkeleton(width: 260, height: 16),
-        const SizedBox(height: AppSpacing.lg),
-        const AppSkeleton(height: 56, borderRadius: AppRadius.md),
-        const SizedBox(height: AppSpacing.lg),
+        if (includeHeader) ...[
+          const AppSkeleton(width: 260, height: 16),
+          const SizedBox(height: AppSpacing.lg),
+          const AppSkeleton(height: 56, borderRadius: AppRadius.md),
+          const SizedBox(height: AppSpacing.lg),
+        ],
         for (var index = 0; index < itemCount; index++) ...[
           const ListItemSkeleton(showTime: true),
           if (index < itemCount - 1) const SizedBox(height: 10),

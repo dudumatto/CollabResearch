@@ -21,6 +21,10 @@ class ChatProvider extends ChangeNotifier {
   bool isLoading = false;
   bool isSending = false;
   bool isLoadingContacts = false;
+
+  /// Marca a primeira carga concluida com sucesso, para que a tela nao
+  /// dispare uma segunda requisicao identica a do shell.
+  bool hasLoadedConversations = false;
   String? errorMessage;
   String? contactsErrorMessage;
   String? _requestedConversationId;
@@ -38,7 +42,10 @@ class ChatProvider extends ChangeNotifier {
       final loadedConversations = await _service.conversations();
       conversations
         ..clear()
-        ..addAll(loadedConversations);
+        ..addAll(loadedConversations)
+        // Mais recentes primeiro; a API nao garante essa ordem.
+        ..sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
+      hasLoadedConversations = true;
     } catch (_) {
       errorMessage = 'Nao foi possivel carregar as conversas.';
     } finally {
@@ -71,15 +78,20 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadContacts(String currentUserId) async {
+  /// [currentUserId] e opcional: sem ele a busca por colaboradores de
+  /// projeto e pulada, em vez de a tela ficar sem nenhuma lista de contatos.
+  Future<void> loadContacts(String? currentUserId) async {
+    if (isLoadingContacts) return;
     isLoadingContacts = true;
     contactsErrorMessage = null;
     notifyListeners();
     try {
       final loadedContacts = await _service.contacts();
-      final availableContacts = loadedContacts.isEmpty
-          ? await _service.projectContacts(currentUserId)
-          : loadedContacts;
+      final availableContacts =
+          loadedContacts.isEmpty && currentUserId != null &&
+                  currentUserId.isNotEmpty
+              ? await _service.projectContacts(currentUserId)
+              : loadedContacts;
       contacts
         ..clear()
         ..addAll(

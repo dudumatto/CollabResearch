@@ -1,3 +1,7 @@
+/// Estado de entrega da ultima mensagem. Preenchido apenas quando a API
+/// informa o dado; sem ele a lista nao exibe indicador algum.
+enum MessageDeliveryStatus { sent, delivered, read }
+
 class Conversation {
   const Conversation({
     required this.id,
@@ -9,6 +13,8 @@ class Conversation {
     this.otherUserName,
     this.avatarUrl,
     this.unreadCount = 0,
+    this.lastMessageFromMe,
+    this.lastMessageStatus,
   });
 
   final String id;
@@ -20,6 +26,12 @@ class Conversation {
   final String? otherUserName;
   final String? avatarUrl;
   final int unreadCount;
+
+  /// `null` quando a API nao informa quem enviou a ultima mensagem.
+  final bool? lastMessageFromMe;
+
+  /// `null` quando a API nao informa o estado de entrega.
+  final MessageDeliveryStatus? lastMessageStatus;
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
     final lastUpdatedValue = json['lastUpdated'] ??
@@ -66,7 +78,46 @@ class Conversation {
             json['participante']?['avatarUrl'],
       ),
       unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
+      lastMessageFromMe: _nullableBool(
+        json['lastMessageFromMe'] ??
+            json['ultimaMensagemMinha'] ??
+            json['ultimaMensagemPropria'],
+      ),
+      lastMessageStatus: _parseDeliveryStatus(
+        json['lastMessageStatus'] ??
+            json['ultimaMensagemStatus'] ??
+            json['statusUltimaMensagem'],
+      ),
     );
+  }
+
+  static bool? _nullableBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is String) {
+      final text = value.trim().toLowerCase();
+      if (text == 'true') return true;
+      if (text == 'false') return false;
+    }
+    return null;
+  }
+
+  static MessageDeliveryStatus? _parseDeliveryStatus(dynamic value) {
+    if (value == null) return null;
+    switch ('$value'.trim().toUpperCase()) {
+      case 'READ':
+      case 'LIDA':
+      case 'LIDO':
+        return MessageDeliveryStatus.read;
+      case 'DELIVERED':
+      case 'ENTREGUE':
+        return MessageDeliveryStatus.delivered;
+      case 'SENT':
+      case 'ENVIADA':
+      case 'ENVIADO':
+        return MessageDeliveryStatus.sent;
+      default:
+        return null;
+    }
   }
 
   static String _displayTitle({
