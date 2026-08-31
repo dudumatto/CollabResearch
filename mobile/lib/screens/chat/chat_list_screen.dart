@@ -242,7 +242,9 @@ class _ChatListBody extends StatelessWidget {
             separatorBuilder: (context, index) => Divider(
               height: 1,
               thickness: 0.7,
-              indent: 78,
+              // Alinha exatamente com a coluna de texto do tile:
+              // 16 de padding + 52 do avatar + 12 de espaco.
+              indent: 80,
               endIndent: 16,
               color: Theme.of(context).colorScheme.outlineVariant.withValues(
                     alpha: 0.7,
