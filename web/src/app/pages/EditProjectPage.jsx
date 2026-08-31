@@ -7,13 +7,17 @@ import { projectService } from "../services/projectService";
 import { StatusView } from "../components/StatusView";
 import { validateProjectDates } from "../utils/projectFormValidation";
 import { AppCombobox } from "../components/ui/AppCombobox";
+import { useAuth } from "../hooks/useAuth";
+import { mapProject } from "../utils/adapters";
 import "./CreateProjectPage.css";
 
 export default function EditProjectPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [form, setForm] = useState(null);
+  const [project, setProject] = useState(null);
   const [areas, setAreas] = useState([]);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
@@ -24,6 +28,8 @@ export default function EditProjectPage() {
   useEffect(() => {
     Promise.all([projectService.getById(id), areaService.list()])
       .then(([raw, areaPayload]) => {
+        const mappedProject = mapProject(raw);
+        setProject(mappedProject);
         setAreas(Array.isArray(areaPayload) ? areaPayload : []);
         setForm({
           titulo: raw.titulo ?? "",
@@ -47,6 +53,11 @@ export default function EditProjectPage() {
       .catch((err) => setFetchError(err.message ?? "Não foi possível carregar o projeto."))
       .finally(() => setFetchLoading(false));
   }, [id]);
+
+  const userId = user?.id == null ? null : Number(user.id);
+  const canEditProject = Boolean(project && userId != null && project.status !== "FINALIZADO" && (
+    Number(project.ownerId) === userId || Number(project.advisorId) === userId
+  ));
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -89,6 +100,7 @@ export default function EditProjectPage() {
 
   if (fetchLoading) return <StatusView title="Carregando projeto" description="Buscando dados para edicao." />;
   if (fetchError) return <StatusView title="Erro ao carregar" description={fetchError} />;
+  if (!canEditProject) return <StatusView title="Edição indisponível" description="Apenas o criador ou o orientador do projeto podem editar projetos ativos." />;
 
   const areasUnavailable = areas.length === 0;
   const isDisabled = loading || success || areasUnavailable;

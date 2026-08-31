@@ -194,6 +194,23 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
         orientadorNome: "Prof Ana Orientadora",
         orientadorEmail: "ana.orientadora@universidade.br",
       },
+      {
+        id: 5,
+        titulo: "Projeto E2E Finalizado Externo",
+        descricao: "Projeto finalizado sem participacao do usuario autenticado.",
+        requisitos: "Consulta restrita",
+        areaId: 2,
+        areaNome: "Engenharia de Software",
+        cursoNome: "Sistemas de Informacao",
+        vagas: 2,
+        status: "FINALIZADO",
+        dataCriacao: "2026-04-10T12:00:00.000Z",
+        alunoCriadorId: 77,
+        alunoCriadorNome: "Aluno Externo",
+        orientadorId: 99,
+        orientadorNome: "Orientador Externo",
+        orientadorEmail: "orientador.externo@universidade.br",
+      },
     ],
     applications: options.empty?.applications ? [] : [
       {
@@ -363,6 +380,18 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
   if (state.applications[3] && state.projects[2]) state.applications[3].projeto = state.projects[2];
   if (state.feedbacks[0] && state.projects[0]) state.feedbacks[0].projeto = state.projects[0];
 
+  const isApprovedParticipant = (projectId: number) => state.applications.some((application) =>
+    application.status === "APROVADO" &&
+    application.projeto?.id === projectId &&
+    application.aluno?.usuario?.id === state.currentUser.id,
+  );
+  const canViewProject = (project: typeof state.projects[number]) =>
+    project.status !== "FINALIZADO" ||
+    project.alunoCriadorId === state.currentUser.id ||
+    project.orientadorId === state.currentUser.id ||
+    isApprovedParticipant(project.id) ||
+    state.currentUser.tipo === "ADMIN";
+
   await page.route("**/api/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -483,16 +512,18 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
       const meusProjetos = url.searchParams.get("meusProjetos") === "true";
       const relatedProjectIds = new Set(
         state.applications
+          .filter((application) => application.status === "APROVADO" || application.projeto?.status !== "FINALIZADO")
           .map((application) => application.projeto?.id)
           .filter((projectId): projectId is number => typeof projectId === "number"),
       );
       const projects = state.projects.filter((project) => {
+        const matchesVisibility = canViewProject(project);
         const matchesSearch = !busca || project.titulo.toLowerCase().includes(busca) || project.descricao.toLowerCase().includes(busca);
         const matchesStatus = !status || project.status === status;
         const matchesCurso = !curso || String(project.cursoNome ?? "").toLowerCase() === curso;
         const matchesArea = !area || String(project.areaNome ?? "").toLowerCase() === area;
         const matchesMine = !meusProjetos || project.alunoCriadorId === state.currentUser.id || project.orientadorId === state.currentUser.id || relatedProjectIds.has(project.id);
-        return matchesSearch && matchesStatus && matchesCurso && matchesArea && matchesMine;
+        return matchesVisibility && matchesSearch && matchesStatus && matchesCurso && matchesArea && matchesMine;
       });
       await fulfill(route, 200, { content: projects, totalElements: projects.length });
       return;
@@ -504,11 +535,12 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
       const curso = (url.searchParams.get("curso") ?? "").toLowerCase();
       const area = (url.searchParams.get("area") ?? "").toLowerCase();
       const projects = state.projects.filter((project) => {
+        const matchesVisibility = canViewProject(project);
         const matchesSearch = !busca || project.titulo.toLowerCase().includes(busca) || project.descricao.toLowerCase().includes(busca);
         const matchesStatus = !status || project.status === status;
         const matchesCurso = !curso || String(project.cursoNome ?? "").toLowerCase() === curso;
         const matchesArea = !area || String(project.areaNome ?? "").toLowerCase() === area;
-        return matchesSearch && matchesStatus && matchesCurso && matchesArea;
+        return matchesVisibility && matchesSearch && matchesStatus && matchesCurso && matchesArea;
       });
       await fulfill(route, 200, projects);
       return;
@@ -542,7 +574,7 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
     const projectMatch = path.match(/^\/api\/projetos\/(\d+)$/);
     if (projectMatch && method === "GET") {
       const project = state.projects.find((item) => item.id === Number(projectMatch[1]));
-      await fulfill(route, project ? 200 : 404, project ?? { message: "Projeto não encontrado." });
+      await fulfill(route, project && canViewProject(project) ? 200 : project ? 403 : 404, project && canViewProject(project) ? project : { message: project ? "Projeto finalizado visível apenas para participantes." : "Projeto não encontrado." });
       return;
     }
 
@@ -603,7 +635,9 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
       const projectId = Number(collaboratorsMatch[1]);
       const collaborators = projectId === 2
         ? [mockUsers.advisor, mockUsers.student, mockUsers.collaborator]
-        : [mockUsers.advisor, mockUsers.student];
+        : projectId === 4
+          ? [mockUsers.advisor, { id: 77, nome: "Aluno Externo", email: "externo.e2e@universidade.br", tipo: "ALUNO" }]
+          : [mockUsers.advisor, mockUsers.student];
       await fulfill(route, 200, collaborators.filter((user) => !state.removedCollaboratorIds.has(user.id)));
       return;
     }

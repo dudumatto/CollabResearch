@@ -42,6 +42,14 @@ test.describe("paginas internas", () => {
   test("calendario adapta layout e corta texto sem reticencias", async ({ page }) => runDeadlinesFlow(page));
   test("chat envia, edita, exclui, busca e lida com lista vazia", async ({ page, browser }) => runChatFlow(page, browser));
   test("progresso publica atualizacao e cobre estado sem projetos", async ({ page, browser }) => runProgressFlow(page, browser));
+  test("progresso bloqueia alteracoes em projeto finalizado", async ({ page }) => {
+    await page.goto("/app/progress?projectId=3");
+    await expect(page.getByRole("heading", { name: "Progresso do projeto", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Projeto E2E Finalizado" })).toBeVisible();
+    await expect(page.getByText("Projeto finalizado. As etapas ficam disponíveis apenas para consulta.").first()).toBeVisible();
+    await expect(page.getByText("Mover")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Nova atualização" })).toHaveCount(0);
+  });
   test("progresso respeita paleta dark do aplicativo", async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem("tcc_theme", "dark");

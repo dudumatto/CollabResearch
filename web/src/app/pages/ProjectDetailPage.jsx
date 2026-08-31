@@ -14,6 +14,7 @@ import { projectService } from "../services/projectService";
 import { applicationService } from "../services/applicationService";
 import { StatusView } from "../components/StatusView";
 import {
+  getProjectSeatHolders,
   getProjectSlotsUsage,
   getUserId,
   getUserName,
@@ -282,7 +283,7 @@ export default function ProjectDetailPage() {
   const canAdvisorManageProject = isAdvisorOwner
     && project.status !== "PENDENTE_ORIENTADOR"
     && project.status !== "REJEITADO_ORIENTADOR";
-  const canUpdateProject = isStudentCreator || canAdvisorManageProject;
+  const canUpdateProject = (isStudentCreator || isAdvisorOwner) && project.status !== "FINALIZADO";
   const canDeleteProject = canAdvisorManageProject || (isStudentCreator && project.status === "PENDENTE_ORIENTADOR");
   const canApply = user?.tipo === "ALUNO" && !isStudentCreator;
 
@@ -301,7 +302,7 @@ export default function ProjectDetailPage() {
       && Number(user.id) === Number(project.advisorId);
   }, [user, project]);
 
-  const canViewTeam = isAdvisorOwner || isStudentCreator || user?.tipo === "ADMIN";
+  const canViewTeam = Boolean(project);
   const isApprovedProjectCollaborator = useMemo(() => {
     if (!user?.id || !Array.isArray(collaborators)) return false;
     return collaborators.some((collaborator) => Number(getCollaboratorId(collaborator)) === Number(user.id));
@@ -311,6 +312,26 @@ export default function ProjectDetailPage() {
     || isStudentCreator
     || (user?.tipo === "ALUNO" && currentApplication?.status === "APROVADO")
     || isApprovedProjectCollaborator;
+
+  const displayParticipants = useMemo(() => {
+    if (!project) return [];
+
+    const people = [project.advisor, project.owner];
+    const approved = Array.isArray(collaborators)
+      ? getProjectSeatHolders(project, collaborators)
+      : project.approvedParticipants;
+
+    if (Array.isArray(approved)) people.push(...approved);
+
+    const seen = new Set();
+    return people.filter((person) => {
+      if (!person) return false;
+      const key = getUserId(person) ?? getUserName(person);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [collaborators, project]);
 
   const loadCollaborators = useCallback(async () => {
     setCollabLoading(true);
@@ -757,16 +778,16 @@ export default function ProjectDetailPage() {
             </button>
           </div>
 
-          {/* Card colaboradores */}
+          {/* Card participantes */}
           <div className="card-colaboradores">
             <h3 className="card-colaboradores__titulo">
-              <Users size={15} /> Colaboradores
+              <Users size={15} /> Participantes
             </h3>
             {collabLoading ? (
               <p className="card-colaboradores__vazio">Carregando...</p>
-            ) : Array.isArray(collaborators) && collaborators.length > 0 ? (
+            ) : displayParticipants.length > 0 ? (
               <ul className="card-colaboradores__lista">
-                {collaborators.map((c) => (
+                {displayParticipants.map((c) => (
                   <li key={getCollaboratorId(c) ?? c} className="card-colaboradores__item">
                     <UserPhotoAvatar
                       className="card-colaboradores__avatar"
@@ -802,10 +823,10 @@ export default function ProjectDetailPage() {
               </ul>
             ) : slots.used > 0 ? (
               <p className="card-colaboradores__vazio">
-                {slots.used === 1 ? "1 colaborador aprovado." : `${slots.used} colaboradores aprovados.`}
+                {slots.used === 1 ? "1 participante aprovado." : `${slots.used} participantes aprovados.`}
               </p>
             ) : (
-              <p className="card-colaboradores__vazio">Nenhum colaborador ainda.</p>
+              <p className="card-colaboradores__vazio">Nenhum participante ainda.</p>
             )}
 
             {canOpenGroupConversation && (

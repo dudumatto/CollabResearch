@@ -220,36 +220,36 @@
   --cor-fundo-leve:     #17251d;
   --cor-fundo-medio:    #24382b;
 
-  --cor-primaria-clara:  rgba(31, 122, 90, 0.18);
-  --cor-primaria-leve:   rgba(126, 160, 106, 0.22);
-  --cor-primaria-borda:  rgba(126, 160, 106, 0.34);
+  --cor-primaria-clara:  #183b2b;
+  --cor-primaria-leve:   #263d2c;
+  --cor-primaria-borda:  #42624b;
   --cor-primaria-texto:  #b8d3a7;
-  --cor-secundaria-clara: rgba(85, 124, 85, 0.18);
-  --cor-secundaria-leve:  rgba(126, 160, 106, 0.2);
-  --cor-secundaria-borda: rgba(126, 160, 106, 0.3);
-  --cor-sucesso-clara:   rgba(31, 122, 90, 0.18);
-  --cor-sucesso-leve:    rgba(126, 160, 106, 0.2);
-  --cor-sucesso-borda:   rgba(126, 160, 106, 0.3);
-  --cor-atencao-clara:   rgba(250, 204, 21, 0.12);
-  --cor-atencao-leve:    rgba(250, 204, 21, 0.2);
-  --cor-alerta-clara:    rgba(245, 158, 11, 0.14);
-  --cor-laranja-clara:   rgba(249, 115, 22, 0.12);
-  --cor-laranja-leve:    rgba(249, 115, 22, 0.22);
-  --cor-laranja-borda:   rgba(251, 146, 60, 0.3);
-  --cor-erro-clara:      rgba(239, 68, 68, 0.12);
-  --cor-erro-leve:       rgba(239, 68, 68, 0.2);
-  --cor-erro-borda:      rgba(248, 113, 113, 0.28);
-  --cor-esmeralda-clara: rgba(31, 122, 90, 0.18);
-  --cor-rosa-clara:      rgba(236, 72, 153, 0.12);
+  --cor-secundaria-clara: #1b3324;
+  --cor-secundaria-leve:  #253a2b;
+  --cor-secundaria-borda: #3d5844;
+  --cor-sucesso-clara:   #183b2b;
+  --cor-sucesso-leve:    #253a2b;
+  --cor-sucesso-borda:   #3d5844;
+  --cor-atencao-clara:   #3a3218;
+  --cor-atencao-leve:    #4a3f1b;
+  --cor-alerta-clara:    #3c2f18;
+  --cor-laranja-clara:   #3b2619;
+  --cor-laranja-leve:    #4a2d1c;
+  --cor-laranja-borda:   #70482b;
+  --cor-erro-clara:      #3a1f21;
+  --cor-erro-leve:       #4a2527;
+  --cor-erro-borda:      #6b3739;
+  --cor-esmeralda-clara: #183b2b;
+  --cor-rosa-clara:      #3a2030;
 
-  --cor-superficie:       rgba(23, 37, 29, 0.9);
-  --cor-superficie-2:     rgba(23, 37, 29, 0.72);
-  --cor-superficie-3:     rgba(36, 56, 43, 0.92);
-  --cor-superficie-brand: rgba(31, 122, 90, 0.16);
-  --cor-sobreposicao:     rgba(8, 18, 12, 0.72);
-  --cor-input:            rgba(23, 37, 29, 0.95);
+  --cor-superficie:       #17251d;
+  --cor-superficie-2:     #142018;
+  --cor-superficie-3:     #24382b;
+  --cor-superficie-brand: #183b2b;
+  --cor-sobreposicao:     #08120c;
+  --cor-input:            #17251d;
   --cor-input-borda:      #35493c;
-  --cor-separador-suave:  rgba(196, 208, 190, 0.16);
+  --cor-separador-suave:  #24382b;
 
   --sombra-minima:    0 1px 2px rgba(2, 6, 23, 0.35);
   --sombra-pequena:   0 10px 24px rgba(2, 6, 23, 0.18);
@@ -260,7 +260,7 @@
   --sombra-primaria-leve: 0 8px 22px rgba(31, 122, 90, 0.2);
   --sombra-azul-card: 0 18px 40px rgba(31, 122, 90, 0.24);
 
-  --gradiente-suave:        linear-gradient(to bottom right, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+  --gradiente-suave:        linear-gradient(to bottom right, #101a14, #17251d);
 }
 
 .tema-fixo-claro {

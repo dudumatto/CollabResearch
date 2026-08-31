@@ -22,10 +22,17 @@ test.describe("projetos", () => {
     await runProjectsListAndApplyFlow(page);
   });
 
-  test("oculta mensagem do grupo para aluno que nao integra o projeto", async ({ page }) => {
+  test("exibe participantes e oculta mensagem do grupo para aluno que nao integra o projeto", async ({ page }) => {
     await page.goto("/app/projects/4");
     await expect(page.getByRole("heading", { name: "Projeto E2E Nova Inscricao" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Participantes" })).toBeVisible();
+    await expect(page.locator(".card-colaboradores").getByText("Prof Ana Orientadora")).toBeVisible();
+    await expect(page.locator(".card-colaboradores").getByText("Aluno Externo")).toBeVisible();
     await expect(page.getByRole("button", { name: /Mensagem do grupo/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Editar/i })).toHaveCount(0);
+
+    await page.goto("/app/projects/4/edit");
+    await expect(page.getByText("Edição indisponível")).toBeVisible();
   });
 
   test("cria projeto, valida campos obrigatorios, edita e exclui como dono", async ({ page }) => {
@@ -49,4 +56,3 @@ test.describe("projetos", () => {
     await context.close();
   });
 });
-

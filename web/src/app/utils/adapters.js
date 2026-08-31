@@ -201,6 +201,8 @@ export function mapProject(project) {
   const colaboradoresAceitos = getProjectSeatHolders({ ...project, advisorId: orientadorId }, colaboradores);
   const vagas = getProjectSlotsUsage({ ...project, advisorId: orientadorId });
   const tecnologias = project?.tecnologias ?? project?.technologies ?? project?.competencias ?? project?.tags;
+  const status = project?.status ?? "ABERTO";
+  const hasAcceptedAdvisor = Boolean(orientadorId || orientadorNome) && !["PENDENTE_ORIENTADOR", "REJEITADO_ORIENTADOR"].includes(status);
 
   return {
     id: project?.id,
@@ -224,7 +226,7 @@ export function mapProject(project) {
     courses: project?.cursosAceitos ?? (project?.cursoNome ? [project.cursoNome] : []),
     area: project?.areaNome ?? project?.area ?? project?.orientador?.areaAtuacao ?? "Pesquisa",
     areaId: project?.areaId ?? null,
-    status: project?.status ?? "ABERTO",
+    status,
     createdAt: project?.dataCriacao ?? project?.createdAt ?? null,
     dataInicio: project?.dataInicio ?? null,
     dataFim: project?.dataFim ?? null,
@@ -238,7 +240,7 @@ export function mapProject(project) {
     acceptedCollaborators: colaboradoresAceitos,
     ownerId: alunoCriadorId,
     advisorId: orientadorId,
-    advisor: (orientadorId || orientadorNome)
+    advisor: hasAcceptedAdvisor
       ? {
           id: orientadorId,
           name: orientadorNome ?? "Orientador",

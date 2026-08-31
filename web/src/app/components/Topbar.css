@@ -4,7 +4,7 @@
 
 .barra-topo {
   height: var(--altura-topbar);
-  background-color: color-mix(in srgb, var(--cor-superficie) 88%, transparent);
+  background-color: var(--cor-superficie);
   border-bottom: 1px solid var(--cor-separador-suave);
   display: flex;
   align-items: center;
@@ -16,7 +16,7 @@
   right: 0;
   z-index: 90;
   overflow: visible;
-  backdrop-filter: blur(20px);
+  backdrop-filter: none;
 }
 
 @media (min-width: 768px) {

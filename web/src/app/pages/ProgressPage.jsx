@@ -279,6 +279,10 @@ export default function ProgressPage() {
   }, [steps, stepDisplayOrder]);
 
   const handleReorderStep = (fromIndex, toIndex) => {
+    if (selectedProject?.status === "FINALIZADO") {
+      toast.warning("Projeto finalizado não permite alterações de progresso.");
+      return;
+    }
     if (currentUserRole !== "ALUNO" || toIndex < 0 || toIndex >= orderedSteps.length) return;
     if (fromIndex === toIndex) return;
 
@@ -312,6 +316,11 @@ export default function ProgressPage() {
   }, [targetStageId, progressLoading, orderedSteps]);
 
   const handleAdvanceStep = async (stepId) => {
+    if (isProjectFinished) {
+      toast.warning("Projeto finalizado não permite alterações de progresso.");
+      return;
+    }
+
     try {
       await advanceStep(stepId);
       toast.success("Etapa concluída com sucesso.");
@@ -321,6 +330,11 @@ export default function ProgressPage() {
   };
 
   const handleCreateUpdate = async (payload) => {
+    if (isProjectFinished) {
+      toast.warning("Projeto finalizado não permite alterações de progresso.");
+      return;
+    }
+
     try {
       await createUpdate(payload);
       toast.success("Atualização publicada com sucesso.");
@@ -427,14 +441,14 @@ export default function ProgressPage() {
       </section>
 
       <section className="progress-page__grid">
-        <div className="progress-page__panel">
+        <div className="progress-page__panel progress-page__panel--feed">
           <div className="progress-page__panel-header">
             <div>
               <h2>Progresso</h2>
-              <p>{currentUserRole === "ALUNO" ? "Use a alça Mover para reorganizar sua visualização ou conclua a etapa ativa quando permitido." : "Conclua a etapa ativa quando o papel do usuário permitir."}</p>
+              <p>{isProjectFinished ? "Projeto finalizado. As etapas ficam disponíveis apenas para consulta." : currentUserRole === "ALUNO" ? "Use a alça Mover para reorganizar sua visualização ou conclua a etapa ativa quando permitido." : "Conclua a etapa ativa quando o papel do usuário permitir."}</p>
             </div>
           </div>
-          <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onReorderStep={handleReorderStep} highlightedStepId={targetStageId} />
+          <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onReorderStep={handleReorderStep} highlightedStepId={targetStageId} canReorderSteps={!isProjectFinished} />
         </div>
 
         <div className={`progress-page__panel progress-page__panel--updates${isProjectFinished ? " progress-page__panel--updates-finished" : ""}`}>

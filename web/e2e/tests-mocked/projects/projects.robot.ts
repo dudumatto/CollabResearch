@@ -16,7 +16,8 @@ export async function runProjectsListAndApplyFlow(page: Page) {
   await page.goto("/app/projects");
   await expect(page.getByText("projetos disponíveis")).toBeVisible();
   await expect(page.getByText("Projeto E2E Candidatura")).toBeVisible();
-  await expect(page.getByText("Projeto E2E Finalizado")).toBeVisible();
+  await expect(page.getByText("Projeto E2E Finalizado", { exact: true })).toBeVisible();
+  await expect(page.getByText("Projeto E2E Finalizado Externo")).toHaveCount(0);
   await page.getByPlaceholder("Buscar projetos por título, área ou tecnologia...").fill("Candidatura");
   await expect(page.getByText("Projeto E2E Candidatura")).toBeVisible();
   await expect(page.getByText("Projeto E2E Autoria")).toBeHidden();
@@ -28,13 +29,15 @@ export async function runProjectsListAndApplyFlow(page: Page) {
   await page.getByText("Projeto E2E Candidatura").click();
   await expect(page).toHaveURL(/\/app\/projects\/2$/);
   await expect(page.getByRole("heading", { name: "Projeto E2E Candidatura" })).toBeVisible();
-  await expect(page.getByText("3/3")).toBeVisible();
+  await expect(page.getByText("1/3")).toBeVisible();
   await expect(page.getByText("Orientador do projeto")).toBeVisible();
   await expect(page.getByText("Sobre o projeto")).toBeVisible();
   await expect(page.getByText("Histórico do projeto")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cursos elegíveis" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Inscrever-se" })).toHaveCount(0);
   await expect(page.getByText("Sua inscrição está em análise.")).toBeVisible();
+  await page.goto("/app/projects/5");
+  await expect(page.getByText("Projeto indisponível")).toBeVisible();
   await page.goto("/app/projects/4");
   await expect(page.getByRole("heading", { name: "Projeto E2E Nova Inscricao" })).toBeVisible();
   await page.getByRole("button", { name: "Inscrever-se" }).click();
@@ -61,6 +64,8 @@ export async function runProjectsCrudFlow(page: Page) {
   await expect(page.getByText("Projeto criado com sucesso! Redirecionando...")).toBeVisible();
   await expect(page).toHaveURL(/\/app\/projects\/\d+$/);
   await expect(page.getByRole("heading", { name: project.title })).toBeVisible();
+  await expect(page.locator(".card-orientador").getByText("Sem orientador")).toBeVisible();
+  await expect(page.locator(".card-orientador").getByText("Prof Ana Orientadora")).toHaveCount(0);
   await page.getByRole("button", { name: "Editar" }).click();
   await expect(page.getByRole("heading", { name: "Editar projeto" })).toBeVisible();
   await page.locator("#titulo").fill(`${project.title} atualizado`);

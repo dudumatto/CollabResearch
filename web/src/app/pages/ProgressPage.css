@@ -675,11 +675,11 @@
    Nova pagina de progresso
 ============================== */
 .progress-page {
-  --progress-bg: linear-gradient(180deg, rgba(246, 248, 245, 0.94) 0%, rgba(239, 245, 236, 0.98) 100%);
-  --progress-panel: rgba(255, 255, 255, 0.82);
-  --progress-surface: rgba(246, 248, 245, 0.88);
-  --progress-surface-strong: rgba(255, 255, 255, 0.96);
-  --progress-border: rgba(199, 209, 195, 0.72);
+  --progress-bg: linear-gradient(180deg, #f6f8f5 0%, #eff5ec 100%);
+  --progress-panel: #ffffff;
+  --progress-surface: #f6f8f5;
+  --progress-surface-strong: #ffffff;
+  --progress-border: #c7d1c3;
   --progress-shadow: none;
   --progress-text-strong: #17251d;
   --progress-text: #35493c;
@@ -687,16 +687,16 @@
   --progress-text-muted: #66736a;
   --progress-accent: #1f7a5a;
   --progress-accent-2: #7ea06a;
-  --progress-accent-soft: rgba(31, 122, 90, 0.08);
-  --progress-border-soft: rgba(199, 209, 195, 0.45);
-  --progress-border-input: rgba(199, 209, 195, 0.72);
-  --progress-chip-bg: rgba(23, 37, 29, 0.04);
-  --progress-summary-bg: linear-gradient(90deg, rgba(31, 122, 90, 0.08), rgba(126, 160, 106, 0.1));
+  --progress-accent-soft: #eaf3ed;
+  --progress-border-soft: #dde5da;
+  --progress-border-input: #c7d1c3;
+  --progress-chip-bg: #eff5ec;
+  --progress-summary-bg: linear-gradient(90deg, #edf6ef, #eaf1df);
   --progress-action-bg: linear-gradient(135deg, var(--progress-accent), var(--progress-accent-2));
   --progress-action-shadow: none;
   --progress-dark-action-bg: #17251d;
   --progress-dark-action-text: #fff;
-  --progress-success-soft: rgba(31, 122, 90, 0.12);
+  --progress-success-soft: #e0f0e7;
   --progress-success-text: #1f7a5a;
   --progress-success-strong: #185e46;
   --progress-danger-text: #dc2626;
@@ -713,11 +713,11 @@
 }
 
 .dark .progress-page {
-  --progress-bg: linear-gradient(180deg, rgba(16, 26, 20, 0.98) 0%, rgba(23, 37, 29, 0.98) 100%);
-  --progress-panel: rgba(23, 37, 29, 0.9);
-  --progress-surface: rgba(25, 39, 31, 0.92);
-  --progress-surface-strong: rgba(18, 30, 23, 0.98);
-  --progress-border: rgba(126, 160, 106, 0.2);
+  --progress-bg: linear-gradient(180deg, #101a14 0%, #17251d 100%);
+  --progress-panel: #17251d;
+  --progress-surface: #19271f;
+  --progress-surface-strong: #121e17;
+  --progress-border: #344c38;
   --progress-shadow: none;
   --progress-text-strong: var(--cor-texto-forte);
   --progress-text: var(--cor-texto);
@@ -725,20 +725,20 @@
   --progress-text-muted: var(--cor-texto-mudo);
   --progress-accent: #b8d3a7;
   --progress-accent-2: #7ea06a;
-  --progress-accent-soft: rgba(126, 160, 106, 0.16);
-  --progress-border-soft: rgba(126, 160, 106, 0.18);
-  --progress-border-input: rgba(126, 160, 106, 0.3);
-  --progress-chip-bg: rgba(126, 160, 106, 0.12);
-  --progress-summary-bg: linear-gradient(90deg, rgba(126, 160, 106, 0.16), rgba(31, 122, 90, 0.12));
+  --progress-accent-soft: #233a2a;
+  --progress-border-soft: #2c4331;
+  --progress-border-input: #42624b;
+  --progress-chip-bg: #1f3225;
+  --progress-summary-bg: linear-gradient(90deg, #203829, #183b2b);
   --progress-action-bg: linear-gradient(135deg, #1f7a5a, #4f7f5c);
   --progress-action-shadow: none;
   --progress-dark-action-bg: var(--cor-texto-forte);
   --progress-dark-action-text: #17251d;
-  --progress-success-soft: rgba(31, 122, 90, 0.22);
+  --progress-success-soft: #1c4631;
   --progress-success-text: #b8d3a7;
   --progress-success-strong: #d7e2d2;
   --progress-danger-text: #f87171;
-  --progress-donut-track: rgba(126, 160, 106, 0.2);
+  --progress-donut-track: #2c4331;
   --progress-badge-blue-text: #b8d3a7;
   --progress-badge-red-text: #fca5a5;
   --progress-badge-amber-text: #fcd34d;
@@ -747,13 +747,13 @@
 
 .dark .progress-page__panel--updates .update-feed__empty,
 .dark .progress-page__panel--updates .update-feed__item {
-  background: rgba(24, 38, 30, 0.92);
-  border-color: rgba(126, 160, 106, 0.24);
+  background: #18261e;
+  border-color: #3d5844;
 }
 
 .dark .progress-page__panel--updates .update-feed__step,
 .dark .progress-page__panel--updates .update-feed__date {
-  background: rgba(14, 25, 19, 0.68);
+  background: #0e1913;
 }
 
 .progress-page__hero,
@@ -772,7 +772,7 @@
   border: 1px solid var(--progress-border);
   border-radius: 28px;
   background: var(--progress-panel);
-  backdrop-filter: blur(14px);
+  backdrop-filter: none;
 }
 
 .progress-page__hero-copy {
@@ -858,7 +858,7 @@
   border: 1px solid var(--progress-border);
   border-radius: 28px;
   background: var(--progress-panel);
-  backdrop-filter: blur(14px);
+  backdrop-filter: none;
   padding: 1.2rem;
   min-height: 0;
 }
@@ -1529,7 +1529,7 @@
 }
 
 .progress-badge--blue {
-  background: rgba(31, 122, 90, 0.12);
+  background: #e0f0e7;
   color: var(--progress-badge-blue-text);
 }
 
@@ -1544,12 +1544,12 @@
 }
 
 .progress-badge--red {
-  background: rgba(239, 68, 68, 0.12);
+  background: #fee2e2;
   color: var(--progress-badge-red-text);
 }
 
 .progress-badge--amber {
-  background: rgba(245, 158, 11, 0.16);
+  background: #fef3c7;
   color: var(--progress-badge-amber-text);
 }
 

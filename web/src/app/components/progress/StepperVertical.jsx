@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { StepCard } from "./StepCard";
 
-export function StepperVertical({ steps = [], currentUserRole, onAdvanceStep, onReorderStep, highlightedStepId }) {
+export function StepperVertical({ steps = [], currentUserRole, onAdvanceStep, onReorderStep, highlightedStepId, canReorderSteps = true }) {
   const [draggingIndex, setDraggingIndex] = useState(null);
-  const canReorder = currentUserRole === "ALUNO" && steps.length > 1;
+  const canReorder = canReorderSteps && currentUserRole === "ALUNO" && steps.length > 1;
 
   const handleDragStart = (index) => {
     if (!canReorder) return;

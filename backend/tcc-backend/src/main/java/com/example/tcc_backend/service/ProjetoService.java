@@ -42,11 +42,15 @@ public class ProjetoService {
     private final EtapaProgressoRepository etapaProgressoRepository;
 
     public List<Projeto> findAll(String status, Integer areaId, String area, String curso, String busca) {
-        return projetoRepository.findAll(createSpecification(status, areaId, area, curso, busca));
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        return projetoRepository.findAll(createSpecification(status, areaId, area, curso, busca)
+                .and(createVisibilitySpecification(usuarioLogado)));
     }
 
     public Page<Projeto> findAll(String status, Integer areaId, String area, String curso, String busca, Pageable pageable) {
-        return projetoRepository.findAll(createSpecification(status, areaId, area, curso, busca), pageable);
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        return projetoRepository.findAll(createSpecification(status, areaId, area, curso, busca)
+                .and(createVisibilitySpecification(usuarioLogado)), pageable);
     }
 
     private Specification<Projeto> createSpecification(String status, Integer areaId, String area, String curso, String busca) {
@@ -107,8 +111,10 @@ public class ProjetoService {
     }
 
     public Projeto findById(Integer id) {
-        return projetoRepository.findById(id)
+        Projeto projeto = projetoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
+        requireVisibleWhenFinished(projeto);
+        return projeto;
     }
 
     public List<Projeto> findByStatus(StatusProjeto status) {
@@ -164,6 +170,49 @@ public class ProjetoService {
         );
     }
 
+    private Specification<Projeto> createVisibilitySpecification(Usuario usuario) {
+        return (root, query, cb) -> {
+            if (usuario == null || usuario.getTipo() == TipoUsuario.ADMIN) {
+                return cb.conjunction();
+            }
+
+            if (query != null) {
+                query.distinct(true);
+            }
+
+            var orientador = root.join("orientador", JoinType.LEFT);
+            var orientadorUsuario = orientador.join("usuario", JoinType.LEFT);
+            var alunoCriador = root.join("alunoCriador", JoinType.LEFT);
+            var alunoCriadorUsuario = alunoCriador.join("usuario", JoinType.LEFT);
+
+            var inscricaoAprovadaSubquery = query.subquery(Integer.class);
+            var inscricao = inscricaoAprovadaSubquery.from(Inscricao.class);
+            inscricaoAprovadaSubquery.select(inscricao.get("projeto").get("id"))
+                    .where(
+                            cb.equal(inscricao.get("projeto").get("id"), root.get("id")),
+                            cb.equal(inscricao.get("aluno").get("usuario").get("id"), usuario.getId()),
+                            cb.equal(inscricao.get("status"), StatusInscricao.APROVADO)
+                    );
+
+            return cb.or(
+                    cb.notEqual(root.get("status"), StatusProjeto.FINALIZADO),
+                    cb.equal(orientadorUsuario.get("id"), usuario.getId()),
+                    cb.equal(alunoCriadorUsuario.get("id"), usuario.getId()),
+                    cb.exists(inscricaoAprovadaSubquery)
+            );
+        };
+    }
+
+    private void requireVisibleWhenFinished(Projeto projeto) {
+        if (projeto.getStatus() != StatusProjeto.FINALIZADO) {
+            return;
+        }
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        ProjectAccessPolicy.Relationship relacao = projectAccessPolicy.relationship(projeto, usuarioLogado);
+        if (relacao == ProjectAccessPolicy.Relationship.EXTERNAL) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Projeto finalizado visivel apenas para participantes");
+        }
+    }
     private Specification<Projeto> createUserProjectsSpecification(Integer usuarioId) {
         return (root, query, cb) -> {
             if (query != null) {
@@ -172,6 +221,8 @@ public class ProjetoService {
 
             var inscricaoSubquery = query.subquery(Integer.class);
             var inscricao = inscricaoSubquery.from(Inscricao.class);
+            var inscricaoAprovadaSubquery = query.subquery(Integer.class);
+            var inscricaoAprovada = inscricaoAprovadaSubquery.from(Inscricao.class);
             var orientador = root.join("orientador", JoinType.LEFT);
             var orientadorUsuario = orientador.join("usuario", JoinType.LEFT);
             var alunoCriador = root.join("alunoCriador", JoinType.LEFT);
@@ -182,11 +233,18 @@ public class ProjetoService {
                             cb.equal(inscricao.get("projeto").get("id"), root.get("id")),
                             cb.equal(inscricao.get("aluno").get("usuario").get("id"), usuarioId)
                     );
+            inscricaoAprovadaSubquery.select(inscricaoAprovada.get("projeto").get("id"))
+                    .where(
+                            cb.equal(inscricaoAprovada.get("projeto").get("id"), root.get("id")),
+                            cb.equal(inscricaoAprovada.get("aluno").get("usuario").get("id"), usuarioId),
+                            cb.equal(inscricaoAprovada.get("status"), StatusInscricao.APROVADO)
+                    );
 
             return cb.or(
                     cb.equal(orientadorUsuario.get("id"), usuarioId),
                     cb.equal(alunoCriadorUsuario.get("id"), usuarioId),
-                    cb.exists(inscricaoSubquery)
+                    cb.exists(inscricaoAprovadaSubquery),
+                    cb.and(cb.notEqual(root.get("status"), StatusProjeto.FINALIZADO), cb.exists(inscricaoSubquery))
             );
         };
     }
