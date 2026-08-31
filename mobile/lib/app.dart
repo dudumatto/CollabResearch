@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
@@ -60,6 +61,9 @@ class _TccMobileAppState extends State<TccMobileApp> {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: auth.themeMode,
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        supportedLocales: const [Locale('pt', 'BR')],
+        locale: const Locale('pt', 'BR'),
         routerConfig: _router,
       ),
     );

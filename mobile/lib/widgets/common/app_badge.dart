@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_spacing.dart';
+
 class AppBadge extends StatelessWidget {
   const AppBadge({super.key, required this.label, this.color});
 
@@ -8,19 +10,25 @@ class AppBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final badgeColor = color ?? Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final badgeColor = color ?? theme.colorScheme.primary;
+    final backgroundColor = color == null
+        ? theme.colorScheme.primaryContainer
+        : Color.lerp(theme.colorScheme.surface, badgeColor, 0.14)!;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: theme.textTheme.labelSmall?.copyWith(
           color: badgeColor,
           fontWeight: FontWeight.w600,
-          fontSize: 12,
         ),
       ),
     );
