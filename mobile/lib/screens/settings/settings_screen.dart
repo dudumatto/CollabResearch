@@ -56,12 +56,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         theme: _theme,
       );
       if (!mounted) return;
-      AppSnackbar.showSuccess(context, 'Configuracoes salvas.');
+      AppSnackbar.showSuccess(context, 'Configurações salvas.');
     } catch (_) {
       if (!mounted) return;
       AppSnackbar.showError(
         context,
-        'Nao foi possivel salvar as configuracoes.',
+        'Não foi possível salvar as configurações.',
       );
     }
   }
@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return;
     }
     if (next != confirmation) {
-      _showMessage('A confirmacao de senha nao confere.');
+      _showMessage('A confirmação de senha não confere.');
       return;
     }
 
@@ -92,7 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _confirmPasswordController.clear();
       _showMessage('Senha alterada com sucesso.', success: true);
     } catch (_) {
-      _showMessage('Nao foi possivel alterar a senha.');
+      _showMessage('Não foi possível alterar a senha.');
     } finally {
       if (mounted) setState(() => _savingPassword = false);
     }
@@ -134,7 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Preferencias',
+                Text('Preferências',
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
                 SwitchListTile(
@@ -142,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: _notificationsEnabled,
                   onChanged: (value) =>
                       setState(() => _notificationsEnabled = value),
-                  title: const Text('Notificacoes'),
+                  title: const Text('Notificações'),
                   subtitle: const Text('Receber alertas do sistema'),
                 ),
                 const SizedBox(height: 12),

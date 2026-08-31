@@ -96,7 +96,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   maxLines: 4,
                   maxLength: 1000,
                   decoration: const InputDecoration(
-                    labelText: 'Comentario (opcional)',
+                    labelText: 'Comentário (opcional)',
                   ),
                 ),
               ],
@@ -130,7 +130,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     } else {
       AppSnackbar.showError(
         context,
-        provider.errorMessage ?? 'Nao foi possivel enviar.',
+        provider.errorMessage ?? 'Não foi possível enviar.',
       );
     }
   }
@@ -205,7 +205,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               height: 340,
               child: EmptyState(
                 title: 'Nenhum projeto relacionado',
-                subtitle: 'Seus projetos e participacoes aparecerao aqui.',
+                subtitle: 'Seus projetos e participações aparecerão aqui.',
               ),
             )
           else if (provider.isLoading)
@@ -215,7 +215,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               height: 280,
               child: EmptyState(
                 title: 'Sem feedbacks',
-                subtitle: 'Este projeto ainda nao recebeu avaliacoes.',
+                subtitle: 'Este projeto ainda não recebeu avaliações.',
               ),
             )
           else

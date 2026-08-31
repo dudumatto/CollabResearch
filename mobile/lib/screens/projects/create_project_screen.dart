@@ -121,7 +121,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Criar projeto')),
       body: provider.isFormLoading
-          ? const LoadingIndicator(label: 'Carregando opcoes...')
+          ? const LoadingIndicator(label: 'Carregando opções...')
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -145,8 +145,8 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                             const SizedBox(height: 6),
                             Text(
                               _isStudent
-                                  ? 'O orientador escolhido recebera uma solicitacao para analisar.'
-                                  : 'O projeto sera publicado sob sua orientacao.',
+                                  ? 'O orientador escolhido receberá uma solicitação para analisar.'
+                                  : 'O projeto será publicado sob sua orientação.',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             if (provider.errorMessage != null) ...[
@@ -158,24 +158,24 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                             ],
                             const SizedBox(height: 24),
                             AppTextField(
-                              label: 'Titulo',
+                              label: 'Título',
                               controller: _titleController,
                               prefixIcon: Icons.title,
                               textInputAction: TextInputAction.next,
                               validator: (value) => Validators.requiredField(
                                 value,
-                                label: 'Titulo',
+                                label: 'Título',
                               ),
                             ),
                             const SizedBox(height: 16),
                             AppTextField(
-                              label: 'Descricao',
+                              label: 'Descrição',
                               controller: _descriptionController,
                               prefixIcon: Icons.notes_outlined,
                               maxLines: 4,
                               validator: (value) => Validators.requiredField(
                                 value,
-                                label: 'Descricao',
+                                label: 'Descrição',
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -213,7 +213,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                   isExpanded: isMobile,
                                   isDense: !isMobile,
                                   decoration: const InputDecoration(
-                                    labelText: 'Area de pesquisa',
+                                    labelText: 'Área de pesquisa',
                                     prefixIcon: Icon(Icons.category_outlined),
                                   ),
                                   items: [
@@ -230,7 +230,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                   onChanged: (value) =>
                                       setState(() => _selectedAreaId = value),
                                   validator: (value) => value == null
-                                      ? 'Area de pesquisa obrigatoria'
+                                      ? 'Área de pesquisa obrigatória'
                                       : null,
                                 );
                               },
@@ -267,7 +267,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                       () => _selectedAdvisorId = value,
                                     ),
                                     validator: (value) => value == null
-                                        ? 'Orientador obrigatorio'
+                                        ? 'Orientador obrigatório'
                                         : null,
                                   );
                                 },
@@ -275,7 +275,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                             ],
                             const SizedBox(height: 16),
                             AppTextField(
-                              label: 'Numero de vagas',
+                              label: 'Número de vagas',
                               controller: _vacanciesController,
                               prefixIcon: Icons.groups_outlined,
                               keyboardType: TextInputType.number,
@@ -317,7 +317,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                             ),
                             const SizedBox(height: 8),
                             _DateField(
-                              label: 'Limite para inscricoes',
+                              label: 'Limite para inscrições',
                               value: _applicationDeadline,
                               onTap: () => _pickDate(
                                 _applicationDeadline,
@@ -370,7 +370,7 @@ class _DateField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = value == null
-        ? 'Nao definida'
+        ? 'Não definida'
         : '${value!.day.toString().padLeft(2, '0')}/${value!.month.toString().padLeft(2, '0')}/${value!.year}';
     return InkWell(
       borderRadius: BorderRadius.circular(12),

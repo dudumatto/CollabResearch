@@ -190,7 +190,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           value: '${summary?.myProjects ?? 0}',
                                         ),
                                         StatsCard(
-                                          title: 'Inscricoes',
+                                          title: 'Inscrições',
                                           value:
                                               '${summary?.mySubscriptions ?? 0}',
                                           icon: Icons.assignment_outlined,
@@ -202,7 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           icon: Icons.pending_actions_outlined,
                                         ),
                                         StatsCard(
-                                          title: 'Nao lidas',
+                                          title: 'Não lidas',
                                           value:
                                               '${summary?.unreadNotifications ?? notificationProvider.unreadCount}',
                                           icon: Icons.notifications_none,

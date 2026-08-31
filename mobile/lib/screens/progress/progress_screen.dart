@@ -70,7 +70,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 TextField(
                   controller: titleController,
                   decoration:
-                      const InputDecoration(labelText: 'Titulo (opcional)'),
+                      const InputDecoration(labelText: 'Título (opcional)'),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
@@ -79,7 +79,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   items: const [
                     DropdownMenuItem(
                       value: 'ATUALIZACAO',
-                      child: Text('Atualizacao'),
+                      child: Text('Atualização'),
                     ),
                     DropdownMenuItem(value: 'MARCO', child: Text('Marco')),
                     DropdownMenuItem(
@@ -94,7 +94,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 TextField(
                   controller: descriptionController,
                   maxLines: 4,
-                  decoration: const InputDecoration(labelText: 'Descricao'),
+                  decoration: const InputDecoration(labelText: 'Descrição'),
                 ),
               ],
             ),
@@ -132,7 +132,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     } else {
       AppSnackbar.showError(
         context,
-        provider.errorMessage ?? 'Nao foi possivel registrar.',
+        provider.errorMessage ?? 'Não foi possível registrar.',
       );
     }
   }
@@ -217,7 +217,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             const SizedBox(
               height: 280,
               child: EmptyState(
-                title: 'Sem atualizacoes',
+                title: 'Sem atualizações',
                 subtitle: 'Registre a primeira atualizacao deste projeto.',
               ),
             )
@@ -233,7 +233,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             ? Icons.flag_outlined
                             : Icons.trending_up,
                   ),
-                  title: Text(entry.title ?? entry.type ?? 'Atualizacao'),
+                  title: Text(entry.title ?? entry.type ?? 'Atualização'),
                   subtitle: Text(
                     [
                       entry.description,

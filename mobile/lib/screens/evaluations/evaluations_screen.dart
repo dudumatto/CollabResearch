@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_tokens.dart';
@@ -177,7 +178,6 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
         : academic.evaluationsFor(selected.id);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Avaliações')),
       floatingActionButton: _isAdvisor && selected != null
           ? FloatingActionButton.extended(
               onPressed: academic.isLoading ? null : _editEvaluation,
@@ -194,9 +194,15 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
                 : 20.0;
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 88),
+              padding: EdgeInsets.fromLTRB(
+                horizontal,
+                MediaQuery.paddingOf(context).top + 16,
+                horizontal, 88),
               children: [
                 AcademicPageHeader(
+                  onBack: () => context.canPop()
+                      ? context.pop()
+                      : context.go('/dashboard'),
                   eyebrow:
                       _isAdvisor ? 'Desempenho acadêmico' : 'Retorno privado',
                   title:

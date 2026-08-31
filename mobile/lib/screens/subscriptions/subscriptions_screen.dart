@@ -47,9 +47,9 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     _showMessage(
       success
           ? approve
-              ? 'Inscricao aprovada.'
-              : 'Inscricao recusada.'
-          : provider.errorMessage ?? 'Nao foi possivel analisar a inscricao.',
+              ? 'Inscrição aprovada.'
+              : 'Inscrição recusada.'
+          : provider.errorMessage ?? 'Não foi possível analisar a inscrição.',
       success: success,
     );
   }
@@ -69,8 +69,8 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     if (!mounted) return;
     _showMessage(
       success
-          ? 'Inscricao cancelada.'
-          : provider.errorMessage ?? 'Nao foi possivel cancelar a inscricao.',
+          ? 'Inscrição cancelada.'
+          : provider.errorMessage ?? 'Não foi possível cancelar a inscrição.',
       success: success,
     );
   }
@@ -131,10 +131,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Voltar',
         ),
-        title: const Text('Inscricoes'),
+        title: const Text('Inscrições'),
       ),
       body: provider.isLoading && provider.subscriptions.isEmpty
-          ? const LoadingIndicator(label: 'Carregando inscricoes...')
+          ? const LoadingIndicator(label: 'Carregando inscrições...')
           : RefreshIndicator(
               onRefresh: provider.load,
               child: ListView(
@@ -153,9 +153,9 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                     const SizedBox(
                       height: 360,
                       child: EmptyState(
-                        title: 'Nenhuma inscricao',
+                        title: 'Nenhuma inscrição',
                         subtitle:
-                            'As inscricoes dos seus projetos aparecerao aqui.',
+                            'As inscrições dos seus projetos aparecerão aqui.',
                       ),
                     )
                   else
@@ -267,7 +267,7 @@ class _SubscriptionCard extends StatelessWidget {
               if (userType == 'ALUNO' && pending)
                 TextButton(
                   onPressed: isLoading ? null : onCancel,
-                  child: const Text('Cancelar inscricao'),
+                  child: const Text('Cancelar inscrição'),
                 ),
             ],
           ),

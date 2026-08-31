@@ -31,7 +31,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (!notification.isRead) {
       final marked = await provider.markAsRead(notification.id);
       if (!marked) {
-        _showSnackBar('Nao foi possivel marcar a notificacao como lida.');
+        _showSnackBar('Não foi possível marcar a notificação como lida.');
         return;
       }
     }
@@ -44,7 +44,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     if (notification.type.toUpperCase() == 'MENSAGEM_RECEBIDA') {
       _showSnackBar(
-          'Nao foi possivel identificar a conversa dessa notificacao.');
+          'Não foi possível identificar a conversa dessa notificação.');
     }
   }
 
@@ -124,7 +124,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           const SizedBox(
                             height: 280,
                             child: EmptyState(
-                              title: 'Nenhuma notificacao encontrada',
+                              title: 'Nenhuma notificação encontrada',
                               subtitle: 'Puxe para atualizar.',
                             ),
                           )

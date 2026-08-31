@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -85,7 +86,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   Widget build(BuildContext context) {
     final academic = context.watch<AcademicWorkspaceProvider>();
     return Scaffold(
-      appBar: AppBar(title: const Text('Documentos')),
       body: RefreshIndicator(
         onRefresh: _load,
         child: LayoutBuilder(
@@ -95,9 +95,15 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 : 20.0;
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 32),
+              padding: EdgeInsets.fromLTRB(
+                horizontal,
+                MediaQuery.paddingOf(context).top + 16,
+                horizontal, 32),
               children: [
-                const AcademicPageHeader(
+                AcademicPageHeader(
+                  onBack: () => context.canPop()
+                      ? context.pop()
+                      : context.go('/dashboard'),
                   eyebrow: 'Perfil acadêmico',
                   title: 'Seus documentos',
                   description:

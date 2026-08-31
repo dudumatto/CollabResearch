@@ -148,7 +148,7 @@ class ChatProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (_) {
-      errorMessage = 'Nao foi possivel editar a mensagem.';
+      errorMessage = 'Não foi possível editar a mensagem.';
       notifyListeners();
       return false;
     }
@@ -164,7 +164,7 @@ class ChatProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (_) {
-      errorMessage = 'Nao foi possivel excluir a mensagem.';
+      errorMessage = 'Não foi possível excluir a mensagem.';
       notifyListeners();
       return false;
     }

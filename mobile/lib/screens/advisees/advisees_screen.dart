@@ -50,7 +50,6 @@ class _AdviseesScreenState extends State<AdviseesScreen> {
     final academic = context.watch<AcademicWorkspaceProvider>();
     final advisees = _filtered(academic.advisees);
     return Scaffold(
-      appBar: AppBar(title: const Text('Orientandos')),
       body: RefreshIndicator(
         onRefresh: _load,
         child: LayoutBuilder(
@@ -60,9 +59,15 @@ class _AdviseesScreenState extends State<AdviseesScreen> {
                 : 20.0;
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 32),
+              padding: EdgeInsets.fromLTRB(
+                horizontal,
+                MediaQuery.paddingOf(context).top + 16,
+                horizontal, 32),
               children: [
-                const AcademicPageHeader(
+                AcademicPageHeader(
+                  onBack: () => context.canPop()
+                      ? context.pop()
+                      : context.go('/dashboard'),
                   eyebrow: 'Orientação',
                   title: 'Acompanhe seus orientandos',
                   description:

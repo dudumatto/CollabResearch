@@ -57,7 +57,7 @@ class NotificationProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (_) {
-      errorMessage = 'Nao foi possivel marcar a notificacao como lida.';
+      errorMessage = 'Não foi possível marcar a notificação como lida.';
       notifyListeners();
       return false;
     }

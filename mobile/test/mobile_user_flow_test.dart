@@ -79,7 +79,7 @@ void main() {
     await tester.tap(find.text('Orientador'));
     await tester.pump();
     expect(find.text('Departamento'), findsOneWidget);
-    expect(find.text('Titulacao'), findsOneWidget);
+    expect(find.text('Titulação'), findsOneWidget);
 
     await tester.tap(find.text('Aluno'));
     await tester.pump();

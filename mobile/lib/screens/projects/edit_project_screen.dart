@@ -122,7 +122,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                       message: provider.errorMessage!,
                       onRetry: _load,
                     )
-                  : const EmptyState(title: 'Projeto nao encontrado')
+                  : const EmptyState(title: 'Projeto não encontrado')
               : ListView(
                   padding: const EdgeInsets.all(20),
                   children: [
@@ -137,7 +137,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Text(
-                                  'Informacoes do projeto',
+                                  'Informações do projeto',
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleLarge
@@ -152,26 +152,26 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                 ],
                                 const SizedBox(height: 24),
                                 AppTextField(
-                                  label: 'Titulo',
+                                  label: 'Título',
                                   controller: _titleController,
                                   prefixIcon: Icons.title,
                                   textInputAction: TextInputAction.next,
                                   validator: (value) =>
                                       Validators.requiredField(
                                     value,
-                                    label: 'Titulo',
+                                    label: 'Título',
                                   ),
                                 ),
                                 const SizedBox(height: 16),
                                 AppTextField(
-                                  label: 'Descricao',
+                                  label: 'Descrição',
                                   controller: _descriptionController,
                                   prefixIcon: Icons.notes_outlined,
                                   maxLines: 4,
                                   validator: (value) =>
                                       Validators.requiredField(
                                     value,
-                                    label: 'Descricao',
+                                    label: 'Descrição',
                                   ),
                                 ),
                                 const SizedBox(height: 16),
@@ -207,7 +207,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                       isExpanded: isMobile,
                                       isDense: !isMobile,
                                       decoration: const InputDecoration(
-                                        labelText: 'Area de pesquisa',
+                                        labelText: 'Área de pesquisa',
                                         prefixIcon:
                                             Icon(Icons.category_outlined),
                                       ),
@@ -226,7 +226,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                         () => _selectedAreaId = value,
                                       ),
                                       validator: (value) => value == null
-                                          ? 'Area de pesquisa obrigatoria'
+                                          ? 'Área de pesquisa obrigatória'
                                           : null,
                                     );
                                   },
@@ -234,7 +234,7 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                 if (_isAdvisor) ...[
                                   const SizedBox(height: 16),
                                   AppTextField(
-                                    label: 'Numero de vagas',
+                                    label: 'Número de vagas',
                                     controller: _vacanciesController,
                                     prefixIcon: Icons.groups_outlined,
                                     keyboardType: TextInputType.number,

@@ -85,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } on DioException catch (error) {
       errorMessage = ApiClient.instance.friendlyError(error);
     } catch (_) {
-      errorMessage = 'Nao foi possivel salvar o perfil.';
+      errorMessage = 'Não foi possível salvar o perfil.';
     }
 
     if (!mounted) return;
@@ -95,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } else {
       AppSnackbar.showError(
         context,
-        errorMessage ?? 'Nao foi possivel salvar o perfil.',
+        errorMessage ?? 'Não foi possível salvar o perfil.',
       );
     }
     if (saved) setState(() => _editing = false);
@@ -143,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           IconButton(
             onPressed: () => context.go('/settings'),
             icon: const Icon(Icons.settings),
-            tooltip: 'Configuracoes',
+            tooltip: 'Configurações',
           ),
         ],
       ),
@@ -201,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   Text(
                                     user.name.isNotEmpty
                                         ? user.name
-                                        : 'Usuario',
+                                        : 'Usuário',
                                     maxLines: isMobile ? 2 : null,
                                     overflow: isMobile
                                         ? TextOverflow.ellipsis
@@ -214,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   Text(
                                     user.institution?.isNotEmpty == true
                                         ? user.institution!
-                                        : 'Instituicao nao informada',
+                                        : 'Instituição não informada',
                                     maxLines: isMobile ? 2 : null,
                                     overflow: isMobile
                                         ? TextOverflow.ellipsis
@@ -360,7 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Informacoes do perfil',
+                              'Informações do perfil',
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                             const SizedBox(height: 4),
@@ -428,7 +428,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               validator: Validators.email,
                             ),
                             _ProfileField(
-                              label: 'Instituicao',
+                              label: 'Instituição',
                               icon: Icons.business_outlined,
                               controller: _institutionController,
                               enabled: _editing,

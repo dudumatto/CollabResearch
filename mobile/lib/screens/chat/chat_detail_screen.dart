@@ -133,7 +133,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
     editController.dispose();
     if (updated == false && mounted) {
-      _showSnackBar('Nao foi possivel editar a mensagem.');
+      _showSnackBar('Não foi possível editar a mensagem.');
     }
   }
 
@@ -146,7 +146,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         builder: (context, setDialogState) => AlertDialog(
           title: const Text('Excluir mensagem'),
           content: const Text(
-            'Tem certeza que deseja excluir esta mensagem? Esta acao nao pode ser desfeita.',
+            'Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.',
           ),
           actions: [
             TextButton(
@@ -177,7 +177,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ),
     );
     if (deleted == false && mounted) {
-      _showSnackBar('Nao foi possivel excluir a mensagem.');
+      _showSnackBar('Não foi possível excluir a mensagem.');
     }
   }
 

@@ -44,7 +44,7 @@ class SubscriptionProvider extends ChangeNotifier {
       errorMessage = ApiClient.instance.friendlyError(error);
       return false;
     } catch (_) {
-      errorMessage = 'Nao foi possivel analisar a inscricao.';
+      errorMessage = 'Não foi possível analisar a inscrição.';
       return false;
     } finally {
       isLoading = false;
@@ -64,7 +64,7 @@ class SubscriptionProvider extends ChangeNotifier {
       errorMessage = ApiClient.instance.friendlyError(error);
       return false;
     } catch (_) {
-      errorMessage = 'Nao foi possivel cancelar a inscricao.';
+      errorMessage = 'Não foi possível cancelar a inscrição.';
       return false;
     } finally {
       isLoading = false;

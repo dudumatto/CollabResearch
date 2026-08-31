@@ -47,7 +47,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
     if (!mounted) return;
     if (subscribed) {
-      AppSnackbar.showSuccess(context, 'Inscricao realizada.');
+      AppSnackbar.showSuccess(context, 'Inscrição realizada.');
     } else {
       AppSnackbar.showError(
         context,
@@ -90,12 +90,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     if (success) {
       AppSnackbar.showSuccess(
         context,
-        accept ? 'Orientacao aceita.' : 'Orientacao recusada.',
+        accept ? 'Orientação aceita.' : 'Orientação recusada.',
       );
     } else {
       AppSnackbar.showError(
         context,
-        provider.errorMessage ?? 'Nao foi possivel analisar o projeto.',
+        provider.errorMessage ?? 'Não foi possível analisar o projeto.',
       );
     }
   }
@@ -121,7 +121,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
           if (project == null) {
             return EmptyState(
-              title: 'Projeto nao encontrado',
+              title: 'Projeto não encontrado',
               subtitle: provider.errorMessage,
             );
           }
@@ -160,13 +160,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Informacoes gerais',
+                'Informações gerais',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               Text(project.description?.isNotEmpty == true
                   ? project.description!
-                  : 'Sem descricao cadastrada.'),
+                  : 'Sem descrição cadastrada.'),
               const SizedBox(height: 16),
               Text(
                 [project.area, project.course]
@@ -185,11 +185,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     : 'Responsavel pelo projeto',
               ),
               const SizedBox(height: 24),
-              Text('Acoes', style: Theme.of(context).textTheme.titleMedium),
+              Text('Ações', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               if (canReview) ...[
                 AppButton(
-                  label: 'Aceitar orientacao',
+                  label: 'Aceitar orientação',
                   isLoading: provider.isLoading,
                   onPressed: () => _reviewOrientation(
                     provider,
@@ -206,7 +206,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                             project.id,
                             accept: false,
                           ),
-                  child: const Text('Recusar orientacao'),
+                  child: const Text('Recusar orientação'),
                 ),
               ],
               if (canSubscribe) ...[

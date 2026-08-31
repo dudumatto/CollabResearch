@@ -38,7 +38,7 @@ class MessageBubble extends StatelessWidget {
         children: [
           if (isMine && (onEdit != null || onDelete != null)) ...[
             PopupMenuButton<_MessageAction>(
-              tooltip: 'Acoes da mensagem',
+              tooltip: 'Ações da mensagem',
               constraints: const BoxConstraints(minWidth: 52, maxWidth: 52),
               icon: Icon(
                 Icons.more_vert,

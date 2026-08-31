@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -367,7 +368,6 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
         : academic.deliveriesFor(selected.id);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Entregas')),
       floatingActionButton: !_isAdvisor && selected != null
           ? FloatingActionButton.extended(
               onPressed: () => _createDelivery(selected),
@@ -384,9 +384,15 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                 : AppSpacing.page.left;
             return ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 88),
+              padding: EdgeInsets.fromLTRB(
+                horizontal,
+                MediaQuery.paddingOf(context).top + 16,
+                horizontal, 88),
               children: [
                 AcademicPageHeader(
+                  onBack: () => context.canPop()
+                      ? context.pop()
+                      : context.go('/dashboard'),
                   eyebrow: _isAdvisor ? 'Revisão' : 'Produção acadêmica',
                   title: _isAdvisor ? 'Entregas da equipe' : 'Minhas entregas',
                   description: _isAdvisor

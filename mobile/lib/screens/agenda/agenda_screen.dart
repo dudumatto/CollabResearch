@@ -109,11 +109,15 @@ class _AgendaScreenState extends State<AgendaScreen> {
     final items = _items(projects, academic);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Agenda')),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
+      // Sem AppBar: o cartao de destaque ja carrega o titulo, e a Agenda e uma
+      // aba do menu inferior, entao nao precisa de botao voltar. SafeArea
+      // assume o recuo da status bar que o AppBar dava.
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          onRefresh: _load,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
             final horizontal = constraints.maxWidth > 760
                 ? (constraints.maxWidth - 720) / 2
                 : AppSpacing.page.left;
@@ -222,6 +226,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
               ],
             );
           },
+          ),
         ),
       ),
     );

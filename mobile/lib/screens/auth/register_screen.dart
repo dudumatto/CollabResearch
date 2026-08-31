@@ -148,7 +148,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         const SizedBox(height: 16),
         AppTextField(
-          label: 'Instituicao (opcional)',
+          label: 'Instituição (opcional)',
           controller: _institutionController,
           prefixIcon: Icons.account_balance_outlined,
           textInputAction: TextInputAction.next,
@@ -186,12 +186,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           const SizedBox(height: 16),
           AppTextField(
-            label: 'Titulacao',
+            label: 'Titulação',
             controller: _degreeController,
             prefixIcon: Icons.workspace_premium_outlined,
             textInputAction: TextInputAction.done,
             validator: (value) =>
-                Validators.requiredField(value, label: 'Titulacao'),
+                Validators.requiredField(value, label: 'Titulação'),
           ),
         ],
         const SizedBox(height: 24),
@@ -231,7 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       await context.read<AuthProvider>().register(data);
       if (!mounted) return;
-      AppSnackbar.showSuccess(context, 'Conta criada. Agora voce pode entrar.');
+      AppSnackbar.showSuccess(context, 'Conta criada. Agora você pode entrar.');
       context.go('/login');
     } on DioException catch (error) {
       if (!mounted) return;
