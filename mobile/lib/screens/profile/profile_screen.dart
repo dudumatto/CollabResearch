@@ -9,6 +9,7 @@ import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/academic/academic_widgets.dart';
 
@@ -144,7 +145,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       body: user == null
-          ? const ProfileSkeleton()
+          ? (auth.isLoading
+              ? const ProfileSkeleton()
+              : AppErrorState(
+                  message: 'Não foi possível carregar seu perfil.',
+                  onRetry: auth.refreshProfile,
+                ))
           : LayoutBuilder(
               builder: (context, pageConstraints) {
                 // Mobile-only: usa a largura real disponível para o corpo da tela.

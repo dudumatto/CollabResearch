@@ -116,12 +116,16 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
         ),
       ),
     );
+    final titleText = title.text.trim();
+    final categoryText = category.text.trim();
+    title.dispose();
+    category.dispose();
     if (submitted != true || file == null || !mounted) return;
     final success =
         await context.read<AcademicWorkspaceProvider>().createDelivery(
               projectId: project.id,
-              title: title.text.trim(),
-              category: category.text.trim(),
+              title: titleText,
+              category: categoryText,
               file: file!,
             );
     if (!mounted) return;
@@ -329,6 +333,8 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
         ),
       ),
     );
+    final commentText = comment.text.trim();
+    comment.dispose();
     if (confirmed != true || !mounted) return;
     final academic = context.read<AcademicWorkspaceProvider>();
     final success = await academic.reviewDelivery(
@@ -336,7 +342,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
       deliveryId: delivery.id,
       versionId: version.id,
       decision: decision,
-      comment: comment.text.trim(),
+      comment: commentText,
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(

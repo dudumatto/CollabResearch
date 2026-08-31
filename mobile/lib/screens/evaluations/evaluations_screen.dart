@@ -63,7 +63,7 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (sheetContext) => Padding(
+      builder: (sheetContext) => SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
           20,
           20,
@@ -103,12 +103,14 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
         ),
       ),
     );
+    final commentText = comment.text.trim();
+    comment.dispose();
     if (confirmed != true || !mounted) return;
     final academic = context.read<AcademicWorkspaceProvider>();
     final success = await academic.acknowledgeEvaluation(
       evaluation.projectId,
       evaluation.id,
-      comment.text.trim(),
+      commentText,
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(

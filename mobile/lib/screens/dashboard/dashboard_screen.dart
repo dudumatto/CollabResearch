@@ -75,14 +75,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 summary == null &&
                 notifications.isEmpty;
         if (isInitialLoading) {
-          return const Scaffold(body: DashboardSkeleton());
+          return const Scaffold(
+            body: SafeArea(bottom: false, child: DashboardSkeleton()),
+          );
         }
 
         final errorMessage =
             dashboardProvider.errorMessage ?? notificationProvider.errorMessage;
         if (errorMessage != null) {
           return Scaffold(
-            body: RefreshIndicator(
+            body: SafeArea(
+              bottom: false,
+              child: RefreshIndicator(
               onRefresh: () => _refresh(
                 dashboardProvider,
                 notificationProvider,
@@ -106,12 +110,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ],
               ),
+              ),
             ),
           );
         }
 
         return Scaffold(
-          body: RefreshIndicator(
+          body: SafeArea(
+            bottom: false,
+            child: RefreshIndicator(
             onRefresh: () => _refresh(
               dashboardProvider,
               notificationProvider,
@@ -313,6 +320,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 );
               },
+            ),
             ),
           ),
         );

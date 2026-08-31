@@ -49,8 +49,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         ],
       ),
     );
+    if (confirmed != true || !mounted) return;
     final userId = _userId;
-    if (confirmed != true || userId == null || !mounted) return;
+    if (userId == null) return;
     final academic = context.read<AcademicWorkspaceProvider>();
     final success = await academic.deleteDocument(document.id, userId);
     if (!mounted) return;

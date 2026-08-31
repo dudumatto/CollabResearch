@@ -43,6 +43,24 @@ class _AgendaScreenState extends State<AgendaScreen> {
     await context.read<AcademicWorkspaceProvider>().loadAgenda(projects);
   }
 
+  Future<bool> _completeStage(
+    AcademicWorkspaceProvider academic,
+    ProjectStage stage,
+  ) async {
+    final success = await academic.completeStage(stage.projectId, stage.id);
+    if (!mounted) return success;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Etapa concluída.'
+              : academic.errorMessage ?? 'Não foi possível concluir a etapa.',
+        ),
+      ),
+    );
+    return success;
+  }
+
   List<ProjectStage> _allItems(
     ResearchActivityProvider projects,
     AcademicWorkspaceProvider academic,
@@ -197,10 +215,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                           (stage.responsible == 'AMBOS' ||
                               stage.responsible == role),
                       busy: academic.isLoading,
-                      onComplete: () => academic.completeStage(
-                        stage.projectId,
-                        stage.id,
-                      ),
+                      onComplete: () => _completeStage(academic, stage),
                     ),
                     const SizedBox(height: 12),
                   ],
