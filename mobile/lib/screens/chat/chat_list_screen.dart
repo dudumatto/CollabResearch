@@ -6,8 +6,9 @@ import '../../models/conversation.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../widgets/chat/conversation_tile.dart';
+import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
-import '../../widgets/common/loading_indicator.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -83,7 +84,25 @@ class _ChatListScreenState extends State<ChatListScreen> {
       body: Consumer<ChatProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.conversations.isEmpty) {
-            return const LoadingIndicator(label: 'Carregando conversas...');
+            return const ConversationListSkeleton();
+          }
+
+          if (provider.errorMessage != null) {
+            return RefreshIndicator(
+              onRefresh: provider.loadConversations,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: AppErrorState(
+                      message: provider.errorMessage!,
+                      onRetry: provider.loadConversations,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           final normalizedQuery = _query.trim().toLowerCase();
@@ -128,16 +147,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    if (provider.errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(
-                          provider.errorMessage!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                      ),
                     if (conversations.isEmpty)
                       SizedBox(
                         height: 280,

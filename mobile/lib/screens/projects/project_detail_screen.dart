@@ -8,8 +8,9 @@ import '../../providers/project_provider.dart';
 import '../../providers/subscription_provider.dart';
 import '../../widgets/common/app_badge.dart';
 import '../../widgets/common/app_button.dart';
+import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
-import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/academic/academic_widgets.dart';
 import '../../widgets/projects/collaborator_list.dart';
 
@@ -23,6 +24,8 @@ class ProjectDetailScreen extends StatefulWidget {
 }
 
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
+  bool _isSubscribing = false;
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +36,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Future<void> _subscribe(ProjectProvider provider, String projectId) async {
-    final subscribed = await provider.subscribeToProject(projectId);
+    if (_isSubscribing) return;
+    setState(() => _isSubscribing = true);
+    late final bool subscribed;
+    try {
+      subscribed = await provider.subscribeToProject(projectId);
+    } finally {
+      if (mounted) setState(() => _isSubscribing = false);
+    }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -99,7 +109,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           final project = provider.findProject(widget.projectId);
 
           if (provider.isLoading && project == null) {
-            return const LoadingIndicator(label: 'Carregando projeto...');
+            return const ProjectDetailSkeleton();
+          }
+
+          if (project == null && provider.errorMessage != null) {
+            return AppErrorState(
+              message: provider.errorMessage!,
+              onRetry: () => provider.loadProject(widget.projectId),
+            );
           }
 
           if (project == null) {
@@ -195,7 +212,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               if (canSubscribe) ...[
                 AppButton(
                   label: 'Inscrever-se',
-                  isLoading: provider.isLoading,
+                  isLoading: _isSubscribing,
                   onPressed: () => _subscribe(provider, project.id),
                 ),
               ],

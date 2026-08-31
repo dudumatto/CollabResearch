@@ -7,8 +7,9 @@ import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../widgets/chat/chat_input_bar.dart';
 import '../../widgets/chat/message_bubble.dart';
+import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
-import '../../widgets/common/loading_indicator.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   const ChatDetailScreen({
@@ -30,6 +31,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final _controller = TextEditingController();
   final Map<String, GlobalKey> _messageKeys = <String, GlobalKey>{};
   String? _lastScrolledTargetMessageId;
+  bool _isSending = false;
 
   @override
   void initState() {
@@ -66,9 +68,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   Future<void> _sendMessage() async {
-    final sent = await context
-        .read<ChatProvider>()
-        .sendMessage(widget.conversationId, _controller.text);
+    if (_isSending || context.read<ChatProvider>().isSending) return;
+    setState(() => _isSending = true);
+    late final bool sent;
+    try {
+      sent = await context
+          .read<ChatProvider>()
+          .sendMessage(widget.conversationId, _controller.text);
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+    if (!mounted) return;
     if (sent) {
       _controller.clear();
     }
@@ -77,31 +87,46 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Future<void> _showEditDialog(Message message) async {
     final editController = TextEditingController(text: message.content);
     final provider = context.read<ChatProvider>();
+    var isSaving = false;
     final updated = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Editar mensagem'),
-        content: TextField(
-          controller: editController,
-          autofocus: true,
-          minLines: 1,
-          maxLines: 4,
-          decoration: const InputDecoration(hintText: 'Digite a mensagem'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Editar mensagem'),
+          content: TextField(
+            controller: editController,
+            autofocus: true,
+            minLines: 1,
+            maxLines: 4,
+            decoration: const InputDecoration(hintText: 'Digite a mensagem'),
+          ),
+          actions: [
+            TextButton(
+              onPressed:
+                  isSaving ? null : () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: isSaving
+                  ? null
+                  : () async {
+                      setDialogState(() => isSaving = true);
+                      final saved = await provider.editMessage(
+                        message.id,
+                        editController.text,
+                      );
+                      if (context.mounted) Navigator.of(context).pop(saved);
+                    },
+              child: isSaving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Salvar'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final saved =
-                  await provider.editMessage(message.id, editController.text);
-              if (context.mounted) Navigator.of(context).pop(saved);
-            },
-            child: const Text('Salvar'),
-          ),
-        ],
       ),
     );
     editController.dispose();
@@ -112,28 +137,41 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   Future<void> _showDeleteDialog(Message message) async {
     final provider = context.read<ChatProvider>();
+    var isDeleting = false;
     final deleted = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir mensagem'),
-        content: const Text(
-          'Tem certeza que deseja excluir esta mensagem? Esta acao nao pode ser desfeita.',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Excluir mensagem'),
+          content: const Text(
+            'Tem certeza que deseja excluir esta mensagem? Esta acao nao pode ser desfeita.',
+          ),
+          actions: [
+            TextButton(
+              onPressed:
+                  isDeleting ? null : () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: isDeleting
+                  ? null
+                  : () async {
+                      setDialogState(() => isDeleting = true);
+                      final deleted = await provider.deleteMessage(message.id);
+                      if (context.mounted) Navigator.of(context).pop(deleted);
+                    },
+              icon: isDeleting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.delete_outline, size: 18),
+              label: const Text('Excluir'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton.icon(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () async {
-              final deleted = await provider.deleteMessage(message.id);
-              if (context.mounted) Navigator.of(context).pop(deleted);
-            },
-            icon: const Icon(Icons.delete_outline, size: 18),
-            label: const Text('Excluir'),
-          ),
-        ],
       ),
     );
     if (deleted == false && mounted) {
@@ -228,6 +266,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             Theme.of(context).brightness == Brightness.light
                 ? AppColors.surfaceTint
                 : AppColors.darkBackground;
+        final isSending = _isSending || provider.isSending;
 
         return Scaffold(
           backgroundColor: conversationBackground,
@@ -287,7 +326,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           ),
           body: Column(
             children: [
-              if (provider.errorMessage != null)
+              if (provider.errorMessage != null && provider.messages.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: Container(
@@ -305,71 +344,111 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
               Expanded(
                 child: provider.isLoading && provider.messages.isEmpty
-                    ? const LoadingIndicator(label: 'Carregando mensagens...')
-                    : provider.messages.isEmpty
-                        ? const EmptyState(
-                            title: 'Nenhuma mensagem',
-                            subtitle:
-                                'Envie a primeira mensagem desta conversa.',
+                    ? const MessageListSkeleton()
+                    : provider.errorMessage != null && provider.messages.isEmpty
+                        ? AppErrorState(
+                            message: provider.errorMessage!,
+                            onRetry: () => provider.loadMessages(
+                              widget.conversationId,
+                            ),
                           )
-                        : ListView.builder(
-                            keyboardDismissBehavior:
-                                ScrollViewKeyboardDismissBehavior.onDrag,
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                            itemCount: provider.messages.length,
-                            itemBuilder: (context, index) {
-                              final message = provider.messages[index];
-                              final isMine = message.isMine ||
-                                  message.senderId == currentUserId;
-                              final isTarget =
-                                  message.id == widget.targetMessageId;
-                              return Column(
-                                key: message.id.isEmpty
-                                    ? null
-                                    : _messageKey(message.id),
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  if (_shouldShowDateDivider(
-                                      provider.messages, index))
-                                    _DateDivider(
-                                        label: _formatDay(message.sentAt)),
-                                  AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    decoration: BoxDecoration(
-                                      border: isTarget
-                                          ? Border.all(
-                                              color: AppColors.accent,
-                                              width: 1.4,
-                                            )
-                                          : null,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: isTarget
-                                        ? const EdgeInsets.symmetric(
-                                            horizontal: 4,
-                                          )
-                                        : EdgeInsets.zero,
-                                    child: MessageBubble(
-                                      message: message,
-                                      currentUserId: currentUserId,
-                                      onEdit: isMine
-                                          ? () => _showEditDialog(message)
-                                          : null,
-                                      onDelete: isMine
-                                          ? () => _showDeleteDialog(message)
-                                          : null,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
+                        : provider.messages.isEmpty
+                            ? const EmptyState(
+                                title: 'Nenhuma mensagem',
+                                subtitle:
+                                    'Envie a primeira mensagem desta conversa.',
+                              )
+                            : ListView.builder(
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                                itemCount: provider.messages.length,
+                                itemBuilder: (context, index) {
+                                  final message = provider.messages[index];
+                                  final isMine = message.isMine ||
+                                      message.senderId == currentUserId;
+                                  final isTarget =
+                                      message.id == widget.targetMessageId;
+                                  return Column(
+                                    key: message.id.isEmpty
+                                        ? null
+                                        : _messageKey(message.id),
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      if (_shouldShowDateDivider(
+                                          provider.messages, index))
+                                        _DateDivider(
+                                            label: _formatDay(message.sentAt)),
+                                      AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        decoration: BoxDecoration(
+                                          border: isTarget
+                                              ? Border.all(
+                                                  color: AppColors.accent,
+                                                  width: 1.4,
+                                                )
+                                              : null,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        padding: isTarget
+                                            ? const EdgeInsets.symmetric(
+                                                horizontal: 4,
+                                              )
+                                            : EdgeInsets.zero,
+                                        child: MessageBubble(
+                                          message: message,
+                                          currentUserId: currentUserId,
+                                          onEdit: isMine
+                                              ? () => _showEditDialog(message)
+                                              : null,
+                                          onDelete: isMine
+                                              ? () => _showDeleteDialog(message)
+                                              : null,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
-                child: ChatInputBar(
-                  controller: _controller,
-                  onSend: provider.isSending ? () {} : _sendMessage,
+                child: Stack(
+                  alignment: Alignment.centerRight,
+                  children: [
+                    AbsorbPointer(
+                      absorbing: isSending,
+                      child: ChatInputBar(
+                        controller: _controller,
+                        onSend: _sendMessage,
+                      ),
+                    ),
+                    if (isSending)
+                      Positioned(
+                        right: 5,
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colorScheme.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],

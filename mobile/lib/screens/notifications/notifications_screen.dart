@@ -4,8 +4,9 @@ import 'package:provider/provider.dart';
 
 import '../../models/app_notification.dart';
 import '../../providers/notification_provider.dart';
+import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
-import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/notifications/notification_tile.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -68,7 +69,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: Consumer<NotificationProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.notifications.isEmpty) {
-            return const LoadingIndicator(label: 'Carregando notificacoes...');
+            return const NotificationListSkeleton();
+          }
+
+          if (provider.errorMessage != null) {
+            return RefreshIndicator(
+              onRefresh: provider.loadNotifications,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: AppErrorState(
+                      message: provider.errorMessage!,
+                      onRetry: provider.loadNotifications,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           return RefreshIndicator(
@@ -102,15 +121,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        if (provider.errorMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(
-                              provider.errorMessage!,
-                              style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error),
-                            ),
-                          ),
                         if (provider.notifications.isEmpty)
                           const SizedBox(
                             height: 280,

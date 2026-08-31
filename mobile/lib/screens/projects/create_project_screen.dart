@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_error_state.dart';
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/loading_indicator.dart';
 
@@ -150,11 +151,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                             ),
                             if (provider.errorMessage != null) ...[
                               const SizedBox(height: 16),
-                              Text(
-                                provider.errorMessage!,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
+                              AppErrorState(
+                                message: provider.errorMessage!,
+                                onRetry: _loadOptions,
                               ),
                             ],
                             const SizedBox(height: 24),
@@ -334,8 +333,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                   ? null
                                   : _save,
                             ),
-                            if (provider.areas.isEmpty ||
-                                (_isStudent && provider.advisors.isEmpty)) ...[
+                            if (provider.errorMessage == null &&
+                                (provider.areas.isEmpty ||
+                                    (_isStudent &&
+                                        provider.advisors.isEmpty))) ...[
                               const SizedBox(height: 8),
                               TextButton.icon(
                                 onPressed: _loadOptions,

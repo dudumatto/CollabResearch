@@ -7,7 +7,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/notification_provider.dart';
-import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/academic/academic_widgets.dart';
 import '../../widgets/dashboard/activity_chart.dart';
 import '../../widgets/dashboard/recent_activity_list.dart';
@@ -43,6 +44,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _refresh(
+    DashboardProvider dashboardProvider,
+    NotificationProvider notificationProvider,
+    AcademicWorkspaceProvider academic,
+    bool isAdvisor,
+  ) {
+    return Future.wait([
+      dashboardProvider.load(),
+      notificationProvider.loadNotifications(),
+      if (isAdvisor) academic.loadAdvisorDashboard(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<DashboardProvider, NotificationProvider>(
@@ -56,21 +70,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 'ORIENTADOR';
         final advisorSummary = academic.advisorSummary;
 
-        if (dashboardProvider.isLoading && summary == null) {
-          return const Scaffold(
-            body: LoadingIndicator(label: 'Carregando dashboard...'),
+        final isInitialLoading =
+            (dashboardProvider.isLoading || notificationProvider.isLoading) &&
+                summary == null &&
+                notifications.isEmpty;
+        if (isInitialLoading) {
+          return const Scaffold(body: DashboardSkeleton());
+        }
+
+        final errorMessage =
+            dashboardProvider.errorMessage ?? notificationProvider.errorMessage;
+        if (errorMessage != null) {
+          return Scaffold(
+            body: RefreshIndicator(
+              onRefresh: () => _refresh(
+                dashboardProvider,
+                notificationProvider,
+                academic,
+                isAdvisor,
+              ),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: AppErrorState(
+                      message: errorMessage,
+                      onRetry: () => _refresh(
+                        dashboardProvider,
+                        notificationProvider,
+                        academic,
+                        isAdvisor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         }
 
         return Scaffold(
           body: RefreshIndicator(
-            onRefresh: () async {
-              await Future.wait([
-                dashboardProvider.load(),
-                notificationProvider.loadNotifications(),
-                if (isAdvisor) academic.loadAdvisorDashboard(),
-              ]);
-            },
+            onRefresh: () => _refresh(
+              dashboardProvider,
+              notificationProvider,
+              academic,
+              isAdvisor,
+            ),
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final isCompact = constraints.maxWidth < 420;
@@ -102,15 +149,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               onOpenAlerts: () => context.go('/notifications'),
                             ),
                             const SizedBox(height: 18),
-                            if (dashboardProvider.errorMessage != null) ...[
-                              Text(
-                                dashboardProvider.errorMessage!,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                            ],
                             _StatsGrid(
                                 children: isAdvisor
                                     ? [

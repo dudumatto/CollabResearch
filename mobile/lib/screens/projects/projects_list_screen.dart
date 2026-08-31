@@ -5,8 +5,9 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/empty_state.dart';
-import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/projects/project_card.dart';
 import '../../widgets/projects/project_filter_bar.dart';
 
@@ -86,7 +87,25 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
       body: Consumer<ProjectProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.projects.isEmpty) {
-            return const LoadingIndicator(label: 'Carregando projetos...');
+            return const ProjectListSkeleton();
+          }
+
+          if (provider.errorMessage != null) {
+            return RefreshIndicator(
+              onRefresh: () => _loadProjects(provider),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: AppErrorState(
+                      message: provider.errorMessage!,
+                      onRetry: () => _loadProjects(provider),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           return RefreshIndicator(
@@ -159,16 +178,6 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        if (provider.errorMessage != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(
-                              provider.errorMessage!,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                            ),
-                          ),
                         if (provider.projects.isEmpty)
                           const SizedBox(
                             height: 280,

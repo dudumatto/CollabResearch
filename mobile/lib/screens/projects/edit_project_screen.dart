@@ -8,9 +8,10 @@ import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_card.dart';
+import '../../widgets/common/app_error_state.dart';
+import '../../widgets/common/app_skeletons.dart';
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/empty_state.dart';
-import '../../widgets/common/loading_indicator.dart';
 
 class EditProjectScreen extends StatefulWidget {
   const EditProjectScreen({super.key, required this.projectId});
@@ -114,12 +115,14 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Editar projeto')),
       body: !_initialized && (provider.isLoading || provider.isFormLoading)
-          ? const LoadingIndicator(label: 'Carregando projeto...')
+          ? const ProjectDetailSkeleton()
           : _project == null
-              ? EmptyState(
-                  title: 'Projeto nao encontrado',
-                  subtitle: provider.errorMessage,
-                )
+              ? provider.errorMessage != null
+                  ? AppErrorState(
+                      message: provider.errorMessage!,
+                      onRetry: _load,
+                    )
+                  : const EmptyState(title: 'Projeto nao encontrado')
               : ListView(
                   padding: const EdgeInsets.all(20),
                   children: [
@@ -142,12 +145,9 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                 ),
                                 if (provider.errorMessage != null) ...[
                                   const SizedBox(height: 16),
-                                  Text(
-                                    provider.errorMessage!,
-                                    style: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    ),
+                                  AppErrorState(
+                                    message: provider.errorMessage!,
+                                    onRetry: _load,
                                   ),
                                 ],
                                 const SizedBox(height: 24),
