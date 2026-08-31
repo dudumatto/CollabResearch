@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/animation/app_durations.dart';
 import '../core/navigation/navigation_service.dart';
 import '../providers/auth_provider.dart';
 import '../screens/auth/login_screen.dart';
@@ -26,6 +28,64 @@ import '../screens/settings/settings_screen.dart';
 import '../screens/subscriptions/subscriptions_screen.dart';
 import '../screens/shell/app_shell.dart';
 import '../screens/agenda/agenda_screen.dart';
+
+CustomTransitionPage<void> _fadePage(
+  BuildContext context,
+  GoRouterState state,
+  Widget child, {
+  Duration duration = AppDurations.normal,
+}) {
+  final animationsDisabled = MediaQuery.disableAnimationsOf(context);
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    transitionDuration: animationsDisabled ? AppDurations.instant : duration,
+    reverseTransitionDuration:
+        animationsDisabled ? AppDurations.instant : duration,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (animationsDisabled) return child;
+      return FadeTransition(
+        opacity: CurvedAnimation(
+          parent: animation,
+          curve: AppCurves.enter,
+          reverseCurve: AppCurves.exit,
+        ),
+        child: child,
+      );
+    },
+  );
+}
+
+CustomTransitionPage<void> _slidePage(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+) {
+  final animationsDisabled = MediaQuery.disableAnimationsOf(context);
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    transitionDuration:
+        animationsDisabled ? AppDurations.instant : AppDurations.normal,
+    reverseTransitionDuration:
+        animationsDisabled ? AppDurations.instant : AppDurations.normal,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (animationsDisabled) return child;
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: AppCurves.enter,
+        reverseCurve: AppCurves.exit,
+      );
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.08, 0),
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      );
+    },
+  );
+}
 
 GoRouter createAppRouter(AuthProvider authProvider) {
   return GoRouter(
@@ -61,21 +121,18 @@ GoRouter createAppRouter(AuthProvider authProvider) {
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: LandingScreen(),
-        ),
+        pageBuilder: (context, state) =>
+            _fadePage(context, state, const LandingScreen()),
       ),
       GoRoute(
         path: '/login',
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: LoginScreen(),
-        ),
+        pageBuilder: (context, state) =>
+            _fadePage(context, state, const LoginScreen()),
       ),
       GoRoute(
         path: '/register',
-        pageBuilder: (context, state) => const NoTransitionPage(
-          child: RegisterScreen(),
-        ),
+        pageBuilder: (context, state) =>
+            _fadePage(context, state, const RegisterScreen()),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
@@ -85,8 +142,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/dashboard',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: DashboardScreen(),
+                pageBuilder: (context, state) => _fadePage(
+                  context,
+                  state,
+                  const DashboardScreen(),
+                  duration: AppDurations.fast,
                 ),
               ),
             ],
@@ -95,23 +155,39 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/projects',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: ProjectsListScreen(),
+                pageBuilder: (context, state) => _fadePage(
+                  context,
+                  state,
+                  const ProjectsListScreen(),
+                  duration: AppDurations.fast,
                 ),
                 routes: [
                   GoRoute(
                     path: 'create',
-                    builder: (context, state) => const CreateProjectScreen(),
+                    pageBuilder: (context, state) => _slidePage(
+                      context,
+                      state,
+                      const CreateProjectScreen(),
+                    ),
                   ),
                   GoRoute(
                     path: ':id',
-                    builder: (context, state) => ProjectDetailScreen(
-                        projectId: state.pathParameters['id']!),
+                    pageBuilder: (context, state) => _slidePage(
+                      context,
+                      state,
+                      ProjectDetailScreen(
+                        projectId: state.pathParameters['id']!,
+                      ),
+                    ),
                     routes: [
                       GoRoute(
                         path: 'edit',
-                        builder: (context, state) => EditProjectScreen(
-                          projectId: state.pathParameters['id']!,
+                        pageBuilder: (context, state) => _slidePage(
+                          context,
+                          state,
+                          EditProjectScreen(
+                            projectId: state.pathParameters['id']!,
+                          ),
                         ),
                       ),
                     ],
@@ -124,20 +200,28 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/chat',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: ChatListScreen(),
+                pageBuilder: (context, state) => _fadePage(
+                  context,
+                  state,
+                  const ChatListScreen(),
+                  duration: AppDurations.fast,
                 ),
                 routes: [
                   GoRoute(
                     path: ':conversationId',
-                    builder: (context, state) {
+                    pageBuilder: (context, state) {
                       final extra = state.extra;
-                      return ChatDetailScreen(
-                        conversationId: state.pathParameters['conversationId']!,
-                        conversationTitle: extra is String ? extra : null,
-                        targetMessageId:
-                            state.uri.queryParameters['messageId'] ??
-                                state.uri.queryParameters['mensagemId'],
+                      return _slidePage(
+                        context,
+                        state,
+                        ChatDetailScreen(
+                          conversationId:
+                              state.pathParameters['conversationId']!,
+                          conversationTitle: extra is String ? extra : null,
+                          targetMessageId:
+                              state.uri.queryParameters['messageId'] ??
+                                  state.uri.queryParameters['mensagemId'],
+                        ),
                       );
                     },
                   ),
@@ -149,10 +233,13 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/agenda',
-                pageBuilder: (context, state) => NoTransitionPage(
-                  child: AgendaScreen(
+                pageBuilder: (context, state) => _fadePage(
+                  context,
+                  state,
+                  AgendaScreen(
                     projectId: state.uri.queryParameters['projectId'],
                   ),
+                  duration: AppDurations.fast,
                 ),
               ),
             ],
@@ -161,8 +248,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/notifications',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: NotificationsScreen(),
+                pageBuilder: (context, state) => _fadePage(
+                  context,
+                  state,
+                  const NotificationsScreen(),
+                  duration: AppDurations.fast,
                 ),
               ),
             ],
@@ -171,8 +261,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/profile',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: ProfileScreen(),
+                pageBuilder: (context, state) => _fadePage(
+                  context,
+                  state,
+                  const ProfileScreen(),
+                  duration: AppDurations.fast,
                 ),
               ),
             ],
@@ -181,54 +274,74 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       ),
       GoRoute(
         path: '/advisees',
-        builder: (context, state) => const AdviseesScreen(),
+        pageBuilder: (context, state) =>
+            _slidePage(context, state, const AdviseesScreen()),
         routes: [
           GoRoute(
             path: ':studentId',
-            builder: (context, state) => AdviseeDetailScreen(
-              studentId: state.pathParameters['studentId']!,
-              projectId: state.uri.queryParameters['projectId'],
+            pageBuilder: (context, state) => _slidePage(
+              context,
+              state,
+              AdviseeDetailScreen(
+                studentId: state.pathParameters['studentId']!,
+                projectId: state.uri.queryParameters['projectId'],
+              ),
             ),
           ),
         ],
       ),
       GoRoute(
         path: '/documents',
-        builder: (context, state) => const DocumentsScreen(),
+        pageBuilder: (context, state) =>
+            _slidePage(context, state, const DocumentsScreen()),
       ),
       GoRoute(
         path: '/users/:id',
-        builder: (context, state) => UserProfileScreen(
-          userId: state.pathParameters['id']!,
+        pageBuilder: (context, state) => _slidePage(
+          context,
+          state,
+          UserProfileScreen(userId: state.pathParameters['id']!),
         ),
       ),
       GoRoute(
         path: '/deliveries',
-        builder: (context, state) => DeliveriesScreen(
-          projectId: state.uri.queryParameters['projectId'],
+        pageBuilder: (context, state) => _slidePage(
+          context,
+          state,
+          DeliveriesScreen(
+            projectId: state.uri.queryParameters['projectId'],
+          ),
         ),
       ),
       GoRoute(
         path: '/evaluations',
-        builder: (context, state) => EvaluationsScreen(
-          projectId: state.uri.queryParameters['projectId'],
+        pageBuilder: (context, state) => _slidePage(
+          context,
+          state,
+          EvaluationsScreen(
+            projectId: state.uri.queryParameters['projectId'],
+          ),
         ),
       ),
       GoRoute(
         path: '/subscriptions',
-        builder: (context, state) => const SubscriptionsScreen(),
+        pageBuilder: (context, state) =>
+            _slidePage(context, state, const SubscriptionsScreen()),
       ),
       GoRoute(
         path: '/progress',
-        builder: (context, state) => const ProgressScreen(),
+        pageBuilder: (context, state) =>
+            _slidePage(context, state, const ProgressScreen()),
       ),
       GoRoute(
         path: '/feedback',
-        builder: (context, state) => const FeedbackScreen(),
+        pageBuilder: (context, state) =>
+            _slidePage(context, state, const FeedbackScreen()),
       ),
       GoRoute(
         path: '/settings',
-        builder: (context, state) => const SettingsScreen(),
+        pageBuilder: (context, state) =>
+            _slidePage(context, state, const SettingsScreen()),
       ),
     ],
   );

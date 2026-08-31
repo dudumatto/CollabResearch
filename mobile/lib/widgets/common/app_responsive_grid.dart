@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/animation/app_animations.dart';
 import '../../core/theme/app_spacing.dart';
 
 class AppResponsiveGrid extends StatelessWidget {
@@ -46,7 +47,10 @@ class AppResponsiveGrid extends StatelessWidget {
             mainAxisSpacing: spacing,
             childAspectRatio: childAspectRatio,
           ),
-          itemBuilder: (context, index) => children[index],
+          itemBuilder: (context, index) => StaggeredFadeSlideIn(
+            index: index,
+            child: children[index],
+          ),
         );
       },
     );

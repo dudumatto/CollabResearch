@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/animation/app_durations.dart';
 import '../../core/theme/app_spacing.dart';
 
 enum AppButtonVariant { primary, secondary, text, icon }
@@ -23,16 +24,18 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final animationsDisabled = MediaQuery.disableAnimationsOf(context);
     final content = AnimatedSwitcher(
-      duration: const Duration(milliseconds: 180),
-      switchInCurve: Curves.easeOut,
-      switchOutCurve: Curves.easeIn,
+      duration: animationsDisabled ? AppDurations.instant : AppDurations.fast,
+      switchInCurve: AppCurves.enter,
+      switchOutCurve: AppCurves.exit,
       child: isLoading
           ? SizedBox(
               key: const ValueKey('loading'),
               height: 18,
               width: 18,
               child: CircularProgressIndicator(
+                value: animationsDisabled ? 0.65 : null,
                 strokeWidth: 2,
                 color: variant == AppButtonVariant.primary
                     ? colorScheme.onPrimary

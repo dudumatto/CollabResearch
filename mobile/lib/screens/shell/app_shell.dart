@@ -19,12 +19,12 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell>
     with SingleTickerProviderStateMixin {
   static const _destinations = [
-    _ShellDestination(Icons.home_outlined, 'Início'),
-    _ShellDestination(Icons.folder_open_outlined, 'Projetos'),
-    _ShellDestination(Icons.chat_bubble_outline, 'Chat'),
-    _ShellDestination(Icons.calendar_month_outlined, 'Agenda'),
-    _ShellDestination(Icons.notifications_none, 'Alertas'),
-    _ShellDestination(Icons.person_outline, 'Perfil'),
+    _ShellDestination(Icons.home_rounded, 'Início'),
+    _ShellDestination(Icons.folder_rounded, 'Projetos'),
+    _ShellDestination(Icons.chat_bubble_rounded, 'Chat'),
+    _ShellDestination(Icons.calendar_month_rounded, 'Agenda'),
+    _ShellDestination(Icons.notifications_rounded, 'Alertas'),
+    _ShellDestination(Icons.person_rounded, 'Perfil'),
   ];
 
   late final AnimationController _pageTransitionController;
@@ -159,7 +159,7 @@ class _AppShellState extends State<AppShell>
   }
 }
 
-class _MobileNavigationBar extends StatelessWidget {
+class _MobileNavigationBar extends StatefulWidget {
   const _MobileNavigationBar({
     required this.destinations,
     required this.selectedIndex,
@@ -177,68 +177,112 @@ class _MobileNavigationBar extends StatelessWidget {
   final int Function(String, int, int) badgeCount;
 
   @override
+  State<_MobileNavigationBar> createState() => _MobileNavigationBarState();
+}
+
+class _MobileNavigationBarState extends State<_MobileNavigationBar> {
+  int? _pressedIndex;
+
+  void _handleDestinationSelected(int index) {
+    setState(() => _pressedIndex = index);
+    widget.onDestinationSelected(index);
+
+    Future<void>.delayed(const Duration(milliseconds: 170), () {
+      if (mounted && _pressedIndex == index) {
+        setState(() => _pressedIndex = null);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isCompact = MediaQuery.sizeOf(context).width < 360;
+    final width = MediaQuery.sizeOf(context).width;
+    final isUltraCompact = width <= 340;
+    final isCompact = width <= 380;
     final textScale = MediaQuery.textScalerOf(context).scale(1);
     final extraHeight = ((textScale - 1).clamp(0, 1)).toDouble() * 18;
+    final baseHeight = isUltraCompact ? 64.0 : (isCompact ? 68.0 : 72.0);
+    final iconSize = isUltraCompact ? 22.0 : (isCompact ? 23.0 : 24.0);
 
     return SafeArea(
       top: false,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.7),
-            ),
-          ),
-        ),
-        child: NavigationBarTheme(
-          data: NavigationBarThemeData(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            height: (isCompact ? 66 : 70) + extraHeight,
-            indicatorColor: Colors.transparent,
-            labelTextStyle: WidgetStateProperty.resolveWith((states) {
-              final selected = states.contains(WidgetState.selected);
-              return TextStyle(
-                color: selected
-                    ? colorScheme.primary
-                    : colorScheme.onSurfaceVariant,
-                fontSize: isCompact ? 9.5 : 10.5,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              );
-            }),
-          ),
-          child: NavigationBar(
-            selectedIndex: selectedIndex,
-            onDestinationSelected: onDestinationSelected,
-            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-            destinations: [
-              for (final destination in destinations)
-                NavigationDestination(
-                  icon: _AnimatedNavigationIcon(
-                    icon: destination.icon,
-                    selected: false,
-                    count: badgeCount(
-                      destination.label,
-                      chatUnreadCount,
-                      notificationUnreadCount,
+      child: ColoredBox(
+        color: colorScheme.surface,
+        child: SizedBox(
+          key: ValueKey('mobile-navigation-selected-${widget.selectedIndex}'),
+          height: baseHeight + extraHeight,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final (index, destination) in widget.destinations.indexed)
+                Expanded(
+                  child: Semantics(
+                    selected: widget.selectedIndex == index,
+                    button: true,
+                    label: destination.label,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        key: ValueKey(
+                          'mobile-navigation-${destination.label}',
+                        ),
+                        onTap: () => _handleDestinationSelected(index),
+                        borderRadius: BorderRadius.circular(16),
+                        overlayColor: WidgetStatePropertyAll(
+                          colorScheme.primary.withValues(alpha: 0.07),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            isUltraCompact ? 1 : 2,
+                            4,
+                            isUltraCompact ? 1 : 2,
+                            3,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _AnimatedNavigationIcon(
+                                icon: destination.icon,
+                                selected: widget.selectedIndex == index,
+                                pressed: _pressedIndex == index,
+                                count: widget.badgeCount(
+                                  destination.label,
+                                  widget.chatUnreadCount,
+                                  widget.notificationUnreadCount,
+                                ),
+                                iconSize: iconSize,
+                              ),
+                              const SizedBox(height: 2),
+                              AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeInOut,
+                                style: TextStyle(
+                                  color: widget.selectedIndex == index
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurfaceVariant,
+                                  fontSize: isUltraCompact
+                                      ? 8.5
+                                      : (isCompact ? 9.5 : 10.5),
+                                  fontWeight: widget.selectedIndex == index
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  height: 1.05,
+                                ),
+                                child: Text(
+                                  destination.label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.fade,
+                                  softWrap: false,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    color: colorScheme.onSurfaceVariant,
                   ),
-                  selectedIcon: _AnimatedNavigationIcon(
-                    icon: destination.icon,
-                    selected: true,
-                    count: badgeCount(
-                      destination.label,
-                      chatUnreadCount,
-                      notificationUnreadCount,
-                    ),
-                    color: colorScheme.primary,
-                  ),
-                  label: destination.label,
                 ),
             ],
           ),
@@ -252,27 +296,68 @@ class _AnimatedNavigationIcon extends StatelessWidget {
   const _AnimatedNavigationIcon({
     required this.icon,
     required this.selected,
+    required this.pressed,
     required this.count,
-    this.color,
+    required this.iconSize,
   });
 
   final IconData icon;
   final bool selected;
+  final bool pressed;
   final int count;
-  final Color? color;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
     const duration = Duration(milliseconds: 180);
+    final colorScheme = Theme.of(context).colorScheme;
+    final foreground = selected
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant.withValues(alpha: 0.9);
+
     return AnimatedSlide(
       duration: duration,
-      curve: Curves.easeOutCubic,
-      offset: selected ? const Offset(0, -0.04) : Offset.zero,
+      curve: Curves.easeInOut,
+      offset: selected ? const Offset(0, -0.03) : Offset.zero,
       child: AnimatedScale(
         duration: duration,
         curve: Curves.easeOutBack,
-        scale: selected ? 1.08 : 1,
-        child: _NavigationIcon(icon: icon, count: count, color: color),
+        scale: pressed ? 1.14 : (selected ? 1.06 : 1),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 210),
+          curve: Curves.easeInOut,
+          height: 38,
+          constraints: const BoxConstraints(minWidth: 40),
+          padding: const EdgeInsets.fromLTRB(8, 5, 8, 3),
+          decoration: BoxDecoration(
+            color: selected
+                ? colorScheme.primary.withValues(alpha: 0.12)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _NavigationIcon(
+                icon: icon,
+                count: count,
+                color: foreground,
+                size: iconSize,
+              ),
+              const SizedBox(height: 2.5),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 210),
+                curve: Curves.easeInOut,
+                width: selected ? 18 : 0,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -283,18 +368,20 @@ class _NavigationIcon extends StatelessWidget {
     required this.icon,
     required this.count,
     this.color,
+    this.size,
   });
 
   final IconData icon;
   final int count;
   final Color? color;
+  final double? size;
 
   @override
   Widget build(BuildContext context) {
     return Badge.count(
       count: count > 99 ? 99 : count,
       isLabelVisible: count > 0,
-      child: Icon(icon, color: color),
+      child: Icon(icon, color: color, size: size),
     );
   }
 }

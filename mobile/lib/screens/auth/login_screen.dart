@@ -123,24 +123,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 940),
-                    child: _AuthEntrance(
-                      child: isWide
-                          ? Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Expanded(child: _LoginBrandPanel()),
-                                const SizedBox(width: 20),
-                                formCard,
-                              ],
-                            )
-                          : Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const _MobileLoginHeader(),
-                                formCard,
-                              ],
-                            ),
-                    ),
+                    child: isWide
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Expanded(child: _LoginBrandPanel()),
+                              const SizedBox(width: 20),
+                              formCard,
+                            ],
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const _MobileLoginHeader(),
+                              formCard,
+                            ],
+                          ),
                   ),
                 ),
               ),
@@ -148,31 +146,6 @@ class _LoginScreenState extends State<LoginScreen> {
           },
         ),
       ),
-    );
-  }
-}
-
-class _AuthEntrance extends StatelessWidget {
-  const _AuthEntrance({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 420),
-      curve: Curves.easeOutCubic,
-      tween: Tween(begin: 0, end: 1),
-      builder: (context, value, animatedChild) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 16 * (1 - value)),
-            child: animatedChild,
-          ),
-        );
-      },
-      child: child,
     );
   }
 }

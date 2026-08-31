@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/animation/app_durations.dart';
 import '../../core/theme/app_spacing.dart';
 
 class LoadingIndicator extends StatelessWidget {
@@ -9,24 +10,32 @@ class LoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final animationsDisabled = MediaQuery.disableAnimationsOf(context);
+    final progress = SizedBox(
+      height: 30,
+      width: 30,
+      child: CircularProgressIndicator(
+        value: animationsDisabled ? 0.65 : null,
+        strokeWidth: 2.5,
+      ),
+    );
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.82, end: 1),
-            duration: const Duration(milliseconds: 450),
-            curve: Curves.easeOutBack,
-            builder: (context, value, child) => Transform.scale(
-              scale: value,
-              child: child,
+          if (animationsDisabled)
+            progress
+          else
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.82, end: 1),
+              duration: AppDurations.normal,
+              curve: AppCurves.enter,
+              builder: (context, value, child) => Transform.scale(
+                scale: value,
+                child: child,
+              ),
+              child: progress,
             ),
-            child: const SizedBox(
-              height: 30,
-              width: 30,
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            ),
-          ),
           const SizedBox(height: AppSpacing.md),
           Text(
             label,

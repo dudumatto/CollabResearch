@@ -62,45 +62,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 560),
-                    child: TweenAnimationBuilder<double>(
-                      duration: const Duration(milliseconds: 420),
-                      curve: Curves.easeOutCubic,
-                      tween: Tween(begin: 0, end: 1),
-                      builder: (context, value, child) => Opacity(
-                        opacity: value,
-                        child: Transform.translate(
-                          offset: Offset(0, 16 * (1 - value)),
-                          child: child,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CollabLogo(height: 34),
+                        const SizedBox(height: 18),
+                        Text(
+                          'Crie sua conta',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.w800),
                         ),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const CollabLogo(height: 34),
-                          const SizedBox(height: 18),
-                          Text(
-                            'Crie sua conta',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.w800),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Informe seu vínculo acadêmico para personalizar a experiência.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 24),
+                        AppCard(
+                          padding: const EdgeInsets.all(24),
+                          child: Form(
+                            key: _formKey,
+                            child: _buildForm(context, auth),
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Informe seu vínculo acadêmico para personalizar a experiência.',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: 24),
-                          AppCard(
-                            padding: const EdgeInsets.all(24),
-                            child: Form(
-                              key: _formKey,
-                              child: _buildForm(context, auth),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

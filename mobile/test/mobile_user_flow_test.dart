@@ -64,12 +64,12 @@ void main() {
       ),
     );
 
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
     expect(find.text('CollabResearch'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(AppButton, 'Começar agora'));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
     expect(find.text('Crie sua conta'), findsOneWidget);
     expect(find.text('Aluno'), findsOneWidget);
@@ -96,7 +96,7 @@ void main() {
       scrollable: find.byType(Scrollable).last,
     );
     await tester.tap(find.byKey(const Key('register-submit')));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
     expect(auth.registerCalls, 1);
     expect(auth.lastRegisterPayload?['nome'], 'Usuario Teste');
@@ -117,38 +117,37 @@ void main() {
     expect(auth.loginCalls, 1);
     expect(auth.isAuthenticated, isTrue);
     expect(
-        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        0);
+        find.byKey(const Key('mobile-navigation-selected-0')), findsOneWidget);
 
     await tester.tap(_navigationLabel('Projetos'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        1);
+        find.byKey(const Key('mobile-navigation-selected-1')), findsOneWidget);
 
     await tester.tap(_navigationLabel('Chat'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        2);
+        find.byKey(const Key('mobile-navigation-selected-2')), findsOneWidget);
 
     await tester.tap(_navigationLabel('Agenda'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        3);
+        find.byKey(const Key('mobile-navigation-selected-3')), findsOneWidget);
 
     await tester.tap(_navigationLabel('Alertas'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        4);
+        find.byKey(const Key('mobile-navigation-selected-4')), findsOneWidget);
 
     await tester.tap(_navigationLabel('Perfil'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        5);
+        find.byKey(const Key('mobile-navigation-selected-5')), findsOneWidget);
     expect(find.text('Perfil'), findsWidgets);
     final settingsButton = tester.widget<IconButton>(
       find.ancestor(
@@ -187,7 +186,8 @@ void main() {
     );
     await tester.pump();
     await tester.tap(find.widgetWithText(ListTile, 'Sair da conta'));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(auth.logoutCalls, 1);
     expect(auth.isAuthenticated, isFalse);
@@ -211,7 +211,7 @@ void main() {
       ),
     );
 
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
     final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(materialApp.themeMode, ThemeMode.dark);
@@ -219,7 +219,5 @@ void main() {
 }
 
 Finder _navigationLabel(String label) {
-  return find.byWidgetPredicate(
-    (widget) => widget is NavigationDestination && widget.label == label,
-  );
+  return find.byKey(ValueKey('mobile-navigation-$label'));
 }

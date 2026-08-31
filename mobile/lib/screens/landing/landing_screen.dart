@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/animation/app_animations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../widgets/common/app_button.dart';
@@ -27,17 +28,7 @@ class LandingScreen extends StatelessWidget {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 520),
-                  child: TweenAnimationBuilder<double>(
-                    duration: const Duration(milliseconds: 460),
-                    curve: Curves.easeOutCubic,
-                    tween: Tween(begin: 0, end: 1),
-                    builder: (context, value, child) => Opacity(
-                      opacity: value,
-                      child: Transform.translate(
-                        offset: Offset(0, 14 * (1 - value)),
-                        child: child,
-                      ),
-                    ),
+                  child: FadeSlideIn(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
