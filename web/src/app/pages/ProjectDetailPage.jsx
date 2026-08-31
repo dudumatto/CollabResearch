@@ -5,7 +5,7 @@ import {
   ArrowLeft, Users, Clock, BookOpen, Send, Mail, MessageSquare,
   BarChart2, CheckCircle, Pencil, Trash2,
   UserPlus, UserMinus, Loader2, AlertTriangle,
-  XCircle,
+  UserRound, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -283,7 +283,7 @@ export default function ProjectDetailPage() {
   const canAdvisorManageProject = isAdvisorOwner
     && project.status !== "PENDENTE_ORIENTADOR"
     && project.status !== "REJEITADO_ORIENTADOR";
-  const canUpdateProject = (isStudentCreator || isAdvisorOwner) && project.status !== "FINALIZADO";
+  const canUpdateProject = (isStudentCreator || canAdvisorManageProject) && project.status !== "FINALIZADO";
   const canDeleteProject = canAdvisorManageProject || (isStudentCreator && project.status === "PENDENTE_ORIENTADOR");
   const canApply = user?.tipo === "ALUNO" && !isStudentCreator;
 
@@ -308,7 +308,7 @@ export default function ProjectDetailPage() {
     return collaborators.some((collaborator) => Number(getCollaboratorId(collaborator)) === Number(user.id));
   }, [collaborators, user?.id]);
 
-  const canOpenGroupConversation = isAdvisorOwner
+  const canOpenGroupConversation = canAdvisorManageProject
     || isStudentCreator
     || (user?.tipo === "ALUNO" && currentApplication?.status === "APROVADO")
     || isApprovedProjectCollaborator;
@@ -494,6 +494,9 @@ export default function ProjectDetailPage() {
   const getInscricaoPhotoUrl = (i) =>
     getUserPhotoUrl(i?.aluno?.usuario ?? i?.aluno ?? i?.usuario ?? i);
 
+  const getInscricaoUserId = (i) =>
+    i?.alunoUsuarioId ?? i?.userId ?? i?.usuario?.id ?? i?.aluno?.usuario?.id ?? getUserId(i?.aluno ?? i?.usuario);
+
   const applicationStatus = currentApplication?.status;
   const hasApplicationOrParticipation = Boolean(currentApplication) || isStudentCreator;
 
@@ -676,15 +679,28 @@ export default function ProjectDetailPage() {
                         )}
                       </div>
                       <span className="detalhe-colaboradores__nome">{getInscricaoName(insc)}</span>
-                      <button
-                        onClick={() => handleRecruter(insc)}
-                        disabled={recrutandoId === insc.id}
-                        className="detalhe-colaboradores__botao-recrutar"
-                      >
-                        {recrutandoId === insc.id
-                          ? <Loader2 size={14} className="girando" />
-                          : <><UserPlus size={14} /> Recrutar</>}
-                      </button>
+                      <div className="detalhe-colaboradores__acoes">
+                        {getInscricaoUserId(insc) != null && (
+                          <button
+                            type="button"
+                            className="detalhe-colaboradores__botao-perfil"
+                            onClick={() => navigate(`/app/users/${getInscricaoUserId(insc)}`)}
+                          >
+                            <UserRound size={14} />
+                            Ver perfil do aluno
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRecruter(insc)}
+                          disabled={recrutandoId === insc.id}
+                          className="detalhe-colaboradores__botao-recrutar"
+                        >
+                          {recrutandoId === insc.id
+                            ? <Loader2 size={14} className="girando" />
+                            : <><UserPlus size={14} /> Recrutar</>}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -293,7 +293,7 @@ export function mapAdvisorApplication(application) {
     projetoId: application?.projetoId ?? project?.id ?? null,
     projetoTitulo: application?.projetoTitulo ?? project?.title ?? "Projeto",
     alunoId: application?.alunoId ?? null,
-    alunoUsuarioId: application?.alunoUsuarioId ?? null,
+    alunoUsuarioId: application?.alunoUsuarioId ?? application?.aluno?.usuario?.id ?? application?.usuario?.id ?? null,
     alunoNome: application?.alunoNome ?? project?.owner?.name ?? "Estudante",
     alunoFotoPerfilUrl: application?.alunoFotoPerfilUrl ?? getUserPhotoUrl(application?.aluno) ?? getUserPhotoUrl(application?.usuario) ?? "",
     project,

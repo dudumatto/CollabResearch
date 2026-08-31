@@ -29,33 +29,61 @@ const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
 
 
 function AdvisorDashboardSkeleton() {
+  const metricSkeletons = Array.from({ length: 6 }, (_, index) => index);
+  const prioritySkeletons = Array.from({ length: 4 }, (_, index) => index);
+  const followUpSkeletons = Array.from({ length: 3 }, (_, index) => index);
+
+  const renderQueueSkeleton = (item) => (
+    <div key={item} className="advisor-card advisor-card--skeleton">
+      <div className="advisor-card__cabecalho">
+        <Sk w={140} h={15} />
+        <Sk w={24} h={24} r="var(--raio-completo)" />
+      </div>
+      <div className="advisor-card__corpo">
+        <Sk w="100%" h={46} r="var(--raio-medio)" />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="advisor-pagina advisor-pagina--dashboard">
+    <div className="advisor-pagina advisor-pagina--dashboard advisor-pagina--skeleton" aria-busy="true" aria-label="Carregando painel do orientador">
       <Sk w="100%" h={128} r="var(--raio-grande)" mb={16} />
-      <div className="advisor-dashboard-overview">
-        {[1, 2, 3, 4, 5, 6].map((item) => (
-          <div key={item} className="advisor-metrica advisor-metrica--overview advisor-metrica--normal">
+      <div className="advisor-dashboard-overview advisor-dashboard-overview--skeleton">
+        {metricSkeletons.map((item) => (
+          <div key={item} className="advisor-metrica advisor-metrica--overview advisor-metrica--normal advisor-metrica--skeleton">
             <Sk w={34} h={34} r="var(--raio-medio)" />
-            <div style={{ flex: 1 }}>
+            <div className="advisor-metrica__conteudo">
               <Sk w={28} h={22} mb={6} />
               <Sk w="70%" h={12} />
             </div>
           </div>
         ))}
       </div>
-      <div className="advisor-dashboard-layout">
-        <div className="advisor-grade-filas advisor-grade-filas--prioridade">
-          {[1, 2, 3, 4].map((item) => (
-            <div key={item} className="advisor-card">
-              <div className="advisor-card__cabecalho">
-                <Sk w={140} h={15} />
-                <Sk w={24} h={24} r="var(--raio-completo)" />
-              </div>
-              <div className="advisor-card__corpo">
-                <Sk w="100%" h={46} r="var(--raio-medio)" />
+      <div className="advisor-dashboard-layout advisor-dashboard-layout--skeleton">
+        <div className="advisor-dashboard-principal">
+          <section className="advisor-dashboard-section">
+            <div className="advisor-dashboard-section__cabecalho advisor-dashboard-section__cabecalho--skeleton">
+              <div>
+                <Sk w={120} h={18} mb={8} />
+                <Sk w={260} h={12} />
               </div>
             </div>
-          ))}
+            <div className="advisor-grade-filas advisor-grade-filas--prioridade advisor-grade-filas--skeleton">
+              {prioritySkeletons.map(renderQueueSkeleton)}
+            </div>
+          </section>
+
+          <section className="advisor-dashboard-section">
+            <div className="advisor-dashboard-section__cabecalho advisor-dashboard-section__cabecalho--skeleton">
+              <div>
+                <Sk w={150} h={18} mb={8} />
+                <Sk w={300} h={12} />
+              </div>
+            </div>
+            <div className="advisor-grade-filas advisor-grade-filas--acompanhamento advisor-grade-filas--skeleton">
+              {followUpSkeletons.map(renderQueueSkeleton)}
+            </div>
+          </section>
         </div>
       </div>
     </div>

@@ -1,7 +1,5 @@
 import { createContext, startTransition, useEffect, useMemo, useState } from "react";
 import { authService } from "../services/authService";
-import { notificationService } from "../services/notificationService";
-import { projectService } from "../services/projectService";
 import { userService } from "../services/userService";
 import { clearStoredToken, getStoredToken, setStoredToken } from "../utils/storage";
 import { decodeJwt } from "../utils/token";
@@ -19,43 +17,8 @@ function buildIdentity(token) {
   };
 }
 
-async function resolveCurrentUser(identity) {
+function buildUserFromIdentity(identity) {
   if (!identity?.email) return null;
-
-  const currentUser = await userService.getCurrentUser().catch(() => null);
-  if (currentUser?.email === identity.email) {
-    return currentUser;
-  }
-
-  // Fallback (se o getCurrentUser falhar ou não retornar o usuário esperado)
-  const users = await userService.list().catch(() => []);
-  if (Array.isArray(users)) {
-    const matchedUser = users.find((item) => item.email === identity.email);
-    if (matchedUser) return matchedUser;
-  }
-
-  const notifications = await notificationService.listMine().catch(() => []);
-  const userFromNotifications = Array.isArray(notifications)
-    ? notifications.find((item) => item.usuario?.email === identity.email)?.usuario
-    : null;
-  if (userFromNotifications) return userFromNotifications;
-
-  const projects = await projectService.list().catch(() => []);
-  const projectMatch = Array.isArray(projects)
-    ? projects.find(
-        (item) =>
-          item.orientador?.usuario?.email === identity.email ||
-          item.alunoCriador?.usuario?.email === identity.email,
-      )
-    : null;
-
-  if (projectMatch?.orientador?.usuario?.email === identity.email) {
-    return projectMatch.orientador.usuario;
-  }
-
-  if (projectMatch?.alunoCriador?.usuario?.email === identity.email) {
-    return projectMatch.alunoCriador.usuario;
-  }
 
   return {
     nome: identity.email.split("@")[0],
@@ -64,11 +27,23 @@ async function resolveCurrentUser(identity) {
   };
 }
 
+async function resolveCurrentUser(identity) {
+  const fallbackUser = buildUserFromIdentity(identity);
+  if (!identity?.email) return fallbackUser;
+
+  const currentUser = await userService.getCurrentUser().catch(() => null);
+  if (currentUser?.email === identity.email) {
+    return currentUser;
+  }
+
+  return fallbackUser;
+}
+
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => getStoredToken());
   const [identity, setIdentity] = useState(() => (token ? buildIdentity(token) : null));
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(Boolean(token));
+  const [user, setUser] = useState(() => buildUserFromIdentity(identity));
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     function handleUnauthorized() {
@@ -89,22 +64,26 @@ export function AuthProvider({ children }) {
     }
 
     const nextIdentity = buildIdentity(token);
-    if (nextIdentity?.exp && Number(nextIdentity.exp) * 1000 <= Date.now()) {
+    if (!nextIdentity || (nextIdentity.exp && Number(nextIdentity.exp) * 1000 <= Date.now())) {
       clearStoredToken();
       setToken(null);
       setLoading(false);
       return;
     }
     setIdentity(nextIdentity);
-    setLoading(true);
+    setUser(buildUserFromIdentity(nextIdentity));
+    setLoading(false);
 
-    resolveCurrentUser(nextIdentity)
-      .then((resolvedUser) => {
+    let cancelled = false;
+    resolveCurrentUser(nextIdentity).then((resolvedUser) => {
+      if (!cancelled) {
         setUser(resolvedUser ?? null);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const login = async (payload) => {

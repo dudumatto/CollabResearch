@@ -2,6 +2,7 @@ package com.example.tcc_backend.security;
 
 import com.example.tcc_backend.model.Projeto;
 import com.example.tcc_backend.model.StatusInscricao;
+import com.example.tcc_backend.model.StatusProjeto;
 import com.example.tcc_backend.model.TipoUsuario;
 import com.example.tcc_backend.model.Usuario;
 import com.example.tcc_backend.repository.InscricaoRepository;
@@ -30,7 +31,8 @@ public class ProjectAccessPolicy {
         }
         if (usuario.getTipo() == TipoUsuario.ORIENTADOR
                 && projeto.getOrientador() != null
-                && projeto.getOrientador().getUsuario().getId().equals(usuario.getId())) {
+                && projeto.getOrientador().getUsuario().getId().equals(usuario.getId())
+                && hasAcceptedAdvisor(projeto)) {
             return Relationship.RESPONSIBLE_ADVISOR;
         }
         if (projeto.getAlunoCriador() != null
@@ -101,5 +103,10 @@ public class ProjectAccessPolicy {
 
     private ResponseStatusException forbidden(String message) {
         return new ResponseStatusException(HttpStatus.FORBIDDEN, message);
+    }
+
+    private boolean hasAcceptedAdvisor(Projeto projeto) {
+        return projeto.getStatus() != StatusProjeto.PENDENTE_ORIENTADOR
+                && projeto.getStatus() != StatusProjeto.REJEITADO_ORIENTADOR;
     }
 }

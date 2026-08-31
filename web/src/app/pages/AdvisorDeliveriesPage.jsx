@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { useLocation } from "react-router";
+import { useLocation, useParams } from "react-router";
 import { FolderOpen, ChevronDown, ChevronRight, Download, FileArchive, CheckCircle2, Undo2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -105,7 +105,7 @@ function AdvisorDeliverySkeleton({ linhas = 4, includeShell = false }) {
 
       <div className="advisor-abas advisor-abas--skeleton">
         {FILTROS.map((filtro) => (
-          <SkeletonBlock key={filtro.id} className="advisor-skeleton__tab" />
+          <SkeletonBlock key={filtro.key} className="advisor-skeleton__tab" />
         ))}
       </div>
 
@@ -116,8 +116,10 @@ function AdvisorDeliverySkeleton({ linhas = 4, includeShell = false }) {
 
 export default function AdvisorDeliveriesPage() {
   const location = useLocation();
+  const { id: routeProjectId } = useParams();
   const queryProjectId = new URLSearchParams(location.search).get("projectId");
-  const [projectId, setProjectId] = useState(queryProjectId ? Number(queryProjectId) : null);
+  const selectedProjectParam = queryProjectId ?? routeProjectId;
+  const [projectId, setProjectId] = useState(selectedProjectParam ? Number(selectedProjectParam) : null);
   const [filtro, setFiltro] = useState("todas");
   const [expandedIds, setExpandedIds] = useState(() => new Set());
   const [versoesPorEntrega, setVersoesPorEntrega] = useState({});
@@ -147,33 +149,41 @@ export default function AdvisorDeliveriesPage() {
   );
 
   useEffect(() => {
-    setProjectId(queryProjectId ? Number(queryProjectId) : null);
-  }, [queryProjectId]);
+    setProjectId(selectedProjectParam ? Number(selectedProjectParam) : null);
+  }, [selectedProjectParam]);
 
   const { data: entregas, loading: loadingEntregas, error: erroEntregas, reload } = useAsyncData(
     async () => {
-      if (projectId) {
-        const raw = await deliveryService.list(projectId);
+      try {
+        const raw = await advisorService.entregas({ projetoId: projectId });
         return (Array.isArray(raw) ? raw : [])
-          .map((item) => mapEntregaComProjeto(item, projectId))
+          .map((item) => mapEntregaComProjeto(item, item?.projetoId ?? projectId))
           .filter(Boolean);
-      }
+      } catch (err) {
+        if (err?.status !== 404) throw err;
 
-      if (projectIds.length === 0) return [];
-      const results = await Promise.all(
-        projectIds.map(async (id) => {
-          const raw = await deliveryService.list(id);
+        if (projectId) {
+          const raw = await deliveryService.list(projectId);
           return (Array.isArray(raw) ? raw : [])
-            .map((item) => mapEntregaComProjeto(item, id))
+            .map((item) => mapEntregaComProjeto(item, projectId))
             .filter(Boolean);
-        }),
-      );
-      return results.flat();
+        }
+
+        if (projectIds.length === 0) return [];
+        const results = await Promise.all(
+          projectIds.map(async (id) => {
+            const raw = await deliveryService.list(id);
+            return (Array.isArray(raw) ? raw : [])
+              .map((item) => mapEntregaComProjeto(item, id))
+              .filter(Boolean);
+          }),
+        );
+        return results.flat();
+      }
     },
     [projectId, projectIdsKey],
     { initialData: [] },
   );
-
   const listaEntregas = useMemo(() => (Array.isArray(entregas) ? entregas : []), [entregas]);
 
   const filtradas = useMemo(() => {
@@ -270,13 +280,13 @@ export default function AdvisorDeliveriesPage() {
     }
   };
 
-  if (loadingProjetos) return <AdvisorDeliverySkeleton includeShell />;
+  if (loadingProjetos && loadingEntregas) return <AdvisorDeliverySkeleton includeShell />;
 
-  if (normErroProjetos) {
+  if (normErroProjetos && listaEntregas.length === 0) {
     return <StatusView title="Falha ao carregar projetos" description={getErrorMessage(normErroProjetos)} />;
   }
 
-  if (todosProjetos.length === 0) {
+  if (!loadingEntregas && !normErroEntregas && todosProjetos.length === 0 && listaEntregas.length === 0) {
     return (
       <div className="advisor-pagina">
         <div className="advisor-estado-vazio">

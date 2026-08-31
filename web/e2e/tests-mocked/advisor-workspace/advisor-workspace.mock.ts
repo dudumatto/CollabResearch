@@ -108,6 +108,7 @@ const inscricoes = [
     dataInscricao: agora,
     dataAtualizacao: agora,
     alunoId: 1,
+    alunoUsuarioId: 1,
     alunoNome: "Aluno E2E",
     projeto: projects[1],
   },
@@ -119,6 +120,7 @@ const inscricoes = [
     dataInscricao: agora,
     dataAtualizacao: agora,
     alunoId: 1,
+    alunoUsuarioId: 1,
     alunoNome: "Aluno E2E",
     projeto: projects[0],
   },
@@ -328,6 +330,18 @@ export async function setupAdvisorMock(page: Page): Promise<void> {
     const orientandoDetailMatch = path.match(/^\/api\/orientador\/orientandos\/(\d+)$/);
     if (method === "GET" && orientandoDetailMatch) {
       await fulfill(route, 200, detalheOrientando);
+      return;
+    }
+
+    if (method === "GET" && path === "/api/orientador/entregas") {
+      const projetoId = url.searchParams.get("projetoId");
+      const status = url.searchParams.get("status");
+      const filtradas = entregas.filter((entrega) => {
+        const mesmoProjeto = !projetoId || entrega.projetoId === Number(projetoId);
+        const mesmoStatus = !status || entrega.status === status;
+        return mesmoProjeto && mesmoStatus;
+      });
+      await fulfill(route, 200, filtradas);
       return;
     }
 

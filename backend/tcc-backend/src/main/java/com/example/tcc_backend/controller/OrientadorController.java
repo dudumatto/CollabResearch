@@ -1,6 +1,7 @@
 package com.example.tcc_backend.controller;
 
 import com.example.tcc_backend.dto.request.OrientadorPerfilRequest;
+import com.example.tcc_backend.dto.response.EntregaResponse;
 import com.example.tcc_backend.dto.response.InscricaoResponse;
 import com.example.tcc_backend.dto.response.OrientadorDashboardResponse;
 import com.example.tcc_backend.dto.response.OrientadorPerfilResponse;
@@ -39,6 +40,21 @@ public class OrientadorController {
     @GetMapping("/dashboard")
     public ResponseEntity<OrientadorDashboardResponse> dashboard() {
         return ResponseEntity.ok(orientadorService.dashboard());
+    }
+
+    @Operation(summary = "Entregas recebidas",
+            description = "Retorna todas as entregas dos projetos sob orientacao, com filtros opcionais por status e projeto.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Entregas retornadas com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Status invalido"),
+            @ApiResponse(responseCode = "401", description = "Nao autenticado"),
+            @ApiResponse(responseCode = "403", description = "Acesso restrito ao orientador")
+    })
+    @GetMapping("/entregas")
+    public ResponseEntity<List<EntregaResponse>> entregas(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer projetoId) {
+        return ResponseEntity.ok(orientadorService.entregas(status, projetoId));
     }
 
     @Operation(summary = "Inscricoes recebidas",

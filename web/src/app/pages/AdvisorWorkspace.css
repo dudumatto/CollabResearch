@@ -1282,6 +1282,12 @@
   color: var(--cor-texto-forte);
 }
 
+
+.advisor-linha-card__perfil-aluno {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .advisor-linha-card__titulo-link {
   font: inherit;
   font-size: var(--tamanho-normal);
@@ -1473,6 +1479,44 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--espaco-3);
+}
+
+
+.advisor-modal__cabecalho-conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
+.advisor-modal__aluno-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-1);
+}
+
+.advisor-modal__descricao--aluno {
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-base);
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.advisor-modal__perfil-aluno {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .advisor-modal__aluno-linha {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .advisor-modal__perfil-aluno {
+    width: 100%;
+  }
 }
 
 .advisor-modal__titulo {

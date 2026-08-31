@@ -105,17 +105,26 @@ export default function ProjectApplicationsPage() {
 
   const { data, loading, error, setData } = useAsyncData(
     async () => {
-      const [projectRaw, appsRaw] = await Promise.all([
-        projectService.getById(id),
-        applicationService.listByProject(id),
-      ]);
+      const projectRaw = await projectService.getById(id);
+      const mappedProject = mapProject(projectRaw);
+      const canManage = user?.tipo === "ORIENTADOR"
+        && mappedProject.advisorId != null
+        && Number(user.id) === Number(mappedProject.advisorId)
+        && mappedProject.status !== "PENDENTE_ORIENTADOR"
+        && mappedProject.status !== "REJEITADO_ORIENTADOR";
+
+      if (!canManage) {
+        return { project: mappedProject, applications: [] };
+      }
+
+      const appsRaw = await applicationService.listByProject(id);
       const list = Array.isArray(appsRaw) ? appsRaw : appsRaw?.content ?? [];
       return {
-        project: mapProject(projectRaw),
+        project: mappedProject,
         applications: list.map(mapProjectApplication),
       };
     },
-    [id],
+    [id, user?.id, user?.tipo],
     { initialData: { project: null, applications: [] } },
   );
 
@@ -126,6 +135,10 @@ export default function ProjectApplicationsPage() {
     if (!user?.id || !project?.advisorId) return false;
     return user.tipo === "ORIENTADOR" && Number(user.id) === Number(project.advisorId);
   }, [user, project]);
+
+  const canAdvisorManageProject = isAdvisorOwner
+    && project.status !== "PENDENTE_ORIENTADOR"
+    && project.status !== "REJEITADO_ORIENTADOR";
 
   const toggleMotivation = useCallback((appId) => {
     setExpandedMotivationIds((prev) => {
@@ -205,7 +218,7 @@ export default function ProjectApplicationsPage() {
     );
   }
 
-  if (!isAdvisorOwner) {
+  if (!canAdvisorManageProject) {
     return (
       <StatusView
         title="Acesso negado"

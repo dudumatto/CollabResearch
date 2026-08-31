@@ -92,14 +92,13 @@ export function useProjectProgress(projectId, options = {}) {
     }
 
     const initialProjectKey = projectKey(initialProgress?.projectId);
-    if (
-      initialProjectKey === currentProjectKey &&
-      hydratedInitialProjectRef.current !== currentProjectKey
-    ) {
-      hydratedInitialProjectRef.current = currentProjectKey;
-      applyProgress(initialProgress);
-      setError(null);
-      setIsLoading(false);
+    if (initialProjectKey === currentProjectKey) {
+      if (hydratedInitialProjectRef.current !== currentProjectKey) {
+        hydratedInitialProjectRef.current = currentProjectKey;
+        applyProgress(initialProgress);
+        setError(null);
+        setIsLoading(false);
+      }
       return;
     }
 

@@ -22,6 +22,10 @@ export const advisorService = {
     return api.get(`/api/orientador/orientandos${buildQs({ busca, situacao, projetoId })}`);
   },
 
+  entregas({ status, projetoId } = {}) {
+    return api.get(`/api/orientador/entregas${buildQs({ status, projetoId })}`);
+  },
+
   detalheOrientando(studentId, projectId) {
     return api.get(`/api/orientador/orientandos/${studentId}${buildQs({ projectId })}`);
   },

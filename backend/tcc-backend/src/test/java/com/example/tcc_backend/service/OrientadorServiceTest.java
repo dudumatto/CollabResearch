@@ -37,6 +37,8 @@ class OrientadorServiceTest {
     @Mock
     private ProjectDeliveryRepository projectDeliveryRepository;
     @Mock
+    private DeliveryVersionRepository deliveryVersionRepository;
+    @Mock
     private AcademicEvaluationRepository academicEvaluationRepository;
     @Mock
     private AcademicEvaluationAcknowledgementRepository acknowledgementRepository;
@@ -65,7 +67,7 @@ class OrientadorServiceTest {
     void setUp() {
         orientadorService = new OrientadorService(
                 authHelper, projetoRepository, inscricaoRepository, etapaProgressoRepository,
-                projectDeliveryRepository, academicEvaluationRepository, acknowledgementRepository,
+                projectDeliveryRepository, deliveryVersionRepository, academicEvaluationRepository, acknowledgementRepository,
                 alunoRepository, progressoRepository, orientadorRepository, usuarioRepository, usuarioService);
 
         orientadorUsuario = TestDataFactory.usuarioOrientador(2);
@@ -131,6 +133,39 @@ class OrientadorServiceTest {
         assertThat(response.getFilas().getAvaliacoesAguardandoCiencia()).hasSize(1);
     }
 
+    @Test
+    void entregasDevemListarTodoEscopoDoOrientadorComFiltros() {
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+
+        ProjectDelivery entregaAberta = ProjectDelivery.builder()
+                .id(40L).projeto(projetoAberto).autor(alunoUsuario).titulo("Monografia")
+                .categoria("documento").status(EntregaStatus.PENDING_REVIEW)
+                .criadaEm(OffsetDateTime.now().minusDays(2))
+                .atualizadaEm(OffsetDateTime.now().minusDays(1))
+                .build();
+        ProjectDelivery entregaAprovada = ProjectDelivery.builder()
+                .id(41L).projeto(projetoAndamento).autor(alunoUsuario).titulo("Artigo")
+                .categoria("artigo").status(EntregaStatus.APPROVED)
+                .criadaEm(OffsetDateTime.now().minusDays(4))
+                .atualizadaEm(OffsetDateTime.now().minusDays(3))
+                .build();
+        DeliveryVersion versao = DeliveryVersion.builder()
+                .id(50L).entrega(entregaAberta).numeroVersao(1).nomeArquivo("monografia.pdf")
+                .build();
+
+        when(projectDeliveryRepository.findByProjetoOrientadorUsuarioId(2))
+                .thenReturn(List.of(entregaAberta, entregaAprovada));
+        when(deliveryVersionRepository.findFirstByEntregaIdOrderByNumeroVersaoDesc(40L)).thenReturn(Optional.of(versao));
+        when(deliveryVersionRepository.findByEntregaIdOrderByNumeroVersaoAsc(40L)).thenReturn(List.of(versao));
+
+        List<EntregaResponse> resposta = orientadorService.entregas("PENDING_REVIEW", 10);
+
+        assertThat(resposta).hasSize(1);
+        assertThat(resposta.get(0).getId()).isEqualTo(40L);
+        assertThat(resposta.get(0).getProjetoId()).isEqualTo(10);
+        assertThat(resposta.get(0).getUltimaVersaoId()).isEqualTo(50L);
+        assertThat(resposta.get(0).getTotalVersoes()).isEqualTo(1);
+    }
     @Test
     void filasDevemSerLimitadasACincoItens() {
         autenticarOrientador();

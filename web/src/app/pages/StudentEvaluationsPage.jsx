@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle, ClipboardList, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
@@ -61,26 +61,60 @@ export default function StudentEvaluationsPage() {
   const { user } = useAuth();
   const [projectId, setProjectId] = useState("");
   const [comments, setComments] = useState({});
+  const hydratedInitialEvaluationsRef = useRef(null);
 
-  const { data: projects, loading: loadingProjects, error: projectsError } = useAsyncData(
-    async () => (user?.id ? (await userService.getProjects(user.id)).map(mapProject) : []),
+  const { data, loading: loadingProjects, error: projectsError } = useAsyncData(
+    async () => {
+      if (!user?.id) return { projects: [], initialProjectId: "", initialEvaluations: [] };
+
+      const projectsResult = await userService.getProjects(user.id).catch(() => []);
+      const projects = Array.isArray(projectsResult) ? projectsResult.map(mapProject) : [];
+      const initialProjectId = projects[0]?.id ? String(projects[0].id) : "";
+      const initialEvaluations = initialProjectId
+        ? await evaluationService
+            .list(initialProjectId)
+            .then((items) => (Array.isArray(items) ? items.map(mapAvaliacaoAcademica) : []))
+            .catch(() => [])
+        : [];
+
+      return { projects, initialProjectId, initialEvaluations };
+    },
     [user?.id],
-    { initialData: [] },
+    { initialData: { projects: [], initialProjectId: "", initialEvaluations: [] } },
   );
 
+  const projects = data?.projects ?? [];
+  const initialProjectId = data?.initialProjectId ?? "";
+  const effectiveProjectId = projectId || initialProjectId;
+
   useEffect(() => {
-    if (!projectId && projects[0]?.id) setProjectId(String(projects[0].id));
-  }, [projects, projectId]);
+    if (!projectId && initialProjectId) setProjectId(initialProjectId);
+  }, [initialProjectId, projectId]);
 
   const { data: evaluations, loading, error, reload } = useAsyncData(
-    async () => (projectId ? (await evaluationService.list(projectId)).map(mapAvaliacaoAcademica) : []),
-    [projectId],
+    async () => {
+      if (!effectiveProjectId) return [];
+
+      const currentProjectKey = String(effectiveProjectId);
+      if (
+        currentProjectKey === String(initialProjectId) &&
+        hydratedInitialEvaluationsRef.current !== currentProjectKey &&
+        Array.isArray(data?.initialEvaluations)
+      ) {
+        hydratedInitialEvaluationsRef.current = currentProjectKey;
+        return data.initialEvaluations;
+      }
+
+      const items = await evaluationService.list(effectiveProjectId);
+      return Array.isArray(items) ? items.map(mapAvaliacaoAcademica) : [];
+    },
+    [effectiveProjectId, initialProjectId, data?.initialEvaluations],
     { initialData: [] },
   );
 
   const acknowledge = async (evaluation) => {
     try {
-      await evaluationService.acknowledge(projectId, evaluation.id, comments[evaluation.id] || "");
+      await evaluationService.acknowledge(effectiveProjectId, evaluation.id, comments[evaluation.id] || "");
       await reload();
       toast.success("Ciência registrada.");
     } catch (err) {
@@ -116,7 +150,7 @@ export default function StudentEvaluationsPage() {
         <AppCombobox
           ariaLabel="Selecionar projeto avaliado"
           className="advisor-select"
-          value={projectId}
+          value={effectiveProjectId}
           onChange={setProjectId}
           options={projects.map((item) => ({ value: item.id, label: item.title }))}
         />

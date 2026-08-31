@@ -69,5 +69,18 @@ test.describe("area do orientador (mockada)", () => {
     await expect(page.getByText("Unexpected Application Error")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Recarregar página" })).toBeVisible();
   });
-});
+  test("entregas usa fallback por projeto quando endpoint agregado nao existe", async ({ page }) => {
+    await page.route("**/api/orientador/entregas**", async (route) => {
+      await route.fulfill({
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "Recurso nao encontrado" }),
+      });
+    });
 
+    await page.goto("/app/deliveries");
+
+    await expect(page.getByText("Monografia").first()).toBeVisible();
+    await expect(page.getByText("Falha ao carregar entregas")).toHaveCount(0);
+  });
+});

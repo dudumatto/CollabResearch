@@ -2,6 +2,7 @@ package com.example.tcc_backend.security;
 
 import com.example.tcc_backend.model.Projeto;
 import com.example.tcc_backend.model.StatusInscricao;
+import com.example.tcc_backend.model.StatusProjeto;
 import com.example.tcc_backend.model.Usuario;
 import com.example.tcc_backend.repository.InscricaoRepository;
 import com.example.tcc_backend.support.TestDataFactory;
@@ -53,6 +54,27 @@ class ProjectAccessPolicyTest {
                 .isEqualTo(ProjectAccessPolicy.Relationship.EXTERNAL);
         assertThat(policy.relationship(projeto, TestDataFactory.usuarioAdmin(8)))
                 .isEqualTo(ProjectAccessPolicy.Relationship.ADMIN_AUDITOR);
+    }
+
+    @Test
+    void orientadorSolicitadoSemAceiteNaoDeveSerResponsavelPeloProjeto() {
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+        assertThat(policy.relationship(projeto, orientador))
+                .isEqualTo(ProjectAccessPolicy.Relationship.EXTERNAL);
+        assertThatThrownBy(() -> policy.requireResponsibleAdvisor(projeto, orientador))
+                .isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> policy.requireCanViewApplications(projeto, orientador))
+                .isInstanceOf(ResponseStatusException.class);
+
+        projeto.setStatus(StatusProjeto.REJEITADO_ORIENTADOR);
+        assertThat(policy.relationship(projeto, orientador))
+                .isEqualTo(ProjectAccessPolicy.Relationship.EXTERNAL);
+        assertThatThrownBy(() -> policy.requireResponsibleAdvisor(projeto, orientador))
+                .isInstanceOf(ResponseStatusException.class);
+        assertThatThrownBy(() -> policy.requireCanViewApplications(projeto, orientador))
+                .isInstanceOf(ResponseStatusException.class);
     }
 
     @Test

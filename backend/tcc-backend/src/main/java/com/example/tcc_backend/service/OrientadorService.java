@@ -35,6 +35,7 @@ public class OrientadorService {
     private final InscricaoRepository inscricaoRepository;
     private final EtapaProgressoRepository etapaProgressoRepository;
     private final ProjectDeliveryRepository projectDeliveryRepository;
+    private final DeliveryVersionRepository deliveryVersionRepository;
     private final AcademicEvaluationRepository academicEvaluationRepository;
     private final AcademicEvaluationAcknowledgementRepository acknowledgementRepository;
     private final AlunoRepository alunoRepository;
@@ -100,6 +101,43 @@ public class OrientadorService {
                 .metricas(metricas)
                 .filas(filas)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<EntregaResponse> entregas(String status, Integer projetoId) {
+        Usuario usuario = authHelper.getCurrentUser();
+        exigirPerfilAcademico(usuario);
+
+        EntregaStatus statusEnum = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                statusEnum = EntregaStatus.valueOf(status.trim().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status de entrega invalido");
+            }
+        }
+        EntregaStatus filtroStatus = statusEnum;
+        Integer filtroProjeto = projetoId;
+
+        return entregasDoEscopo(usuario).stream()
+                .filter(e -> filtroStatus == null || e.getStatus() == filtroStatus)
+                .filter(e -> filtroProjeto == null || e.getProjeto().getId().equals(filtroProjeto))
+                .sorted(Comparator.comparing(OrientadorService::entregaAtualizadaEm,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(this::entregaResponse)
+                .toList();
+    }
+
+    private static OffsetDateTime entregaAtualizadaEm(ProjectDelivery entrega) {
+        return entrega.getAtualizadaEm() != null ? entrega.getAtualizadaEm() : entrega.getCriadaEm();
+    }
+
+    private EntregaResponse entregaResponse(ProjectDelivery entrega) {
+        Long ultimaVersaoId = deliveryVersionRepository.findFirstByEntregaIdOrderByNumeroVersaoDesc(entrega.getId())
+                .map(DeliveryVersion::getId)
+                .orElse(null);
+        int totalVersoes = deliveryVersionRepository.findByEntregaIdOrderByNumeroVersaoAsc(entrega.getId()).size();
+        return EntregaResponse.fromEntity(entrega, ultimaVersaoId, totalVersoes);
     }
 
     @Transactional(readOnly = true)

@@ -1243,24 +1243,49 @@
 
 .detalhe-colaboradores__nome {
   flex: 1;
+  min-width: 0;
   font-size: var(--tamanho-base);
   color: var(--cor-texto);
 }
 
-.detalhe-colaboradores__botao-recrutar {
+.detalhe-colaboradores__acoes {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  gap: var(--espaco-2);
+  flex-shrink: 0;
+}
+
+.detalhe-colaboradores__botao-perfil,
+.detalhe-colaboradores__botao-recrutar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: var(--espaco-1);
   padding: var(--espaco-1) var(--espaco-3);
-  background-color: var(--cor-primaria);
-  color: var(--cor-branco);
-  border: none;
   border-radius: var(--raio-grande);
   font-size: var(--tamanho-pequeno);
   font-weight: var(--peso-medio);
   cursor: pointer;
   transition: var(--transicao-normal);
   flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.detalhe-colaboradores__botao-perfil {
+  background-color: var(--cor-branco);
+  color: var(--cor-primaria);
+  border: 1px solid var(--cor-primaria-borda);
+}
+
+.detalhe-colaboradores__botao-perfil:hover {
+  background-color: var(--cor-primaria-clara);
+}
+
+.detalhe-colaboradores__botao-recrutar {
+  background-color: var(--cor-primaria);
+  color: var(--cor-branco);
+  border: none;
 }
 
 .detalhe-colaboradores__botao-recrutar:hover:not(:disabled) {
@@ -1270,6 +1295,24 @@
 .detalhe-colaboradores__botao-recrutar:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .detalhe-colaboradores__item {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .detalhe-colaboradores__acoes {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .detalhe-colaboradores__botao-perfil,
+  .detalhe-colaboradores__botao-recrutar {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 /* ================================================================

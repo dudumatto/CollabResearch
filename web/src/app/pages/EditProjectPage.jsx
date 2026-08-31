@@ -55,8 +55,9 @@ export default function EditProjectPage() {
   }, [id]);
 
   const userId = user?.id == null ? null : Number(user.id);
+  const advisorAccepted = project?.status !== "PENDENTE_ORIENTADOR" && project?.status !== "REJEITADO_ORIENTADOR";
   const canEditProject = Boolean(project && userId != null && project.status !== "FINALIZADO" && (
-    Number(project.ownerId) === userId || Number(project.advisorId) === userId
+    Number(project.ownerId) === userId || (advisorAccepted && Number(project.advisorId) === userId)
   ));
 
   function handleChange(e) {

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Inbox, Check, X, FileText, ChevronRight } from "lucide-react";
+import { Inbox, Check, X, FileText, ChevronRight, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
@@ -142,6 +142,13 @@ export default function AdvisorApplicationsPage() {
     setParecer("");
   };
 
+  const openStudentProfile = (app) => {
+    const userId = app?.alunoUsuarioId ?? app?.alunoId;
+    if (!userId) return;
+    closeModal();
+    navigate(`/app/users/${userId}`);
+  };
+
   const submitModal = async () => {
     if (!modal) return;
     const { type, app } = modal;
@@ -227,6 +234,7 @@ export default function AdvisorApplicationsPage() {
 
                 <div className="advisor-linha-card__conteudo">
                   <p className="advisor-linha-card__titulo">{app.alunoNome}</p>
+
                   <p className="advisor-linha-card__meta">
                     <strong>{app.projetoTitulo}</strong> · {formatDate(app.appliedAt)}
                   </p>
@@ -258,6 +266,16 @@ export default function AdvisorApplicationsPage() {
                 </div>
 
                 <div className="advisor-linha-card__acoes">
+                  {(app.alunoUsuarioId ?? app.alunoId) && (
+                    <button
+                      type="button"
+                      className="advisor-botao advisor-botao--secundario advisor-linha-card__perfil-aluno"
+                      onClick={() => openStudentProfile(app)}
+                    >
+                      <UserRound size={14} />
+                      Ver perfil do aluno
+                    </button>
+                  )}
                   {app.status === "PENDENTE" && (
                     <>
                       <button
@@ -306,13 +324,25 @@ export default function AdvisorApplicationsPage() {
         <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Decidir inscrição">
           <div className="advisor-modal">
             <div className="advisor-modal__cabecalho">
-              <div>
+              <div className="advisor-modal__cabecalho-conteudo">
                 <h3 className="advisor-modal__titulo">
                   {modal.type === "aprovar" ? "Aprovar inscrição" : "Rejeitar inscrição"}
                 </h3>
-                <p className="advisor-modal__descricao" style={{ fontSize: "var(--tamanho-base)", color: "var(--cor-texto-fraco)", marginTop: 4 }}>
-                  {modal.app.alunoNome} · {modal.app.projetoTitulo}
-                </p>
+                <div className="advisor-modal__aluno-linha">
+                  <p className="advisor-modal__descricao advisor-modal__descricao--aluno">
+                    {modal.app.alunoNome}
+                  </p>
+                  {(modal.app.alunoUsuarioId ?? modal.app.alunoId) && (
+                    <button
+                      type="button"
+                      className="advisor-botao advisor-botao--secundario advisor-modal__perfil-aluno"
+                      onClick={() => openStudentProfile(modal.app)}
+                    >
+                      <UserRound size={14} />
+                      Ver perfil do aluno
+                    </button>
+                  )}
+                </div>
               </div>
               <button type="button" className="advisor-modal__fechar" onClick={closeModal} aria-label="Fechar">
                 <X size={20} />
