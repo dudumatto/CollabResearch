@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Verde oficial da marca CollabResearch. -->
+    <color name="brand_green">#1F7A5A</color>
+    <color name="brand_green_dark">#185E46</color>
+</resources>
