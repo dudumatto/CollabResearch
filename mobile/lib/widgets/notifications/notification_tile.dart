@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../core/animation/app_animations.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/utils/date_utils.dart';
 import '../../models/app_notification.dart';
+import '../common/app_badge.dart';
+import 'notification_presentation.dart';
 
 class NotificationTile extends StatelessWidget {
   const NotificationTile({
@@ -16,113 +18,165 @@ class NotificationTile extends StatelessWidget {
   final AppNotification notification;
   final VoidCallback? onTap;
 
+  /// Faixa lateral na cor da severidade. É ela que dá o ritmo de cor da lista.
+  static const double _railWidth = 3;
+
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final accent = _notificationColor(notification.type);
-    final foreground = _notificationForeground(notification.type);
-    final icon = _notificationIcon(notification.type);
-    return AnimatedPress(
-      enabled: onTap != null,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Material(
-          color: notification.isRead
-              ? colors.surface
-              : accent.withValues(alpha: 0.045),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            side: BorderSide(
-              color: notification.isRead
-                  ? AppColors.border
-                  : accent.withValues(alpha: 0.55),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isLight = theme.brightness == Brightness.light;
+    final presentation = NotificationPresentation.of(notification.type);
+    final severityColor = presentation.color(context);
+    final isUnread = !notification.isRead;
+    final title = presentation.titleFor(notification);
+    final time = DateUtilsX.relative(notification.createdAt);
+
+    return Semantics(
+      button: onTap != null,
+      label: [
+        presentation.label,
+        title,
+        notification.description,
+        time,
+        isUnread ? 'Não lida' : 'Lida',
+      ].where((part) => part.trim().isNotEmpty).join('. '),
+      excludeSemantics: true,
+      child: AnimatedPress(
+        enabled: onTap != null,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: Material(
+            color: isUnread
+                ? colorScheme.surfaceContainerLow
+                : colorScheme.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              side: BorderSide(
+                color: isLight ? AppColors.border : AppColors.darkBorder,
+              ),
             ),
-          ),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.13),
-                      borderRadius: BorderRadius.circular(AppRadius.sm),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Sinal 1 de 3 para lido/não lido — nunca só a cor.
+                    Container(
+                      width: _railWidth,
+                      color: isUnread
+                          ? severityColor
+                          : severityColor.withValues(alpha: 0.25),
                     ),
-                    child: Icon(
-                      icon,
-                      color: accent,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                // Mesma fórmula de tint do AppBadge, para
+                                // haver uma regra só no app.
+                                color: Color.lerp(
+                                  colorScheme.surface,
+                                  severityColor,
+                                  0.14,
+                                ),
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.sm),
+                              ),
+                              child: Icon(
+                                presentation.icon,
+                                color: severityColor,
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: accent.withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 9,
-                                        vertical: 4,
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Flexible(
+                                        child: AppBadge(
+                                          label: presentation.label,
+                                          color: severityColor,
+                                        ),
                                       ),
-                                      child: Text(
-                                        _notificationLabel(notification.type),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelSmall
+                                      const SizedBox(width: AppSpacing.sm),
+                                      Text(
+                                        time,
+                                        style: theme.textTheme.labelSmall
                                             ?.copyWith(
-                                              color: foreground,
-                                              fontWeight: FontWeight.w700,
-                                            ),
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 7),
+                                  const SizedBox(height: AppSpacing.sm),
                                   Text(
-                                    notification.title,
+                                    title,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style:
-                                        Theme.of(context).textTheme.titleSmall,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      // Sinal 2 de 3.
+                                      fontWeight: isUnread
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      color: isUnread
+                                          ? colorScheme.onSurface
+                                          : colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
+                                  if (notification.description
+                                      .trim()
+                                      .isNotEmpty) ...[
+                                    const SizedBox(height: AppSpacing.xs),
+                                    Text(
+                                      notification.description,
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              DateUtilsX.relative(notification.createdAt),
-                              style: Theme.of(context).textTheme.labelSmall,
+                            const SizedBox(width: AppSpacing.sm),
+                            // Sinal 3 de 3, no lugar do antigo chevron
+                            // decorativo que não tinha rótulo nenhum.
+                            SizedBox(
+                              width: 8,
+                              child: isUnread
+                                  ? Container(
+                                      width: 8,
+                                      height: 8,
+                                      margin: const EdgeInsets.only(top: 6),
+                                      decoration: BoxDecoration(
+                                        color: severityColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    )
+                                  : null,
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          notification.description,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.chevron_right, size: 20),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -130,66 +184,4 @@ class NotificationTile extends StatelessWidget {
       ),
     );
   }
-}
-
-Color _notificationColor(String type) {
-  final normalized = type.toUpperCase();
-  if (normalized.contains('PRAZO') || normalized.contains('ATRAS')) {
-    return AppColors.warning;
-  }
-  if (normalized.contains('MENSAGEM') || normalized.contains('COMENT')) {
-    return AppColors.accent;
-  }
-  if (normalized.contains('REJEIT') || normalized.contains('ERRO')) {
-    return AppColors.danger;
-  }
-  return AppColors.primary;
-}
-
-Color _notificationForeground(String type) {
-  final normalized = type.toUpperCase();
-  if (normalized.contains('PRAZO') || normalized.contains('ATRAS')) {
-    return const Color(0xFFA16207);
-  }
-  if (normalized.contains('MENSAGEM') || normalized.contains('COMENT')) {
-    return const Color(0xFF08736D);
-  }
-  if (normalized.contains('REJEIT') || normalized.contains('ERRO')) {
-    return const Color(0xFFB91C1C);
-  }
-  return AppColors.primaryDark;
-}
-
-IconData _notificationIcon(String type) {
-  final normalized = type.toUpperCase();
-  if (normalized.contains('PRAZO') || normalized.contains('ATRAS')) {
-    return Icons.alarm_outlined;
-  }
-  if (normalized.contains('MENSAGEM') || normalized.contains('COMENT')) {
-    return Icons.chat_bubble_outline;
-  }
-  if (normalized.contains('ARQUIV') || normalized.contains('ENTREGA')) {
-    return Icons.upload_file_outlined;
-  }
-  if (normalized.contains('PROJETO') || normalized.contains('INSCRICAO')) {
-    return Icons.folder_outlined;
-  }
-  return Icons.notifications_none_outlined;
-}
-
-String _notificationLabel(String type) {
-  final normalized = type.toUpperCase();
-  if (normalized.contains('PRAZO') || normalized.contains('ATRAS')) {
-    return 'Aviso';
-  }
-  if (normalized.contains('MENSAGEM') || normalized.contains('COMENT')) {
-    return 'Comentário';
-  }
-  if (normalized.contains('ARQUIV') || normalized.contains('ENTREGA')) {
-    return 'Arquivo';
-  }
-  if (normalized.contains('PROJETO') || normalized.contains('INSCRICAO')) {
-    return 'Projeto';
-  }
-  return 'Sistema';
 }
