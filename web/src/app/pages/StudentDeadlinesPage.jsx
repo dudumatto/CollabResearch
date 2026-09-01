@@ -211,6 +211,7 @@ async function loadProjectStages(project) {
 export default function StudentDeadlinesPage() {
   const { user } = useAuth();
   const [tooltipPlacements, setTooltipPlacements] = useState({});
+  const [hoverTooltipKey, setHoverTooltipKey] = useState(null);
   const [activeTooltipKey, setActiveTooltipKey] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(ALL_PROJECTS_VALUE);
   const [visibleMonth, setVisibleMonth] = useState(() => {
@@ -275,7 +276,21 @@ export default function StudentDeadlinesPage() {
   const moveMonth = (amount) => {
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
     setActiveTooltipKey(null);
+    setHoverTooltipKey(null);
   };
+
+
+  useEffect(() => {
+    if (!activeTooltipKey && !hoverTooltipKey) return undefined;
+
+    const closeTooltip = () => {
+      setActiveTooltipKey(null);
+      setHoverTooltipKey(null);
+    };
+
+    window.addEventListener("pointerdown", closeTooltip, true);
+    return () => window.removeEventListener("pointerdown", closeTooltip, true);
+  }, [activeTooltipKey, hoverTooltipKey]);
 
   const toggleDayTooltip = (event, key) => {
     updateTooltipDirection(event, key);
@@ -339,6 +354,7 @@ export default function StudentDeadlinesPage() {
             onChange={(value) => {
               setSelectedProjectId(value);
               setActiveTooltipKey(null);
+              setHoverTooltipKey(null);
             }}
             options={projectFilterOptions}
           />
@@ -377,7 +393,8 @@ export default function StudentDeadlinesPage() {
                 const items = byDay.get(key) ?? [];
                 const outside = date.getMonth() !== visibleMonth.getMonth();
                 const hasItems = items.length > 0;
-                const isTooltipOpen = activeTooltipKey === key;
+                const canOpenTooltip = hasItems && !outside;
+                const isTooltipOpen = canOpenTooltip && (activeTooltipKey === key || hoverTooltipKey === key);
                 const tooltipPlacement = tooltipPlacements[key];
                 return (
                   <div
@@ -388,21 +405,29 @@ export default function StudentDeadlinesPage() {
                       "--calendario-tooltip-top": `${tooltipPlacement.top}px`,
                       "--calendario-tooltip-arrow-left": `${tooltipPlacement.arrowLeft}px`,
                     } : undefined}
-                    aria-label={hasItems ? `${date.getDate()} com ${items.length} ${items.length === 1 ? "evento" : "eventos"}` : undefined}
-                    aria-expanded={hasItems ? isTooltipOpen : undefined}
-                    tabIndex={hasItems ? 0 : undefined}
-                    onClick={hasItems ? (event) => toggleDayTooltip(event, key) : undefined}
-                    onKeyDown={hasItems ? (event) => {
+                    aria-label={canOpenTooltip ? `${date.getDate()} com ${items.length} ${items.length === 1 ? "evento" : "eventos"}` : undefined}
+                    aria-expanded={canOpenTooltip ? isTooltipOpen : undefined}
+                    tabIndex={canOpenTooltip ? 0 : undefined}
+                    onClick={canOpenTooltip ? (event) => toggleDayTooltip(event, key) : undefined}
+                    onKeyDown={canOpenTooltip ? (event) => {
                       if (event.key !== "Enter" && event.key !== " ") return;
                       event.preventDefault();
                       toggleDayTooltip(event, key);
                     } : undefined}
-                    onMouseEnter={hasItems ? (event) => updateTooltipDirection(event, key) : undefined}
-                    onFocus={hasItems ? (event) => updateTooltipDirection(event, key) : undefined}
+                    onMouseEnter={canOpenTooltip ? (event) => {
+                      updateTooltipDirection(event, key);
+                      setHoverTooltipKey(key);
+                    } : undefined}
+                    onFocus={canOpenTooltip ? (event) => {
+                      updateTooltipDirection(event, key);
+                      setHoverTooltipKey(key);
+                    } : undefined}
+                    onMouseLeave={canOpenTooltip ? () => setHoverTooltipKey(null) : undefined}
+                    onBlur={canOpenTooltip ? () => setHoverTooltipKey(null) : undefined}
                   >
                     <span className="calendario-dia__numero">{date.getDate()}</span>
                     <div className="calendario-dia__eventos">
-                      {items.slice(0, 2).map((item) => (
+                      {items.slice(0, 3).map((item) => (
                         <span
                           key={`${item.projectId}-${item.id}`}
                           className="calendario-evento"
@@ -410,31 +435,40 @@ export default function StudentDeadlinesPage() {
                           <span className="calendario-evento__rotulo">{item.titulo}</span>
                         </span>
                       ))}
-                      {items.length > 2 && <small>+{items.length - 2} etapas</small>}
-                      {items.length > 0 && (
-                        <div className="calendario-dia__tooltip" role="tooltip" onClick={(event) => event.stopPropagation()}>
-                          <div className="calendario-dia__tooltip-topo">
-                            <strong>{items.length} {items.length === 1 ? "etapa" : "etapas"}</strong>
-                            <span>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long" }).format(date)}</span>
+                      {items.length > 3 && <small>+{items.length - 3} etapas</small>}
+                    </div>
+                    {canOpenTooltip && (
+                      <div
+                        className="calendario-dia__tooltip"
+                        role="tooltip"
+                        onPointerDownCapture={(event) => {
+                          event.stopPropagation();
+                          setActiveTooltipKey(null);
+                          setHoverTooltipKey(null);
+                        }}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <div className="calendario-dia__tooltip-topo">
+                          <strong>{items.length} {items.length === 1 ? "etapa" : "etapas"}</strong>
+                          <span>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long" }).format(date)}</span>
                         </div>
-                          <div className="calendario-dia__tooltip-lista">
-                            {items.map((item) => (
-                              <div
-                                key={`tooltip-${item.projectId}-${item.id}`}
-                                className="calendario-dia__tooltip-item"
-                              >
-                                <strong>{item.titulo}</strong>
-                                <span>{item.projectTitle}</span>
-                                <small>
-                                  {formatCalendarDate(item)} · {formatEtapaResponsavel(item.responsavel)} · {formatEtapaStatus(item.status)}
-                                </small>
-                              </div>
-                            ))}
+                        <div className="calendario-dia__tooltip-lista">
+                          {items.map((item) => (
+                            <div
+                              key={`tooltip-${item.projectId}-${item.id}`}
+                              className="calendario-dia__tooltip-item"
+                            >
+                              <strong>{item.titulo}</strong>
+                              <span>{item.projectTitle}</span>
+                              <small>
+                                {formatCalendarDate(item)} · {formatEtapaResponsavel(item.responsavel)} · {formatEtapaStatus(item.status)}
+                              </small>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      )}
+                    )}
                   </div>
-                </div>
                 );
               })}
             </div>

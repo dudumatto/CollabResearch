@@ -15,6 +15,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-width: 0;
   transition: margin-left 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -46,8 +47,7 @@
 /* ---- Wrapper da página (motion.div) ---- */
 .pagina-app__pagina {
   width: 100%;
-  max-width: 80rem;
-  margin: 0 auto;
+  max-width: none;
   min-width: 0;
   overflow-x: hidden;
 }

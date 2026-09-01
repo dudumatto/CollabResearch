@@ -21,7 +21,7 @@ import { StatusView } from "../components/StatusView";
 import { WelcomeBanner } from "../components/WelcomeBanner";
 import "./AdvisorWorkspace.css";
 
-const DASHBOARD_PREVIEW_LIMIT = 2;
+const DASHBOARD_PREVIEW_LIMIT = 3;
 
 const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
   <div className="skeleton" style={{ width: w, height: h, borderRadius: r, marginBottom: mb || undefined }} />

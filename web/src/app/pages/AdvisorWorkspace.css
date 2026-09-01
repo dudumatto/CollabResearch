@@ -2000,9 +2000,8 @@
 /* ---- Calendario de prazos ---- */
 .calendario-pagina {
   width: 100%;
-  max-width: 76rem;
+  max-width: none;
   height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
@@ -2095,8 +2094,8 @@
 
 @media (min-width: 1120px) {
   .calendario-layout {
-    grid-template-columns: minmax(40rem, 52rem) minmax(15rem, 18rem);
-    justify-content: center;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+    justify-content: stretch;
   }
 }
 
@@ -2116,8 +2115,8 @@
 }
 
 .calendario-card--principal {
-  justify-self: center;
-  width: min(100%, 52rem);
+  justify-self: stretch;
+  width: 100%;
   overflow: visible;
 }
 
@@ -2266,8 +2265,10 @@
   white-space: nowrap;
 }
 
-.calendario-dia:focus-within {
-  z-index: 30;
+.calendario-dia:hover,
+.calendario-dia:focus-within,
+.calendario-dia--tooltip-aberto {
+  z-index: 1000;
 }
 
 .calendario-dia:hover,
@@ -2290,13 +2291,14 @@
   max-width: min(22rem, calc(100vw - 2rem));
   opacity: 0;
   padding: var(--espaco-3);
+  visibility: hidden;
   pointer-events: none;
   position: fixed;
   top: var(--calendario-tooltip-top, 1rem);
   transform: translateY(-0.15rem);
   transition: opacity 0.15s ease, transform 0.15s ease;
   white-space: normal;
-  z-index: 120;
+  z-index: 10000;
 }
 
 .calendario-dia--tooltip-acima .calendario-dia__tooltip {
@@ -2319,16 +2321,13 @@
   top: 100%;
 }
 
-.calendario-dia:hover .calendario-dia__tooltip,
-.calendario-dia:focus-within .calendario-dia__tooltip,
 .calendario-dia--tooltip-aberto .calendario-dia__tooltip {
   opacity: 1;
   pointer-events: auto;
+  visibility: visible;
   transform: translateY(0.25rem);
 }
 
-.calendario-dia--tooltip-acima:hover .calendario-dia__tooltip,
-.calendario-dia--tooltip-acima:focus-within .calendario-dia__tooltip,
 .calendario-dia--tooltip-acima.calendario-dia--tooltip-aberto .calendario-dia__tooltip {
   transform: translateY(-0.25rem);
 }

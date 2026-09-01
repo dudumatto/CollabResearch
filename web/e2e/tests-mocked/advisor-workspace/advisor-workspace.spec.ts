@@ -49,13 +49,13 @@ test.describe("area do orientador (mockada)", () => {
     });
   }
 
-  test("dashboard limita a pre-visualizacao das filas a 2 itens", async ({ page }) => {
+  test("dashboard limita a pre-visualizacao das filas a 3 itens", async ({ page }) => {
     await page.goto("/app");
 
     const activeProjectsCard = page.locator(".advisor-card", { hasText: "Projetos ativos" });
     await expect(activeProjectsCard.locator(".advisor-card__contador")).toHaveText("3");
-    await expect(activeProjectsCard.locator(".advisor-fila-item")).toHaveCount(2);
-    await expect(activeProjectsCard.getByText("Projeto extra oculto")).toHaveCount(0);
+    await expect(activeProjectsCard.locator(".advisor-fila-item")).toHaveCount(3);
+    await expect(activeProjectsCard.getByText("Projeto extra oculto")).toBeVisible();
   });
 
   test("exibe fallback amigavel quando chunk lazy falha", async ({ page }) => {
@@ -68,6 +68,21 @@ test.describe("area do orientador (mockada)", () => {
     await expect(page.getByRole("heading", { name: "Não foi possível carregar esta tela" })).toBeVisible();
     await expect(page.getByText("Unexpected Application Error")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Recarregar página" })).toBeVisible();
+  });
+  test("entregas nao depende da lista de projetos para exibir dados agregados", async ({ page }) => {
+    await page.route("**/api/projetos/pagina**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: [], totalElements: 0, totalPages: 0, number: 0, size: 200 }),
+      });
+    });
+
+    await page.goto("/app/deliveries");
+
+    await expect(page.getByText("Monografia").first()).toBeVisible();
+    await expect(page.getByText("Nenhum projeto vinculado")).toHaveCount(0);
+    await expect(page.getByText("Nenhuma entrega encontrada")).toHaveCount(0);
   });
   test("entregas usa fallback por projeto quando endpoint agregado nao existe", async ({ page }) => {
     await page.route("**/api/orientador/entregas**", async (route) => {

@@ -890,7 +890,7 @@
 
 .progress-page__grid {
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  align-items: stretch;
+  align-items: start;
 }
 
 .progress-page__panel {

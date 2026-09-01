@@ -25,7 +25,7 @@ import {
 import { formatApplicationStatus, formatProjectStatus } from "../utils/formatters";
 import "./DashboardPage.css";
 
-const DASHBOARD_PREVIEW_LIMIT = 2;
+const DASHBOARD_PREVIEW_LIMIT = 3;
 
 function buildActivityData(projects, applications) {
   const entries = [...projects, ...applications]

@@ -29,7 +29,13 @@ export async function runDeadlinesFlow(page: Page) {
 
     await expect(page.getByRole("heading", { name: "Prazos das etapas", exact: true })).toBeVisible();
     await expect(page.getByText("Este mês", { exact: true })).toBeVisible();
-    await expect(page.locator(".calendario-lista").getByText("Entrega parcial com titulo muito longo")).toBeVisible();
+
+    const longDelivery = page.locator(".calendario-lista").getByText("Entrega parcial com titulo muito longo");
+    for (let attempts = 0; attempts < 3 && await longDelivery.count() === 0; attempts += 1) {
+      await page.getByRole("button", { name: "Mês anterior" }).click();
+    }
+
+    await expect(longDelivery).toBeVisible();
     await expect(page.locator(".calendario-card--lateral").filter({ hasText: "Este mês" }).getByText("Revisao final")).toBeVisible();
     await expect(page.locator(".calendario-card--alerta").getByText("Etapa sem data sem prazo")).toBeVisible();
     await expect(page.locator(".calendario-evento__rotulo").first()).toHaveCSS("text-overflow", "clip");
@@ -39,7 +45,8 @@ export async function runDeadlinesFlow(page: Page) {
 
     const calendarBox = await page.locator(".calendario-card--principal").boundingBox();
     const originalUrl = page.url();
-    await page.locator(".calendario-dia--com-evento").first().click();
+    await expect(page.locator(".calendario-dia--fora .calendario-dia__tooltip")).toHaveCount(0);
+    await page.locator(".calendario-dia--com-evento:not(.calendario-dia--fora)").first().click();
     const tooltip = page.locator(".calendario-dia__tooltip").first();
     await expect(tooltip).toBeVisible();
     const tooltipBox = await tooltip.boundingBox();
@@ -47,6 +54,9 @@ export async function runDeadlinesFlow(page: Page) {
     expect(tooltipBox?.y ?? 0).toBeGreaterThanOrEqual(0);
     expect((tooltipBox?.x ?? 0) + (tooltipBox?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
     expect((tooltipBox?.y ?? 0) + (tooltipBox?.height ?? 0)).toBeLessThanOrEqual(viewport.height);
+    await expect(tooltip).toHaveCSS("z-index", "10000");
+    await page.getByRole("heading", { name: "Prazos das etapas", exact: true }).click();
+    await expect(tooltip).toBeHidden();
     await expect(page).toHaveURL(originalUrl);
 
     if (viewport.width > 1119) {

@@ -23,6 +23,11 @@ const FILTROS = [
   { key: "APPROVED", rotulo: "Aprovadas" },
 ];
 
+function isMissingAggregateEndpoint(error) {
+  const status = error?.status ?? error?.response?.status;
+  return status === 404 || status === 405;
+}
+
 function entregaPillClass(status) {
   if (status === "PENDING_REVIEW") return "advisor-etiqueta--amarelo";
   if (status === "CHANGES_REQUESTED") return "advisor-etiqueta--laranja";
@@ -163,6 +168,19 @@ export default function AdvisorDeliveriesPage() {
   const { data: entregas, loading: loadingEntregas, error: erroEntregas, reload } = useAsyncData(
     async () => {
       try {
+        try {
+          const raw = await advisorService.entregas({ projetoId: projectId });
+          const mapped = (Array.isArray(raw) ? raw : [])
+            .map((item) => mapEntregaComProjeto(item, item?.projetoId ?? projetoId))
+            .filter(Boolean);
+          setEntregasResolvidasKey(entregasRequestKey);
+          return mapped;
+        } catch (err) {
+          if (!isMissingAggregateEndpoint(err)) {
+            throw err;
+          }
+        }
+
         if (projectId) {
           const raw = await deliveryService.list(projectId);
           const mapped = (Array.isArray(raw) ? raw : [])
