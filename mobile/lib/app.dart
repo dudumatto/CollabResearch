@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import 'core/auth/session_key.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/academic_workspace_provider.dart';
@@ -25,10 +26,11 @@ class TccMobileApp extends StatefulWidget {
 class _TccMobileAppState extends State<TccMobileApp> {
   late final _router = createAppRouter(widget.authProvider);
 
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final sessionKey = auth.currentUser?.id ?? 'guest';
+    final sessionKey = sessionKeyFor(auth.currentUser);
 
     return MultiProvider(
       key: ValueKey<String>(sessionKey),
