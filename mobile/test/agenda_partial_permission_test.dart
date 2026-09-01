@@ -123,4 +123,28 @@ void main() {
     expect(provider.errorMessage, isNull);
     expect(provider.evaluationsByProject['2'], isEmpty);
   });
+
+  test('abrir um projeto alheio mostra vazio, nao aviso de permissao',
+      () async {
+    // O detalhe do projeto leva para /evaluations?projectId=X e
+    // /deliveries?projectId=X sem exigir vinculo, entao da para cair aqui com
+    // um projeto que so se pode olhar. As tres listas respondem 403.
+    final provider = AcademicWorkspaceProvider();
+
+    await provider.loadProjectWorkspace('2');
+
+    expect(provider.errorMessage, isNull);
+    expect(provider.stagesByProject['2'], isEmpty);
+    expect(provider.deliveriesByProject['2'], isEmpty);
+    expect(provider.evaluationsByProject['2'], isEmpty);
+  });
+
+  test('o projeto do usuario carrega normalmente', () async {
+    final provider = AcademicWorkspaceProvider();
+
+    await provider.loadProjectWorkspace('1');
+
+    expect(provider.errorMessage, isNull);
+    expect(provider.stagesByProject['1'], isNotEmpty);
+  });
 }

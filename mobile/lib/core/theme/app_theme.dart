@@ -35,6 +35,11 @@ abstract final class AppTheme {
     return base.copyWith(
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.background,
+      // O menu suspenso do DropdownButton usa canvasColor quando nenhuma cor
+      // e passada. Sem definir isto ele cai no padrao do Material 3, um lilas
+      // que destoa do verde da marca -- a mesma armadilha ja registrada acima
+      // para as superficies de container.
+      canvasColor: AppColors.surface,
       textTheme: textTheme,
       iconTheme: const IconThemeData(color: AppColors.textMedium, size: 22),
       appBarTheme: AppBarTheme(
@@ -300,6 +305,9 @@ abstract final class AppTheme {
     return base.copyWith(
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
+      // Ver a nota do tema claro: sem canvasColor o menu suspenso ignora a
+      // paleta e volta ao padrao do Material 3.
+      canvasColor: AppColors.darkSurface,
       textTheme: textTheme,
       iconTheme: const IconThemeData(color: AppColors.darkMuted, size: 22),
       appBarTheme: AppBarTheme(

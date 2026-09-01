@@ -6,6 +6,7 @@ import '../../core/utils/validators.dart';
 import '../../models/project.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
+import '../../widgets/common/app_dropdown.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_error_state.dart';
@@ -265,7 +266,10 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                     final isMobile =
                                         MediaQuery.sizeOf(context).width < 600;
                                     return DropdownButtonFormField<int>(
-                                      initialValue: _selectedAreaId,
+                                      initialValue: dropdownValueIn(
+                                        _selectedAreaId,
+                                        provider.areas.map((area) => area.id),
+                                      ),
                                       // Mobile-only: limita nomes longos ao campo.
                                       isExpanded: isMobile,
                                       isDense: !isMobile,

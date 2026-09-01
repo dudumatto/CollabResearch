@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/utils/validators.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
+import '../../widgets/common/app_dropdown.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_error_state.dart';
@@ -234,7 +235,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                 final isMobile =
                                     MediaQuery.sizeOf(context).width < 600;
                                 return DropdownButtonFormField<int>(
-                                  initialValue: _selectedAreaId,
+                                  initialValue: dropdownValueIn(
+                                      _selectedAreaId,
+                                      provider.areas.map((area) => area.id),
+                                  ),
                                   // Mobile-only: limita o item selecionado ao campo.
                                   isExpanded: isMobile,
                                   isDense: !isMobile,
@@ -269,7 +273,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                   final isMobile =
                                       MediaQuery.sizeOf(context).width < 600;
                                   return DropdownButtonFormField<int>(
-                                    initialValue: _selectedAdvisorId,
+                                    initialValue: dropdownValueIn(
+                                      _selectedAdvisorId,
+                                      provider.advisors.map((a) => a.id),
+                                    ),
                                     // Mobile-only: nomes longos podem quebrar linha.
                                     isExpanded: isMobile,
                                     isDense: !isMobile,

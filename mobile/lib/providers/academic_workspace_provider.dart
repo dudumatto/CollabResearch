@@ -48,17 +48,41 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
         evaluationsByProject[projectId] = await _service.evaluations(projectId);
       });
 
+  /// Cada lista e resolvida por conta propria. Da para chegar aqui com um
+  /// projeto que se pode ver mas do qual nao se participa -- o detalhe do
+  /// projeto leva para `/evaluations?projectId=X` e `/deliveries?projectId=X`
+  /// sem exigir vinculo -- e nesse caso o backend responde 403 nas tres. Num
+  /// Future.wait sem protecao, isso virava "Voce nao tem permissao para esta
+  /// acao" no lugar do conteudo, e o aviso ficava no provider, que e
+  /// compartilhado, aparecendo depois em outras telas.
   Future<void> loadProjectWorkspace(String projectId) => _run(() async {
         final results = await Future.wait<dynamic>([
-          _service.stages(projectId),
-          _service.deliveries(projectId),
-          _service.evaluations(projectId),
+          _forbiddenAsEmpty(_service.stages(projectId), const <ProjectStage>[]),
+          _forbiddenAsEmpty(
+              _service.deliveries(projectId), const <DeliveryItem>[]),
+          _forbiddenAsEmpty(
+              _service.evaluations(projectId), const <AcademicEvaluation>[]),
         ]);
         stagesByProject[projectId] = results[0] as List<ProjectStage>;
         deliveriesByProject[projectId] = results[1] as List<DeliveryItem>;
         evaluationsByProject[projectId] =
             results[2] as List<AcademicEvaluation>;
       });
+
+  /// 403 quer dizer "isto nao e seu para ver", nao "algo deu errado": devolve
+  /// vazio e deixa a tela mostrar seu estado vazio normal. Os demais erros
+  /// seguem subindo para virar aviso.
+  Future<List<T>> _forbiddenAsEmpty<T>(
+    Future<List<T>> request,
+    List<T> fallback,
+  ) async {
+    try {
+      return await request;
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 403) return fallback;
+      rethrow;
+    }
+  }
 
   /// meusProjetos=true traz tambem projetos em que o usuario apenas se
   /// inscreveu, e para esses o backend responde 403 em /etapas ("Sem permissao

@@ -33,6 +33,13 @@ class _AgendaScreenState extends State<AgendaScreen> {
   DateTime _visibleMonth = DateTime(DateTime.now().year, DateTime.now().month);
   DateTime? _selectedDate;
 
+  /// _load() so roda no addPostFrameCallback. Ate ele terminar, a tela lia o
+  /// AcademicWorkspaceProvider, que e compartilhado, e mostrava o erro deixado
+  /// por outra tela -- entrar na agenda depois de abrir entregas de um projeto
+  /// alheio exibia "Voce nao tem permissao para esta acao" sem que a agenda
+  /// tivesse pedido nada ainda.
+  bool _initialized = false;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +56,8 @@ class _AgendaScreenState extends State<AgendaScreen> {
             .where((project) => project.id == widget.projectId)
             .toList();
     await context.read<AcademicWorkspaceProvider>().loadAgenda(projects);
+    if (!mounted) return;
+    setState(() => _initialized = true);
   }
 
   Future<bool> _completeStage(
@@ -211,7 +220,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                       onClear: () => setState(() => _selectedDate = null),
                     ),
                   const SizedBox(height: AppSpacing.lg),
-                  if (academic.isLoading && items.isEmpty)
+                  if (!_initialized || (academic.isLoading && items.isEmpty))
                     const AcademicSkeletonList()
                   else if (academic.errorMessage != null && items.isEmpty)
                     AcademicErrorState(
