@@ -28,20 +28,22 @@ class AppDropdownItem<T> {
 
 /// Seletor padrao do app.
 ///
-/// Antes cada tela montava o proprio DropdownButtonFormField e as diferencas
-/// se acumulavam: um dialogo sem rotulo nenhum, uns com isExpanded e outros
-/// sem, corte de texto ora presente ora ausente. Sem isExpanded o item
-/// selecionado nao e limitado pela largura do campo, entao o ellipsis nao
-/// atua da mesma forma e rotulos longos se comportam diferente entre telas.
+/// Usa [DropdownMenu], e nao DropdownButtonFormField, por causa de onde a
+/// lista aparece: o DropdownButton sobrepoe o campo e alinha a opcao
+/// selecionada com o botao, escondendo o que se estava lendo. O DropdownMenu
+/// ancora a lista logo abaixo do campo, que continua visivel.
+///
+/// `requestFocusOnTap: false` deixa o campo somente-leitura: tocar abre a
+/// lista e nao o teclado. Em lista curta o teclado so atrapalharia, e em tela
+/// pequena ele cobriria justamente as opcoes.
 ///
 /// Bordas, preenchimento e raio do campo continuam vindo do
-/// InputDecorationTheme em AppTheme._inputTheme; aqui ficam as decisoes que o
-/// tema nao alcanca -- inclusive a aparencia do menu suspenso, que o tema nao
-/// cobre e por isso caia no lilas padrao do Material 3.
+/// InputDecorationTheme em AppTheme._inputTheme.
 ///
-/// Os seletores de area e orientador dos formularios de projeto ficam de fora
-/// por decisao propria: eles alternam isExpanded/isDense conforme a largura e
-/// ha teste fixando esse comportamento no desktop.
+/// Os seletores de area e orientador dos formularios de projeto NAO usam este
+/// widget: eles alternam isExpanded/isDense conforme a largura, com teste
+/// fixando o comportamento no desktop, e por isso continuam abrindo por cima.
+/// Quem for unificar aquilo precisa reescrever projects_responsive_test.
 class AppDropdown<T> extends StatelessWidget {
   const AppDropdown({
     super.key,
@@ -58,18 +60,8 @@ class AppDropdown<T> extends StatelessWidget {
   final String label;
   final IconData? icon;
 
-  /// O DropdownButton exige exatamente um item com o valor atual e lanca
-  /// assertion quando ha zero ou mais de um. Duas situacoes reais levam a
-  /// isso, e nenhuma delas merece derrubar a tela:
-  ///
-  /// - o valor vem de fora e nao esta na lista. Abrir um projeto que se pode
-  ///   ver mas do qual nao se participa e tocar em Avaliacoes empurra o id
-  ///   pela rota (`/evaluations?projectId=X`), mas esse projeto nao aparece
-  ///   em "meus projetos" -- a tela quebrava inteira com a tela vermelha de
-  ///   assertion;
-  /// - a origem repete um valor, e ai o widget nao sabe qual item destacar.
-  ///
-  /// Preferimos o campo vazio, ou a primeira ocorrencia, a perder a tela.
+  /// Um valor repetido deixa o widget sem saber qual entrada destacar, e a
+  /// origem as vezes repete. Ficamos com a primeira ocorrencia.
   List<AppDropdownItem<T>> get _uniqueItems {
     final seen = <T>{};
     return [
@@ -80,39 +72,54 @@ class AppDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final options = _uniqueItems;
-    final selectable =
-        options.any((item) => item.value == value) ? value : null;
     final theme = Theme.of(context);
+    final options = _uniqueItems;
 
-    return DropdownButtonFormField<T>(
-      initialValue: selectable,
-      isExpanded: true,
-      // Sem isto o menu usa o padrao do Material 3, um lilas que destoa do
-      // verde da marca -- a mesma armadilha que app_colors.dart ja registra
-      // para as superficies de container.
-      dropdownColor: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(12),
-      // O DropdownButton usa textTheme.titleMedium por padrao: 16sp em peso
-      // 600, o mesmo de um titulo de secao. Isso deixava as opcoes pesadas e
-      // fora de escala com o resto do app. bodyMedium e o que o proprio
-      // popupMenuTheme ja usa para menus, entao os dois passam a combinar.
-      style: theme.textTheme.bodyMedium,
-      // Listas longas -- areas de pesquisa, orientandos -- cobriam a tela
-      // inteira. Com teto, o excedente rola dentro do menu.
-      menuMaxHeight: 288,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: icon == null ? null : Icon(icon),
+    // Valor vindo de fora pode nao estar na lista: abrir um projeto que se
+    // pode ver mas do qual nao se participa e tocar em Avaliacoes empurra o id
+    // pela rota, e esse projeto nao aparece em "meus projetos". O DropdownMenu
+    // ignora um initialSelection que nao encontra, mas manter a checagem
+    // explicita deixa a intencao clara e vale para qualquer origem.
+    final selected =
+        options.any((item) => item.value == value) ? value : null;
+
+    final entryStyle = ButtonStyle(
+      textStyle: WidgetStatePropertyAll<TextStyle?>(theme.textTheme.bodyMedium),
+    );
+
+    return DropdownMenu<T>(
+      initialSelection: selected,
+      enabled: onChanged != null,
+      requestFocusOnTap: false,
+      // Acompanha a largura do pai, como o campo antigo fazia com isExpanded.
+      expandedInsets: EdgeInsets.zero,
+      // Lista longa -- areas de pesquisa, orientandos -- rola dentro do menu
+      // em vez de cobrir a tela.
+      menuHeight: 288,
+      label: Text(label),
+      leadingIcon: icon == null ? null : Icon(icon),
+      // O padrao do menu seria 16sp em peso 600, o mesmo de um titulo de
+      // secao. bodyMedium e o que o popupMenuTheme ja usa para menus.
+      textStyle: theme.textTheme.bodyMedium,
+      menuStyle: MenuStyle(
+        // Sem isto o menu cai no lilas padrao do Material 3, que destoa do
+        // verde da marca.
+        backgroundColor: WidgetStatePropertyAll<Color>(
+          theme.colorScheme.surface,
+        ),
+        shape: WidgetStatePropertyAll<OutlinedBorder>(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       ),
-      items: [
+      dropdownMenuEntries: [
         for (final item in options)
-          DropdownMenuItem<T>(
+          DropdownMenuEntry<T>(
             value: item.value,
-            child: Text(item.label, overflow: TextOverflow.ellipsis),
+            label: item.label,
+            style: entryStyle,
           ),
       ],
-      onChanged: onChanged,
+      onSelected: onChanged,
     );
   }
 }

@@ -4,10 +4,10 @@ import 'package:tcc_mobile/core/theme/app_theme.dart';
 import 'package:tcc_mobile/widgets/common/app_dropdown.dart';
 import 'package:tcc_mobile/widgets/common/app_project_dropdown.dart';
 
-Future<void> _pump(WidgetTester tester, Widget child, {ThemeData? theme}) async {
+Future<void> _pump(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(
     MaterialApp(
-      theme: theme,
+      theme: AppTheme.lightTheme,
       home: Scaffold(
         body: Padding(padding: const EdgeInsets.all(16), child: child),
       ),
@@ -26,15 +26,15 @@ void main() {
         (tester) async {
       // Cenario real: o detalhe de um projeto que o aluno pode ver mas do qual
       // nao participa leva para /evaluations?projectId=15. O id vai para o
-      // seletor, mas o projeto nao aparece em "meus projetos" -- e o
-      // DropdownButton lancava assertion, pintando a tela de vermelho.
+      // seletor, mas o projeto nao aparece em "meus projetos" -- e o widget
+      // anterior lancava assertion, pintando a tela de vermelho.
       await _pump(
         tester,
-        const AppDropdown<String>(
+        AppDropdown<String>(
           value: '15',
           label: 'Projeto',
           items: _opcoes,
-          onChanged: null,
+          onChanged: (_) {},
         ),
       );
 
@@ -46,19 +46,25 @@ void main() {
         (tester) async {
       await _pump(
         tester,
-        const AppDropdown<String>(
+        AppDropdown<String>(
           value: '1',
           label: 'Projeto',
-          items: [
+          items: const [
             AppDropdownItem(value: '1', label: 'Projeto A'),
             AppDropdownItem(value: '1', label: 'Projeto A repetido'),
             AppDropdownItem(value: '2', label: 'Projeto B'),
           ],
-          onChanged: null,
+          onChanged: (_) {},
         ),
       );
 
       expect(tester.takeException(), isNull);
+
+      await tester.tap(find.byType(AppDropdown<String>));
+      await tester.pumpAndSettle();
+
+      // A duplicata sai antes de montar: sobra uma entrada por valor.
+      expect(find.text('Projeto A repetido'), findsNothing);
     });
 
     testWidgets('o seletor de projeto herda a mesma protecao', (tester) async {
@@ -74,7 +80,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('um valor valido continua selecionado', (tester) async {
+    testWidgets('um valor valido aparece no campo', (tester) async {
       await _pump(
         tester,
         AppDropdown<String>(
@@ -86,6 +92,34 @@ void main() {
       );
 
       expect(tester.takeException(), isNull);
+      expect(find.text('Projeto B'), findsOneWidget);
+    });
+
+    testWidgets('valor definido depois do carregamento aparece no campo',
+        (tester) async {
+      // As telas so sabem o projeto depois da resposta do backend, entao o
+      // valor chega em um rebuild posterior.
+      await _pump(
+        tester,
+        AppDropdown<String>(
+          value: null,
+          label: 'Projeto',
+          items: _opcoes,
+          onChanged: (_) {},
+        ),
+      );
+
+      await _pump(
+        tester,
+        AppDropdown<String>(
+          value: '2',
+          label: 'Projeto',
+          items: _opcoes,
+          onChanged: (_) {},
+        ),
+      );
+      await tester.pumpAndSettle();
+
       expect(find.text('Projeto B'), findsOneWidget);
     });
   });
@@ -110,7 +144,7 @@ void main() {
     });
   });
 
-  group('menu suspenso segue a paleta', () {
+  group('menu suspenso segue a paleta e a escala do app', () {
     testWidgets('nao usa o lilas padrao do Material 3', (tester) async {
       await _pump(
         tester,
@@ -120,22 +154,21 @@ void main() {
           items: _opcoes,
           onChanged: (_) {},
         ),
-        theme: AppTheme.lightTheme,
       );
 
-      final dropdown = tester.widget<DropdownButton<String>>(
-        find.byType(DropdownButton<String>),
+      final menu = tester.widget<DropdownMenu<String>>(
+        find.byType(DropdownMenu<String>),
       );
-      final scheme = AppTheme.lightTheme.colorScheme;
+      final fundo = menu.menuStyle?.backgroundColor
+          ?.resolve(<WidgetState>{});
 
-      expect(dropdown.dropdownColor, scheme.surface);
-      expect(dropdown.dropdownColor, isNot(const Color(0xFFF7F2FA)));
+      expect(fundo, AppTheme.lightTheme.colorScheme.surface);
+      expect(fundo, isNot(const Color(0xFFF7F2FA)));
     });
 
     testWidgets('as opcoes usam a tipografia de menu do app', (tester) async {
-      // O padrao do DropdownButton e titleMedium: 16sp em peso 600, o mesmo
-      // de um titulo de secao. As opcoes ficavam pesadas e fora de escala.
-      // popupMenuTheme ja usa bodyMedium, entao os menus passam a combinar.
+      // O padrao seria 16sp em peso 600, o mesmo de um titulo de secao.
+      // popupMenuTheme ja usa bodyMedium, entao os menus combinam.
       await _pump(
         tester,
         AppDropdown<String>(
@@ -144,20 +177,16 @@ void main() {
           items: _opcoes,
           onChanged: (_) {},
         ),
-        theme: AppTheme.lightTheme,
       );
 
-      final dropdown = tester.widget<DropdownButton<String>>(
-        find.byType(DropdownButton<String>),
+      final menu = tester.widget<DropdownMenu<String>>(
+        find.byType(DropdownMenu<String>),
       );
 
-      // Conferimos o tamanho resolvido, e nao a identidade do TextStyle: o
-      // tema mescla o estilo com o conjunto do idioma, e o fontSize so existe
-      // depois dessa mesclagem -- lendo direto do textTheme vem nulo.
-      expect(dropdown.style?.fontSize, 14.0,
+      expect(menu.textStyle?.fontSize, 14.0,
           reason: 'corpo de texto de menu; o padrao era 16 de titulo');
-      expect(dropdown.style?.fontWeight, FontWeight.w400,
-          reason: 'o padrao do DropdownButton e peso 600, que pesava demais');
+      expect(menu.textStyle?.fontWeight, FontWeight.w400,
+          reason: 'o padrao era peso 600, que pesava demais');
     });
 
     testWidgets('lista longa nao cobre a tela inteira', (tester) async {
@@ -172,23 +201,20 @@ void main() {
           ],
           onChanged: (_) {},
         ),
-        theme: AppTheme.lightTheme,
       );
 
-      final dropdown = tester.widget<DropdownButton<String>>(
-        find.byType(DropdownButton<String>),
+      final menu = tester.widget<DropdownMenu<String>>(
+        find.byType(DropdownMenu<String>),
       );
 
-      expect(dropdown.menuMaxHeight, isNotNull);
-      expect(dropdown.menuMaxHeight, lessThanOrEqualTo(320));
+      expect(menu.menuHeight, isNotNull);
+      expect(menu.menuHeight, lessThanOrEqualTo(320));
     });
 
     testWidgets('a opcao aberta cabe num alvo de toque confortavel',
         (tester) async {
       // A regra da casa pede areas clicaveis confortaveis no mobile: o texto
-      // menor nao pode encolher o alvo abaixo do minimo do Material. Medimos
-      // a linha renderizada, e nao a propriedade, porque e a altura real que
-      // o dedo encontra.
+      // menor nao pode encolher o alvo abaixo do minimo do Material.
       await _pump(
         tester,
         AppDropdown<String>(
@@ -197,10 +223,9 @@ void main() {
           items: _opcoes,
           onChanged: (_) {},
         ),
-        theme: AppTheme.lightTheme,
       );
 
-      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.tap(find.byType(AppDropdown<String>));
       await tester.pumpAndSettle();
 
       final linha = find
