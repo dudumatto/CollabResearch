@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_dropdown.dart';
+
 /// Uma opcao do seletor de projeto. Existe para o widget servir tanto a
 /// Project quanto a AdviseeProject, que nao tem relacao entre si mas ambos
 /// carregam id e titulo.
@@ -10,17 +12,13 @@ class ProjectChoice {
   final String title;
 }
 
-/// Seletor de projeto compartilhado.
+/// Seletor de projeto: [AppDropdown] com o rotulo e o icone ja definidos,
+/// porque as cinco telas que escolhem projeto devem parecer a mesma coisa.
 ///
-/// Antes cada tela montava o seu DropdownButtonFormField inline, e os cinco
+/// Antes cada uma montava o seu DropdownButtonFormField inline, e os cinco
 /// divergiam: dois usavam Icons.folder_open_outlined e dois
 /// Icons.folder_outlined para o mesmo controle, um nao tinha icone nenhum, e
-/// feedback e progresso ficaram sem isExpanded -- sem ele o item selecionado
-/// nao e limitado pela largura, entao o ellipsis dos titulos longos nao se
-/// comporta igual ao das outras telas.
-///
-/// Bordas, preenchimento e raio ja vem do InputDecorationTheme em
-/// AppTheme._inputTheme; o que este widget fixa e o que o tema nao alcanca.
+/// feedback e progresso ficaram sem isExpanded.
 class AppProjectDropdown extends StatelessWidget {
   const AppProjectDropdown({
     super.key,
@@ -37,19 +35,13 @@ class AppProjectDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      isExpanded: true,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: const Icon(Icons.folder_outlined),
-      ),
+    return AppDropdown<String>(
+      value: value,
+      label: label,
+      icon: Icons.folder_outlined,
       items: [
         for (final option in options)
-          DropdownMenuItem(
-            value: option.id,
-            child: Text(option.title, overflow: TextOverflow.ellipsis),
-          ),
+          AppDropdownItem(value: option.id, label: option.title),
       ],
       onChanged: onChanged,
     );

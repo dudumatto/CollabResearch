@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../widgets/common/app_dropdown.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_snackbar.dart';
@@ -158,15 +159,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: const Text('Receber alertas do sistema'),
                 ),
                 const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: _theme,
-                  decoration: const InputDecoration(
-                    labelText: 'Tema',
-                    prefixIcon: Icon(Icons.palette_outlined),
-                  ),
+                AppDropdown<String>(
+                  value: _theme,
+                  label: 'Tema',
+                  icon: Icons.palette_outlined,
                   items: const [
-                    DropdownMenuItem(value: 'claro', child: Text('Claro')),
-                    DropdownMenuItem(value: 'escuro', child: Text('Escuro')),
+                    AppDropdownItem(value: 'claro', label: 'Claro'),
+                    AppDropdownItem(value: 'escuro', label: 'Escuro'),
                   ],
                   onChanged: (value) =>
                       setState(() => _theme = value ?? _theme),

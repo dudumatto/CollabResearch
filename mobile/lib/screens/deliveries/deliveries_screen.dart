@@ -11,6 +11,7 @@ import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_dropdown.dart';
 import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_project_dropdown.dart';
 import '../../widgets/common/app_snackbar.dart';
@@ -287,13 +288,15 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButtonFormField<String>(
-                initialValue: decision,
+              AppDropdown<String>(
+                value: decision,
+                label: 'Decisão',
+                icon: Icons.rule_outlined,
                 items: const [
-                  DropdownMenuItem(value: 'APPROVED', child: Text('Aprovar')),
-                  DropdownMenuItem(
+                  AppDropdownItem(value: 'APPROVED', label: 'Aprovar'),
+                  AppDropdownItem(
                     value: 'CHANGES_REQUESTED',
-                    child: Text('Solicitar ajustes'),
+                    label: 'Solicitar ajustes',
                   ),
                 ],
                 onChanged: (value) => setDialogState(() {

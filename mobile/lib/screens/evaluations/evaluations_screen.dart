@@ -8,6 +8,7 @@ import '../../providers/academic_workspace_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
+import '../../widgets/common/app_dropdown.dart';
 import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_project_dropdown.dart';
 import '../../widgets/common/app_snackbar.dart';
@@ -547,32 +548,26 @@ class _EvaluationFormSheetState extends State<_EvaluationFormSheet> {
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 18),
-          DropdownButtonFormField<String>(
-            initialValue: _studentId,
-            isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Aluno avaliado'),
+          AppDropdown<String>(
+            value: _studentId,
+            label: 'Aluno avaliado',
+            icon: Icons.person_outline,
             items: [
               for (final advisee in widget.advisees)
-                DropdownMenuItem(
-                  value: advisee.studentId,
-                  child: Text(advisee.name, overflow: TextOverflow.ellipsis),
-                ),
+                AppDropdownItem(value: advisee.studentId, label: advisee.name),
             ],
             onChanged: widget.evaluation == null
                 ? (value) => setState(() => _studentId = value)
                 : null,
           ),
           const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: _stageId,
-            isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Etapa concluída'),
+          AppDropdown<String>(
+            value: _stageId,
+            label: 'Etapa concluída',
+            icon: Icons.flag_outlined,
             items: [
               for (final stage in widget.stages)
-                DropdownMenuItem(
-                  value: stage.id,
-                  child: Text(stage.title, overflow: TextOverflow.ellipsis),
-                ),
+                AppDropdownItem(value: stage.id, label: stage.title),
             ],
             onChanged: widget.evaluation == null
                 ? (value) => setState(() => _stageId = value)

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/date_utils.dart';
 import '../../providers/research_activity_provider.dart';
+import '../../widgets/common/app_dropdown.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_project_dropdown.dart';
@@ -75,19 +76,15 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       const InputDecoration(labelText: 'Título (opcional)'),
                 ),
                 const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: type,
-                  decoration: const InputDecoration(labelText: 'Tipo'),
+                AppDropdown<String>(
+                  value: type,
+                  label: 'Tipo',
+                  icon: Icons.label_outline,
                   items: const [
-                    DropdownMenuItem(
-                      value: 'ATUALIZACAO',
-                      child: Text('Atualização'),
-                    ),
-                    DropdownMenuItem(value: 'MARCO', child: Text('Marco')),
-                    DropdownMenuItem(
-                      value: 'BLOQUEIO',
-                      child: Text('Bloqueio'),
-                    ),
+                    AppDropdownItem(
+                        value: 'ATUALIZACAO', label: 'Atualização'),
+                    AppDropdownItem(value: 'MARCO', label: 'Marco'),
+                    AppDropdownItem(value: 'BLOQUEIO', label: 'Bloqueio'),
                   ],
                   onChanged: (value) =>
                       setDialogState(() => type = value ?? type),

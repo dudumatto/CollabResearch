@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/utils/date_utils.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
+import '../../widgets/common/app_dropdown.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_project_dropdown.dart';
@@ -79,15 +80,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                DropdownButtonFormField<int>(
-                  initialValue: rating,
-                  decoration: const InputDecoration(labelText: 'Nota'),
+                AppDropdown<int>(
+                  value: rating,
+                  label: 'Nota',
+                  icon: Icons.star_outline,
                   items: [
                     for (var value = 1; value <= 5; value++)
-                      DropdownMenuItem(
-                        value: value,
-                        child: Text('$value de 5'),
-                      ),
+                      AppDropdownItem(value: value, label: '$value de 5'),
                   ],
                   onChanged: (value) =>
                       setDialogState(() => rating = value ?? rating),
