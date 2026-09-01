@@ -93,6 +93,14 @@ class AppDropdown<T> extends StatelessWidget {
       // para as superficies de container.
       dropdownColor: theme.colorScheme.surface,
       borderRadius: BorderRadius.circular(12),
+      // O DropdownButton usa textTheme.titleMedium por padrao: 16sp em peso
+      // 600, o mesmo de um titulo de secao. Isso deixava as opcoes pesadas e
+      // fora de escala com o resto do app. bodyMedium e o que o proprio
+      // popupMenuTheme ja usa para menus, entao os dois passam a combinar.
+      style: theme.textTheme.bodyMedium,
+      // Listas longas -- areas de pesquisa, orientandos -- cobriam a tela
+      // inteira. Com teto, o excedente rola dentro do menu.
+      menuMaxHeight: 288,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: icon == null ? null : Icon(icon),

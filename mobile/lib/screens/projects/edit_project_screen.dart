@@ -273,6 +273,10 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
                                       // Mobile-only: limita nomes longos ao campo.
                                       isExpanded: isMobile,
                                       isDense: !isMobile,
+                                      // Mesma tipografia e teto de altura do AppDropdown, para os
+                                      // seletores do formulario nao destoarem dos demais.
+                                      style: Theme.of(context).textTheme.bodyMedium,
+                                      menuMaxHeight: 288,
                                       decoration: const InputDecoration(
                                         labelText: 'Área de pesquisa',
                                         prefixIcon:

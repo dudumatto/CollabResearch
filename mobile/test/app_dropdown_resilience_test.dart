@@ -132,6 +132,88 @@ void main() {
       expect(dropdown.dropdownColor, isNot(const Color(0xFFF7F2FA)));
     });
 
+    testWidgets('as opcoes usam a tipografia de menu do app', (tester) async {
+      // O padrao do DropdownButton e titleMedium: 16sp em peso 600, o mesmo
+      // de um titulo de secao. As opcoes ficavam pesadas e fora de escala.
+      // popupMenuTheme ja usa bodyMedium, entao os menus passam a combinar.
+      await _pump(
+        tester,
+        AppDropdown<String>(
+          value: '1',
+          label: 'Projeto',
+          items: _opcoes,
+          onChanged: (_) {},
+        ),
+        theme: AppTheme.lightTheme,
+      );
+
+      final dropdown = tester.widget<DropdownButton<String>>(
+        find.byType(DropdownButton<String>),
+      );
+
+      // Conferimos o tamanho resolvido, e nao a identidade do TextStyle: o
+      // tema mescla o estilo com o conjunto do idioma, e o fontSize so existe
+      // depois dessa mesclagem -- lendo direto do textTheme vem nulo.
+      expect(dropdown.style?.fontSize, 14.0,
+          reason: 'corpo de texto de menu; o padrao era 16 de titulo');
+      expect(dropdown.style?.fontWeight, FontWeight.w400,
+          reason: 'o padrao do DropdownButton e peso 600, que pesava demais');
+    });
+
+    testWidgets('lista longa nao cobre a tela inteira', (tester) async {
+      await _pump(
+        tester,
+        AppDropdown<String>(
+          value: '1',
+          label: 'Area',
+          items: [
+            for (var i = 1; i <= 20; i++)
+              AppDropdownItem(value: '$i', label: 'Area $i'),
+          ],
+          onChanged: (_) {},
+        ),
+        theme: AppTheme.lightTheme,
+      );
+
+      final dropdown = tester.widget<DropdownButton<String>>(
+        find.byType(DropdownButton<String>),
+      );
+
+      expect(dropdown.menuMaxHeight, isNotNull);
+      expect(dropdown.menuMaxHeight, lessThanOrEqualTo(320));
+    });
+
+    testWidgets('a opcao aberta cabe num alvo de toque confortavel',
+        (tester) async {
+      // A regra da casa pede areas clicaveis confortaveis no mobile: o texto
+      // menor nao pode encolher o alvo abaixo do minimo do Material. Medimos
+      // a linha renderizada, e nao a propriedade, porque e a altura real que
+      // o dedo encontra.
+      await _pump(
+        tester,
+        AppDropdown<String>(
+          value: '1',
+          label: 'Projeto',
+          items: _opcoes,
+          onChanged: (_) {},
+        ),
+        theme: AppTheme.lightTheme,
+      );
+
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+
+      final linha = find
+          .ancestor(
+            of: find.text('Projeto B').last,
+            matching: find.byType(InkWell),
+          )
+          .first;
+
+      expect(tester.getSize(linha).height,
+          greaterThanOrEqualTo(kMinInteractiveDimension));
+    });
+
     testWidgets('o tema define canvasColor para os dropdowns fora do widget',
         (tester) async {
       // Os seletores dos formularios de projeto continuam sendo montados a
