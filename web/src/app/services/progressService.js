@@ -47,20 +47,34 @@ function normalizeLegacyStage(stage) {
   };
 }
 
+function parseMetadataJson(value) {
+  if (!value || typeof value !== "string") return {};
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 function normalizeUpdate(update) {
   if (!update) return null;
 
   const createdBy = update.createdBy ?? update.autor ?? update.usuario ?? null;
+  const metadata = parseMetadataJson(update.metadataJson);
+  const stepId = update.stepId ?? update.etapaId ?? metadata.stepId ?? metadata.etapaId ?? null;
+  const stepTitle = update.stepTitle ?? update.etapaTitle ?? update.etapaTitulo ?? metadata.stepTitle ?? metadata.etapaTitulo ?? null;
 
   return {
     id: update.id,
     title: update.title ?? update.titulo ?? "AtualizaÃ§Ã£o",
     description: update.description ?? update.descricao ?? "",
     category: String(update.category ?? update.categoria ?? "progress").toLowerCase(),
-    stepId: update.stepId ?? update.etapaId ?? null,
-    stepTitle: update.stepTitle ?? update.etapaTitle ?? update.etapaTitulo ?? null,
+    stepId,
+    stepTitle,
     createdBy,
-    createdAt: update.createdAt ?? update.dataRegistro ?? null,
+    createdAt: update.createdAt ?? update.dataRegistro ?? metadata.dataRegistro ?? null,
   };
 }
 
@@ -149,16 +163,29 @@ export const progressService = {
 
   async createUpdate(projectId, payload) {
     try {
-      const response = await api.post(`/api/projects/${projectId}/updates`, payload);
+      const requestPayload = {
+        titulo: payload?.titulo,
+        descricao: payload?.descricao,
+        categoria: payload?.categoria ?? payload?.category,
+        etapaId: payload?.etapaId ?? payload?.stepId ?? null,
+        etapaContribuicao: payload?.etapaContribuicao,
+        dataRegistro: payload?.dataRegistro,
+        semData: payload?.semData,
+      };
+      const response = await api.post(`/api/projects/${projectId}/updates`, requestPayload);
       return normalizeUpdate(response);
     } catch {
+      const stepId = payload?.stepId ?? payload?.etapaId ?? null;
+      const stepTitle = payload?.stepName ?? payload?.stepTitle ?? payload?.etapaTitulo ?? null;
+      const category = payload?.category ?? payload?.categoria ?? "progress";
       const legacyPayload = {
         titulo: payload?.titulo,
         descricao: payload?.descricao,
-        tipo: payload?.category === "milestone" ? "MARCO" : payload?.category === "problem" ? "BLOQUEIO" : "ATUALIZACAO",
-        fase: payload?.stepId ? "Etapa vinculada" : null,
+        tipo: category === "milestone" ? "MARCO" : category === "problem" ? "BLOQUEIO" : "ATUALIZACAO",
+        fase: stepTitle || (stepId ? "Etapa vinculada" : null),
         metadataJson: JSON.stringify({
-          ...(payload?.stepId ? { stepId: payload.stepId } : {}),
+          ...(stepId ? { stepId } : {}),
+          ...(stepTitle ? { stepTitle } : {}),
           ...(payload?.dataRegistro ? { dataRegistro: payload.dataRegistro } : {}),
         }),
       };
@@ -168,11 +195,12 @@ export const progressService = {
         id: response?.id,
         title: response?.titulo,
         description: response?.descricao,
-        category: payload?.category ?? "progress",
-        stepId: payload?.stepId ?? null,
-        stepTitle: payload?.stepName ?? null,
-        createdBy: response?.autor ? { id: response.autorId, nome: response.autorNome } : null,
+        category,
+        stepId,
+        stepTitle,
+        createdBy: response?.autor ?? response?.usuario ?? (response?.autorId || response?.autorNome ? { id: response?.autorId, nome: response?.autorNome } : null),
         createdAt: response?.dataRegistro ?? payload?.dataRegistro,
+        metadataJson: response?.metadataJson,
       });
     }
   },

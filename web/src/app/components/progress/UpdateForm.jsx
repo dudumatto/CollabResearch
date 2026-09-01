@@ -41,6 +41,7 @@ export function UpdateForm({ steps = [], onSubmit }) {
   }, [clearErrors, semData, setValue]);
 
   const submit = async (values) => {
+    const selectedStep = steps.find((step) => String(step.id) === String(values.etapaId));
     const payload = {
       titulo: values.titulo.trim(),
       categoria: values.categoria,
@@ -48,6 +49,7 @@ export function UpdateForm({ steps = [], onSubmit }) {
       semData: Boolean(values.semData),
       descricao: values.descricao?.trim() || "",
       etapaId: values.etapaId ? Number(values.etapaId) : null,
+      etapaTitulo: selectedStep?.title ?? selectedStep?.titulo ?? null,
     };
 
     await onSubmit?.(payload);
