@@ -23,6 +23,10 @@ class EvaluationsScreen extends StatefulWidget {
 class _EvaluationsScreenState extends State<EvaluationsScreen> {
   String? _selectedProjectId;
 
+  /// _load() so roda no addPostFrameCallback: ate ele terminar, isLoading e
+  /// false e as listas estao vazias, o que a tela lia como "nao ha avaliacao".
+  bool _initialized = false;
+
   bool get _isAdvisor {
     final user = context.read<AuthProvider>().currentUser;
     final role = user?.type ?? user?.roles.firstOrNull ?? '';
@@ -48,6 +52,8 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
       }
     });
     await _loadSelected();
+    if (!mounted) return;
+    setState(() => _initialized = true);
   }
 
   Future<void> _loadSelected() async {
@@ -236,7 +242,8 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
                     },
                   ),
                 const SizedBox(height: 20),
-                if (academic.isLoading && evaluations.isEmpty)
+                if (!_initialized ||
+                    (academic.isLoading && evaluations.isEmpty))
                   const AcademicSkeletonList(items: 3)
                 else if (academic.errorMessage != null && evaluations.isEmpty)
                   AcademicErrorState(

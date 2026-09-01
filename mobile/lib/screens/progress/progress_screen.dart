@@ -151,7 +151,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ResearchActivityProvider>();
-    if (!_initialized && provider.isLoading) {
+    // _load() so roda no addPostFrameCallback, entao no primeiro frame
+    // isLoading ainda e false e a lista esta vazia. Exigir isLoading aqui
+    // deixava a tela afirmar "nenhum projeto relacionado" antes de ter
+    // perguntado ao backend. Enquanto _initialized for false nao sabemos nada.
+    if (!_initialized) {
       return const Scaffold(
         body: LoadingIndicator(label: 'Carregando progresso...'),
       );
@@ -206,7 +210,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
           ],
           const SizedBox(height: 16),
-          if (provider.relatedProjects.isEmpty)
+          // isLoading vem antes do estado vazio: na ordem inversa, uma
+          // atualizacao que ainda nao respondeu mostrava "nenhum projeto"
+          // em vez do indicador de progresso.
+          if (provider.isLoading)
+            const LoadingIndicator(label: 'Atualizando progresso...')
+          else if (provider.relatedProjects.isEmpty)
             const SizedBox(
               height: 340,
               child: EmptyState(
@@ -215,8 +224,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     'Participe de um projeto para acompanhar o progresso.',
               ),
             )
-          else if (provider.isLoading)
-            const LoadingIndicator(label: 'Atualizando progresso...')
           else if (provider.progressEntries.isEmpty)
             const SizedBox(
               height: 280,
