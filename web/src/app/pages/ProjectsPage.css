@@ -429,14 +429,13 @@
 
 @media (min-width: 768px) {
   .pagina-projetos__grade {
-    grid-template-columns: repeat(auto-fill, 26rem);
-    justify-content: start;
+    grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
   }
 }
 
 @media (min-width: 1280px) {
   .pagina-projetos__grade {
-    grid-template-columns: repeat(auto-fill, 26rem);
+    grid-template-columns: repeat(auto-fit, minmax(23rem, 1fr));
   }
 }
 
@@ -460,7 +459,7 @@
 
 @media (min-width: 768px) {
   .projeto-card {
-    width: 26rem;
+    width: 100%;
   }
 }
 

@@ -12,11 +12,38 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const updateEmail = (value) => {
+    setEmail(value);
+    setFieldErrors((prev) => ({ ...prev, email: "" }));
+  };
+
+  const updatePassword = (value) => {
+    setPassword(value);
+    setFieldErrors((prev) => ({ ...prev, password: "" }));
+  };
+
+  const validateLogin = () => {
+    const nextErrors = {};
+
+    if (!email.trim()) nextErrors.email = "Informe seu e-mail institucional.";
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      nextErrors.email = "Informe um e-mail válido.";
+    }
+    if (!password) nextErrors.password = "Informe sua senha.";
+
+    setFieldErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    if (!validateLogin()) return;
+
+    setLoading(true);
 
     try {
       await login({ email, senha: password });
@@ -70,24 +97,25 @@ export default function LoginPage() {
             <p className="pagina-login__subtitulo">Digite suas credenciais para acessar</p>
           </div>
 
-          <form onSubmit={handleLogin} className="pagina-login__form">
-            <div>
+          <form onSubmit={handleLogin} className="pagina-login__form" noValidate>
+            <div className="campo-formulario">
               <label className="campo-formulario__rotulo">E-mail institucional</label>
               <div className="campo-formulario__area-input">
                 <Mail size={16} className="campo-formulario__icone-esquerda" />
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="campo-formulario__input"
+                  onChange={(e) => updateEmail(e.target.value)}
+                  className={`campo-formulario__input ${fieldErrors.email ? "campo-formulario__input--erro" : ""}`}
                   placeholder="seu@universidade.br"
                   autoComplete="email"
-                  required
+                  aria-invalid={Boolean(fieldErrors.email)}
                 />
               </div>
+              {fieldErrors.email ? <p className="campo-formulario__erro">{fieldErrors.email}</p> : null}
             </div>
 
-            <div>
+            <div className="campo-formulario">
               <div className="campo-formulario__cabecalho">
                 <label className="campo-formulario__rotulo" style={{ margin: 0 }}>Senha</label>
               </div>
@@ -96,11 +124,11 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="campo-formulario__input campo-formulario__input--com-icone-direita"
+                  onChange={(e) => updatePassword(e.target.value)}
+                  className={`campo-formulario__input campo-formulario__input--com-icone-direita ${fieldErrors.password ? "campo-formulario__input--erro" : ""}`}
                   placeholder="Digite sua senha"
                   autoComplete="current-password"
-                  required
+                  aria-invalid={Boolean(fieldErrors.password)}
                 />
                 <button
                   type="button"
@@ -110,13 +138,10 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {fieldErrors.password ? <p className="campo-formulario__erro">{fieldErrors.password}</p> : null}
             </div>
 
-            {error ? (
-              <p className="pagina-login__subtitulo" style={{ color: "var(--cor-erro)" }}>
-                {error}
-              </p>
-            ) : null}
+            {error ? <p className="pagina-login__erro-geral">{error}</p> : null}
 
             <div className="campo-formulario__linha-checkbox">
               <input type="checkbox" id="remember" className="campo-formulario__checkbox" defaultChecked />

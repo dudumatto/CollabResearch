@@ -3,9 +3,10 @@
    ============================================================ */
 
 .pagina-login {
-  min-height: 100vh;
-  background-color: var(--cor-fundo);
+  height: 100svh;
+  background-color: var(--cor-branco);
   display: flex;
+  overflow: hidden;
   font-family: var(--fonte-principal);
 }
 
@@ -18,7 +19,7 @@
   overflow: hidden;
   flex-direction: column;
   justify-content: space-between;
-  padding: var(--espaco-12);
+  padding: var(--espaco-10);
   background: linear-gradient(
     145deg,
     #2f9b73 0%,
@@ -53,7 +54,7 @@
   height: 2.25rem;
   background-color: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: var(--raio-medio);
+  border-radius: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,7 +83,7 @@
 
 .pagina-login__titulo-esquerdo {
   color: var(--cor-branco);
-  font-size: 2.2rem;
+  font-size: 1.9rem;
   font-weight: var(--peso-negrito);
   line-height: 1.2;
   font-family: var(--fonte-titulo);
@@ -92,11 +93,11 @@
 .pagina-login__descricao-esquerda {
   color: rgba(255, 255, 255, 0.82);
   font-size: var(--tamanho-grande);
-  line-height: 1.7;
+  line-height: 1.55;
 }
 
 .pagina-login__lista-beneficios {
-  margin-top: 2.5rem;
+  margin-top: var(--espaco-4);
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
@@ -140,18 +141,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--espaco-4) var(--espaco-8) var(--espaco-12);
+  padding: var(--espaco-4) var(--espaco-8);
 }
 
 @media (min-width: 640px) {
   .pagina-login__painel-direito {
-    padding: var(--espaco-12) var(--espaco-8);
+    padding: var(--espaco-8);
   }
 }
 
 .pagina-login__formulario-area {
   width: 100%;
-  max-width: 22rem;
+  max-width: 24rem;
 }
 
 .pagina-login__logo-mobile {
@@ -159,7 +160,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.625rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: var(--espaco-4);
   text-decoration: none;
 }
 
@@ -173,7 +174,7 @@
   width: 2.25rem;
   height: 2.25rem;
   background: var(--gradiente-primario);
-  border-radius: var(--raio-medio);
+  border-radius: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,14 +195,14 @@
 
 /* Cabeçalho do form */
 .pagina-login__cabecalho {
-  margin-bottom: var(--espaco-8);
+  margin-bottom: var(--espaco-5);
 }
 
 .pagina-login__titulo {
   color: var(--cor-texto);
   font-weight: var(--peso-negrito);
-  font-size: var(--tamanho-heroi);
-  margin-bottom: var(--espaco-2);
+  font-size: var(--tamanho-display);
+  margin-bottom: var(--espaco-1);
 }
 
 .pagina-login__subtitulo {
@@ -213,7 +214,7 @@
 .pagina-login__form {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-5);
+  gap: var(--espaco-3);
 }
 
 .campo-formulario__rotulo {
@@ -221,14 +222,14 @@
   color: var(--cor-texto-secundario);
   font-size: var(--tamanho-medio);
   font-weight: var(--peso-medio);
-  margin-bottom: var(--espaco-2);
+  margin-bottom: var(--espaco-1);
 }
 
 .campo-formulario__cabecalho {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--espaco-2);
+  margin-bottom: var(--espaco-1);
 }
 
 .campo-formulario__link-esqueceu {
@@ -255,10 +256,11 @@
 
 .campo-formulario__input {
   width: 100%;
+  height: 2.85rem;
   padding: var(--espaco-3) var(--espaco-4) var(--espaco-3) 2.5rem;
-  background-color: var(--cor-fundo);
+  background-color: var(--cor-branco);
   border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-medio);
+  border-radius: 1rem;
   font-size: var(--tamanho-medio);
   color: var(--cor-texto);
   transition: var(--transicao-normal);
@@ -313,10 +315,10 @@
 /* Botão de submit */
 .pagina-login__botao-entrar {
   width: 100%;
-  padding: 0.875rem;
+  padding: 0.78rem;
   background-color: var(--cor-primaria);
   color: var(--cor-branco);
-  border-radius: var(--raio-medio);
+  border-radius: 1rem;
   border: none;
   cursor: pointer;
   font-weight: var(--peso-semi);
@@ -375,7 +377,7 @@
   width: 100%;
   padding: var(--espaco-3);
   border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-medio);
+  border-radius: 1rem;
   color: var(--cor-texto-medio);
   background: none;
   cursor: pointer;
@@ -388,7 +390,7 @@
 }
 
 .pagina-login__botao-demo:hover {
-  background-color: var(--cor-fundo);
+  background-color: var(--cor-branco);
 }
 
 /* Link de cadastro */
@@ -396,7 +398,7 @@
   text-align: center;
   color: var(--cor-texto-fraco);
   font-size: var(--tamanho-medio);
-  margin-top: var(--espaco-6);
+  margin-top: var(--espaco-4);
 }
 
 .pagina-login__link-cadastro-link {
@@ -407,4 +409,38 @@
 
 .pagina-login__link-cadastro-link:hover {
   color: var(--cor-primaria-escura);
+}
+
+.campo-formulario__input--erro {
+  border-color: var(--cor-erro);
+  box-shadow: 0 0 0 2px var(--cor-erro-leve);
+}
+
+.campo-formulario__erro,
+.pagina-login__erro-geral {
+  color: var(--cor-erro);
+  font-size: var(--tamanho-pequeno);
+  line-height: 1.25;
+  margin-top: 0.25rem;
+}
+
+.pagina-login__erro-geral {
+  margin: 0;
+}
+
+@media (max-height: 720px) {
+  .pagina-login__logo-mobile,
+  .pagina-login__cabecalho,
+  .pagina-login__link-cadastro {
+    margin-bottom: var(--espaco-3);
+    margin-top: var(--espaco-3);
+  }
+
+  .pagina-login__titulo {
+    font-size: var(--tamanho-titulo);
+  }
+
+  .campo-formulario__input {
+    height: 2.55rem;
+  }
 }

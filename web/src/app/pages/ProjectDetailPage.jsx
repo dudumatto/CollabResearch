@@ -262,8 +262,17 @@ export default function ProjectDetailPage() {
 
   const project = data?.project;
 
-  const getCollaboratorId = (c) =>
-    getUserId(c);
+  const getCollaboratorId = (c) => {
+    if (typeof c === "number" || typeof c === "string") return c;
+    return (
+      c?.usuarioId ??
+      c?.userId ??
+      c?.alunoUsuarioId ??
+      c?.participanteUsuarioId ??
+      c?.colaboradorUsuarioId ??
+      getUserId(c)
+    );
+  };
 
   const slots = useMemo(
     () => (project ? getProjectSlotsUsage(project, Array.isArray(collaborators) ? collaborators : null) : { total: 0, used: 0, remaining: 0 }),
@@ -472,11 +481,41 @@ export default function ProjectDetailPage() {
     }
   };
 
-  const getCollaboratorName = (c) =>
-    getUserName(c) || `Usuário #${getUserId(c) ?? "?"}`;
+  const getCollaboratorName = (c) => {
+    const explicitName = [
+      c?.nome,
+      c?.name,
+      c?.usuarioNome,
+      c?.userName,
+      c?.alunoNome,
+      c?.participanteNome,
+      c?.colaboradorNome,
+      c?.usuario?.nome,
+      c?.usuario?.name,
+      c?.user?.nome,
+      c?.user?.name,
+      c?.aluno?.nome,
+      c?.aluno?.name,
+      c?.aluno?.usuario?.nome,
+      c?.aluno?.usuario?.name,
+      c?.participante?.nome,
+      c?.participante?.name,
+      c?.participante?.usuario?.nome,
+      c?.participante?.usuario?.name,
+      c?.colaborador?.nome,
+      c?.colaborador?.name,
+      c?.colaborador?.usuario?.nome,
+      c?.colaborador?.usuario?.name,
+    ].map((value) => String(value ?? "").trim()).find(Boolean);
+
+    if (explicitName) return explicitName;
+
+    const collaboratorId = getCollaboratorId(c);
+    return collaboratorId != null ? `Usuário #${collaboratorId}` : "Participante";
+  };
 
   const getCollaboratorPhotoUrl = (c) =>
-    getUserPhotoUrl(c);
+    getUserPhotoUrl(c?.participante ?? c?.colaborador ?? c);
 
   const canRemoveCollaborator = (c) => {
     const collaboratorId = getCollaboratorId(c);

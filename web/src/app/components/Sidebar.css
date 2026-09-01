@@ -137,11 +137,18 @@
   gap: var(--espaco-1);
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-width: none;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--cor-primaria) 35%, transparent) transparent;
 }
 
 .barra-lateral__navegacao::-webkit-scrollbar {
-  display: none;
+  width: 0.35rem;
+}
+
+.barra-lateral__navegacao::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--cor-primaria) 32%, transparent);
+  border-radius: var(--raio-completo);
 }
 
 
@@ -375,7 +382,7 @@
   background-color: var(--cor-superficie);
   border-right: 1px solid var(--cor-separador-suave);
   z-index: 50;
-  width: min(12.5rem, calc(100vw - 2rem));
+  width: min(18rem, calc(100vw - 1rem));
   max-width: 100vw;
   display: flex;
   flex-direction: column;
@@ -439,5 +446,47 @@
   .barra-lateral__contador,
   .barra-lateral__icone-recolher {
     transition-duration: 1ms !important;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 1024px) {
+  .barra-lateral {
+    --altura-sidebar-cabecalho: 3.35rem;
+  }
+
+  .barra-lateral__cabecalho {
+    padding: var(--espaco-2) var(--espaco-3);
+  }
+
+  .barra-lateral__navegacao {
+    flex: 1 1 auto;
+    padding: var(--espaco-2) var(--espaco-3);
+    gap: 0.1rem;
+  }
+
+  .barra-lateral__setor {
+    gap: 0.18rem;
+    padding: 0.28rem 0;
+  }
+
+  .barra-lateral__setor + .barra-lateral__setor {
+    margin-top: 0.05rem;
+  }
+
+  .barra-lateral__setor-rotulo {
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 0.62rem;
+  }
+
+  .barra-lateral__item-nav,
+  .barra-lateral__item-configuracoes {
+    min-height: 2.35rem;
+    padding-top: 0.48rem;
+    padding-bottom: 0.48rem;
+  }
+
+  .barra-lateral__rodape {
+    padding: var(--espaco-2) var(--espaco-3);
   }
 }
