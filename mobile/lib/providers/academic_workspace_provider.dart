@@ -60,42 +60,68 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
             results[2] as List<AcademicEvaluation>;
       });
 
+  /// meusProjetos=true traz tambem projetos em que o usuario apenas se
+  /// inscreveu, e para esses o backend responde 403 em /etapas ("Sem permissao
+  /// para consultar a equipe deste projeto"). Com Future.wait sem protecao, um
+  /// unico 403 derrubava a agenda inteira e a tela virava "Voce nao tem
+  /// permissao para esta acao", escondendo os prazos que o usuario pode ver.
+  ///
+  /// Cada projeto agora e resolvido isoladamente: o que nao pode ser lido e
+  /// omitido, e os demais aparecem.
   Future<void> loadAgenda(List<Project> projects) => _run(() async {
         final collections = await Future.wait(
           projects.map((project) async {
-            final stages = await _service.stages(project.id);
-            return MapEntry(
-              project.id,
-              stages.map((stage) => stage.withProject(project)).toList(),
-            );
+            try {
+              final stages = await _service.stages(project.id);
+              return MapEntry(
+                project.id,
+                stages.map((stage) => stage.withProject(project)).toList(),
+              );
+            } on DioException {
+              return MapEntry(project.id, const <ProjectStage>[]);
+            }
           }),
         );
         stagesByProject.addEntries(collections);
       });
 
+  /// Mesma protecao de [loadAgenda]: /entregas responde 403 nos projetos em
+  /// que o usuario nao participa ("Sem permissao para acessar as entregas
+  /// deste projeto"), e um so deles nao pode zerar a lista toda.
   Future<void> loadDeliveriesForProjects(List<Project> projects) =>
       _run(() async {
         final collections = await Future.wait(
           projects.map((project) async {
-            final items = await _service.deliveries(project.id);
-            return MapEntry(
-              project.id,
-              items.map((item) => item.withProject(project)).toList(),
-            );
+            try {
+              final items = await _service.deliveries(project.id);
+              return MapEntry(
+                project.id,
+                items.map((item) => item.withProject(project)).toList(),
+              );
+            } on DioException {
+              return MapEntry(project.id, const <DeliveryItem>[]);
+            }
           }),
         );
         deliveriesByProject.addEntries(collections);
       });
 
+  /// Mesma protecao de [loadAgenda]: /avaliacoes responde 403 nos projetos em
+  /// que o usuario nao participa ("Sem permissao para visualizar as avaliacoes
+  /// deste projeto").
   Future<void> loadEvaluationsForProjects(List<Project> projects) =>
       _run(() async {
         final collections = await Future.wait(
           projects.map((project) async {
-            final items = await _service.evaluations(project.id);
-            return MapEntry(
-              project.id,
-              items.map((item) => item.withProject(project)).toList(),
-            );
+            try {
+              final items = await _service.evaluations(project.id);
+              return MapEntry(
+                project.id,
+                items.map((item) => item.withProject(project)).toList(),
+              );
+            } on DioException {
+              return MapEntry(project.id, const <AcademicEvaluation>[]);
+            }
           }),
         );
         evaluationsByProject.addEntries(collections);

@@ -120,8 +120,12 @@ class AppNotification {
 
     return AppNotification(
       id: '${json['id'] ?? ''}',
-      title:
-          '${json['title'] ?? json['subject'] ?? json['payloadResumo'] ?? type}',
+      // payloadResumo NAO entra aqui: e um blob de metadados, nao texto de
+      // exibicao. Com o seed de desenvolvimento ele vale '{"seed":"dev"}', e
+      // como nao era nem vazio nem igual ao tipo, passava direto pelo
+      // NotificationPresentation.titleFor e virava o titulo na tela.
+      // Sem ele o titulo cai no tipo, que titleFor troca pelo rotulo legivel.
+      title: '${json['title'] ?? json['subject'] ?? type}',
       description:
           '${json['description'] ?? json['message'] ?? json['mensagem'] ?? json['content'] ?? ''}',
       createdAt: DateTime.tryParse('$createdAtValue') ?? DateTime.now(),

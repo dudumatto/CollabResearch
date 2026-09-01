@@ -159,8 +159,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.currentUser;
-    final projectsCount =
-        context.watch<DashboardProvider>().summary?.myProjects ?? 0;
+    // O contador vem do DashboardProvider, que esta noutra aba do
+    // StatefulShellRoute e pode nunca ter carregado -- ao abrir o perfil
+    // direto, summary e null. Antes isso virava "0 Projetos", afirmando que o
+    // usuario nao tem nenhum enquanto o painel mostrava tres. Sem summary o
+    // dado e desconhecido, e a tela passa a dizer isso em vez de chutar zero.
+    //
+    // Buscar aqui nao e opcao: ver a nota no topo do State sobre nao disparar
+    // rede no initState.
+    final summary = context.watch<DashboardProvider>().summary;
+    final projectsCount = summary == null ? '—' : '${summary.myProjects}';
     _syncForm(user);
 
     return Scaffold(
@@ -303,7 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     final stats = [
                                       _ProfileStat(
                                         label: 'Projetos',
-                                        value: '$projectsCount',
+                                        value: projectsCount,
                                         compact: isMobile,
                                       ),
                                       _ProfileStat(
