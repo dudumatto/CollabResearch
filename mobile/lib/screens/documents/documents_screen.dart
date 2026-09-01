@@ -131,25 +131,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                   description:
                       'Consulte os arquivos registrados no seu perfil e seus status.',
                 ),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'O backend atual registra links de arquivos, mas não recebe o binário. Novos uploads continuam disponíveis no portal web.',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 18),
                 if (!_initialized ||
                     (academic.isLoading && academic.documents.isEmpty))
