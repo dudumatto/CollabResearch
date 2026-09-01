@@ -37,11 +37,22 @@ class User {
   final String? degree;
   final String? type;
 
+  /// O backend assina o token com o e-mail no subject
+  /// (JwtService.generateToken: `.subject(usuario.getEmail())`), e o payload
+  /// so carrega jti, sub, tipo, iat e exp -- nao ha id ali.
+  ///
+  /// Tratar `sub` como id fazia o app montar rotas como
+  /// /api/usuarios/<email>/projetos e, pior, passar pelas guardas
+  /// `if (userId.isEmpty)` como se ja tivesse um id valido. O id real so
+  /// chega em refreshProfile(), via GET /api/usuarios/me.
   factory User.fromJwtPayload(Map<String, dynamic> payload) {
+    final subject = '${payload['sub'] ?? ''}';
+    final subjectIsEmail = subject.contains('@');
+
     return User(
-      id: '${payload['sub'] ?? payload['id'] ?? ''}',
+      id: '${payload['id'] ?? (subjectIsEmail ? '' : subject)}',
       name: '${payload['name'] ?? payload['fullName'] ?? ''}',
-      email: '${payload['email'] ?? ''}',
+      email: '${payload['email'] ?? (subjectIsEmail ? subject : '')}',
       course: payload['course'] as String?,
       courseId: (payload['cursoId'] as num?)?.toInt(),
       registrationNumber: payload['ra'] as String?,
