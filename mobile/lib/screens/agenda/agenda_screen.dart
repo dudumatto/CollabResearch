@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/animation/app_animations.dart';
@@ -124,10 +125,17 @@ class _AgendaScreenState extends State<AgendaScreen> {
     final allItems = _allItems(projects, academic);
     final items = _items(allItems);
 
+    // A Agenda e aba do menu inferior E tela empurrada a partir do detalhe do
+    // projeto. Como aba nao ha para onde voltar; empurrada, ficava sem
+    // nenhuma saida de volta ao projeto.
+    // Navigator.canPop em vez de context.canPop() do go_router: o segundo
+    // exige um GoRouter no contexto e quebraria a tela montada isolada.
+    final canGoBack = Navigator.canPop(context);
+
     return Scaffold(
-      // Sem AppBar: o cartao de destaque ja carrega o titulo, e a Agenda e uma
-      // aba do menu inferior, entao nao precisa de botao voltar. SafeArea
-      // assume o recuo da status bar que o AppBar dava.
+      // Sem AppBar: o cartao de destaque ja carrega o titulo, e quando ha para
+      // onde voltar o proprio cabecalho exibe o botao. SafeArea assume o
+      // recuo da status bar que o AppBar dava.
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
@@ -146,12 +154,16 @@ class _AgendaScreenState extends State<AgendaScreen> {
                   AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
                 ),
                 children: [
-                  const AppPageHeader(
+                  AppPageHeader(
                     compact: true,
                     eyebrow: 'Prazos reais',
-                    title: 'Agenda acadêmica',
-                    description:
-                        'Etapas e datas dos seus projetos em uma única visão.',
+                    title: widget.projectId == null
+                        ? 'Agenda acadêmica'
+                        : 'Agenda do projeto',
+                    description: widget.projectId == null
+                        ? 'Etapas e datas dos seus projetos em uma única visão.'
+                        : 'Etapas e datas deste projeto.',
+                    onBack: canGoBack ? () => context.pop() : null,
                   ),
                   _MonthCalendar(
                     visibleMonth: _visibleMonth,
