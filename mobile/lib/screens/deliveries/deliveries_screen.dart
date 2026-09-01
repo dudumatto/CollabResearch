@@ -12,6 +12,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
 import '../../widgets/common/app_page_header.dart';
+import '../../widgets/common/app_project_dropdown.dart';
 import '../../widgets/common/app_snackbar.dart';
 
 class DeliveriesScreen extends StatefulWidget {
@@ -407,20 +408,11 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
                       : 'Envie arquivos e acompanhe o retorno do orientador.',
                 ),
                 if (related.relatedProjects.isNotEmpty)
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedProjectId,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Projeto',
-                      prefixIcon: Icon(Icons.folder_outlined),
-                    ),
-                    items: [
+                  AppProjectDropdown(
+                    value: _selectedProjectId,
+                    options: [
                       for (final project in related.relatedProjects)
-                        DropdownMenuItem(
-                          value: project.id,
-                          child: Text(project.title,
-                              overflow: TextOverflow.ellipsis),
-                        ),
+                        ProjectChoice(id: project.id, title: project.title),
                     ],
                     onChanged: (value) async {
                       setState(() => _selectedProjectId = value);

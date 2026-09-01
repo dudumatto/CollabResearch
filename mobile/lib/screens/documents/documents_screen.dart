@@ -18,18 +18,39 @@ class DocumentsScreen extends StatefulWidget {
 }
 
 class _DocumentsScreenState extends State<DocumentsScreen> {
+  String? _loadedForUserId;
+  bool _initialized = false;
+
   String? get _userId => context.read<AuthProvider>().currentUser?.id;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // O token nao carrega o id: ele so aparece quando /usuarios/me responde.
+    // Carregar de um addPostFrameCallback no initState pegava esse intervalo,
+    // e _load() saia sem buscar nada e sem marcar erro -- a tela ficava presa
+    // em "nenhum documento registrado", sem indicador e sem caminho de volta,
+    // porque nada a fazia tentar de novo.
+    //
+    // Observando o AuthProvider, ela carrega assim que o id chega. Guardar o
+    // id ja carregado evita repetir a busca a cada notificacao e recarrega
+    // sozinho se a conta mudar.
+    final userId = Provider.of<AuthProvider>(context).currentUser?.id;
+    if (userId == null || userId.isEmpty) return;
+    if (userId == _loadedForUserId) return;
+
+    _loadedForUserId = userId;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _load();
+    });
   }
 
   Future<void> _load() async {
     final userId = _userId;
     if (userId == null || userId.isEmpty) return;
     await context.read<AcademicWorkspaceProvider>().loadDocuments(userId);
+    if (!mounted) return;
+    setState(() => _initialized = true);
   }
 
   Future<void> _delete(AcademicDocument document) async {
@@ -130,7 +151,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                if (academic.isLoading && academic.documents.isEmpty)
+                if (!_initialized ||
+                    (academic.isLoading && academic.documents.isEmpty))
                   const AcademicSkeletonList(items: 4)
                 else if (academic.errorMessage != null &&
                     academic.documents.isEmpty)

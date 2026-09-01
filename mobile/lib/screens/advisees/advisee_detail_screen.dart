@@ -8,6 +8,7 @@ import '../../providers/chat_provider.dart';
 import '../../widgets/academic/academic_widgets.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/app_avatar.dart';
+import '../../widgets/common/app_project_dropdown.dart';
 
 class AdviseeDetailScreen extends StatefulWidget {
   const AdviseeDetailScreen({
@@ -99,16 +100,11 @@ class _AdviseeDetailScreenState extends State<AdviseeDetailScreen> {
                 ),
                 if (detail.summary.projects.length > 1) ...[
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: _projectId,
-                    decoration: const InputDecoration(labelText: 'Projeto'),
-                    items: [
+                  AppProjectDropdown(
+                    value: _projectId,
+                    options: [
                       for (final project in detail.summary.projects)
-                        DropdownMenuItem(
-                          value: project.id,
-                          child: Text(project.title,
-                              overflow: TextOverflow.ellipsis),
-                        ),
+                        ProjectChoice(id: project.id, title: project.title),
                     ],
                     onChanged: (value) async {
                       setState(() => _projectId = value);

@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/research_activity_provider.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/app_page_header.dart';
+import '../../widgets/common/app_project_dropdown.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/app_snackbar.dart';
@@ -182,21 +183,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             description: 'Avaliações e comentários registrados pelos participantes.',
           ),
           if (provider.relatedProjects.isNotEmpty)
-            DropdownButtonFormField<String>(
-              initialValue: _selectedProjectId,
-              decoration: const InputDecoration(
-                labelText: 'Projeto',
-                prefixIcon: Icon(Icons.folder_open_outlined),
-              ),
-              items: [
+            AppProjectDropdown(
+              value: _selectedProjectId,
+              options: [
                 for (final project in provider.relatedProjects)
-                  DropdownMenuItem(
-                    value: project.id,
-                    child: Text(
-                      project.title,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
+                  ProjectChoice(id: project.id, title: project.title),
               ],
               onChanged: _selectProject,
             ),
