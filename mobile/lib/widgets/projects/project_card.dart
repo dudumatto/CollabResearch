@@ -20,7 +20,7 @@ class ProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusLabel = formatProjectStatus(project.status);
-    final statusColor = projectStatusColor(project.status);
+    final statusColor = projectStatusColor(context, project.status);
 
     return AppCard(
       onTap: onTap,

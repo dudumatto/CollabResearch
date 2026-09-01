@@ -548,7 +548,7 @@ class _ProjectSummary extends StatelessWidget {
         children: [
           AppBadge(
             label: formatProjectStatus(project.status),
-            color: projectStatusColor(project.status),
+            color: projectStatusColor(context, project.status),
           ),
           const SizedBox(height: 12),
           Text(
