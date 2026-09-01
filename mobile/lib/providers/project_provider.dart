@@ -153,7 +153,19 @@ class ProjectProvider extends ChangeNotifier {
       _collaboratorsByProject[projectId] =
           await _service.listCollaborators(projectId);
     } on DioException catch (error) {
-      errorMessage = ApiClient.instance.friendlyError(error);
+      // 403 aqui nao e falha: o backend so mostra a equipe a quem participa
+      // do projeto ("Sem permissao para consultar a equipe deste projeto").
+      // Quem esta apenas olhando um projeto aberto recebe 200 no projeto e
+      // 403 so nesta lista -- a tela carregava inteira e mesmo assim exibia
+      // a faixa vermelha de erro, como se algo tivesse dado errado.
+      //
+      // Os demais erros continuam sendo reportados: queda de rede ou 500 sao
+      // falhas de verdade e o usuario precisa saber.
+      if (error.response?.statusCode == 403) {
+        _collaboratorsByProject[projectId] = const [];
+      } else {
+        errorMessage = ApiClient.instance.friendlyError(error);
+      }
     } catch (_) {
       errorMessage = 'Não foi possível carregar a equipe do projeto.';
     } finally {
