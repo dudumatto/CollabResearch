@@ -22,6 +22,61 @@ void main() {
     expect(stage.isDone, isTrue);
   });
 
+  group('prazo da etapa', () {
+    ProjectStage stageWithDeadline(DateTime? deadline, {String status = 'ACTIVE'}) {
+      return ProjectStage.fromJson({
+        'id': 1,
+        'projetoId': 4,
+        'titulo': 'Etapa',
+        'status': status,
+        'prazo': deadline?.toIso8601String(),
+      });
+    }
+
+    test('prazo de hoje mais cedo ainda nao esta atrasado', () {
+      final now = DateTime.now();
+      final earlierToday = DateTime(now.year, now.month, now.day);
+      // O prazo e uma data, nao um instante: vencer "hoje" nao pode ficar
+      // vermelho as 00h01.
+      expect(stageWithDeadline(earlierToday).isOverdue, isFalse);
+    });
+
+    test('prazo de ontem esta atrasado', () {
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
+      expect(stageWithDeadline(yesterday).isOverdue, isTrue);
+    });
+
+    test('etapa concluida nunca conta como atrasada', () {
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
+      expect(
+        stageWithDeadline(yesterday, status: 'DONE').isOverdue,
+        isFalse,
+      );
+    });
+
+    test('daysUntilDeadline conta em dias inteiros', () {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      expect(stageWithDeadline(today).daysUntilDeadline, 0);
+      expect(
+        stageWithDeadline(today.add(const Duration(days: 3)))
+            .daysUntilDeadline,
+        3,
+      );
+      expect(
+        stageWithDeadline(today.subtract(const Duration(days: 2)))
+            .daysUntilDeadline,
+        -2,
+      );
+    });
+
+    test('sem prazo, daysUntilDeadline e nulo e nao ha atraso', () {
+      final stage = stageWithDeadline(null);
+      expect(stage.daysUntilDeadline, isNull);
+      expect(stage.isOverdue, isFalse);
+    });
+  });
+
   test('avaliacao preserva notas, media e ciencia', () {
     final evaluation = AcademicEvaluation.fromJson({
       'id': 9,

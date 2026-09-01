@@ -24,9 +24,14 @@ class AcademicStatusBadge extends StatelessWidget {
       'CIENCIA_REGISTRADA' ||
       'FINALIZADO' =>
         AppColors.success,
-      'REJEITADA' || 'REJEITADO' || 'REJECTED' => AppColors.danger,
+      // Atrasado e falha, nao "precisa de acao": sai do laranja e vai para o
+      // vermelho, unificando com o calendario da agenda, que ja usava danger.
+      'REJEITADA' ||
+      'REJEITADO' ||
+      'REJECTED' ||
       'ATRASADA' ||
-      'OVERDUE' ||
+      'OVERDUE' =>
+        AppColors.danger,
       'AJUSTES_SOLICITADOS' ||
       'CHANGES_REQUESTED' ||
       'AGUARDANDO_CIENCIA' =>

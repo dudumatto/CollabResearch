@@ -1,3 +1,4 @@
+import '../core/utils/date_utils.dart';
 import 'project.dart';
 
 String? _text(dynamic value) {
@@ -41,8 +42,20 @@ class ProjectStage {
   final String? projectTitle;
 
   bool get isDone => status.toUpperCase() == 'DONE';
-  bool get isOverdue =>
-      !isDone && deadline != null && deadline!.isBefore(DateTime.now());
+
+  /// Dias inteiros até o prazo: negativo no passado, 0 hoje, positivo à
+  /// frente. Nulo quando a etapa não tem data.
+  int? get daysUntilDeadline =>
+      deadline == null ? null : DateUtilsX.daysUntil(deadline!);
+
+  /// Comparação por **data**, não por instante. Antes usava
+  /// `deadline.isBefore(DateTime.now())`, então uma etapa que vence hoje já
+  /// aparecia atrasada às 00h01.
+  bool get isOverdue {
+    if (isDone) return false;
+    final days = daysUntilDeadline;
+    return days != null && days < 0;
+  }
 
   factory ProjectStage.fromJson(Map<String, dynamic> json) => ProjectStage(
         id: '${json['id'] ?? ''}',
