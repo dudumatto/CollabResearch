@@ -1,0 +1,454 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Strix",
+          "informationUri": "https://strix.ai",
+          "rules": [
+            {
+              "id": "CVE-2026-55685",
+              "name": "CVE-2026-55685 in react-router 7.15.1 (unauthenticated manifest endpoint DoS)",
+              "shortDescription": {
+                "text": "CVE-2026-55685 in react-router 7.15.1 (unauthenticated manifest endpoint DoS)"
+              },
+              "fullDescription": {
+                "text": "The desktop client pins `react-router` `7.15.1` through `react-router-dom` and is therefore within the affected version range for `CVE-2026-55685`. The advisory describes an unauthenticated manifest endpoint denial of service issue that is fixed in `7.18.0`."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "help": {
+                "text": "The desktop client pins `react-router` `7.15.1` through `react-router-dom` and is therefore within the affected version range for `CVE-2026-55685`. The advisory describes an unauthenticated manifest endpoint denial of service issue that is fixed in `7.18.0`.\n\nIf the affected React Router server/runtime path is reachable in this application or in a bundled dependency path, unauthenticated requests can trigger excessive manifest processing and degrade availability.\n\nUpgrade `react-router-dom` and its resolved `react-router` dependency to `7.18.0` or later, then regenerate the lockfile so the desktop client no longer resolves the vulnerable version.",
+                "markdown": "The desktop client pins `react-router` `7.15.1` through `react-router-dom` and is therefore within the affected version range for `CVE-2026-55685`. The advisory describes an unauthenticated manifest endpoint denial of service issue that is fixed in `7.18.0`.\n\nIf the affected React Router server/runtime path is reachable in this application or in a bundled dependency path, unauthenticated requests can trigger excessive manifest processing and degrade availability.\n\nUpgrade `react-router-dom` and its resolved `react-router` dependency to `7.18.0` or later, then regenerate the lockfile so the desktop client no longer resolves the vulnerable version."
+              },
+              "properties": {
+                "security-severity": "8.7",
+                "tags": [
+                  "security",
+                  "CVE-2026-55685",
+                  "stride:T",
+                  "stride:I"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2026-53666",
+              "name": "CVE-2026-53666 in react-router 7.15.1 (client-side constructor execution information disclosure)",
+              "shortDescription": {
+                "text": "CVE-2026-53666 in react-router 7.15.1 (client-side constructor execution information disclosure)"
+              },
+              "fullDescription": {
+                "text": "The desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is inside the affected range for `CVE-2026-53666`. The advisory describes information disclosure via client-side constructor execution and is fixed in `7.18.0`."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "help": {
+                "text": "The desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is inside the affected range for `CVE-2026-53666`. The advisory describes information disclosure via client-side constructor execution and is fixed in `7.18.0`.\n\nIf the vulnerable client-side routing path is exercised, attacker-controlled navigation data can disclose information through constructor execution in the browser context.\n\nUpgrade `react-router-dom` and the resolved `react-router` dependency to `7.18.0` or later, then refresh the lockfile to eliminate the vulnerable version.",
+                "markdown": "The desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is inside the affected range for `CVE-2026-53666`. The advisory describes information disclosure via client-side constructor execution and is fixed in `7.18.0`.\n\nIf the vulnerable client-side routing path is exercised, attacker-controlled navigation data can disclose information through constructor execution in the browser context.\n\nUpgrade `react-router-dom` and the resolved `react-router` dependency to `7.18.0` or later, then refresh the lockfile to eliminate the vulnerable version."
+              },
+              "properties": {
+                "security-severity": "6.1",
+                "tags": [
+                  "security",
+                  "CVE-2026-53666",
+                  "stride:T",
+                  "stride:I"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2026-53667",
+              "name": "CVE-2026-53667 in react-router 7.15.1 (untrusted redirect via missing protocol validation)",
+              "shortDescription": {
+                "text": "CVE-2026-53667 in react-router 7.15.1 (untrusted redirect via missing protocol validation)"
+              },
+              "fullDescription": {
+                "text": "The desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is within the affected range for `CVE-2026-53667`. The advisory describes untrusted redirects due to missing protocol validation and is fixed in `7.18.0`."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "help": {
+                "text": "The desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is within the affected range for `CVE-2026-53667`. The advisory describes untrusted redirects due to missing protocol validation and is fixed in `7.18.0`.\n\nIf the affected navigation helpers are reachable, attacker-controlled routes or redirect targets can send users to unexpected destinations and enable phishing pivots or token leakage through redirect abuse.\n\nUpgrade `react-router-dom` and the resolved `react-router` dependency to `7.18.0` or later, then regenerate the lockfile so the vulnerable version is no longer selected.",
+                "markdown": "The desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is within the affected range for `CVE-2026-53667`. The advisory describes untrusted redirects due to missing protocol validation and is fixed in `7.18.0`.\n\nIf the affected navigation helpers are reachable, attacker-controlled routes or redirect targets can send users to unexpected destinations and enable phishing pivots or token leakage through redirect abuse.\n\nUpgrade `react-router-dom` and the resolved `react-router` dependency to `7.18.0` or later, then regenerate the lockfile so the vulnerable version is no longer selected."
+              },
+              "properties": {
+                "security-severity": "6.9",
+                "tags": [
+                  "security",
+                  "CVE-2026-53667",
+                  "stride:T",
+                  "stride:I"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2026-53669",
+              "name": "CVE-2026-53669 in react-router 7.15.1 (open redirect via backslashes in navigation components)",
+              "shortDescription": {
+                "text": "CVE-2026-53669 in react-router 7.15.1 (open redirect via backslashes in navigation components)"
+              },
+              "fullDescription": {
+                "text": "The desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is within the affected range for `CVE-2026-53669`. The advisory describes an open redirect issue via backslashes in navigation components and is fixed in `7.18.0`."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "help": {
+                "text": "The desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is within the affected range for `CVE-2026-53669`. The advisory describes an open redirect issue via backslashes in navigation components and is fixed in `7.18.0`.\n\nIf the affected navigation components are reachable, crafted backslash-delimited destinations can redirect users to attacker-controlled pages and weaken trust in in-app navigation.\n\nUpgrade `react-router-dom` and the resolved `react-router` dependency to `7.18.0` or later, then refresh the lockfile so the vulnerable version is removed.",
+                "markdown": "The desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is within the affected range for `CVE-2026-53669`. The advisory describes an open redirect issue via backslashes in navigation components and is fixed in `7.18.0`.\n\nIf the affected navigation components are reachable, crafted backslash-delimited destinations can redirect users to attacker-controlled pages and weaken trust in in-app navigation.\n\nUpgrade `react-router-dom` and the resolved `react-router` dependency to `7.18.0` or later, then refresh the lockfile so the vulnerable version is removed."
+              },
+              "properties": {
+                "security-severity": "5.1",
+                "tags": [
+                  "security",
+                  "CVE-2026-53669",
+                  "stride:T",
+                  "stride:I"
+                ]
+              }
+            },
+            {
+              "id": "CWE-862",
+              "name": "Unauthorized student profile disclosure via `GET /api/usuarios/{id}`",
+              "shortDescription": {
+                "text": "Unauthorized student profile disclosure via `GET /api/usuarios/{id}`"
+              },
+              "fullDescription": {
+                "text": "A low-privilege authenticated student can retrieve another student's profile by ID. The response includes private account and academic metadata such as email, RA, semester, interests, institution, and preferences without any ownership check."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "help": {
+                "text": "A low-privilege authenticated student can retrieve another student's profile by ID. The response includes private account and academic metadata such as email, RA, semester, interests, institution, and preferences without any ownership check.\n\nAn authenticated student can read another student's restricted profile data by guessing or enumerating the user ID. In the validated request, the response disclosed the victim's email and `RA`/profile fields, enabling cross-account privacy leakage and user enumeration.\n\nRestrict `UsuarioService.validarAcessoAoUsuario()` so that cross-user reads are allowed only for explicitly authorized roles and relationships. At minimum, require the caller to be the same user, an administrator, or an orientador when student records are intentionally visible; add regression tests for both `GET /api/usuarios/{id}` and `GET /api/usuarios/{id}/perfil` to ensure another student receives `403 Forbidden`.",
+                "markdown": "A low-privilege authenticated student can retrieve another student's profile by ID. The response includes private account and academic metadata such as email, RA, semester, interests, institution, and preferences without any ownership check.\n\nAn authenticated student can read another student's restricted profile data by guessing or enumerating the user ID. In the validated request, the response disclosed the victim's email and `RA`/profile fields, enabling cross-account privacy leakage and user enumeration.\n\nRestrict `UsuarioService.validarAcessoAoUsuario()` so that cross-user reads are allowed only for explicitly authorized roles and relationships. At minimum, require the caller to be the same user, an administrator, or an orientador when student records are intentionally visible; add regression tests for both `GET /api/usuarios/{id}` and `GET /api/usuarios/{id}/perfil` to ensure another student receives `403 Forbidden`."
+              },
+              "properties": {
+                "security-severity": "4.3",
+                "tags": [
+                  "security",
+                  "CWE-862",
+                  "stride:E"
+                ]
+              },
+              "helpUri": "https://cwe.mitre.org/data/definitions/862.html"
+            }
+          ],
+          "version": "1.5.3"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CVE-2026-55685",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "CVE-2026-55685 in react-router 7.15.1 (unauthenticated manifest endpoint DoS)\n\nThe desktop client pins `react-router` `7.15.1` through `react-router-dom` and is therefore within the affected version range for `CVE-2026-55685`. The advisory describes an unauthenticated manifest endpoint denial of service issue that is fixed in `7.18.0`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SECURITY.md"
+                }
+              }
+            },
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "desktop",
+                  "kind": "resource"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "baf04076b0c2eaf979aad6e507682ea31695f5e9bef36529f1e643efd50bcf91"
+          },
+          "properties": {
+            "security-severity": "8.7",
+            "strix_vuln_class_hash": "3de758b6f4a517d5c5cb600062b0e61addddf12b55334063dd42ba7d66d9d3f3",
+            "synthetic_location": true,
+            "strix": {
+              "id": "vuln-0001",
+              "severity": "high",
+              "cvss": 8.7,
+              "timestamp": "2026-09-06 21:40:57 UTC",
+              "target": "desktop",
+              "cve": "CVE-2026-55685",
+              "impact": "If the affected React Router server/runtime path is reachable in this application or in a bundled dependency path, unauthenticated requests can trigger excessive manifest processing and degrade availability.",
+              "technical_analysis": "The desktop application resolves `react-router` `7.15.1` through `react-router-dom` `7.15.1`, which falls inside the advisory's affected range. The package is imported by the desktop router setup and should be upgraded to a fixed release.",
+              "remediation_steps": "Upgrade `react-router-dom` and its resolved `react-router` dependency to `7.18.0` or later, then regenerate the lockfile so the desktop client no longer resolves the vulnerable version.",
+              "dependency_metadata": {
+                "package_name": "react-router",
+                "installed_version": "7.15.1",
+                "package_ecosystem": "npm",
+                "manifest_path": "desktop/package-lock.json",
+                "fixed_version": "7.18.0",
+                "introduced_by": "react-router-dom@7.15.1",
+                "dependency_path": "react-router-dom@7.15.1 > react-router@7.15.1",
+                "reachability": "imported",
+                "reachability_evidence": "`desktop/src/app/router.tsx:1-38` imports `createHashRouter` from `react-router-dom`; `desktop/package-lock.json:2538-2545` resolves `react-router@7.15.1` via `react-router-dom@7.15.1`."
+              }
+            }
+          }
+        },
+        {
+          "ruleId": "CVE-2026-53666",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "CVE-2026-53666 in react-router 7.15.1 (client-side constructor execution information disclosure)\n\nThe desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is inside the affected range for `CVE-2026-53666`. The advisory describes information disclosure via client-side constructor execution and is fixed in `7.18.0`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SECURITY.md"
+                }
+              }
+            },
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "desktop",
+                  "kind": "resource"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "6bb795df92f537d534d4ecba29e89fda9c1a8585250d9f482dea34fdb1b3d428"
+          },
+          "properties": {
+            "security-severity": "6.1",
+            "strix_vuln_class_hash": "32cea191a53caf2c7a3bc1057fa1d33d9ff88d4c6c64b63b1c33a9faec89046b",
+            "synthetic_location": true,
+            "strix": {
+              "id": "vuln-0002",
+              "severity": "medium",
+              "cvss": 6.1,
+              "timestamp": "2026-09-06 21:41:09 UTC",
+              "target": "desktop",
+              "cve": "CVE-2026-53666",
+              "impact": "If the vulnerable client-side routing path is exercised, attacker-controlled navigation data can disclose information through constructor execution in the browser context.",
+              "technical_analysis": "`react-router-dom@7.15.1` resolves `react-router@7.15.1`. The advisory applies to that version range and is resolved by upgrading to a fixed release.",
+              "remediation_steps": "Upgrade `react-router-dom` and the resolved `react-router` dependency to `7.18.0` or later, then refresh the lockfile to eliminate the vulnerable version.",
+              "dependency_metadata": {
+                "package_name": "react-router",
+                "installed_version": "7.15.1",
+                "package_ecosystem": "npm",
+                "manifest_path": "desktop/package-lock.json",
+                "fixed_version": "7.18.0",
+                "introduced_by": "react-router-dom@7.15.1",
+                "dependency_path": "react-router-dom@7.15.1 > react-router@7.15.1",
+                "reachability": "imported",
+                "reachability_evidence": "`desktop/src/app/router.tsx:1-38` imports `createHashRouter` from `react-router-dom`; `desktop/package-lock.json:2538-2545` resolves `react-router@7.15.1` via `react-router-dom@7.15.1`."
+              }
+            }
+          }
+        },
+        {
+          "ruleId": "CVE-2026-53667",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "CVE-2026-53667 in react-router 7.15.1 (untrusted redirect via missing protocol validation)\n\nThe desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is within the affected range for `CVE-2026-53667`. The advisory describes untrusted redirects due to missing protocol validation and is fixed in `7.18.0`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SECURITY.md"
+                }
+              }
+            },
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "desktop",
+                  "kind": "resource"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "3d3eb6d37e75a4c4a0ed0e7ac497501799a36cb974ed1734ca24114fce9cdd2e"
+          },
+          "properties": {
+            "security-severity": "6.9",
+            "strix_vuln_class_hash": "0bc068f9cb7c3f3aefbd77bd7ba35f36a5effbbb8a2ac196638fc89771ecddee",
+            "synthetic_location": true,
+            "strix": {
+              "id": "vuln-0003",
+              "severity": "medium",
+              "cvss": 6.9,
+              "timestamp": "2026-09-06 21:41:20 UTC",
+              "target": "desktop",
+              "cve": "CVE-2026-53667",
+              "impact": "If the affected navigation helpers are reachable, attacker-controlled routes or redirect targets can send users to unexpected destinations and enable phishing pivots or token leakage through redirect abuse.",
+              "technical_analysis": "`react-router-dom@7.15.1` resolves `react-router@7.15.1`, which falls within the advisory's affected range. Upgrading the resolved package removes the vulnerable code path.",
+              "remediation_steps": "Upgrade `react-router-dom` and the resolved `react-router` dependency to `7.18.0` or later, then regenerate the lockfile so the vulnerable version is no longer selected.",
+              "dependency_metadata": {
+                "package_name": "react-router",
+                "installed_version": "7.15.1",
+                "package_ecosystem": "npm",
+                "manifest_path": "desktop/package-lock.json",
+                "fixed_version": "7.18.0",
+                "introduced_by": "react-router-dom@7.15.1",
+                "dependency_path": "react-router-dom@7.15.1 > react-router@7.15.1",
+                "reachability": "imported",
+                "reachability_evidence": "`desktop/src/app/router.tsx:1-38` imports `createHashRouter` from `react-router-dom`; `desktop/package-lock.json:2538-2545` resolves `react-router@7.15.1` via `react-router-dom@7.15.1`."
+              }
+            }
+          }
+        },
+        {
+          "ruleId": "CVE-2026-53669",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "CVE-2026-53669 in react-router 7.15.1 (open redirect via backslashes in navigation components)\n\nThe desktop client resolves `react-router` `7.15.1` through `react-router-dom`, which is within the affected range for `CVE-2026-53669`. The advisory describes an open redirect issue via backslashes in navigation components and is fixed in `7.18.0`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SECURITY.md"
+                }
+              }
+            },
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "desktop",
+                  "kind": "resource"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "f5d81d22e927413a2c63f334fa13f68e5a9cac512d2c6c7e7b36b37deed8ba72"
+          },
+          "properties": {
+            "security-severity": "5.1",
+            "strix_vuln_class_hash": "afd2ac347adaa75cd9746a061a45e94caa13f5549d0b037c6c525bccc13f15c3",
+            "synthetic_location": true,
+            "strix": {
+              "id": "vuln-0004",
+              "severity": "medium",
+              "cvss": 5.1,
+              "timestamp": "2026-09-06 21:41:32 UTC",
+              "target": "desktop",
+              "cve": "CVE-2026-53669",
+              "impact": "If the affected navigation components are reachable, crafted backslash-delimited destinations can redirect users to attacker-controlled pages and weaken trust in in-app navigation.",
+              "technical_analysis": "`react-router-dom@7.15.1` pulls in `react-router@7.15.1`. The vulnerability is resolved by moving the dependency chain to a fixed release.",
+              "remediation_steps": "Upgrade `react-router-dom` and the resolved `react-router` dependency to `7.18.0` or later, then refresh the lockfile so the vulnerable version is removed.",
+              "dependency_metadata": {
+                "package_name": "react-router",
+                "installed_version": "7.15.1",
+                "package_ecosystem": "npm",
+                "manifest_path": "desktop/package-lock.json",
+                "fixed_version": "7.18.0",
+                "introduced_by": "react-router-dom@7.15.1",
+                "dependency_path": "react-router-dom@7.15.1 > react-router@7.15.1",
+                "reachability": "imported",
+                "reachability_evidence": "`desktop/src/app/router.tsx:1-38` imports `createHashRouter` from `react-router-dom`; `desktop/package-lock.json:2538-2545` resolves `react-router@7.15.1` via `react-router-dom@7.15.1`."
+              }
+            }
+          }
+        },
+        {
+          "ruleId": "CWE-862",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Unauthorized student profile disclosure via `GET /api/usuarios/{id}`\n\nA low-privilege authenticated student can retrieve another student's profile by ID. The response includes private account and academic metadata such as email, RA, semester, interests, institution, and preferences without any ownership check."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "backend/tcc-backend/src/main/java/com/example/tcc_backend/service/UsuarioService.java"
+                },
+                "region": {
+                  "startLine": 244,
+                  "endLine": 260
+                }
+              },
+              "message": {
+                "text": "Restrict cross-user profile reads"
+              }
+            },
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "/api/usuarios/{id}",
+                  "kind": "endpoint"
+                }
+              ]
+            }
+          ],
+          "fixes": [
+            {
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "backend/tcc-backend/src/main/java/com/example/tcc_backend/service/UsuarioService.java"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 244,
+                        "endLine": 260
+                      },
+                      "insertedContent": {
+                        "text": "private void validarAcessoAoUsuario(Usuario usuario, boolean permitirOrientador) {\n        Usuario usuarioLogado = authHelper.getCurrentUser();\n\n        if (usuarioLogado.getId().equals(usuario.getId())) {\n            return;\n        }\n\n        if (usuarioLogado.getTipo() == TipoUsuario.ADMIN) {\n            return;\n        }\n\n        if (permitirOrientador\n                && usuarioLogado.getTipo() == TipoUsuario.ORIENTADOR\n                && usuario.getTipo() == TipoUsuario.ALUNO) {\n            return;\n        }\n\n        throw new ResponseStatusException(HttpStatus.FORBIDDEN, \"Sem permissao para acessar dados de outro usuario\");\n    }"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "description": {
+                "text": "Restrict `UsuarioService.validarAcessoAoUsuario()` so that cross-user reads are allowed only for explicitly authorized roles and relationships. At minimum, require the caller to be the same user, an administrator, or an orientador when student records are intentionally visible; add regression tests for both `GET /api/usuarios/{id}` and `GET /api/usuarios/{id}/perfil` to ensure another student receives `403 Forbidden`.",
+                "markdown": "Restrict `UsuarioService.validarAcessoAoUsuario()` so that cross-user reads are allowed only for explicitly authorized roles and relationships. At minimum, require the caller to be the same user, an administrator, or an orientador when student records are intentionally visible; add regression tests for both `GET /api/usuarios/{id}` and `GET /api/usuarios/{id}/perfil` to ensure another student receives `403 Forbidden`."
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primaryLocationLineHash": "b9387ba330964ac5bc9d099c47d635fddf3ed67fdc4afb58e614d5c55209c87b"
+          },
+          "properties": {
+            "security-severity": "4.3",
+            "strix_vuln_class_hash": "1bc72e4d854c5611c9a3b504cd49ab20eae1b6c1a9808a832685b5ed11e7504e",
+            "strix": {
+              "id": "vuln-0005",
+              "severity": "medium",
+              "cvss": 4.3,
+              "timestamp": "2026-09-06 21:58:46 UTC",
+              "target": "backend/tcc-backend",
+              "endpoint": "/api/usuarios/{id}",
+              "method": "GET",
+              "cwe": "CWE-862",
+              "impact": "An authenticated student can read another student's restricted profile data by guessing or enumerating the user ID. In the validated request, the response disclosed the victim's email and `RA`/profile fields, enabling cross-account privacy leakage and user enumeration.",
+              "technical_analysis": "`UsuarioService.validarAcessoAoUsuario()` returns early for any target whose `tipo` is `ALUNO`, so `findById()` and `findProfileById()` do not bind the caller to the object being requested. As a result, any authenticated user can read another student's record through `GET /api/usuarios/{id}` and `GET /api/usuarios/{id}/perfil`. The same helper is also reused by `findProjetosByUsuario()`, so the broken authorization decision affects additional user-linked reads as well.",
+              "remediation_steps": "Restrict `UsuarioService.validarAcessoAoUsuario()` so that cross-user reads are allowed only for explicitly authorized roles and relationships. At minimum, require the caller to be the same user, an administrator, or an orientador when student records are intentionally visible; add regression tests for both `GET /api/usuarios/{id}` and `GET /api/usuarios/{id}/perfil` to ensure another student receives `403 Forbidden`.",
+              "poc": {
+                "description": "1. Register two student accounts and one authenticated low-privilege session.\n2. Log in as student A.\n3. Request `GET /api/usuarios/{studentBId}` and `GET /api/usuarios/{studentBId}/perfil` with student A's token.\n4. Observe that both requests return `200 OK` and expose student B's email and profile fields.\n5. Send `PUT /api/usuarios/{studentBId}` with student A's token to confirm the write path is still blocked and the issue is limited to unauthorized reads.",
+                "script_available": true
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "syntheticLocationCount": 4
+      }
+    }
+  ]
+}

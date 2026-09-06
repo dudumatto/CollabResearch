@@ -248,11 +248,13 @@ public class UsuarioService {
             return;
         }
 
-        if (usuario.getTipo() == TipoUsuario.ALUNO) {
+        if (usuarioLogado.getTipo() == TipoUsuario.ADMIN) {
             return;
         }
 
-        if (permitirOrientador && usuarioLogado.getTipo() == TipoUsuario.ORIENTADOR) {
+        if (permitirOrientador
+                && usuarioLogado.getTipo() == TipoUsuario.ORIENTADOR
+                && usuario.getTipo() == TipoUsuario.ALUNO) {
             return;
         }
 

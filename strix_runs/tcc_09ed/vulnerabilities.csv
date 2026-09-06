@@ -1,0 +1,6 @@
+id,title,severity,timestamp,file
+vuln-0001,CVE-2026-55685 in react-router 7.15.1 (unauthenticated manifest endpoint DoS),HIGH,2026-09-06 21:40:57 UTC,vulnerabilities/vuln-0001.md
+vuln-0002,CVE-2026-53666 in react-router 7.15.1 (client-side constructor execution information disclosure),MEDIUM,2026-09-06 21:41:09 UTC,vulnerabilities/vuln-0002.md
+vuln-0003,CVE-2026-53667 in react-router 7.15.1 (untrusted redirect via missing protocol validation),MEDIUM,2026-09-06 21:41:20 UTC,vulnerabilities/vuln-0003.md
+vuln-0004,CVE-2026-53669 in react-router 7.15.1 (open redirect via backslashes in navigation components),MEDIUM,2026-09-06 21:41:32 UTC,vulnerabilities/vuln-0004.md
+vuln-0005,Unauthorized student profile disclosure via `GET /api/usuarios/{id}`,MEDIUM,2026-09-06 21:58:46 UTC,vulnerabilities/vuln-0005.md

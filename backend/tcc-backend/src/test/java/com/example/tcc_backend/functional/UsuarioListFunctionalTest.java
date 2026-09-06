@@ -77,6 +77,36 @@ class UsuarioListFunctionalTest extends FunctionalTestSupport {
     }
 
     @Test
+    void alunoNaoDeveBuscarOutroAlunoPorId() throws Exception {
+        TestUser alunoA = registerAluno("read-a");
+        TestUser alunoB = registerAluno("read-b");
+
+        mockMvc.perform(get("/api/usuarios/" + alunoB.userId())
+                        .header("Authorization", authHeader(alunoA.token())))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void alunoNaoDeveBuscarPerfilDeOutroAluno() throws Exception {
+        TestUser alunoA = registerAluno("profile-a");
+        TestUser alunoB = registerAluno("profile-b");
+
+        mockMvc.perform(get("/api/usuarios/" + alunoB.userId() + "/perfil")
+                        .header("Authorization", authHeader(alunoA.token())))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void alunoNaoDeveListarProjetosDeOutroAluno() throws Exception {
+        TestUser alunoA = registerAluno("projects-a");
+        TestUser alunoB = registerAluno("projects-b");
+
+        mockMvc.perform(get("/api/usuarios/" + alunoB.userId() + "/projetos")
+                        .header("Authorization", authHeader(alunoA.token())))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void listarUsuariosSemTokenDeveRetornar401() throws Exception {
         mockMvc.perform(get("/api/usuarios"))
                 .andExpect(status().isUnauthorized());

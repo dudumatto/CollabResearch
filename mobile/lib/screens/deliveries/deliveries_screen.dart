@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:file_picker/file_picker.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../models/academic_workspace.dart';
 import '../../models/project.dart';
@@ -65,7 +66,7 @@ class _DeliveriesScreenState extends State<DeliveriesScreen> {
   }
 
   Future<PlatformFile?> _pickFile() async {
-    final result = await FilePicker.pickFiles(
+    final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: const ['pdf', 'doc', 'docx', 'txt', 'zip'],
       withData: true,

@@ -139,6 +139,59 @@ class OwnershipValidationTest {
     }
 
     @Nested
+    class UsuarioLeitura {
+
+        @Test
+        void deveBloquearAlunoBuscarOutroAlunoPorId() {
+            Usuario usuarioA = TestDataFactory.usuarioAluno(1);
+            Usuario usuarioB = TestDataFactory.usuarioAluno(2);
+            when(authHelper.getCurrentUser()).thenReturn(usuarioA);
+            when(usuarioRepository.findById(2)).thenReturn(Optional.of(usuarioB));
+
+            assertThatThrownBy(() -> usuarioService.findById(2))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode())
+                            .isEqualTo(HttpStatus.FORBIDDEN));
+        }
+
+        @Test
+        void deveBloquearAlunoBuscarPerfilDeOutroAluno() {
+            Usuario usuarioA = TestDataFactory.usuarioAluno(1);
+            Usuario usuarioB = TestDataFactory.usuarioAluno(2);
+            when(authHelper.getCurrentUser()).thenReturn(usuarioA);
+            when(usuarioRepository.findById(2)).thenReturn(Optional.of(usuarioB));
+
+            assertThatThrownBy(() -> usuarioService.findProfileById(2))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode())
+                            .isEqualTo(HttpStatus.FORBIDDEN));
+        }
+
+        @Test
+        void deveBloquearAlunoListarProjetosDeOutroAluno() {
+            Usuario usuarioA = TestDataFactory.usuarioAluno(1);
+            Usuario usuarioB = TestDataFactory.usuarioAluno(2);
+            when(authHelper.getCurrentUser()).thenReturn(usuarioA);
+            when(usuarioRepository.findById(2)).thenReturn(Optional.of(usuarioB));
+
+            assertThatThrownBy(() -> usuarioService.findProjetosByUsuario(2))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode())
+                            .isEqualTo(HttpStatus.FORBIDDEN));
+        }
+
+        @Test
+        void devePermitirAdminBuscarAlunoPorId() {
+            Usuario admin = TestDataFactory.usuarioAdmin(1);
+            Usuario aluno = TestDataFactory.usuarioAluno(2);
+            when(authHelper.getCurrentUser()).thenReturn(admin);
+            when(usuarioRepository.findById(2)).thenReturn(Optional.of(aluno));
+
+            assertThat(usuarioService.findById(2)).isSameAs(aluno);
+        }
+    }
+
+    @Nested
     class UsuarioInscricoes {
 
         @Test
