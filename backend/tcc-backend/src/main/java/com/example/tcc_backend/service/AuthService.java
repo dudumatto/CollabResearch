@@ -1,6 +1,7 @@
 package com.example.tcc_backend.service;
 
 import com.example.tcc_backend.dto.request.ChangePasswordRequest;
+import com.example.tcc_backend.dto.request.GoogleLoginRequest;
 import com.example.tcc_backend.dto.request.LoginRequest;
 import com.example.tcc_backend.dto.request.RegisterRequest;
 import com.example.tcc_backend.dto.response.AuthResponse;
@@ -27,8 +28,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+
 @Service
 public class AuthService {
+
+    private static final String GOOGLE_LOGIN_ATTEMPT_KEY = "__google_oauth__";
 
     private final UsuarioRepository usuarioRepository;
     private final AlunoRepository alunoRepository;
@@ -40,6 +45,7 @@ public class AuthService {
     private final AuthHelper authHelper;
     private final TokenRevocationService tokenRevocationService;
     private final LoginBruteForceProtectionService bruteForceProtectionService;
+    private final GoogleOAuthService googleOAuthService;
 
     public AuthService(UsuarioRepository usuarioRepository,
                        AlunoRepository alunoRepository,
@@ -50,7 +56,8 @@ public class AuthService {
                        AuthenticationManager authenticationManager,
                        AuthHelper authHelper,
                        TokenRevocationService tokenRevocationService,
-                       LoginBruteForceProtectionService bruteForceProtectionService) {
+                       LoginBruteForceProtectionService bruteForceProtectionService,
+                       GoogleOAuthService googleOAuthService) {
         this.usuarioRepository = usuarioRepository;
         this.alunoRepository = alunoRepository;
         this.orientadorRepository = orientadorRepository;
@@ -61,6 +68,7 @@ public class AuthService {
         this.authHelper = authHelper;
         this.tokenRevocationService = tokenRevocationService;
         this.bruteForceProtectionService = bruteForceProtectionService;
+        this.googleOAuthService = googleOAuthService;
     }
 
     @Transactional
@@ -121,6 +129,61 @@ public class AuthService {
         return login(dto, "unknown");
     }
 
+    @Transactional
+    public AuthResponse loginWithGoogle(GoogleLoginRequest dto) {
+        return loginWithGoogle(dto, "unknown");
+    }
+
+    @Transactional
+    public AuthResponse loginWithGoogle(GoogleLoginRequest dto, String clientIp) {
+        bruteForceProtectionService.assertAllowed(GOOGLE_LOGIN_ATTEMPT_KEY, clientIp);
+
+        GoogleTokenInfo tokenInfo;
+        try {
+            tokenInfo = googleOAuthService.verify(dto.getIdToken());
+        } catch (ResponseStatusException ex) {
+            bruteForceProtectionService.recordFailure(GOOGLE_LOGIN_ATTEMPT_KEY, clientIp);
+            throw ex;
+        }
+
+        bruteForceProtectionService.assertAllowed(tokenInfo.email(), clientIp);
+
+        Usuario usuario = usuarioRepository.findByGoogleSubject(tokenInfo.subject())
+                .or(() -> usuarioRepository.findByEmail(tokenInfo.email()))
+                .orElseThrow(() -> googleLoginDenied(tokenInfo.email(), clientIp));
+
+        if (usuario.getTipo() == TipoUsuario.ADMIN) {
+            throw googleLoginDenied(tokenInfo.email(), clientIp);
+        }
+
+        if (!usuario.isEnabled()) {
+            throw googleLoginDenied(tokenInfo.email(), clientIp);
+        }
+
+        String linkedSubject = usuario.getGoogleSubject();
+        if (linkedSubject != null && !linkedSubject.equals(tokenInfo.subject())) {
+            throw googleLoginDenied(tokenInfo.email(), clientIp);
+        }
+
+        if (!usuario.getEmail().equalsIgnoreCase(tokenInfo.email())) {
+            throw googleLoginDenied(tokenInfo.email(), clientIp);
+        }
+
+        if (linkedSubject == null) {
+            usuario.setGoogleSubject(tokenInfo.subject());
+            usuario.setGoogleEmail(tokenInfo.email());
+            usuario.setGoogleVinculadoEm(LocalDateTime.now());
+            if (usuario.getFotoPerfilUrl() == null && tokenInfo.pictureUrl() != null && !tokenInfo.pictureUrl().isBlank()) {
+                usuario.setFotoPerfilUrl(tokenInfo.pictureUrl());
+            }
+            usuarioRepository.save(usuario);
+        }
+
+        bruteForceProtectionService.recordSuccess(GOOGLE_LOGIN_ATTEMPT_KEY, clientIp);
+        bruteForceProtectionService.recordSuccess(tokenInfo.email(), clientIp);
+        return buildAuthResponse(usuario);
+    }
+
     public AuthResponse login(LoginRequest dto, String clientIp) {
         String email = normalizarEmail(dto.getEmail());
         bruteForceProtectionService.assertAllowed(email, clientIp);
@@ -135,10 +198,8 @@ public class AuthService {
         }
 
         Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow();
-        Aluno aluno = alunoRepository.findByUsuarioId(usuario.getId()).orElse(null);
-        Orientador orientador = orientadorRepository.findByUsuarioId(usuario.getId()).orElse(null);
         bruteForceProtectionService.recordSuccess(email, clientIp);
-        return new AuthResponse(jwtService.generateToken(usuario), UsuarioProfileResponse.from(usuario, aluno, orientador));
+        return buildAuthResponse(usuario);
     }
 
     @Transactional
@@ -193,5 +254,17 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem);
         }
         return normalizado;
+    }
+
+    private AuthResponse buildAuthResponse(Usuario usuario) {
+        Aluno aluno = alunoRepository.findByUsuarioId(usuario.getId()).orElse(null);
+        Orientador orientador = orientadorRepository.findByUsuarioId(usuario.getId()).orElse(null);
+        return new AuthResponse(jwtService.generateToken(usuario), UsuarioProfileResponse.from(usuario, aluno, orientador));
+    }
+
+    private ResponseStatusException googleLoginDenied(String email, String clientIp) {
+        bruteForceProtectionService.recordFailure(email, clientIp);
+        return new ResponseStatusException(HttpStatus.FORBIDDEN,
+                "Nao foi possivel entrar com Google. Verifique se a conta institucional esta cadastrada e ativa.");
     }
 }

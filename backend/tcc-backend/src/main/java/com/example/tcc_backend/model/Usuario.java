@@ -64,6 +64,15 @@ public class Usuario implements UserDetails {
     @Column(name = "notificacoes_ativas")
     private Boolean notificacoesAtivas;
 
+    @Column(name = "google_subject", unique = true, length = 120)
+    private String googleSubject;
+
+    @Column(name = "google_email", length = 100)
+    private String googleEmail;
+
+    @Column(name = "google_vinculado_em")
+    private LocalDateTime googleVinculadoEm;
+
     @PrePersist
     public void prePersist() {
         this.dataCadastro = LocalDateTime.now();

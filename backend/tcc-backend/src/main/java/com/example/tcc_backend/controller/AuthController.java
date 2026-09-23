@@ -1,6 +1,7 @@
 package com.example.tcc_backend.controller;
 
 import com.example.tcc_backend.dto.request.ChangePasswordRequest;
+import com.example.tcc_backend.dto.request.GoogleLoginRequest;
 import com.example.tcc_backend.dto.request.LoginRequest;
 import com.example.tcc_backend.dto.request.RegisterRequest;
 import com.example.tcc_backend.dto.response.AuthResponse;
@@ -50,6 +51,18 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest dto, HttpServletRequest request) {
         return ResponseEntity.ok(service.login(dto, clientIpResolver.resolve(request)));
+    }
+
+    @Operation(summary = "Login com Google", description = "Autentica alunos e orientadores com conta Google institucional.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login Google realizado com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Token Google inválido"),
+            @ApiResponse(responseCode = "403", description = "Conta Google institucional não aceita ou perfil indisponível"),
+            @ApiResponse(responseCode = "429", description = "Muitas tentativas de login")
+    })
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> loginGoogle(@RequestBody @Valid GoogleLoginRequest dto, HttpServletRequest request) {
+        return ResponseEntity.ok(service.loginWithGoogle(dto, clientIpResolver.resolve(request)));
     }
 
     @Operation(summary = "Alterar senha", description = "Permite ao usuário alterar sua senha.")

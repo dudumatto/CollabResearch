@@ -4,6 +4,9 @@ export const authService = {
   login(payload) {
     return api.post("/api/auth/login", payload);
   },
+  googleLogin(payload) {
+    return api.post("/api/auth/google", payload);
+  },
   register(payload) {
     return api.post("/api/auth/register", payload);
   },

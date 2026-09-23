@@ -93,6 +93,13 @@ export function AuthProvider({ children }) {
     return response;
   };
 
+  const googleLogin = async (payload) => {
+    const response = await authService.googleLogin(payload);
+    setStoredToken(response.token);
+    setToken(response.token);
+    return response;
+  };
+
   const register = async (payload) => {
     const response = await authService.register(payload);
     setStoredToken(response.token);
@@ -128,6 +135,7 @@ export function AuthProvider({ children }) {
       loading,
       isAuthenticated: Boolean(token),
       login,
+      googleLogin,
       register,
       logout,
       refreshUser,

@@ -358,7 +358,7 @@
   display: flex;
   align-items: center;
   gap: var(--espaco-3);
-  margin: var(--espaco-6) 0;
+  margin: var(--espaco-4) 0;
 }
 
 .pagina-login__divisor-linha {
@@ -391,6 +391,46 @@
 
 .pagina-login__botao-demo:hover {
   background-color: var(--cor-branco);
+}
+
+.pagina-login__google-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.pagina-login__google-render {
+  min-height: 2.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pagina-login__google-render--loading {
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.pagina-login__botao-google {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  background-color: var(--cor-branco);
+  color: var(--cor-texto-medio);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-medio);
+}
+
+.pagina-login__botao-google:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.pagina-login__google-ajuda {
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-pequeno);
+  line-height: 1.35;
+  text-align: center;
 }
 
 /* Link de cadastro */

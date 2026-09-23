@@ -1,6 +1,7 @@
 package com.example.tcc_backend.service;
 
 import com.example.tcc_backend.dto.request.LoginRequest;
+import com.example.tcc_backend.dto.request.GoogleLoginRequest;
 import com.example.tcc_backend.dto.request.RegisterRequest;
 import com.example.tcc_backend.dto.response.AuthResponse;
 import com.example.tcc_backend.model.Aluno;
@@ -14,6 +15,7 @@ import com.example.tcc_backend.repository.OrientadorRepository;
 import com.example.tcc_backend.repository.UsuarioRepository;
 import com.example.tcc_backend.security.AuthHelper;
 import com.example.tcc_backend.security.LoginBruteForceProtectionService;
+import com.example.tcc_backend.security.TokenRevocationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -31,6 +33,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,7 +58,11 @@ class AuthServiceTest {
     @Mock
     private AuthHelper authHelper;
     @Mock
+    private TokenRevocationService tokenRevocationService;
+    @Mock
     private LoginBruteForceProtectionService bruteForceProtectionService;
+    @Mock
+    private GoogleOAuthService googleOAuthService;
 
     @InjectMocks
     private AuthService authService;
@@ -190,5 +197,144 @@ class AuthServiceTest {
         verify(authenticationManager).authenticate(new UsernamePasswordAuthenticationToken("rodrigo@teste.com", "12345678"));
         assertThat(response.getToken()).isEqualTo("jwt-login");
         assertThat(response.getUsuario().getId()).isEqualTo(1);
+    }
+
+    @Test
+    void loginGoogleDeveVincularContaInstitucionalAoUsuarioExistente() {
+        GoogleLoginRequest request = new GoogleLoginRequest();
+        request.setIdToken("google-id-token");
+
+        Usuario usuario = Usuario.builder()
+                .id(1)
+                .nome("Rodrigo")
+                .email("rodrigo@unicamp.br")
+                .senha("hash")
+                .tipo(TipoUsuario.ALUNO)
+                .ativo(true)
+                .build();
+
+        when(googleOAuthService.verify("google-id-token")).thenReturn(new GoogleTokenInfo(
+                "google-sub-123",
+                "rodrigo@unicamp.br",
+                true,
+                "unicamp.br",
+                "Rodrigo",
+                "https://lh3.googleusercontent.com/foto"
+        ));
+        when(usuarioRepository.findByGoogleSubject("google-sub-123")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail("rodrigo@unicamp.br")).thenReturn(Optional.of(usuario));
+        when(alunoRepository.findByUsuarioId(1)).thenReturn(Optional.empty());
+        when(orientadorRepository.findByUsuarioId(1)).thenReturn(Optional.empty());
+        when(jwtService.generateToken(usuario)).thenReturn("jwt-google");
+
+        AuthResponse response = authService.loginWithGoogle(request, "10.0.0.1");
+
+        assertThat(response.getToken()).isEqualTo("jwt-google");
+        assertThat(usuario.getGoogleSubject()).isEqualTo("google-sub-123");
+        assertThat(usuario.getGoogleEmail()).isEqualTo("rodrigo@unicamp.br");
+        assertThat(usuario.getGoogleVinculadoEm()).isNotNull();
+        assertThat(usuario.getFotoPerfilUrl()).isEqualTo("https://lh3.googleusercontent.com/foto");
+        verify(bruteForceProtectionService).assertAllowed("__google_oauth__", "10.0.0.1");
+        verify(bruteForceProtectionService).assertAllowed("rodrigo@unicamp.br", "10.0.0.1");
+        verify(bruteForceProtectionService).recordSuccess("__google_oauth__", "10.0.0.1");
+        verify(bruteForceProtectionService).recordSuccess("rodrigo@unicamp.br", "10.0.0.1");
+        verify(usuarioRepository).save(usuario);
+    }
+
+    @Test
+    void loginGoogleDeveRecusarQuandoNaoExisteUsuarioComEmailInstitucional() {
+        GoogleLoginRequest request = new GoogleLoginRequest();
+        request.setIdToken("google-id-token");
+
+        when(googleOAuthService.verify("google-id-token")).thenReturn(new GoogleTokenInfo(
+                "google-sub-123",
+                "novo@unicamp.br",
+                true,
+                "unicamp.br",
+                "Novo",
+                null
+        ));
+        when(usuarioRepository.findByGoogleSubject("google-sub-123")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail("novo@unicamp.br")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.loginWithGoogle(request, "10.0.0.1"))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Nao foi possivel entrar com Google");
+
+        verify(bruteForceProtectionService).assertAllowed("__google_oauth__", "10.0.0.1");
+        verify(bruteForceProtectionService).assertAllowed("novo@unicamp.br", "10.0.0.1");
+        verify(bruteForceProtectionService).recordFailure("novo@unicamp.br", "10.0.0.1");
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+    }
+
+    @Test
+    void loginGoogleDeveRecusarUsuarioInativo() {
+        GoogleLoginRequest request = new GoogleLoginRequest();
+        request.setIdToken("google-id-token");
+
+        Usuario usuario = Usuario.builder()
+                .id(1)
+                .nome("Rodrigo")
+                .email("rodrigo@unicamp.br")
+                .senha("hash")
+                .tipo(TipoUsuario.ALUNO)
+                .ativo(false)
+                .build();
+
+        when(googleOAuthService.verify("google-id-token")).thenReturn(new GoogleTokenInfo(
+                "google-sub-123",
+                "rodrigo@unicamp.br",
+                true,
+                "unicamp.br",
+                "Rodrigo",
+                null
+        ));
+        when(usuarioRepository.findByGoogleSubject("google-sub-123")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail("rodrigo@unicamp.br")).thenReturn(Optional.of(usuario));
+
+        assertThatThrownBy(() -> authService.loginWithGoogle(request, "10.0.0.1"))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+
+        verify(bruteForceProtectionService).assertAllowed("__google_oauth__", "10.0.0.1");
+        verify(bruteForceProtectionService).assertAllowed("rodrigo@unicamp.br", "10.0.0.1");
+        verify(bruteForceProtectionService).recordFailure("rodrigo@unicamp.br", "10.0.0.1");
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+    }
+
+    @Test
+    void loginGoogleDeveBloquearPorIpAntesDeChamarGoogle() {
+        GoogleLoginRequest request = new GoogleLoginRequest();
+        request.setIdToken("google-id-token");
+
+        doThrow(new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Muitas tentativas"))
+                .when(bruteForceProtectionService)
+                .assertAllowed("__google_oauth__", "10.0.0.1");
+
+        assertThatThrownBy(() -> authService.loginWithGoogle(request, "10.0.0.1"))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+
+        verify(googleOAuthService, never()).verify(any());
+    }
+
+    @Test
+    void loginGoogleDeveRegistrarFalhaQuandoTokenGoogleForInvalido() {
+        GoogleLoginRequest request = new GoogleLoginRequest();
+        request.setIdToken("google-id-token");
+
+        when(googleOAuthService.verify("google-id-token"))
+                .thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token do Google invalido ou expirado"));
+
+        assertThatThrownBy(() -> authService.loginWithGoogle(request, "10.0.0.1"))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        verify(bruteForceProtectionService).assertAllowed("__google_oauth__", "10.0.0.1");
+        verify(bruteForceProtectionService).recordFailure("__google_oauth__", "10.0.0.1");
+        verify(usuarioRepository, never()).findByEmail(any());
     }
 }

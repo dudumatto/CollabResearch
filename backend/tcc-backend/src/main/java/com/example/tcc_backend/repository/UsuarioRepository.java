@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer>, JpaSpecificationExecutor<Usuario> {
     Optional<Usuario> findByEmail(String email);
+    Optional<Usuario> findByGoogleSubject(String googleSubject);
     List<Usuario> findByTipoAndAtivoTrueOrderByNomeAsc(com.example.tcc_backend.model.TipoUsuario tipo);
     boolean existsByEmail(String email);
     long countByTipo(com.example.tcc_backend.model.TipoUsuario tipo);

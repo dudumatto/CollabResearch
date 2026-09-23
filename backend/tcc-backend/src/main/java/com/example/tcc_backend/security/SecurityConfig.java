@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 "/api/health",
                                 "/api/health/**",
                                 "/api/auth/login",
+                                "/api/auth/google",
                                 "/api/auth/register",
                                 "/api/test/**",
                                 "/ws",

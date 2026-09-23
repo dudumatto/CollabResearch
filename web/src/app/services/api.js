@@ -2,7 +2,9 @@ import { clearStoredToken, getStoredToken } from "../utils/storage";
 import { ApiError } from "../utils/apiError";
 
 const API_BASE_URL = (
-  import.meta.env.DEV ? "" : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || ""
+  import.meta.env.DEV
+    ? ""
+    : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "https://tcc-backend-jqod.onrender.com"
 ).replace(/\/$/, "");
 
 const GET_DEDUPE_TTL_MS = 750;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
@@ -6,13 +6,87 @@ import "./LoginPage.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { googleLogin, login } = useAuth();
+  const googleButtonRef = useRef(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleUnavailable, setGoogleUnavailable] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const googleHostedDomain = import.meta.env.VITE_GOOGLE_HOSTED_DOMAIN || "unicamp.br";
+
+  useEffect(() => {
+    if (!googleClientId) {
+      setGoogleUnavailable(true);
+      return;
+    }
+
+    let cancelled = false;
+
+    const renderGoogleButton = () => {
+      if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) return;
+
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        hosted_domain: googleHostedDomain,
+        callback: async ({ credential }) => {
+          if (!credential) {
+            setError("Não foi possível validar sua conta Google.");
+            return;
+          }
+
+          setError("");
+          setGoogleLoading(true);
+          try {
+            await googleLogin({ idToken: credential });
+            navigate("/app");
+          } catch (err) {
+            setError(err.message || "Conta Google não aceita. Use seu e-mail institucional cadastrado.");
+          } finally {
+            setGoogleLoading(false);
+          }
+        },
+      });
+
+      googleButtonRef.current.innerHTML = "";
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        text: "continue_with",
+        shape: "rectangular",
+        width: googleButtonRef.current.offsetWidth || 384,
+      });
+    };
+
+    if (window.google?.accounts?.id) {
+      renderGoogleButton();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const existingScript = document.querySelector("script[src='https://accounts.google.com/gsi/client']");
+    const script = existingScript || document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = renderGoogleButton;
+    script.onerror = () => {
+      if (!cancelled) setGoogleUnavailable(true);
+    };
+
+    if (!existingScript) {
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [googleClientId, googleHostedDomain, googleLogin, navigate]);
 
   const updateEmail = (value) => {
     setEmail(value);
@@ -156,6 +230,29 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <div className="pagina-login__divisor" aria-hidden="true">
+            <div className="pagina-login__divisor-linha" />
+            <span className="pagina-login__divisor-texto">ou</span>
+            <div className="pagina-login__divisor-linha" />
+          </div>
+
+          <div className="pagina-login__google-area">
+            {googleUnavailable ? (
+              <button type="button" className="pagina-login__botao-google" disabled>
+                Login Google indisponível
+              </button>
+            ) : (
+              <div
+                ref={googleButtonRef}
+                className={`pagina-login__google-render ${googleLoading ? "pagina-login__google-render--loading" : ""}`}
+                aria-busy={googleLoading}
+              />
+            )}
+            <p className="pagina-login__google-ajuda">
+              Use sua conta Google institucional @{googleHostedDomain} já cadastrada na plataforma.
+            </p>
+          </div>
 
           <p className="pagina-login__link-cadastro">
             Não tem conta?{" "}

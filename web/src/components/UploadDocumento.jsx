@@ -3,9 +3,13 @@ import { getStoredToken } from "../app/utils/storage";
 import { useUploadDocumento } from "../hooks/useUploadDocumento";
 
 function buildBackendUrl(path) {
-  const baseUrl = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "").replace(/\/$/, "");
+  const baseUrl = (
+    import.meta.env.DEV
+      ? ""
+      : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "https://tcc-backend-jqod.onrender.com"
+  ).replace(/\/$/, "");
 
-  if (!baseUrl) {
+  if (!baseUrl && !import.meta.env.DEV) {
     throw new Error("Backend não configurado. Defina VITE_API_URL ou VITE_BACKEND_URL.");
   }
 
