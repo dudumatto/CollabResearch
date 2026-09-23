@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  const googleHostedDomain = import.meta.env.VITE_GOOGLE_HOSTED_DOMAIN || "unicamp.br";
+  const googleAllowedDomains = import.meta.env.VITE_GOOGLE_HOSTED_DOMAIN || "unicamp.br,cotil.unicamp.br";
 
   useEffect(() => {
     if (!googleClientId) {
@@ -30,9 +30,10 @@ export default function LoginPage() {
     const renderGoogleButton = () => {
       if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) return;
 
+      // Não usamos hosted_domain para permitir múltiplos domínios (unicamp.br, cotil.unicamp.br)
+      // A validação de domínio é feita no backend
       window.google.accounts.id.initialize({
         client_id: googleClientId,
-        hosted_domain: googleHostedDomain,
         callback: async ({ credential }) => {
           if (!credential) {
             setError("Não foi possível validar sua conta Google.");
@@ -86,7 +87,7 @@ export default function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [googleClientId, googleHostedDomain, googleLogin, navigate]);
+  }, [googleClientId, googleLogin, navigate]);
 
   const updateEmail = (value) => {
     setEmail(value);
@@ -250,7 +251,7 @@ export default function LoginPage() {
               />
             )}
             <p className="pagina-login__google-ajuda">
-              Use sua conta Google institucional @{googleHostedDomain} já cadastrada na plataforma.
+              Use sua conta Google institucional (@unicamp.br ou @cotil.unicamp.br) já cadastrada na plataforma.
             </p>
           </div>
 
