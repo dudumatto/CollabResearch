@@ -26,7 +26,7 @@ public class GoogleOAuthService {
 
     @Autowired(required = false)
     public GoogleOAuthService(@Value("${app.google.client-id:}") String clientId,
-                              @Value("${app.google.allowed-domains:unicamp.br}") String allowedDomains,
+                              @Value("${app.google.allowed-domains:unicamp.br,g.unicamp.br,cotil.unicamp.br}") String allowedDomains,
                               @Value("${app.google.timeout-ms:3000}") long timeoutMillis) {
         this(RestClient.builder(), clientId, allowedDomains, timeoutMillis);
     }
@@ -36,7 +36,7 @@ public class GoogleOAuthService {
     public GoogleOAuthService() {
         this.restClient = RestClient.builder().build();
         this.clientId = "";
-        this.allowedDomains = Set.of("unicamp.br", "cotil.unicamp.br");
+        this.allowedDomains = Set.of("unicamp.br", "g.unicamp.br", "cotil.unicamp.br");
     }
 
     GoogleOAuthService(RestClient.Builder restClientBuilder,

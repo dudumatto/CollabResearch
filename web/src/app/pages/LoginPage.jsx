@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  const googleAllowedDomains = import.meta.env.VITE_GOOGLE_HOSTED_DOMAIN || "unicamp.br,cotil.unicamp.br";
+  const googleAllowedDomains = import.meta.env.VITE_GOOGLE_HOSTED_DOMAIN || "unicamp.br,g.unicamp.br,cotil.unicamp.br";
 
   useEffect(() => {
     if (!googleClientId) {
@@ -251,7 +251,7 @@ export default function LoginPage() {
               />
             )}
             <p className="pagina-login__google-ajuda">
-              Use sua conta Google institucional (@unicamp.br ou @cotil.unicamp.br) já cadastrada na plataforma.
+              Use sua conta Google institucional (@unicamp.br, @g.unicamp.br ou @cotil.unicamp.br) já cadastrada na plataforma.
             </p>
           </div>
 

@@ -46,6 +46,34 @@ class GoogleOAuthServiceTest {
     }
 
     @Test
+    void verifyAceitaContaInstitucionalDoDominioGUnicamp() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        GoogleOAuthService service = new GoogleOAuthService(
+                builder.baseUrl("https://oauth2.googleapis.com").build(),
+                "client-id",
+                "unicamp.br,g.unicamp.br,cotil.unicamp.br"
+        );
+
+        server.expect(requestTo("https://oauth2.googleapis.com/tokeninfo?id_token=valid-token"))
+                .andRespond(withSuccess("""
+                        {
+                          "aud": "client-id",
+                          "sub": "google-sub-cotil-123",
+                          "email": "cl204173@g.unicamp.br",
+                          "email_verified": "true",
+                          "hd": "g.unicamp.br"
+                        }
+                        """, MediaType.APPLICATION_JSON));
+
+        GoogleTokenInfo tokenInfo = service.verify("valid-token");
+
+        assertThat(tokenInfo.email()).isEqualTo("cl204173@g.unicamp.br");
+        assertThat(tokenInfo.hostedDomain()).isEqualTo("g.unicamp.br");
+        server.verify();
+    }
+
+    @Test
     void verifyRecusaEmailPermitidoSemHostedDomainWorkspace() {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();

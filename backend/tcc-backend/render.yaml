@@ -49,6 +49,6 @@ services:
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_ALLOWED_DOMAINS
-        value: unicamp.br
+        value: "unicamp.br,g.unicamp.br,cotil.unicamp.br"
       - key: GOOGLE_TIMEOUT_MS
         value: "3000"

@@ -82,7 +82,7 @@ VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_SUPABASE_BUCKET=documents
 VITE_GOOGLE_CLIENT_ID=your_google_oauth_web_client_id
-VITE_GOOGLE_HOSTED_DOMAIN=unicamp.br,cotil.unicamp.br
+VITE_GOOGLE_HOSTED_DOMAIN=unicamp.br,g.unicamp.br,cotil.unicamp.br
 ```
 
 `VITE_API_URL` define a base da API no Render. Em desenvolvimento, chamadas `/api` e `/ws` usam o proxy do Vite com `VITE_API_PROXY_TARGET`; sem `.env`, o proxy ja aponta para `https://tcc-backend-jqod.onrender.com`.
