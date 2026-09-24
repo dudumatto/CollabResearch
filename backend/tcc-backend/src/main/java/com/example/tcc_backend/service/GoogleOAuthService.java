@@ -1,5 +1,6 @@
 package com.example.tcc_backend.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.HttpStatus;
@@ -23,10 +24,19 @@ public class GoogleOAuthService {
     private final String clientId;
     private final Set<String> allowedDomains;
 
+    @Autowired(required = false)
     public GoogleOAuthService(@Value("${app.google.client-id:}") String clientId,
                               @Value("${app.google.allowed-domains:unicamp.br}") String allowedDomains,
                               @Value("${app.google.timeout-ms:3000}") long timeoutMillis) {
         this(RestClient.builder(), clientId, allowedDomains, timeoutMillis);
+    }
+
+    // Construtor padrão necessário para injeção do Spring
+    // Será usado apenas se as propriedades não estiverem configuradas
+    public GoogleOAuthService() {
+        this.restClient = RestClient.builder().build();
+        this.clientId = "";
+        this.allowedDomains = Set.of("unicamp.br", "cotil.unicamp.br");
     }
 
     GoogleOAuthService(RestClient.Builder restClientBuilder,
