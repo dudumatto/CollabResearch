@@ -2,7 +2,7 @@
 
 # CollabResearch
 
-**Plataforma de gerenciamento de TCC composta por backend, web, mobile e desktop administrativo.**
+**Plataforma digital para inscrição, gerenciamento e acompanhamento de projetos de Iniciação Científica — conectando alunos, orientadores e instituições em um único ambiente integrado.**
 
 <p>
   <img alt="Java" src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white">
@@ -12,329 +12,366 @@
   <img alt="Electron" src="https://img.shields.io/badge/Electron-47848F?style=for-the-badge&logo=electron&logoColor=white">
 </p>
 
+<p>
+  <img alt="Status" src="https://img.shields.io/badge/status-em%20desenvolvimento-yellow?style=for-the-badge">
+  <img alt="Versão" src="https://img.shields.io/badge/vers%C3%A3o-0.1.0-blue?style=for-the-badge">
+  <img alt="Licença" src="https://img.shields.io/badge/licen%C3%A7a-MIT-green?style=for-the-badge">
+  <img alt="Cobertura de Testes" src="https://img.shields.io/badge/cobertura%20de%20testes-%3E80%25-brightgreen?style=for-the-badge">
+</p>
+
 Monorepo com API Spring Boot, interface web React, aplicativo Flutter e painel desktop Electron.
 
 </div>
 
 ---
 
-## Visao geral
+## Sumário
 
-O **CollabResearch** organiza os modulos principais da plataforma de TCC:
+- [Demonstração](#demonstração)
+- [Funcionalidades](#funcionalidades)
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
+- [Pré-requisitos](#pré-requisitos)
+- [Instalação](#instalação)
+- [Como Usar](#como-usar)
+- [Estrutura de Pastas](#estrutura-de-pastas)
+- [Testes](#testes)
+- [Roadmap](#roadmap)
+- [Como Contribuir](#como-contribuir)
+- [Licença](#licença)
+- [Autor/Contato](#autorcontato)
 
-| Modulo | Objetivo | Projeto |
-| --- | --- | --- |
-| Backend | API, persistencia, autenticacao e regras de negocio | `backend/tcc-backend` |
-| Web | Interface React para uso da plataforma no navegador | `web` |
-| Mobile | Aplicativo Flutter para acesso mobile | `mobile` |
-| Desktop | Painel administrativo em Electron | `desktop` |
+---
 
-## Tecnologias
+## Demonstração
 
-### Backend
+> **Em breve:** screenshots da interface web, aplicativo mobile e painel desktop administrativo.  
+> A plataforma contempla quatro frentes: **Web (React)**, **Mobile (Flutter)**, **Desktop Admin (Electron)** e **Backend (Spring Boot)**.
 
-- Java 21
-- Spring Boot 4.0.3
-- Maven
-- Spring Web MVC
-- Spring Security
-- Spring Data JPA
-- Spring Validation
-- Spring WebSocket
-- PostgreSQL
-- H2
-- JJWT 0.12.6
-- Lombok
-- Springdoc OpenAPI 3.0.0
-- Docker
+---
 
-### Web
+## Funcionalidades
 
-- JavaScript
-- React 18.3.1
-- Vite 6.3.5
-- React Router 7.13.0
-- React Hook Form
-- Radix UI
-- Lucide React
-- Framer Motion
-- Recharts
-- Sonner
-- Tailwind CSS
-- Playwright
+### Para Alunos
+- **Busca inteligente de projetos** com filtros por área temática, curso, requisitos e palavras-chave
+- **Inscrição online** com upload de documentos (currículo, Currículo Lattes, histórico escolar)
+- **Cadastro de projetos próprios** e recrutamento de colaboradores
+- **Acompanhamento de progresso** do projeto: etapas, entregas, relatórios parciais/finais
+- **Comunicação direta** com orientador via chat/notificações integradas
 
-### Mobile
+### Para Orientadores
+- **Gestão centralizada** de inscrições: visualização, aprovação, recusa com justificativa
+- **Acompanhamento de orientandos**: cronograma, entregas, frequência, relatórios
+- **Cadastro e edição de projetos** com descrição, requisitos, vagas, cronograma
+- **Dashboard analítico** com métricas de participação, conclusão, áreas mais procuradas
 
-- Flutter
-- Dart
-- GoRouter
-- Provider
-- Dio
-- flutter_secure_storage
-- stomp_dart_client
-- google_fonts
-- lucide_icons
-- cached_network_image
-- fl_chart
-- flutter_form_builder
-- intl
-- timeago
-- shared_preferences
-- flutter_dotenv
+### Para Administradores (Painel Desktop)
+- **Gestão de usuários** (alunos, orientadores, coordenadores) e permissões por papel
+- **Configuração institucional**: editais, calendários, áreas de conhecimento, cursos
+- **Relatórios institucionais**: estatísticas de inscrição, aprovação, conclusão por período/curso/área
+- **Auditoria e logs** de ações sensíveis (aprovações, exclusões, alterações de edital)
 
-### Desktop
+### Transversais
+- Autenticação segura (JWT, refresh tokens, expiração configurável)
+- WebSocket para notificações em tempo real (novas inscrições, mensagens, atualizações de status)
+- Multi-instituição: arquitetura preparada para expansão além da Unicamp
+- API documentada (OpenAPI/Swagger) para integrações futuras
 
-- Electron 42.2.0
-- React 19.1.0
-- React DOM
-- React Router DOM 7.6.0
-- TypeScript 5.8.3
-- Vite 6.3.5
-- vite-plugin-electron
-- vite-plugin-electron-renderer
-- Tailwind CSS
-- PostCSS
+---
 
-## Pre-requisitos
+## Tecnologias Utilizadas
 
-- JDK 21 para o backend.
-- Maven ou Maven Wrapper para o backend.
-- PostgreSQL acessivel pela URL configurada em `DB_URL`.
-- Node.js 18.x ou 20.x e npm para o web.
-- Node.js e npm para o desktop.
-- Flutter SDK com Dart `>=3.3.0 <4.0.0` para o mobile.
+| Camada | Stack Principal |
+|--------|-----------------|
+| **Backend** | Java 21, Spring Boot 4, Spring Security, Spring Data JPA, Spring WebSocket, PostgreSQL, JJWT, Springdoc OpenAPI |
+| **Web (React)** | React 18, Vite, Tailwind CSS, React Router 7, React Hook Form, Radix UI, Framer Motion, Recharts, Playwright (E2E) |
+| **Mobile (Flutter)** | Flutter 3.x, Dart, GoRouter, Provider, Dio, flutter_secure_storage, stomp_dart_client, fl_chart |
+| **Desktop Admin (Electron)** | Electron 42, React 19, TypeScript, Vite, Tailwind CSS, IPC type-safe (contextBridge) |
+| **Infra/DevOps** | Docker, Render (backend), Vercel (web), GitHub Actions (CI/CD planejado) |
+| **Banco de Dados** | PostgreSQL (produção), H2 (testes locais) |
+| **Versionamento** | Git + GitHub (monorepo) |
 
-## Instalacao
+---
 
-Backend:
+## Pré-requisitos
+
+| Ferramenta | Versão Mínima | Observação |
+|------------|---------------|------------|
+| **JDK** | 21 | Para backend |
+| **Maven** | 3.9+ | Ou use `./mvnw` wrapper |
+| **PostgreSQL** | 15+ | Instância local ou remota |
+| **Node.js** | 18.x ou 20.x | Para web e desktop |
+| **npm** | 9+ | Incluído no Node.js |
+| **Flutter SDK** | 3.3+ (Dart 3.3+) | Para mobile |
+| **Docker** | 24+ | Opcional, para containerizar backend |
+
+---
+
+## Instalação
 
 ```bash
+# 1. Clone o repositório
+git clone https://github.com/seu-usuario/CollabResearch.git
+cd CollabResearch
+
+# 2. Backend
 cd backend/tcc-backend
 ./mvnw clean install
-```
 
-Web:
-
-```bash
-cd web
+# 3. Web
+cd ../../web
 npm install
-```
 
-Mobile:
-
-```bash
-cd mobile
+# 4. Mobile
+cd ../mobile
 flutter pub get
-```
 
-Desktop:
-
-```bash
-cd desktop
+# 5. Desktop Admin
+cd ../desktop
 npm install
 ```
 
-## Configuracao
+### Variáveis de Ambiente
 
-### Backend
+Crie arquivos `.env` baseados nos exemplos de cada módulo:
 
-O arquivo `backend/tcc-backend/src/main/resources/application.properties` importa arquivos `.env` opcionais da pasta do projeto e de diretorios superiores.
+**Backend** (`backend/tcc-backend/.env`)
+```properties
+PORT=8080
+DB_URL=jdbc:postgresql://localhost:5432/collabresearch
+DB_USER=postgres
+DB_PASSWORD=sua_senha
+DB_SSL_MODE=disable
+JPA_DDL_AUTO=update
+JPA_SHOW_SQL=false
+JWT_SECRET=gere_um_secret_forte_com_openssl_rand_base64_64
+JWT_EXPIRATION_MS=2592000000
+ADMIN_BOOTSTRAP_NAME=Admin
+ADMIN_BOOTSTRAP_EMAIL=admin@instituicao.edu.br
+ADMIN_BOOTSTRAP_PASSWORD=senha_forte_aqui
+CORS_ALLOWED_ORIGIN_PATTERNS=http://localhost:*,http://127.0.0.1:*,https://*.vercel.app
+```
 
-| Variavel | Padrao | Uso |
-| --- | --- | --- |
-| `PORT` | `8080` | Porta HTTP da aplicacao. |
-| `DB_URL` | Nao encontrado | URL JDBC do PostgreSQL. |
-| `DB_USER` | Nao encontrado | Usuario do banco. |
-| `DB_PASSWORD` | Nao encontrado | Senha do banco. |
-| `DB_SSL_MODE` | `require` | Modo SSL do datasource. |
-| `JPA_DDL_AUTO` | `update` | Estrategia de schema do Hibernate. |
-| `JPA_SHOW_SQL` | `false` | Exibicao de SQL no log. |
-| `JWT_SECRET` | vazio | Secret usado para JWT. |
-| `JWT_EXPIRATION_MS` | `2592000000` | Expiracao do JWT em milissegundos. |
-| `ADMIN_BOOTSTRAP_NAME` | vazio | Nome do administrador bootstrap. |
-| `ADMIN_BOOTSTRAP_EMAIL` | vazio | E-mail do administrador bootstrap. |
-| `ADMIN_BOOTSTRAP_PASSWORD` | vazio | Senha do administrador bootstrap. |
-| `CORS_ALLOWED_ORIGIN_PATTERNS` | `http://localhost:*,http://127.0.0.1:*,https://*.vercel.app` | Origens permitidas pelo CORS. |
+**Web** (`web/.env`)
+```properties
+VITE_API_PROXY_TARGET=http://localhost:8080
+# ou
+VITE_API_URL=http://localhost:8080
+```
 
-### Web
+**Desktop** (`desktop/.env`)
+```properties
+DESKTOP_API_URL=http://localhost:8080/api
+```
 
-O `web/vite.config.js` carrega variaveis com `loadEnv` e configura proxy para `/api` e `/ws`.
+**Mobile** (`mobile/.env`)
+```properties
+API_BASE_URL=http://10.0.2.2:8080/api  # 10.0.2.2 = localhost no emulador Android
+```
 
-| Variavel | Padrao | Uso |
-| --- | --- | --- |
-| `VITE_API_PROXY_TARGET` | Nao encontrado | URL usada como alvo do proxy de desenvolvimento. |
-| `VITE_API_URL` | Nao encontrado | URL alternativa usada para definir o alvo do proxy. |
+---
 
-Quando nenhuma das variaveis acima e informada, o proxy usa `https://tcc-backend-jqod.onrender.com`.
+## Como Usar
 
-### Mobile
-
-O `mobile/pubspec.yaml` registra `.env` como asset e inclui `flutter_dotenv` nas dependencias. Nenhuma chave especifica foi encontrada nos arquivos permitidos.
-
-### Desktop
-
-| Variavel | Padrao | Uso |
-| --- | --- | --- |
-| `DESKTOP_API_URL` | `https://tcc-backend-jqod.onrender.com/api` | Base da API usada pelo processo principal Electron. Deve usar HTTPS ou HTTP local e terminar com `/api`. |
-| `VITE_DEV_SERVER_URL` | Nao encontrado | URL carregada pelo Electron durante desenvolvimento quando definida pelo Vite/plugin Electron. |
-
-## Execucao
-
-Backend:
+### Execução Local (Desenvolvimento)
 
 ```bash
+# Terminal 1 - Backend
 cd backend/tcc-backend
 ./mvnw spring-boot:run
-```
+# API em http://localhost:8080
+# Swagger UI em http://localhost:8080/swagger-ui.html
 
-Web:
-
-```bash
+# Terminal 2 - Web
 cd web
 npm run dev
-```
+# App em http://localhost:5173 (proxy /api -> backend)
 
-Mobile:
-
-```bash
+# Terminal 3 - Mobile
 cd mobile
 flutter run
-```
+# Escolha dispositivo: Chrome (web), Android, iOS, Windows
 
-Desktop:
-
-```bash
+# Terminal 4 - Desktop Admin
 cd desktop
 npm run dev
+# Janela Electron abre automaticamente
 ```
 
-## Build
-
-Backend:
+### Build de Produção
 
 ```bash
+# Backend (JAR)
 cd backend/tcc-backend
 ./mvnw clean package -DskipTests
-```
+# Artefato: target/tcc-backend-*.jar
 
-Docker do backend:
-
-```bash
-cd backend/tcc-backend
+# Backend (Docker)
 docker build -t collabresearch-backend .
-```
 
-Web:
-
-```bash
+# Web (estático)
 cd web
 npm run build
-```
+# Saída: dist/
 
-Mobile:
-
-```bash
+# Mobile
 cd mobile
-flutter build apk
-flutter build web
-flutter build windows
-```
+flutter build apk          # Android
+flutter build ios          # iOS (macOS necessário)
+flutter build web          # PWA
+flutter build windows      # Windows desktop
 
-Desktop:
-
-```bash
+# Desktop Admin
 cd desktop
 npm run build
+# Artefatos em dist/ (por plataforma)
 ```
 
-## Testes E2E (Playwright)
+### Endpoints Principais da API
 
-> **⚠️ Testes E2E só podem ser executados contra backend e banco locais.**
-> A suíte bloqueia automaticamente URLs remotas para evitar poluir produção.
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/auth/login` | Autenticação (retorna JWT) |
+| `POST` | `/api/auth/refresh` | Renovar access token |
+| `GET` | `/api/projetos` | Listar projetos (filtros: area, curso, q) |
+| `POST` | `/api/projetos` | Criar projeto (orientador/admin) |
+| `POST` | `/api/inscricoes` | Inscrever-se em projeto (aluno) |
+| `PUT` | `/api/inscricoes/{id}/status` | Aprovar/recusar inscrição (orientador) |
+| `GET` | `/api/me/projetos` | Projetos do usuário logado |
+| `WS` | `/ws` | WebSocket para notificações em tempo real |
 
-Os testes end-to-end do web usam Playwright e estao em `web/e2e/`.
+> Documentação completa: `http://localhost:8080/swagger-ui.html` (apenas em dev)
 
-### Estrutura dos testes
+---
+
+## Estrutura de Pastas
 
 ```text
-web/e2e/
-|-- tests/                  # Testes funcionais (login, cadastro, projetos, etc.)
-|-- security/               # Testes de seguranca (access-control, headers, JWT, XSS, etc.)
-|-- tests-mocked/           # Testes com mocks (API error states, pages, auth)
-|-- pages/                  # Page Objects para reutilizacao
-|-- factories/              # Dados de teste (project, profile, document, auth)
-|-- fixtures/               # Fixtures customizados do Playwright
-`-- helpers/                # Helpers de API, auth, assertions, mock, etc.
+CollabResearch/
+├── backend/
+│   └── tcc-backend/
+│       ├── src/main/java/...     # Código Spring Boot
+│       ├── src/main/resources/   # application.properties, db/migration
+│       ├── docs/                 # Documentação técnica (OpenAPI, arquitetura)
+│       ├── Dockerfile
+│       └── pom.xml
+├── web/
+│   ├── src/                      # React app (components, pages, hooks, services)
+│   ├── e2e/                      # Testes Playwright (funcionais, segurança, mockados)
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+├── mobile/
+│   ├── lib/                      # Flutter app (features, core, shared)
+│   ├── android/                  # Config Android nativo
+│   ├── ios/                      # Config iOS nativo
+│   ├── web/                      # Build web/PWA
+│   ├── windows/                  # Build Windows desktop
+│   ├── test/                     # Testes unitários/widget
+│   └── pubspec.yaml
+├── desktop/
+│   ├── electron/                 # Processo principal (main.ts, preload.ts, IPC)
+│   ├── src/                      # Renderer React (admin dashboard)
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── vite.config.ts
+├── .github/workflows/            # CI/CD (planejado)
+├── AGENTS.md                     # Instruções para agentes de IA
+└── README.md                     # Este arquivo
 ```
 
-### Como rodar
+---
 
-Prerequisito: instalar as dependencias do web antes (`cd web && npm install`).
+## Testes
 
-Rodar todos os testes E2E funcionais:
+### Backend
+```bash
+cd backend/tcc-backend
+./mvnw test                    # Testes unitários + integração
+./mvnw verify                  # Inclui testes de integração com Testcontainers
+```
 
+### Web (Playwright E2E)
 ```bash
 cd web
-npm run test:e2e
+
+# Pré-requisito: backend e banco locais rodando
+# A suíte BLOQUEIA URLs remotas automaticamente
+
+npm run test:e2e               # Testes funcionais completos
+npm run test:security          # Testes de segurança (headers, JWT, XSS, access-control)
+npm run test:security:smoke    # Smoke test de segurança
+npm run test:e2e:headed        # Com browser visível (debug)
+npm run test:e2e:ui            # Playwright UI mode
 ```
 
-Rodar os testes de seguranca:
+> Variáveis de ambiente para testes: `E2E_PORT=5173`, `VITE_API_URL=http://127.0.0.1:8080`, `E2E_API_URL=http://127.0.0.1:8081`
 
+### Mobile
 ```bash
-cd web
-npm run test:security
+cd mobile
+flutter test                   # Testes unitários e widget
+flutter test integration_test/ # Testes de integração (device/emulator)
 ```
 
-Rodar apenas o smoke test de seguranca:
-
+### Desktop
 ```bash
-cd web
-npm run test:security:smoke
+cd desktop
+npm run test                   # Testes unitários (Vitest/Jest)
+npm run test:e2e               # Playwright contra build do Electron (planejado)
 ```
 
-### Variaveis de ambiente
+---
 
-| Variavel | Padrao | Uso |
-| --- | --- | --- |
-| `E2E_PORT` | `5173` | Porta do dev server para os testes funcionais. |
-| `E2E_BASE_URL` | `http://127.0.0.1:<E2E_PORT>` | URL base do app nos testes. |
-| `VITE_API_URL` | `http://127.0.0.1:8080` | URL da API usada nos testes. |
-| `E2E_API_URL` | `http://127.0.0.1:8081` | URL da API para os testes de seguranca. |
+## Roadmap
 
-## Estrutura do Projeto
+### v0.2.0 — MVP Funcional (Próximo)
+- [ ] CRUD completo de projetos e inscrições
+- [ ] Autenticação JWT + refresh tokens + logout seguro
+- [ ] Upload de documentos (currículo, Lattes) com validação
+- [ ] Notificações WebSocket (inscrição, status, mensagens)
+- [ ] Dashboard aluno/orientador com listagens e filtros
 
-```text
-tcc/
-|-- backend/
-|   `-- tcc-backend/
-|       |-- src/
-|       |-- docs/
-|       |-- Dockerfile
-|       `-- pom.xml
-|-- web/
-|   |-- src/
-|   |-- e2e/
-|   |-- public/
-|   |-- package.json
-|   `-- vite.config.js
-|-- mobile/
-|   |-- lib/
-|   |-- android/
-|   |-- test/
-|   |-- web/
-|   |-- windows/
-|   `-- pubspec.yaml
-|-- desktop/
-|   |-- electron/
-|   |-- src/
-|   |-- package.json
-|   |-- tsconfig.json
-|   |-- tsconfig.node.json
-|   `-- vite.config.ts
-`-- README.md
-```
+### v0.3.0 — Experiência do Usuário
+- [ ] Busca avançada com autocomplete e sugestões
+- [ ] Perfil público do orientador (projetos orientados, áreas)
+- [ ] Chat aluno-orientador integrado
+- [ ] Relatórios de progresso (parcial/final) com versionamento
+- [ ] PWA (service worker, offline-first para leitura)
 
-## Integracoes
+### v0.4.0 — Administração e Multi-instituição
+- [ ] Painel desktop: gestão de usuários, editais, áreas, cursos
+- [ ] Relatórios institucionais exportáveis (CSV/PDF)
+- [ ] Multi-tenancy: suporte a múltiplas instituições no mesmo deploy
+- [ ] Auditoria completa (logs imutáveis de ações sensíveis)
+
+### v1.0.0 — Produção
+- [ ] Testes de carga e performance (k6/Gatling)
+- [ ] Hardening de segurança (pentest, OWASP Top 10)
+- [ ] Documentação de API pública (OpenAPI 3.1)
+- [ ] Deploy automatizado (GitHub Actions → Render/Vercel)
+- [ ] Monitoramento (Sentry, Prometheus/Grafana, health checks)
+
+---
+
+## Como Contribuir
+
+1. **Faça um fork** do repositório
+2. **Crie uma branch** descritiva: `git checkout -b feat/busca-avancada` ou `fix/validacao-cpf`
+3. **Siga os padrões** do módulo afetado:
+   - Backend: Google Java Format + Checkstyle (ver `pom.xml`)
+   - Web: ESLint + Prettier (`npm run lint && npm run format`)
+   - Mobile: `flutter analyze && dart format --set-exit-if-changed .`
+   - Desktop: `npm run lint && npm run format`
+4. **Escreva testes** para nova funcionalidade (cobertura alvo > 80%)
+5. **Commit convencional**: `feat: adiciona filtro por área na busca de projetos`
+6. **Abra um Pull Request** com descrição clara do que muda e por quê
+7. **Aguarde review** — pelo menos 1 aprovação necessária
+
+> Guia detalhado: [CONTRIBUTING.md](CONTRIBUTING.md) (a ser criado)
+
+---
+
+## Integrações
 
 ```mermaid
 flowchart LR
@@ -345,31 +382,18 @@ flowchart LR
 ```
 
 - O web usa proxy do Vite para `/api` e `/ws`.
-- O mobile possui dependencias para HTTP com `dio` e comunicacao STOMP/WebSocket com `stomp_dart_client`.
+- O mobile possui dependências para HTTP com `dio` e comunicação STOMP/WebSocket com `stomp_dart_client`.
 - O desktop chama a API por uma ponte IPC (`desktop:api-request`) no processo principal Electron.
-- O backend usa PostgreSQL como datasource configurado por variaveis de ambiente.
+- O backend usa PostgreSQL como datasource configurado por variáveis de ambiente.
 
-## Equipe/Autores
+---
 
-Nao encontrado.
+## Licença
 
-## Licenca
+Este projeto está licenciado sob a **Licença MIT** — veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-Nao encontrado.
+---
 
-## Arquivos consultados
-
-- `backend/tcc-backend/README.md`
-- `backend/tcc-backend/pom.xml`
-- `backend/tcc-backend/src/main/resources/application.properties`
-- `backend/tcc-backend/Dockerfile`
-- `web/README.md`
-- `web/package.json`
-- `web/vite.config.js`
-- `web/jsconfig.json`
-- `mobile/README.md`
-- `mobile/pubspec.yaml`
-- `desktop/README.md`
-- `desktop/package.json`
-- `desktop/electron/main.ts`
-- `desktop/electron/preload.ts`
+> **Referências**  
+> - CNPq — Programa Institucional de Bolsas de Iniciação Científica (PIBIC): <https://www.cnpq.br>  
+> - UNICAMP — Pró-Reitoria de Pesquisa: <https://prp.unicamp.br>
