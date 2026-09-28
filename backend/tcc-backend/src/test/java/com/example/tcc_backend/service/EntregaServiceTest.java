@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,6 +69,31 @@ class EntregaServiceTest {
     private MockMultipartFile arquivoPdf() {
         return new MockMultipartFile(
                 "arquivo", "relatorio.pdf", "application/pdf", new byte[]{'%', 'P', 'D', 'F', '-', '1', '2', '3'});
+    }
+
+    @Test
+    void listarCarregaMetadadosDeVersoesEmLote() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = projetoComAluno();
+        ProjectDelivery entrega = entrega(projeto, alunoUsuario, EntregaStatus.PENDING_REVIEW);
+        DeliveryVersionRepository.Summary summary = mock(DeliveryVersionRepository.Summary.class);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        doNothing().when(projectAccessPolicy).requireCanViewDeliveries(projeto, alunoUsuario);
+        when(projectDeliveryRepository.findWithRelationsByProjetoId(10)).thenReturn(List.of(entrega));
+        when(summary.getEntregaId()).thenReturn(1L);
+        when(summary.getUltimaVersaoId()).thenReturn(5L);
+        when(summary.getTotalVersoes()).thenReturn(2L);
+        when(deliveryVersionRepository.findSummariesByEntregaIds(List.of(1L))).thenReturn(List.of(summary));
+
+        var response = entregaService.listar(10);
+
+        assertThat(response).hasSize(1);
+        assertThat(response.get(0).getUltimaVersaoId()).isEqualTo(5L);
+        assertThat(response.get(0).getTotalVersoes()).isEqualTo(2);
+        verify(deliveryVersionRepository).findSummariesByEntregaIds(List.of(1L));
+        verify(deliveryVersionRepository, never()).findByEntregaIdOrderByNumeroVersaoAsc(1L);
     }
 
     private EntregaRequest request() {

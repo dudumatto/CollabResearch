@@ -1,11 +1,6 @@
-import { motion } from "framer-motion";
-
-export default function ProjectCardSkeleton({ index = 0 }) {
+export default function ProjectCardSkeleton() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.06 }}
+    <div
       className="projeto-card projeto-card--skeleton"
       aria-hidden="true"
     >
@@ -58,6 +53,6 @@ export default function ProjectCardSkeleton({ index = 0 }) {
           <div className="skeleton" style={{ width: 14, height: 14 }} />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

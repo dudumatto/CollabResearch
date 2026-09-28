@@ -59,7 +59,7 @@ export default function ProfilePage() {
   const { data, setData, loading, error, reload } = useAsyncData(async () => {
     if (!user?.id) return { profile: user, applications: [], documents: [], courses: [] };
     const [profile, applications, documents, courses] = await Promise.all([
-      userService.getCurrentUser().catch(() => user),
+      user,
       applicationService.listMine().catch(() => []),
       userService.getDocuments(user.id).catch(() => []),
       courseService.list().catch(() => []),

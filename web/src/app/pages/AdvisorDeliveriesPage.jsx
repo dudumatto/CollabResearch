@@ -23,11 +23,6 @@ const FILTROS = [
   { key: "APPROVED", rotulo: "Aprovadas" },
 ];
 
-function isMissingAggregateEndpoint(error) {
-  const status = error?.status ?? error?.response?.status;
-  return status === 404 || status === 405;
-}
-
 function entregaPillClass(status) {
   if (status === "PENDING_REVIEW") return "advisor-etiqueta--amarelo";
   if (status === "CHANGES_REQUESTED") return "advisor-etiqueta--laranja";
@@ -137,8 +132,8 @@ export default function AdvisorDeliveriesPage() {
   const [revisando, setRevisando] = useState(false);
 
   const { data: projetos, loading: loadingProjetos, error: erroProjetos } = useAsyncData(
-    async () => {
-      const raw = await advisorService.meusProjetos();
+    async ({ signal } = {}) => {
+      const raw = await advisorService.meusProjetos(undefined, { signal });
       return (Array.isArray(raw) ? raw : []).map(mapProject);
     },
     [],
@@ -166,51 +161,20 @@ export default function AdvisorDeliveriesPage() {
   }, [podeCarregarEntregas, projectId, projectIdsKey]);
 
   const { data: entregas, loading: loadingEntregas, error: erroEntregas, reload } = useAsyncData(
-    async () => {
+    async ({ signal } = {}) => {
       try {
-        try {
-          const raw = await advisorService.entregas({ projetoId: projectId });
+          const raw = await advisorService.entregas({ projetoId: projectId }, { signal });
           const mapped = (Array.isArray(raw) ? raw : [])
             .map((item) => mapEntregaComProjeto(item, item?.projetoId ?? projetoId))
             .filter(Boolean);
-          setEntregasResolvidasKey(entregasRequestKey);
+          if (!signal?.aborted) setEntregasResolvidasKey(entregasRequestKey);
           return mapped;
-        } catch (err) {
-          if (!isMissingAggregateEndpoint(err)) {
-            throw err;
-          }
-        }
-
-        if (projectId) {
-          const raw = await deliveryService.list(projectId);
-          const mapped = (Array.isArray(raw) ? raw : [])
-            .map((item) => mapEntregaComProjeto(item, projectId))
-            .filter(Boolean);
-          setEntregasResolvidasKey(entregasRequestKey);
-          return mapped;
-        }
-
-        if (projectIds.length === 0) {
-          setEntregasResolvidasKey(entregasRequestKey);
-          return [];
-        }
-
-        const results = await Promise.all(
-          projectIds.map(async (id) => {
-            const raw = await deliveryService.list(id);
-            return (Array.isArray(raw) ? raw : [])
-              .map((item) => mapEntregaComProjeto(item, id))
-              .filter(Boolean);
-          }),
-        );
-        setEntregasResolvidasKey(entregasRequestKey);
-        return results.flat();
       } catch (err) {
-        setEntregasResolvidasKey(entregasRequestKey);
+        if (!signal?.aborted) setEntregasResolvidasKey(entregasRequestKey);
         throw err;
       }
     },
-    [projectId, projectIdsKey, podeCarregarEntregas, entregasRequestKey],
+    [projectId, podeCarregarEntregas, entregasRequestKey],
     { initialData: [], immediate: podeCarregarEntregas },
   );
   const listaEntregas = useMemo(() => (Array.isArray(entregas) ? entregas : []), [entregas]);

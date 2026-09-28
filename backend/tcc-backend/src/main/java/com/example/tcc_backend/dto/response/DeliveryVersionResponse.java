@@ -1,6 +1,5 @@
 package com.example.tcc_backend.dto.response;
 
-import com.example.tcc_backend.model.DeliveryReview;
 import com.example.tcc_backend.model.DeliveryVersion;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Data
 @Builder
@@ -24,7 +22,7 @@ public class DeliveryVersionResponse {
     private OffsetDateTime enviadaEm;
     private DeliveryReviewResponse revisao;
 
-    public static DeliveryVersionResponse fromEntity(DeliveryVersion versao, DeliveryReview revisao) {
+    public static DeliveryVersionResponse fromEntity(DeliveryVersion versao, DeliveryReviewResponse revisao) {
         return DeliveryVersionResponse.builder()
                 .id(versao.getId())
                 .numeroVersao(versao.getNumeroVersao())
@@ -32,15 +30,7 @@ public class DeliveryVersionResponse {
                 .contentType(versao.getContentType())
                 .tamanhoBytes(versao.getTamanhoBytes())
                 .enviadaEm(versao.getEnviadaEm())
-                .revisao(revisao != null ? DeliveryReviewResponse.fromEntity(revisao) : null)
+                .revisao(revisao)
                 .build();
-    }
-
-    public static DeliveryVersionResponse fromEntity(DeliveryVersion versao, List<DeliveryReview> revisoes) {
-        DeliveryReview revisao = revisoes == null ? null : revisoes.stream()
-                .filter(r -> r.getVersao() != null && r.getVersao().getId().equals(versao.getId()))
-                .findFirst()
-                .orElse(null);
-        return fromEntity(versao, revisao);
     }
 }

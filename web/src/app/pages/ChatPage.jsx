@@ -5,9 +5,8 @@ import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { conversationService } from "../services/conversationService";
 import { chatRealtimeService } from "../services/chatRealtimeService";
-import { projectService } from "../services/projectService";
 import { StatusView } from "../components/StatusView";
-import { getUserPhotoUrl, mapProject } from "../utils/adapters";
+import { getUserPhotoUrl } from "../utils/adapters";
 import "./ChatPage.css";
 import { useLocation, useNavigate } from "react-router";
 
@@ -112,10 +111,10 @@ function isConversationOpen(conversationId, selectedConversation, showMobileList
   return Number(conversationId) === selectedId && !mobileListVisible;
 }
 
-async function hydrateConversationPhotos(items, currentUser) {
+function hydrateConversationPhotos(items, currentUser) {
   const conversations = Array.isArray(items) ? items : [];
 
-  const hydrated = await Promise.all(conversations.map(async (conversation) => {
+  const hydrated = conversations.map((conversation) => {
     const explicitPhoto =
       conversation?.fotoPerfilUrl ||
       conversation?.fotoProjetoUrl ||
@@ -137,23 +136,9 @@ async function hydrateConversationPhotos(items, currentUser) {
       return conversation;
     }
 
-    try {
-      const project = mapProject(await projectService.getById(conversation.projetoId));
-      const fallbackPhoto =
-        project.coverUrl ||
-        getUserPhotoUrl(project.advisor) ||
-        getUserPhotoUrl(currentUser);
-
-      return fallbackPhoto
-        ? { ...conversation, fotoPerfilUrl: fallbackPhoto }
-        : conversation;
-    } catch {
-      const fallbackPhoto = getUserPhotoUrl(currentUser);
-      return fallbackPhoto
-        ? { ...conversation, fotoPerfilUrl: fallbackPhoto }
-        : conversation;
-    }
-  }));
+    const fallbackPhoto = getUserPhotoUrl(currentUser);
+    return fallbackPhoto ? { ...conversation, fotoPerfilUrl: fallbackPhoto } : conversation;
+  });
 
   return sortConversations(hydrated);
 }
@@ -404,6 +389,33 @@ export default function ChatPage() {
 
     return chatRealtimeService.subscribeToConversations(conversationIds, (event) => {
       setConversations((prev) => applyConversationRealtimeEvent(prev, event));
+
+      const eventConversationId = Number(event?.conversaId ?? event?.mensagem?.conversaId);
+      if (eventConversationId === Number(selectedConversationRef.current?.id)) {
+        if (event.tipo === "MENSAGEM_CRIADA" && event.mensagem) {
+          setMessages((prev) => {
+            if (prev.some((message) => Number(message.id) === Number(event.mensagem.id))) {
+              return prev;
+            }
+
+            const withoutTemp = prev.filter((message) => !(
+              message._temporaria &&
+              message.conteudo === event.mensagem.conteudo &&
+              Number(message.remetenteId) === Number(event.mensagem.remetenteId)
+            ));
+            return [...withoutTemp, event.mensagem];
+          });
+        } else if (event.tipo === "MENSAGEM_EDITADA" && event.mensagem) {
+          setMessages((prev) => prev.map((message) =>
+            Number(message.id) === Number(event.mensagem.id) ? event.mensagem : message,
+          ));
+        } else if (event.tipo === "MENSAGEM_EXCLUIDA") {
+          setMessages((prev) => prev.filter(
+            (message) => Number(message.id) !== Number(event.mensagemId),
+          ));
+        }
+      }
+
       if (!isIncomingMessage(event, user.id)) return;
 
       const conversationId = Number(event.mensagem.conversaId);
@@ -415,59 +427,6 @@ export default function ChatPage() {
       });
     });
   }, [conversationIdsKey, user?.id]);
-
-
-  useEffect(() => {
-    if (!selectedConversation?.id || !user?.id) return undefined;
-
-    const atualizarConversas = () => {
-      conversationService
-        .listByUser(user.id)
-        .then((res) => hydrateConversationPhotos(res, user))
-        .then(setConversations)
-        .catch(() => {});
-    };
-
-    return chatRealtimeService.subscribeToConversation(selectedConversation.id, (event) => {
-      if (Number(event?.conversaId) !== Number(selectedConversation.id)) return;
-
-      if (event.tipo === "MENSAGEM_CRIADA" && event.mensagem) {
-        setMessages((prev) => {
-          const exists = prev.some((message) => Number(message.id) === Number(event.mensagem.id));
-          if (exists) return prev;
-
-          const withoutTemp = prev.filter((message) => {
-            if (!message._temporaria) return true;
-            return !(
-              message.conteudo === event.mensagem.conteudo &&
-              Number(message.remetenteId) === Number(event.mensagem.remetenteId)
-            );
-          });
-
-          return [...withoutTemp, event.mensagem];
-        });
-        atualizarConversas();
-        return;
-      }
-
-      if (event.tipo === "MENSAGEM_EDITADA" && event.mensagem) {
-        setMessages((prev) =>
-          prev.map((message) =>
-            Number(message.id) === Number(event.mensagem.id) ? event.mensagem : message
-          )
-        );
-        atualizarConversas();
-        return;
-      }
-
-      if (event.tipo === "MENSAGEM_EXCLUIDA") {
-        setMessages((prev) =>
-          prev.filter((message) => Number(message.id) !== Number(event.mensagemId))
-        );
-        atualizarConversas();
-      }
-    });
-  }, [selectedConversation?.id, user?.id]);
 
   useEffect(() => {
     if (targetMessageId) {
@@ -509,13 +468,35 @@ export default function ChatPage() {
     setInput("");
 
     try {
-      await conversationService.sendMessage(selectedConversation.id, conteudo);
-      const [updated, conversasAtualizadas] = await Promise.all([
-        conversationService.listMessages(selectedConversation.id),
-        conversationService.listByUser(user.id),
-      ]);
-      setMessages(Array.isArray(updated) ? updated : []);
-      setConversations(await hydrateConversationPhotos(conversasAtualizadas, user));
+      const sentMessage = await conversationService.sendMessage(selectedConversation.id, conteudo);
+      if (sentMessage?.id != null) {
+        setMessages((prev) => {
+          const withoutTemp = prev.filter((message) => !(
+            message.id === temp.id ||
+            (message._temporaria && message.conteudo === conteudo && Number(message.remetenteId) === Number(user?.id))
+          ));
+          const existingIndex = withoutTemp.findIndex(
+            (message) => Number(message.id) === Number(sentMessage.id),
+          );
+          if (existingIndex >= 0) {
+            return withoutTemp.map((message, index) => index === existingIndex ? sentMessage : message);
+          }
+          return [...withoutTemp, sentMessage];
+        });
+        setConversations((prev) => sortConversations(prev.map((conversation) => (
+          Number(conversation.id) === Number(selectedConversation.id)
+            ? {
+                ...conversation,
+                ultimaMensagem: sentMessage.conteudo,
+                ultimaMensagemHorario: sentMessage.dataEnvio,
+                updatedAt: sentMessage.dataEnvio,
+              }
+            : conversation
+        ))));
+      } else {
+        const updated = await conversationService.listMessages(selectedConversation.id);
+        setMessages(Array.isArray(updated) ? updated : []);
+      }
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== temp.id));
       setInput(conteudo);

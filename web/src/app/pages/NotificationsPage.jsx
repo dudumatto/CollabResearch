@@ -11,9 +11,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
-import { useAsyncData } from "../hooks/useAsyncDataHook";
+import { useNotifications } from "../providers/NotificationsProvider";
 import { notificationService } from "../services/notificationService";
-import { mapNotification } from "../utils/adapters";
 import { formatNotificationType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import "./NotificationsPage.css";
@@ -25,14 +24,6 @@ const typeConfig = {
   PROGRESSO_REGISTRADO: { icon: AlertCircle, iconeAreaClass: "notificacao-item__icone-area--atencao", iconColor: "var(--cor-laranja)" },
   INSCRICAO_REJEITADA: { icon: XCircle, iconeAreaClass: "notificacao-item__icone-area--erro", iconColor: "var(--cor-erro)" },
 };
-
-const notificationUpdateEvents = ["notifications-updated", "notificationsUpdated"];
-
-function notifyNotificationsUpdated() {
-  notificationUpdateEvents.forEach((eventName) => {
-    window.dispatchEvent(new Event(eventName));
-  });
-}
 
 function readHiddenNotificationIds() {
   try {
@@ -134,15 +125,7 @@ function getChatTargetFromUrl(actionUrl) {
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
-  const { data, loading, error, setData, reload } = useAsyncData(
-    async () => {
-      const result = await notificationService.listMine();
-      return Array.isArray(result) ? result.map(mapNotification) : [];
-    },
-    [],
-    { initialData: [] },
-  );
-  const initialNotifications = Array.isArray(data) ? data : [];
+  const { notifications: initialNotifications, loading, error, setNotifications: setData } = useNotifications();
   const [filter, setFilter] = useState("all");
   const [hiddenIds, setHiddenIds] = useState(() => new Set(readHiddenNotificationIds()));
   const visibleNotifications = useMemo(
@@ -179,8 +162,6 @@ export default function NotificationsPage() {
     try {
       await notificationService.markAsRead(id);
       setData((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
-      notifyNotificationsUpdated();
-      await reload();
     } catch (err) {
       toast.error(err.message || "Não foi possível marcar como lida.");
     }
@@ -190,8 +171,6 @@ export default function NotificationsPage() {
     try {
       await notificationService.markAllAsRead();
       setData((prev) => prev.map((item) => ({ ...item, read: true })));
-      notifyNotificationsUpdated();
-      await reload();
     } catch (err) {
       toast.error(err.message || "Não foi possível marcar todas como lidas.");
     }
@@ -199,13 +178,11 @@ export default function NotificationsPage() {
 
   const removeLocally = (id) => {
     hideNotificationsLocally([id]);
-    notifyNotificationsUpdated();
   };
 
   const clearAll = () => {
     if (visibleNotifications.length === 0) return;
     hideNotificationsLocally(visibleNotifications.map((item) => item.id));
-    notifyNotificationsUpdated();
     toast.success("Vista local limpa.");
   };
 
@@ -222,7 +199,6 @@ export default function NotificationsPage() {
         );
       }
       hideNotificationsLocally([notification.id]);
-      notifyNotificationsUpdated();
     } catch (err) {
       toast.error(err.message || "Não foi possível visualizar a notificação.");
       return;

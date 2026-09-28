@@ -1,8 +1,8 @@
 import { api } from "./api";
 
 export const deliveryService = {
-  list(projectId) {
-    return api.get(`/api/projetos/${projectId}/entregas`);
+  list(projectId, options = {}) {
+    return api.get(`/api/projetos/${projectId}/entregas`, options);
   },
 
   create(projectId, { titulo, categoria, etapaId }, arquivo) {

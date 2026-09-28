@@ -55,10 +55,6 @@ class ChatRealtimeService {
       client.deactivate();
     };
   }
-
-  subscribeToConversation(conversationId, onEvent) {
-    return this.subscribeToConversations([conversationId], onEvent);
-  }
 }
 
 export const chatRealtimeService = new ChatRealtimeService();

@@ -1,13 +1,10 @@
 import { Bell, Menu, ChevronDown, LogOut } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../hooks/useAuth";
-import { useAsyncData } from "../hooks/useAsyncDataHook";
-import { notificationService } from "../services/notificationService";
+import { useNotifications } from "../providers/NotificationsProvider";
 import { formatUserType } from "../utils/formatters";
 import "./Topbar.css";
-import { mapNotification } from "../utils/adapters";
 
 function getInitials(name) {
   if (!name) return "IC";
@@ -24,18 +21,7 @@ export function Topbar({ onMenuClick, title, subtitle }) {
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { data, reload } = useAsyncData(
-    async () => {
-      const result = await notificationService.listMine();
-      return Array.isArray(result)
-        ? result.map(mapNotification)
-        : [];
-    },
-    [],
-    { initialData: [] }
-  );
-
-  const notifications = Array.isArray(data) ? data : [];
+  const { notifications } = useNotifications();
   const unreadCount = notifications.filter((item) => !item.read).length;
   const [avatarFailed, setAvatarFailed] = useState(false);
   const avatarUrl = user?.fotoPerfilUrl || user?.avatarUrl || "";
@@ -65,18 +51,6 @@ export function Topbar({ onMenuClick, title, subtitle }) {
     };
   }, []);
 
-  useEffect(() => {
-    const handleNotificationsUpdated = () => {
-      reload();
-    };
-
-    window.addEventListener("notifications-updated", handleNotificationsUpdated);
-
-    return () => {
-      window.removeEventListener("notifications-updated", handleNotificationsUpdated);
-    };
-  }, [reload]);
-
   const handleLogout = () => {
     setDropdownOpen(false);
     setLogoutConfirmOpen(true);
@@ -91,14 +65,12 @@ export function Topbar({ onMenuClick, title, subtitle }) {
     <>
       <header className="barra-topo">
         <div className="barra-topo__secao-esquerda">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
+          <button
             onClick={onMenuClick}
             className="barra-topo__botao-menu"
           >
             <Menu size={20} className="barra-topo__botao-menu-icone" />
-          </motion.button>
+          </button>
           <div className="barra-topo__area-titulo">
             <h1 className="barra-topo__titulo">{title}</h1>
             {subtitle && <p className="barra-topo__subtitulo">{subtitle}</p>}
@@ -106,9 +78,7 @@ export function Topbar({ onMenuClick, title, subtitle }) {
         </div>
 
         <div className="barra-topo__secao-direita">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
+          <button
             onClick={() => navigate("/app/notifications")}
             className="barra-topo__botao-notificacoes"
           >
@@ -116,12 +86,10 @@ export function Topbar({ onMenuClick, title, subtitle }) {
             {unreadCount > 0 && (
               <span className="barra-topo__contador-notificacoes">{unreadCount}</span>
             )}
-          </motion.button>
+          </button>
 
           <div className="barra-topo__area-perfil" ref={profileMenuRef}>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
+            <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="barra-topo__botao-perfil"
               aria-expanded={dropdownOpen}
@@ -140,17 +108,10 @@ export function Topbar({ onMenuClick, title, subtitle }) {
                 <p className="barra-topo__tipo-perfil">{formatUserType(user?.tipo)}</p>
               </div>
               <ChevronDown size={14} className="barra-topo__icone-dropdown" />
-            </motion.button>
+            </button>
 
-            <AnimatePresence>
-              {dropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="barra-topo__menu-dropdown"
-                >
+            {dropdownOpen && (
+                <div className="barra-topo__menu-dropdown barra-topo__menu-dropdown--entrando">
                   <button
                     onClick={() => { navigate("/app/profile"); setDropdownOpen(false); }}
                     className="barra-topo__item-menu"
@@ -170,36 +131,28 @@ export function Topbar({ onMenuClick, title, subtitle }) {
                   >
                     Sair
                   </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+            )}
           </div>
         </div>
       </header>
 
-      <AnimatePresence>
-        {logoutConfirmOpen && (
-          <motion.div
+      {logoutConfirmOpen && (
+          <div
             className="barra-topo__logout-overlay"
             role="presentation"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            data-entering="true"
             onClick={(event) => {
               if (event.target === event.currentTarget) setLogoutConfirmOpen(false);
             }}
           >
-            <motion.div
+            <div
               className="barra-topo__logout-modal"
               role="dialog"
               aria-modal="true"
               aria-labelledby="topbar-logout-title"
               aria-describedby="topbar-logout-description"
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.98 }}
-              transition={{ duration: 0.18 }}
+              data-entering="true"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="barra-topo__logout-icon" aria-hidden="true">
@@ -217,10 +170,9 @@ export function Topbar({ onMenuClick, title, subtitle }) {
                   Cancelar
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          </div>
+      )}
     </>
   );
 }

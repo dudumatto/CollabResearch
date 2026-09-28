@@ -49,6 +49,44 @@ class EtapaProgressoServiceTest {
     private EtapaProgressoService etapaProgressoService;
 
     @Test
+    void calendarioDoAlunoBuscaProjetosPropriosEInscricoesEmUmaConsultaAgregada() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));
+        EtapaProgresso etapa = TestDataFactory.etapaProgresso(1, projeto, null, 1, 10, EtapaProgressoStatus.ACTIVE);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findCalendarioByAlunoUsuarioId(1)).thenReturn(List.of(projeto));
+        when(etapaProgressoRepository.findAllForCalendarioByProjetoIds(List.of(10))).thenReturn(List.of(etapa));
+
+        var calendario = etapaProgressoService.listarPrazosEtapasDoUsuario();
+
+        assertThat(calendario).hasSize(1);
+        assertThat(calendario.get(0).getProjetoId()).isEqualTo(10);
+        assertThat(calendario.get(0).getProjetoTitulo()).isEqualTo(projeto.getTitulo());
+        assertThat(calendario.get(0).getId()).isEqualTo(1);
+        verify(projetoRepository).findCalendarioByAlunoUsuarioId(1);
+        verify(etapaProgressoRepository).findAllForCalendarioByProjetoIds(List.of(10));
+    }
+
+    @Test
+    void calendarioDoOrientadorBuscaProjetosEEtapasEmLoteESincronizaAtiva() {
+        Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(20, TestDataFactory.orientador(2, orientadorUsuario));
+        EtapaProgresso pendente = TestDataFactory.etapaProgresso(4, projeto, null, 1, 10, EtapaProgressoStatus.PENDING);
+
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+        when(projetoRepository.findCalendarioByOrientadorUsuarioId(2)).thenReturn(List.of(projeto));
+        when(etapaProgressoRepository.findAllForCalendarioByProjetoIds(List.of(20))).thenReturn(List.of(pendente));
+
+        var calendario = etapaProgressoService.listarPrazosEtapasDoUsuario();
+
+        assertThat(calendario).hasSize(1);
+        assertThat(calendario.get(0).getStatus()).isEqualTo(EtapaProgressoStatus.ACTIVE);
+        verify(etapaProgressoRepository).saveAll(any());
+        verify(etapaProgressoRepository).findAllForCalendarioByProjetoIds(List.of(20));
+    }
+
+    @Test
     void obterResumoDeveRetornarEtapasEAtualizacoes() {
         Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
         Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));

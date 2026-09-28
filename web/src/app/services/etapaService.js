@@ -1,8 +1,12 @@
 import { api } from "./api";
 
 export const etapaService = {
-  list(projectId) {
-    return api.get(`/api/projetos/${projectId}/etapas`);
+  listMine() {
+    return api.get("/api/me/prazos-etapas");
+  },
+
+  list(projectId, options = {}) {
+    return api.get(`/api/projetos/${projectId}/etapas`, options);
   },
 
   create(projectId, request) {

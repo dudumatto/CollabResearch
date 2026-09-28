@@ -44,7 +44,7 @@
   }
 }
 
-/* ---- Wrapper da página (motion.div) ---- */
+/* ---- Wrapper da página ---- */
 .pagina-app__pagina {
   width: 100%;
   max-width: none;
@@ -52,9 +52,21 @@
   overflow-x: hidden;
 }
 
+.pagina-app__pagina--transicao {
+  animation: app-page-enter 160ms ease-out both;
+}
+
+@keyframes app-page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pagina-app__principal {
     transition-duration: 1ms !important;
+  }
+  .pagina-app__pagina--transicao {
+    animation: none;
   }
 }
 .pagina-app__rota-carregando {

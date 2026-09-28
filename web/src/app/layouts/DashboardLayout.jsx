@@ -1,9 +1,9 @@
 import { createContext, Suspense, useContext, useState } from "react";
 import { Outlet, useLocation } from "react-router";
-import { AnimatePresence, motion } from "framer-motion";
 import { Sidebar } from "../components/Sidebar";
 import { Topbar } from "../components/Topbar";
 import { useAuth } from "../hooks/useAuth";
+import { NotificationsProvider } from "../providers/NotificationsProvider";
 import "./DashboardLayout.css";
 
 export const SidebarContext = createContext({ collapsed: false });
@@ -68,40 +68,36 @@ export function DashboardLayout() {
   };
 
   return (
-    <SidebarContext.Provider value={{ collapsed }}>
-      <div className="pagina-app">
-        <Sidebar
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-          mobileOpen={mobileOpen}
-          setMobileOpen={setMobileOpen}
-        />
-
-        <div className={`pagina-app__principal ${collapsed ? "pagina-app__principal--recolhida" : ""} ${isChatPage ? "pagina-app__principal--chat" : ""}`}>
-          <Topbar
-            onMenuClick={() => setMobileOpen(true)}
-            title={pageInfo.title}
-            subtitle={pageInfo.subtitle}
+    <NotificationsProvider>
+      <SidebarContext.Provider value={{ collapsed }}>
+        <div className="pagina-app">
+          <Sidebar
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+            mobileOpen={mobileOpen}
+            setMobileOpen={setMobileOpen}
           />
-          <main className={`pagina-app__conteudo ${isChatPage ? "pagina-app__conteudo--chat" : ""}`}>
-            <AnimatePresence mode="wait">
-              <motion.div
+
+          <div className={`pagina-app__principal ${collapsed ? "pagina-app__principal--recolhida" : ""} ${isChatPage ? "pagina-app__principal--chat" : ""}`}>
+            <Topbar
+              onMenuClick={() => setMobileOpen(true)}
+              title={pageInfo.title}
+              subtitle={pageInfo.subtitle}
+            />
+            <main className={`pagina-app__conteudo ${isChatPage ? "pagina-app__conteudo--chat" : ""}`}>
+              <div
                 key={location.pathname}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className={`pagina-app__pagina ${isChatPage ? "pagina-app__pagina--chat" : ""}`}
+                className={`pagina-app__pagina pagina-app__pagina--transicao ${isChatPage ? "pagina-app__pagina--chat" : ""}`}
               >
                 <Suspense fallback={<div className="pagina-app__rota-carregando" aria-label="Carregando página" />}>
                   <Outlet />
                 </Suspense>
-              </motion.div>
-            </AnimatePresence>
-          </main>
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
-    </SidebarContext.Provider>
+      </SidebarContext.Provider>
+    </NotificationsProvider>
   );
 }
 

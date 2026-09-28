@@ -107,6 +107,10 @@ async function request(path, options = {}) {
     return performRequest(url, options, headers);
   }
 
+  if (options.signal) {
+    return performRequest(url, options, headers);
+  }
+
   const cacheKey = getRequestCacheKey(url, headers);
   const cached = getRequestCache.get(cacheKey);
   if (cached?.promise) return cached.promise;
@@ -128,7 +132,7 @@ async function request(path, options = {}) {
 }
 
 export const api = {
-  get: (path) => request(path),
+  get: (path, options = {}) => request(path, options),
   post: (path, body, options = {}) =>
     request(path, {
       method: "POST",

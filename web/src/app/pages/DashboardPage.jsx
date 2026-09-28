@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import {
@@ -11,15 +11,14 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
+import { useNotifications } from "../providers/NotificationsProvider";
 import { projectService } from "../services/projectService";
 import { applicationService } from "../services/applicationService";
-import { notificationService } from "../services/notificationService";
 import { StatusView } from "../components/StatusView";
 import { WelcomeBanner } from "../components/WelcomeBanner";
 import {
   getProjectSlotsUsage,
   mapApplication,
-  mapNotification,
   mapProject,
 } from "../utils/adapters";
 import { formatApplicationStatus, formatProjectStatus } from "../utils/formatters";
@@ -126,12 +125,12 @@ const projectStatusClassMap = {
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { notifications } = useNotifications();
 
-  const { data, loading, error, reload, setData } = useAsyncData(async () => {
-    const [projects, applications, notifications] = await Promise.all([
+  const { data, loading, error } = useAsyncData(async () => {
+    const [projects, applications] = await Promise.all([
       projectService.list(),
       applicationService.listMine().catch(() => []),
-      notificationService.listMine().catch(() => []),
     ]);
 
     const mappedProjects = Array.isArray(projects) ? projects.map(mapProject) : [];
@@ -139,34 +138,12 @@ export default function DashboardPage() {
     return {
       projects: mappedProjects,
       applications: Array.isArray(applications) ? applications.map(mapApplication) : [],
-      notifications: Array.isArray(notifications) ? notifications.map(mapNotification) : [],
     };
-  }, [], { initialData: { projects: [], applications: [], notifications: [] } });
-
-  useEffect(() => {
-    const syncNotifications = () => {
-      notificationService.listMine()
-        .then((items) => {
-          setData((current) => ({
-            ...(current ?? { projects: [], applications: [] }),
-            notifications: Array.isArray(items) ? items.map(mapNotification) : [],
-          }));
-        })
-        .catch(() => reload());
-    };
-
-    window.addEventListener("notificationsUpdated", syncNotifications);
-    window.addEventListener("notifications-updated", syncNotifications);
-    return () => {
-      window.removeEventListener("notificationsUpdated", syncNotifications);
-      window.removeEventListener("notifications-updated", syncNotifications);
-    };
-  }, [reload, setData]);
+  }, [], { initialData: { projects: [], applications: [] } });
 
   const derived = useMemo(() => {
     const projects = data?.projects ?? [];
     const applications = data?.applications ?? [];
-    const notifications = data?.notifications ?? [];
 
     const activeProjects = user?.tipo === "ORIENTADOR"
       ? projects.filter((item) => Number(item.advisorId) === Number(user.id) && item.status !== "FINALIZADO").length
@@ -189,7 +166,7 @@ export default function DashboardPage() {
       activityPeak,
       totalActivity,
     };
-  }, [data, user?.id, user?.tipo]);
+  }, [data, notifications, user?.id, user?.tipo]);
 
   if (loading) return <DashboardSkeleton />;
 

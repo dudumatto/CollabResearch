@@ -370,6 +370,7 @@
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 40;
   backdrop-filter: blur(4px);
+  animation: sidebar-overlay-in 180ms ease-out both;
 }
 
 /* ---- Barra lateral mobile ---- */
@@ -388,6 +389,27 @@
   flex-direction: column;
   box-shadow: var(--sombra-extra);
   overflow: hidden;
+}
+
+.barra-lateral-mobile--entrando {
+  animation: sidebar-mobile-in 220ms ease-out both;
+}
+
+@keyframes sidebar-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sidebar-mobile-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sobreposicao-mobile,
+  .barra-lateral-mobile--entrando {
+    animation: none;
+  }
 }
 
 .barra-lateral--recolhida .barra-lateral__navegacao,

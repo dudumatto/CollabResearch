@@ -1118,6 +1118,18 @@
   height: 190px;
 }
 
+.progress-donut__ring {
+  position: absolute;
+  inset: 0;
+  width: 128px;
+  height: 128px;
+  margin: auto;
+  border-radius: 50%;
+  background: conic-gradient(#1f7a5a 0 var(--progress-percent), #e2e8f0 var(--progress-percent) 100%);
+  -webkit-mask: radial-gradient(circle, transparent 0 47px, #000 48px);
+  mask: radial-gradient(circle, transparent 0 47px, #000 48px);
+}
+
 .progress-donut__center {
   position: absolute;
   inset: 0;

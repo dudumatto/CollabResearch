@@ -29,6 +29,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.UUID;
 
 @Service
@@ -181,9 +183,7 @@ public class EntregaService {
         Projeto projeto = carregarProjeto(projetoId);
         projectAccessPolicy.requireCanViewDeliveries(projeto, usuarioLogado);
 
-        return projectDeliveryRepository.findByProjetoId(projetoId).stream()
-                .map(this::toResponse)
-                .toList();
+        return toResponses(projectDeliveryRepository.findWithRelationsByProjetoId(projetoId));
     }
 
     @Transactional(readOnly = true)
@@ -197,13 +197,14 @@ public class EntregaService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entrega nao encontrada"));
 
         List<DeliveryVersion> versoes = deliveryVersionRepository.findByEntregaIdOrderByNumeroVersaoAsc(entregaId);
-        List<DeliveryReview> revisoes = versoes.stream()
-                .map(v -> deliveryReviewRepository.findByVersaoId(v.getId()).orElse(null))
-                .filter(r -> r != null)
-                .toList();
+        List<Long> versaoIds = versoes.stream().map(DeliveryVersion::getId).toList();
+        Map<Long, DeliveryReviewResponse> revisoesPorVersao = versaoIds.isEmpty()
+                ? Map.of()
+                : deliveryReviewRepository.findResponsesByVersaoIdIn(versaoIds).stream()
+                        .collect(Collectors.toMap(DeliveryReviewResponse::getVersaoId, Function.identity()));
 
         return versoes.stream()
-                .map(v -> DeliveryVersionResponse.fromEntity(v, revisoes))
+                .map(v -> DeliveryVersionResponse.fromEntity(v, revisoesPorVersao.get(v.getId())))
                 .toList();
     }
 
@@ -332,6 +333,21 @@ public class EntregaService {
                 .orElse(null);
         Integer totalVersoes = deliveryVersionRepository.findByEntregaIdOrderByNumeroVersaoAsc(entrega.getId()).size();
         return EntregaResponse.fromEntity(entrega, ultimaVersaoId, totalVersoes);
+    }
+
+    private List<EntregaResponse> toResponses(List<ProjectDelivery> entregas) {
+        if (entregas.isEmpty()) return List.of();
+        List<Long> ids = entregas.stream().map(ProjectDelivery::getId).toList();
+        Map<Long, DeliveryVersionRepository.Summary> summaries = deliveryVersionRepository
+                .findSummariesByEntregaIds(ids).stream()
+                .collect(Collectors.toMap(DeliveryVersionRepository.Summary::getEntregaId, Function.identity()));
+
+        return entregas.stream().map(entrega -> {
+            DeliveryVersionRepository.Summary summary = summaries.get(entrega.getId());
+            Long latestVersionId = summary == null ? null : summary.getUltimaVersaoId();
+            Integer versionCount = summary == null ? 0 : Math.toIntExact(summary.getTotalVersoes());
+            return EntregaResponse.fromEntity(entrega, latestVersionId, versionCount);
+        }).toList();
     }
 
     private Projeto carregarProjeto(Integer projetoId) {

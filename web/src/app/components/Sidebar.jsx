@@ -1,6 +1,5 @@
+import { useCallback, useMemo } from "react";
 import { NavLink } from "react-router";
-import { useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   FolderOpen,
   LayoutDashboard,
@@ -17,9 +16,7 @@ import {
   CalendarClock,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useAsyncData } from "../hooks/useAsyncDataHook";
-import { notificationService } from "../services/notificationService";
-import { mapNotification } from "../utils/adapters";
+import { useNotifications } from "../providers/NotificationsProvider";
 import { features } from "../config/features";
 import "./Sidebar.css";
 
@@ -83,37 +80,20 @@ const advisorSections = [
 
 export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
   const { user } = useAuth();
-
-  const { data, reload } = useAsyncData(
-    async () => {
-      const result = await notificationService.listMine();
-      return Array.isArray(result) ? result.map(mapNotification) : [];
-    },
-    [],
-    { initialData: [] }
-  );
-
-  useEffect(() => {
-    const atualizar = () => reload();
-    window.addEventListener("notificationsUpdated", atualizar);
-    window.addEventListener("notifications-updated", atualizar);
-    return () => {
-      window.removeEventListener("notificationsUpdated", atualizar);
-      window.removeEventListener("notifications-updated", atualizar);
-    };
-  }, [reload]);
-
-  const notifications = Array.isArray(data) ? data : [];
+  const { notifications } = useNotifications();
   const unreadCount = notifications.filter((item) => !item.read).length;
   const isAdvisor = user?.tipo === "ORIENTADOR";
-  const activeSections = (isAdvisor ? advisorSections : studentSections)
-    .map((section) => ({
-      ...section,
-      items: section.items.filter((item) => !item.roles || item.roles.includes(user?.tipo)),
-    }))
-    .filter((section) => section.items.length > 0);
+  const activeSections = useMemo(
+    () => (isAdvisor ? advisorSections : studentSections)
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => !item.roles || item.roles.includes(user?.tipo)),
+      }))
+      .filter((section) => section.items.length > 0),
+    [isAdvisor, user?.tipo],
+  );
 
-  const SidebarContent = ({ forceExpanded = false } = {}) => {
+  const SidebarContent = useCallback(({ forceExpanded = false } = {}) => {
     const isCollapsed = forceExpanded ? false : collapsed;
 
     return (
@@ -216,16 +196,14 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
         </div>
       </div>
     );
-  };
+  }, [activeSections, collapsed, setMobileOpen, unreadCount]);
 
   return (
     <>
       <aside
         className={`barra-lateral ${collapsed ? "barra-lateral--recolhida" : ""}`}
       >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
+        <button
           onClick={() => setCollapsed(!collapsed)}
           className="barra-lateral__botao-recolher"
         >
@@ -235,39 +213,23 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
               collapsed ? "barra-lateral__icone-recolher--invertido" : ""
             }`}
           />
-        </motion.button>
+        </button>
         <SidebarContent />
       </aside>
 
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            key="mobile-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="sobreposicao-mobile"
-            style={{ display: "block" }}
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
-      </AnimatePresence>
+      {mobileOpen && (
+        <div
+          className="sobreposicao-mobile"
+          style={{ display: "block" }}
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.aside
-            key="mobile-sidebar"
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="barra-lateral-mobile"
-          >
-            <SidebarContent forceExpanded />
-          </motion.aside>
-        )}
-      </AnimatePresence>
+      {mobileOpen && (
+        <aside className="barra-lateral-mobile barra-lateral-mobile--entrando">
+          <SidebarContent forceExpanded />
+        </aside>
+      )}
     </>
   );
 }

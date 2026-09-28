@@ -34,6 +34,16 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Integer>, JpaS
     List<Projeto> findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(Integer orientadorUsuarioId, Integer alunoCriadorUsuarioId);
     Page<Projeto> findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(Integer orientadorUsuarioId, Integer alunoCriadorUsuarioId, Pageable pageable);
     List<Projeto> findByOrientadorUsuarioId(Integer usuarioId);
+    @Query("SELECT p FROM Projeto p WHERE p.orientador.usuario.id = :usuarioId")
+    List<Projeto> findCalendarioByOrientadorUsuarioId(@Param("usuarioId") Integer usuarioId);
+
+    @Query("""
+            SELECT DISTINCT p FROM Projeto p
+            LEFT JOIN Inscricao i ON i.projeto = p
+            WHERE p.alunoCriador.usuario.id = :usuarioId
+               OR (i.aluno.usuario.id = :usuarioId AND i.status = com.example.tcc_backend.model.StatusInscricao.APROVADO)
+            """)
+    List<Projeto> findCalendarioByAlunoUsuarioId(@Param("usuarioId") Integer usuarioId);
     @Query("""
     SELECT p FROM Projeto p
     WHERE p.orientador.usuario.id = :usuarioId

@@ -108,13 +108,13 @@ export default function ProjectsPage() {
   );
 
   const { data, loading, error } = useAsyncData(
-    async () => {
+    async ({ signal } = {}) => {
       const result = await projectService.listPaged({
         curso: selectedCourse === "Todos" ? "" : selectedCourse,
         area: selectedArea === "Todas" ? "" : selectedArea,
         status: selectedStatus === "Todos" ? "" : selectedStatus,
         busca: debouncedSearch,
-      });
+      }, { signal });
       return Array.isArray(result) ? result.map(mapProject) : [];
     },
     [selectedCourse, selectedArea, selectedStatus, debouncedSearch],

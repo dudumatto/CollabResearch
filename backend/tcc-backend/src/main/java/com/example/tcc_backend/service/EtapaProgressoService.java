@@ -5,6 +5,7 @@ import com.example.tcc_backend.dto.request.CreateProjectProgressUpdateRequest;
 import com.example.tcc_backend.dto.request.EtapaRequest;
 import com.example.tcc_backend.dto.response.AdvanceProgressStepResponse;
 import com.example.tcc_backend.dto.response.EtapaResponse;
+import com.example.tcc_backend.dto.response.EtapaCalendarioResponse;
 import com.example.tcc_backend.dto.response.ProjectProgressResponse;
 import com.example.tcc_backend.dto.response.ProjectProgressUpdateResponse;
 import com.example.tcc_backend.dto.response.ProgressStepResponse;
@@ -25,6 +26,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 
 @Service
@@ -113,6 +116,52 @@ public class EtapaProgressoService {
         sincronizarEtapasAtivas(etapas);
         return etapas.stream()
                 .map(EtapaResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public List<EtapaCalendarioResponse> listarPrazosEtapasDoUsuario() {
+        Usuario usuario = authHelper.getCurrentUser();
+        List<Projeto> projetos = switch (usuario.getTipo()) {
+            case ALUNO -> projetoRepository.findCalendarioByAlunoUsuarioId(usuario.getId());
+            case ORIENTADOR -> projetoRepository.findCalendarioByOrientadorUsuarioId(usuario.getId());
+            case ADMIN -> List.of();
+        };
+        if (projetos.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Integer, List<EtapaProgresso>> etapasPorProjeto = new LinkedHashMap<>();
+        projetos.forEach(projeto -> etapasPorProjeto.put(projeto.getId(), new ArrayList<>()));
+        List<Integer> projetoIds = new ArrayList<>(etapasPorProjeto.keySet());
+        List<EtapaProgresso> etapas = etapaProgressoRepository.findAllForCalendarioByProjetoIds(projetoIds);
+        for (EtapaProgresso etapa : etapas) {
+            etapasPorProjeto.get(etapa.getProjeto().getId()).add(etapa);
+        }
+
+        List<EtapaProgresso> novasEtapas = new ArrayList<>();
+        for (Projeto projeto : projetos) {
+            if (etapasPorProjeto.get(projeto.getId()).isEmpty()) {
+                List<EtapaProgresso> padrao = criarEtapasPadrao(projeto);
+                etapasPorProjeto.get(projeto.getId()).addAll(padrao);
+                novasEtapas.addAll(padrao);
+            }
+        }
+        if (!novasEtapas.isEmpty()) {
+            etapaProgressoRepository.saveAll(novasEtapas);
+        }
+
+        boolean precisaSalvar = false;
+        for (List<EtapaProgresso> etapasProjeto : etapasPorProjeto.values()) {
+            precisaSalvar |= sincronizarEtapasAtivasSemPersistir(etapasProjeto);
+        }
+        if (precisaSalvar) {
+            etapaProgressoRepository.saveAll(etapas);
+        }
+
+        return projetos.stream()
+                .flatMap(projeto -> etapasPorProjeto.get(projeto.getId()).stream())
+                .map(EtapaCalendarioResponse::fromEntity)
                 .toList();
     }
 
@@ -279,6 +328,10 @@ public class EtapaProgressoService {
             return;
         }
 
+        etapaProgressoRepository.saveAll(criarEtapasPadrao(projeto));
+    }
+
+    private List<EtapaProgresso> criarEtapasPadrao(Projeto projeto) {
         List<EtapaProgresso> etapas = new ArrayList<>();
         for (int index = 0; index < DEFAULT_STEPS.size(); index++) {
             DefaultStep def = DEFAULT_STEPS.get(index);
@@ -292,7 +345,7 @@ public class EtapaProgressoService {
                     .build());
         }
 
-        etapaProgressoRepository.saveAll(etapas);
+        return etapas;
     }
 
     private Projeto carregarProjeto(Integer projetoId) {
@@ -311,6 +364,12 @@ public class EtapaProgressoService {
     }
 
     private void sincronizarEtapasAtivas(List<EtapaProgresso> etapas) {
+        if (sincronizarEtapasAtivasSemPersistir(etapas)) {
+            etapaProgressoRepository.saveAll(etapas);
+        }
+    }
+
+    private boolean sincronizarEtapasAtivasSemPersistir(List<EtapaProgresso> etapas) {
         boolean precisaSalvar = false;
         boolean encontrouAtiva = false;
 
@@ -331,9 +390,7 @@ public class EtapaProgressoService {
             }
         }
 
-        if (precisaSalvar) {
-            etapaProgressoRepository.saveAll(etapas);
-        }
+        return precisaSalvar;
     }
 
     private Integer calcularPercentualGeral(List<EtapaProgresso> etapas) {

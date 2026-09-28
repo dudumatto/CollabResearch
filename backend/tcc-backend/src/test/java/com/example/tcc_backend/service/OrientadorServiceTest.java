@@ -143,20 +143,13 @@ class OrientadorServiceTest {
                 .criadaEm(OffsetDateTime.now().minusDays(2))
                 .atualizadaEm(OffsetDateTime.now().minusDays(1))
                 .build();
-        ProjectDelivery entregaAprovada = ProjectDelivery.builder()
-                .id(41L).projeto(projetoAndamento).autor(alunoUsuario).titulo("Artigo")
-                .categoria("artigo").status(EntregaStatus.APPROVED)
-                .criadaEm(OffsetDateTime.now().minusDays(4))
-                .atualizadaEm(OffsetDateTime.now().minusDays(3))
-                .build();
-        DeliveryVersion versao = DeliveryVersion.builder()
-                .id(50L).entrega(entregaAberta).numeroVersao(1).nomeArquivo("monografia.pdf")
-                .build();
-
-        when(projectDeliveryRepository.findByProjetoOrientadorUsuarioId(2))
-                .thenReturn(List.of(entregaAberta, entregaAprovada));
-        when(deliveryVersionRepository.findFirstByEntregaIdOrderByNumeroVersaoDesc(40L)).thenReturn(Optional.of(versao));
-        when(deliveryVersionRepository.findByEntregaIdOrderByNumeroVersaoAsc(40L)).thenReturn(List.of(versao));
+        when(projectDeliveryRepository.findAdvisorDeliveries(2, 10, EntregaStatus.PENDING_REVIEW))
+                .thenReturn(List.of(entregaAberta));
+        DeliveryVersionRepository.Summary summary = mock(DeliveryVersionRepository.Summary.class);
+        when(summary.getEntregaId()).thenReturn(40L);
+        when(summary.getUltimaVersaoId()).thenReturn(50L);
+        when(summary.getTotalVersoes()).thenReturn(1L);
+        when(deliveryVersionRepository.findSummariesByEntregaIds(List.of(40L))).thenReturn(List.of(summary));
 
         List<EntregaResponse> resposta = orientadorService.entregas("PENDING_REVIEW", 10);
 

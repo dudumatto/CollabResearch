@@ -36,14 +36,14 @@ export const projectService = {
     return api.get(`/api/projetos${buildQs(filters)}`);
   },
 
-  async listPaged(filters = {}) {
+  async listPaged(filters = {}, options = {}) {
     const payload = await api.get(`/api/projetos/pagina${buildQs({
       page: 0,
       size: 200,
       sort: "dataCriacao",
       direction: "DESC",
       ...filters,
-    })}`);
+    })}`, options);
     const content = Array.isArray(payload) ? payload : payload?.content ?? payload?.data ?? [];
     return Array.isArray(content) ? content : [];
   },

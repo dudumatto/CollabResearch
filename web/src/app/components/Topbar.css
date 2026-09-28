@@ -221,6 +221,15 @@
   z-index: 80;
 }
 
+.barra-topo__menu-dropdown--entrando {
+  animation: topbar-menu-in 140ms ease-out both;
+}
+
+@keyframes topbar-menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .barra-topo__item-menu {
   display: block;
   width: 100%;
@@ -262,6 +271,10 @@
   z-index: 200;
 }
 
+.barra-topo__logout-overlay[data-entering="true"] {
+  animation: topbar-overlay-in 150ms ease-out both;
+}
+
 .barra-topo__logout-modal {
   align-items: center;
   background: var(--cor-superficie);
@@ -275,6 +288,28 @@
   padding: var(--espaco-6) var(--espaco-5);
   text-align: center;
   width: min(100%, 22rem);
+}
+
+.barra-topo__logout-modal[data-entering="true"] {
+  animation: topbar-modal-in 180ms ease-out both;
+}
+
+@keyframes topbar-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes topbar-modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra-topo__menu-dropdown--entrando,
+  .barra-topo__logout-overlay[data-entering="true"],
+  .barra-topo__logout-modal[data-entering="true"] {
+    animation: none;
+  }
 }
 
 .barra-topo__logout-icon {

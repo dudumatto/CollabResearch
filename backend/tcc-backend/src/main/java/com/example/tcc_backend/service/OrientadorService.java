@@ -117,27 +117,40 @@ public class OrientadorService {
             }
         }
         EntregaStatus filtroStatus = statusEnum;
-        Integer filtroProjeto = projetoId;
+        List<ProjectDelivery> filtradas;
+        if (usuario.getTipo() == TipoUsuario.ORIENTADOR) {
+            filtradas = projectDeliveryRepository.findAdvisorDeliveries(usuario.getId(), projetoId, filtroStatus);
+        } else {
+            filtradas = entregasDoEscopo(usuario).stream()
+                    .filter(e -> filtroStatus == null || e.getStatus() == filtroStatus)
+                    .filter(e -> projetoId == null || e.getProjeto().getId().equals(projetoId))
+                    .toList();
+        }
 
-        return entregasDoEscopo(usuario).stream()
-                .filter(e -> filtroStatus == null || e.getStatus() == filtroStatus)
-                .filter(e -> filtroProjeto == null || e.getProjeto().getId().equals(filtroProjeto))
+        List<ProjectDelivery> ordenadas = filtradas.stream()
                 .sorted(Comparator.comparing(OrientadorService::entregaAtualizadaEm,
                         Comparator.nullsLast(Comparator.reverseOrder())))
-                .map(this::entregaResponse)
                 .toList();
+        return entregaResponses(ordenadas);
     }
 
     private static OffsetDateTime entregaAtualizadaEm(ProjectDelivery entrega) {
         return entrega.getAtualizadaEm() != null ? entrega.getAtualizadaEm() : entrega.getCriadaEm();
     }
 
-    private EntregaResponse entregaResponse(ProjectDelivery entrega) {
-        Long ultimaVersaoId = deliveryVersionRepository.findFirstByEntregaIdOrderByNumeroVersaoDesc(entrega.getId())
-                .map(DeliveryVersion::getId)
-                .orElse(null);
-        int totalVersoes = deliveryVersionRepository.findByEntregaIdOrderByNumeroVersaoAsc(entrega.getId()).size();
-        return EntregaResponse.fromEntity(entrega, ultimaVersaoId, totalVersoes);
+    private List<EntregaResponse> entregaResponses(List<ProjectDelivery> entregas) {
+        if (entregas.isEmpty()) return List.of();
+        List<Long> ids = entregas.stream().map(ProjectDelivery::getId).toList();
+        Map<Long, DeliveryVersionRepository.Summary> summaries = deliveryVersionRepository
+                .findSummariesByEntregaIds(ids).stream()
+                .collect(Collectors.toMap(DeliveryVersionRepository.Summary::getEntregaId, Function.identity()));
+
+        return entregas.stream().map(entrega -> {
+            DeliveryVersionRepository.Summary summary = summaries.get(entrega.getId());
+            Long latestVersionId = summary == null ? null : summary.getUltimaVersaoId();
+            Integer versionCount = summary == null ? 0 : Math.toIntExact(summary.getTotalVersoes());
+            return EntregaResponse.fromEntity(entrega, latestVersionId, versionCount);
+        }).toList();
     }
 
     @Transactional(readOnly = true)

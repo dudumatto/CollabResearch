@@ -22,8 +22,8 @@ export const advisorService = {
     return api.get(`/api/orientador/orientandos${buildQs({ busca, situacao, projetoId })}`);
   },
 
-  entregas({ status, projetoId } = {}) {
-    return api.get(`/api/orientador/entregas${buildQs({ status, projetoId })}`);
+  entregas({ status, projetoId } = {}, options = {}) {
+    return api.get(`/api/orientador/entregas${buildQs({ status, projetoId })}`, options);
   },
 
   detalheOrientando(studentId, projectId) {
@@ -40,7 +40,7 @@ export const advisorService = {
 
   // Projetos do escopo do orientador (fonte: findAllPaginado com meusProjetos=true).
   // Retorna a lista completa a partir do payload paginado (content).
-  async meusProjetos({ status, busca } = {}) {
+  async meusProjetos({ status, busca } = {}, options = {}) {
     const qs = new URLSearchParams({
       meusProjetos: "true",
       page: "0",
@@ -51,7 +51,7 @@ export const advisorService = {
     if (status) qs.set("status", status);
     if (busca) qs.set("busca", busca);
 
-    const payload = await api.get(`/api/projetos/pagina?${qs.toString()}`);
+    const payload = await api.get(`/api/projetos/pagina?${qs.toString()}`, options);
     const content = Array.isArray(payload) ? payload : payload?.content ?? payload?.data ?? [];
     return Array.isArray(content) ? content : [];
   },

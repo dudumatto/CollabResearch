@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarClock, ChevronLeft, ChevronRight, CircleAlert, ClipboardList } from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
-import { advisorService } from "../services/advisorService";
-import { userService } from "../services/userService";
 import { etapaService } from "../services/etapaService";
-import { applicationService } from "../services/applicationService";
-import { mapEtapa, mapProject } from "../utils/adapters";
+import { mapEtapa } from "../utils/adapters";
 import { formatEtapaResponsavel, formatEtapaStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
@@ -165,51 +161,7 @@ function DeadlineItem({ item, compact = false }) {
   );
 }
 
-async function loadProjectsForUser(user) {
-  if (!user?.id) return [];
-
-  if (user.tipo === "ORIENTADOR") {
-    const raw = await advisorService.meusProjetos();
-    return (Array.isArray(raw) ? raw : [])
-      .map(mapProject)
-      .filter((project) => project?.id);
-  }
-
-  const [ownedProjects, applications] = await Promise.all([
-    userService.getProjects(user.id).catch(() => []),
-    applicationService.listMine().catch(() => []),
-  ]);
-  const approvedApplicationProjects = (Array.isArray(applications) ? applications : [])
-    .filter((application) => application?.status === "APROVADO")
-    .map((application) => application?.projeto ?? application?.project)
-    .filter(Boolean);
-  const projectsById = new Map();
-
-  [...(Array.isArray(ownedProjects) ? ownedProjects : []), ...approvedApplicationProjects]
-    .map(mapProject)
-    .filter((project) => project?.id)
-    .forEach((project) => projectsById.set(Number(project.id), project));
-
-  return [...projectsById.values()];
-}
-
-async function loadProjectStages(project) {
-  if (!project?.id) return [];
-
-  const stages = await etapaService.list(project.id);
-  return (Array.isArray(stages) ? stages : [])
-    .map(mapEtapa)
-    .filter(Boolean)
-    .map((stage) => ({
-      ...stage,
-      status: String(stage.status ?? "PENDING").toUpperCase(),
-      projectId: project.id,
-      projectTitle: project.title,
-    }));
-}
-
 export default function StudentDeadlinesPage() {
-  const { user } = useAuth();
   const [tooltipPlacements, setTooltipPlacements] = useState({});
   const [hoverTooltipKey, setHoverTooltipKey] = useState(null);
   const [activeTooltipKey, setActiveTooltipKey] = useState(null);
@@ -220,14 +172,33 @@ export default function StudentDeadlinesPage() {
   });
 
   const { data, loading, error } = useAsyncData(async () => {
-    const projects = await loadProjectsForUser(user);
-    const collections = await Promise.allSettled(projects.map(loadProjectStages));
-    const deadlines = collections.flatMap((result) => (
-      result.status === "fulfilled" ? result.value : []
-    ));
+    const result = await etapaService.listMine();
+    const rawStages = Array.isArray(result) ? result : result?.content ?? result?.data ?? [];
+    const deadlines = rawStages
+      .map((rawStage) => {
+        const stage = mapEtapa(rawStage);
+        return stage
+          ? {
+              ...stage,
+              status: String(stage.status ?? "PENDING").toUpperCase(),
+              projectId: stage.projetoId,
+              projectTitle: rawStage?.projetoTitulo ?? rawStage?.tituloProjeto ?? "Projeto",
+            }
+          : null;
+      })
+      .filter(Boolean);
+    const projectsById = new Map();
+    deadlines.forEach((deadline) => {
+      if (deadline.projectId != null) {
+        projectsById.set(String(deadline.projectId), {
+          id: deadline.projectId,
+          title: deadline.projectTitle,
+        });
+      }
+    });
 
-    return { projects, deadlines };
-  }, [user?.id, user?.tipo], { initialData: { projects: [], deadlines: [] } });
+    return { projects: [...projectsById.values()], deadlines };
+  }, [], { initialData: { projects: [], deadlines: [] } });
 
   const projects = Array.isArray(data?.projects) ? data.projects : [];
   const allDeadlines = Array.isArray(data?.deadlines) ? data.deadlines : [];
