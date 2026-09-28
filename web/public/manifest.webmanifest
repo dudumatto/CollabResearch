@@ -1,0 +1,18 @@
+{
+  "name": "CollabResearch",
+  "short_name": "CollabResearch",
+  "description": "Plataforma de gerenciamento de iniciação científica",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f7a5a",
+  "icons": [
+    {
+      "src": "/brand/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

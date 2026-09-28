@@ -44,6 +44,8 @@ services:
         sync: false
       - key: SUPABASE_STORAGE_BUCKET
         value: documents
+      - key: SUPABASE_AVATARS_BUCKET
+        value: avatars
       - key: SUPABASE_PROJECT_DOCUMENTS_BUCKET
         value: project-deliveries
       - key: GOOGLE_CLIENT_ID

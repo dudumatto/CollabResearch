@@ -24,6 +24,16 @@ export const conversationService = {
   listMessages(conversationId) {
     return api.get(`/api/conversas/${conversationId}/mensagens`);
   },
+
+  listMessagesPage(conversationId, page = 0, size = 100) {
+    const query = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      sort: "dataEnvio",
+      direction: "DESC",
+    });
+    return api.get(`/api/conversas/${conversationId}/mensagens/pagina?${query}`);
+  },
   abrirOuCriarPorProjeto(projetoId) {
     return api.post(`/api/conversas/projeto/${projetoId}/abrir`);
   },

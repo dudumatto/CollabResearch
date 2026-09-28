@@ -11,6 +11,32 @@ const apiUrl = () => {
 
 const isOk = (status: number) => status >= 200 && status < 300
 
+type ApiErrorBody = {
+  message?: string
+  code?: string
+  errors?: Array<{ field?: string; message?: string }>
+}
+
+const parseApiErrorBody = (responseBody: string): ApiErrorBody | null => {
+  try {
+    const parsed: unknown = JSON.parse(responseBody)
+    if (!parsed || typeof parsed !== 'object') return null
+    const body = parsed as ApiErrorBody
+    return body
+  } catch {
+    return null
+  }
+}
+
+const formatApiError = (body: ApiErrorBody | null) => {
+  const validationMessages = body?.errors
+    ?.map((item) => item.field && item.message ? `${item.field}: ${item.message}` : item.message)
+    .filter((message): message is string => Boolean(message))
+  const detail = validationMessages?.join('; ')
+  if (body?.message && detail && body.message !== detail) return `${body.message}: ${detail}`
+  return detail || body?.message || 'Erro ao comunicar com o servidor.'
+}
+
 const send = async (path: string, options: RequestOptions = {}, responseType: ResponseType = 'text'): Promise<DesktopApiResponse> => {
   const { skipAuth, headers, ...init } = options
   const token = tokenStorage.getToken()
@@ -56,15 +82,8 @@ const request = async <T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   if (!isOk(response.status)) {
-    let body: { message?: string; code?: string } | null = null
-    if (typeof response.body === 'string') {
-      try {
-        body = JSON.parse(response.body) as { message?: string; code?: string }
-      } catch {
-        body = null
-      }
-    }
-    throw new ApiError(body?.message || 'Erro ao comunicar com o servidor.', response.status, body?.code)
+    const body = typeof response.body === 'string' ? parseApiErrorBody(response.body) : null
+    throw new ApiError(formatApiError(body), response.status, body?.code)
   }
 
   if (response.status === 204) return undefined as T

@@ -24,6 +24,9 @@ import jakarta.persistence.criteria.JoinType;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
@@ -100,6 +103,19 @@ public class ProjetoService {
 
     public int contarVagasOcupadas(Integer projetoId) {
         return Math.toIntExact(inscricaoRepository.countByProjetoIdAndStatus(projetoId, StatusInscricao.APROVADO));
+    }
+
+    /** Counts approved enrollments for a set of projects in one grouped query. */
+    @Transactional(readOnly = true)
+    public Map<Integer, Integer> contarVagasOcupadas(Collection<Integer> projetoIds) {
+        if (projetoIds == null || projetoIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Integer, Integer> contagens = new HashMap<>();
+        for (Object[] resultado : inscricaoRepository.contarPorProjetosEStatus(projetoIds, StatusInscricao.APROVADO)) {
+            contagens.put((Integer) resultado[0], Math.toIntExact((Long) resultado[1]));
+        }
+        return contagens;
     }
 
     public List<Projeto> findAll() {

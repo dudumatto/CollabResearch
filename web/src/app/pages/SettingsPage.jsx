@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -182,6 +183,7 @@ function resolveRegistration(profile, fallbackUser) {
 }
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const { collapsed } = useSidebarContext();
   const { user, logout, refreshUser } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -279,8 +281,9 @@ export default function SettingsPage() {
         novaSenha: form.senhaNova,
       });
       setForm((prev) => ({ ...prev, senhaAtual: "", senhaNova: "", confirmarSenha: "" }));
-      toast.success("Senha alterada com sucesso.");
-      setActivePanel(null);
+      toast.success("Senha alterada. Entre novamente com a nova senha.");
+      await logout();
+      navigate("/login", { replace: true });
     } catch (err) {
       toast.error(err.message || "N\u00e3o foi poss\u00edvel alterar a senha.");
     } finally {

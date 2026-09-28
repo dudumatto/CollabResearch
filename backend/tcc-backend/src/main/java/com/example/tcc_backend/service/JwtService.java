@@ -14,6 +14,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.MessageDigest;
 
 @Service
 public class JwtService {
@@ -64,6 +67,7 @@ public class JwtService {
                 .id(UUID.randomUUID().toString())
                 .subject(usuario.getEmail())
                 .claim("tipo", usuario.getTipo().name())
+                .claim("cv", credentialVersion(usuario.getSenha()))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(getSecretKey())
@@ -88,7 +92,24 @@ public class JwtService {
 
     public boolean isTokenValid(String token, Usuario usuario) {
         final String email = extractEmail(token);
-        return email.equals(usuario.getEmail()) && !isTokenExpired(token);
+        String credentialVersion = parseClaims(token).get("cv", String.class);
+        return email.equals(usuario.getEmail())
+                && !isTokenExpired(token)
+                && credentialVersion != null
+                && MessageDigest.isEqual(
+                        credentialVersion.getBytes(StandardCharsets.UTF_8),
+                        credentialVersion(usuario.getSenha()).getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String credentialVersion(String encodedPassword) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(getSecretKey().getEncoded(), "HmacSHA256"));
+            byte[] digest = mac.doFinal(encodedPassword.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        } catch (java.security.GeneralSecurityException ex) {
+            throw new IllegalStateException("Falha ao validar versao das credenciais", ex);
+        }
     }
 
     private boolean isTokenExpired(String token) {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowUp, Search, Pencil, Trash2, ArrowLeft, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
@@ -9,13 +9,14 @@ import { StatusView } from "../components/StatusView";
 import { getUserPhotoUrl } from "../utils/adapters";
 import "./ChatPage.css";
 import { useLocation, useNavigate } from "react-router";
+import { List, useDynamicRowHeight, useListRef } from "react-window";
 
 function getInitials(name) {
   if (!name) return "PR";
   return name.split(" ").slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
 }
 
-function ChatAvatar({ name, src, className }) {
+const ChatAvatar = memo(function ChatAvatar({ name, src, className }) {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -24,10 +25,39 @@ function ChatAvatar({ name, src, className }) {
 
   return (
     <div className={className}>
-      {src && !failed ? <img src={src} alt={`Foto de perfil de ${name}`} onError={() => setFailed(true)} /> : <span>{getInitials(name)}</span>}
+      {src && !failed ? <img src={src} alt={`Foto de perfil de ${name}`} loading="lazy" decoding="async" onError={() => setFailed(true)} /> : <span>{getInitials(name)}</span>}
     </div>
   );
-}
+});
+
+const ConversationItem = memo(function ConversationItem({ conversation, selected, unread, onSelect }) {
+  const conversationType = conversation.tipo === "PRIVADA" ? "privada" : "grupo";
+
+  return (
+    <motion.button
+      type="button"
+      onClick={() => onSelect(conversation)}
+      className={`conversa-item ${selected ? "conversa-item--selecionada" : ""} ${unread ? "conversa-item--nao-lida" : ""}`}
+    >
+      <ChatAvatar name={conversation?.titulo} src={conversation?.fotoPerfilUrl} className="conversa-item__avatar" />
+      <div className="conversa-item__info">
+        <div className="conversa-item__header">
+          <p className="conversa-item__nome">{conversation?.titulo ?? "Conversa"}</p>
+          <span className={`conversa-item__badge conversa-item__badge--${conversationType}`}>
+            {conversationType === "privada" ? "Direto" : "Grupo"}
+          </span>
+        </div>
+        <div className="conversa-item__rodape">
+          <p className="conversa-item__preview">{conversation?.ultimaMensagem ?? "Nenhuma mensagem ainda"}</p>
+          {conversation?.ultimaMensagemHorario && (
+            <span className="conversa-item__horario">{formatarHora(conversation.ultimaMensagemHorario)}</span>
+          )}
+          {unread && <span className="conversa-item__ping" aria-label="Nova mensagem" title="Nova mensagem" />}
+        </div>
+      </div>
+    </motion.button>
+  );
+});
 
 function getMessagePhotoUrl(message, currentUser, mine, conversation) {
   const senderPhoto =
@@ -178,6 +208,70 @@ function formatarDia(data) {
   });
 }
 
+const MessageRow = memo(function MessageRow({ message, showDate, highlighted, mine, loadingPrivate, user, conversation, onEdit, onDelete, onOpenProfile }) {
+  return (
+    <div className={highlighted ? "mensagem-alvo" : undefined}>
+      {showDate && <div className="chat-data-divider"><span>{formatarDia(message.dataEnvio)}</span></div>}
+      <div className={`mensagem-linha ${mine ? "mensagem-linha--usuario" : "mensagem-linha--contato"} ${message._temporaria ? "mensagem-linha--temporaria" : ""}`}>
+        {mine && !message._temporaria && <div className="mensagem-acoes">
+          <button type="button" className="mensagem-acoes__gatilho" aria-label="Ações da mensagem" title="Ações da mensagem"><MoreVertical size={18} /></button>
+          <div className="mensagem-acoes__menu" role="menu" aria-label="Ações da mensagem">
+            <button type="button" className="mensagem-acao-btn" onClick={() => onEdit(message)} title="Editar mensagem" aria-label="Editar mensagem" role="menuitem"><Pencil size={20} /></button>
+            <button type="button" className="mensagem-acao-btn mensagem-acao-btn--excluir" onClick={() => onDelete(message)} title="Excluir mensagem" aria-label="Excluir mensagem" role="menuitem"><Trash2 size={20} /></button>
+          </div>
+        </div>}
+        {!mine && <ChatAvatar name={message?.remetenteNome} src={getMessagePhotoUrl(message, user, mine, conversation)} className="mensagem-avatar" />}
+        <div className="bolha-mensagem">
+          {!mine && <button className={`mensagem-nome mensagem-nome--clicavel ${loadingPrivate ? "mensagem-nome--carregando" : ""}`} onClick={() => onOpenProfile(message?.remetenteId)} title={`Enviar mensagem para ${message?.remetenteNome}`} disabled={loadingPrivate}>{message?.remetenteNome}</button>}
+          <div className="mensagem-texto">{message?.conteudo}</div>
+          <div className="mensagem-rodape">{message?.editada && <span className="mensagem-editada">editada</span>}<div className="mensagem-hora">{formatarHora(message?.dataEnvio)}</div></div>
+        </div>
+        {mine && <ChatAvatar name={user?.nome} src={getMessagePhotoUrl(message, user, mine, conversation)} className="mensagem-avatar mensagem-avatar--usuario" />}
+      </div>
+    </div>
+  );
+});
+
+const VirtualMessageRow = memo(function VirtualMessageRow({
+  ariaAttributes, index, style, messages, firstMessageIndex, allMessages,
+  targetMessageId, user, conversation, loadingPrivateId,
+  onEdit, onDelete, onOpenProfile, messageRefs,
+}) {
+  const message = messages[index];
+  if (!message) return null;
+  const absoluteIndex = firstMessageIndex + index;
+  const mine = Number(message?.remetenteId) === Number(user?.id);
+  const previousMessage = absoluteIndex > 0 ? allMessages[absoluteIndex - 1] : null;
+  const showDate = !previousMessage || new Date(message.dataEnvio).toDateString() !== new Date(previousMessage.dataEnvio).toDateString();
+  const messageId = String(message?.id ?? absoluteIndex);
+
+  return (
+    <div
+      {...ariaAttributes}
+      style={{ ...style, paddingBottom: 10, boxSizing: "border-box" }}
+      data-message-id={messageId}
+      ref={(node) => {
+        if (message?.id == null) return;
+        if (node) messageRefs.current[messageId] = node;
+        else delete messageRefs.current[messageId];
+      }}
+    >
+      <MessageRow
+        message={message}
+        showDate={showDate}
+        highlighted={String(message?.id) === String(targetMessageId)}
+        mine={mine}
+        loadingPrivate={loadingPrivateId === message?.remetenteId}
+        user={user}
+        conversation={conversation}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onOpenProfile={onOpenProfile}
+      />
+    </div>
+  );
+});
+
 function ChatPageSkeleton() {
   return (
     <div className="pagina-chat" aria-busy="true">
@@ -258,8 +352,15 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const messageListRef = useListRef();
+  const pendingScrollAnchorRef = useRef(null);
+  const preserveScrollOnNextRenderRef = useRef(false);
+  const targetScrollHandledRef = useRef(false);
   const enviandoRef = useRef(false);
+  const loadingOlderMessagesRef = useRef(false);
+  const messagesRequestIdRef = useRef(0);
+  const loadedConversationIdRef = useRef(null);
   const messageRefs = useRef({});
   const selectedConversationRef = useRef(null);
   const showMobileListRef = useRef(true);
@@ -268,6 +369,9 @@ export default function ChatPage() {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [unreadConversationIds, setUnreadConversationIds] = useState(() => new Set());
   const [messages, setMessages] = useState([]);
+  const [messagePage, setMessagePage] = useState(0);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [showMobileList, setShowMobileList] = useState(true);
@@ -277,10 +381,10 @@ export default function ChatPage() {
   const [abrindoPrivada, setAbrindoPrivada] = useState(null);
   const [targetMessageId, setTargetMessageId] = useState(null);
 
-  const abrirPerfil = (usuarioId) => {
+  const abrirPerfil = useCallback((usuarioId) => {
     if (!usuarioId) return;
     navigate(`/app/users/${usuarioId}`);
-  };
+  }, [navigate]);
 
   // Modal de edição
   const [modalEdicao, setModalEdicao] = useState(null); // { id, conteudo }
@@ -368,14 +472,39 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!selectedConversation?.id) return;
+    const conversationId = selectedConversation.id;
+    const conversationChanged = Number(loadedConversationIdRef.current) !== Number(conversationId);
+    if (!conversationChanged && !targetMessageId) return;
+    loadedConversationIdRef.current = conversationId;
+    const requestId = ++messagesRequestIdRef.current;
+    let cancelled = false;
+    pendingScrollAnchorRef.current = null;
+    preserveScrollOnNextRenderRef.current = false;
+    loadingOlderMessagesRef.current = false;
+    setLoadingOlderMessages(false);
     setMessages([]);
+    setMessagePage(0);
+    setHasMoreMessages(false);
     setLoadingMessages(true);
-    conversationService
-      .listMessages(selectedConversation.id)
-      .then((res) => setMessages(Array.isArray(res) ? res : []))
-      .catch(() => setMessages([]))
-      .finally(() => setLoadingMessages(false));
-  }, [selectedConversation?.id]);
+    const initialMessages = targetMessageId
+      ? conversationService.listMessages(conversationId).then((result) => ({ content: result, last: true }))
+      : conversationService.listMessagesPage(conversationId);
+    initialMessages
+      .then((page) => {
+        if (cancelled || requestId !== messagesRequestIdRef.current) return;
+        const content = Array.isArray(page?.content) ? page.content : [];
+        setMessages(targetMessageId ? content : [...content].reverse());
+        setMessagePage(Number(page?.page ?? 0));
+        setHasMoreMessages(!targetMessageId && !page?.last && content.length > 0);
+      })
+      .catch(() => {
+        if (!cancelled && requestId === messagesRequestIdRef.current) setMessages([]);
+      })
+      .finally(() => {
+        if (!cancelled && requestId === messagesRequestIdRef.current) setLoadingMessages(false);
+      });
+    return () => { cancelled = true; };
+  }, [selectedConversation?.id, targetMessageId]);
 
   const conversationIdsKey = useMemo(
     () => conversations.map((conversation) => conversation.id).filter(Boolean).sort((a, b) => Number(a) - Number(b)).join(","),
@@ -429,21 +558,133 @@ export default function ChatPage() {
   }, [conversationIdsKey, user?.id]);
 
   useEffect(() => {
+    targetScrollHandledRef.current = false;
+  }, [targetMessageId]);
+
+  useEffect(() => {
     if (targetMessageId) {
       const targetNode = messageRefs.current[String(targetMessageId)];
-      if (targetNode) {
+      if (targetNode && !targetScrollHandledRef.current) {
         targetNode.scrollIntoView({ behavior: "smooth", block: "center" });
+        targetScrollHandledRef.current = true;
+        return;
+      }
+      const targetIndex = visibleMessages.findIndex((message) => String(message?.id) === String(targetMessageId));
+      if (targetIndex >= 0 && !targetScrollHandledRef.current) {
+        messageListRef.current?.scrollToRow({ index: targetIndex, align: "center" });
+        requestAnimationFrame(() => {
+          const node = messageRefs.current[String(targetMessageId)];
+          node?.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (node) targetScrollHandledRef.current = true;
+        });
         return;
       }
     }
 
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, targetMessageId]);
+    if (preserveScrollOnNextRenderRef.current) {
+      preserveScrollOnNextRenderRef.current = false;
+      return;
+    }
+
+    if (visibleMessages.length > 0) {
+      messageListRef.current?.scrollToRow({
+        index: visibleMessages.length - 1,
+        align: "end",
+        behavior: "smooth",
+      });
+    }
+  }, [visibleMessages, targetMessageId, loadingMessages]);
 
   const filtered = useMemo(() =>
     conversations.filter((c) =>
       (c?.titulo ?? "").toLowerCase().includes(search.toLowerCase())
     ), [conversations, search]);
+
+  const firstVisibleMessageIndex = useMemo(() => {
+    if (!targetMessageId) return 0;
+    const targetIndex = messages.findIndex((message) => String(message?.id) === String(targetMessageId));
+    if (targetIndex < 0) return 0;
+    return Math.max(0, Math.min(targetIndex - 30, messages.length - 100));
+  }, [messages, targetMessageId]);
+  const visibleMessages = useMemo(
+    () => targetMessageId
+      ? messages.slice(firstVisibleMessageIndex, firstVisibleMessageIndex + 100)
+      : messages,
+    [messages, firstVisibleMessageIndex, targetMessageId],
+  );
+  const messageRowHeight = useDynamicRowHeight({
+    defaultRowHeight: 84,
+    key: `${selectedConversation?.id ?? "none"}:${firstVisibleMessageIndex}`,
+  });
+
+  useLayoutEffect(() => {
+    messagesContainerRef.current = messageListRef.current?.element ?? null;
+  });
+
+  const loadOlderMessages = async () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const containerTop = container.getBoundingClientRect().top;
+    const firstVisibleRow = [...container.querySelectorAll("[data-message-id]")]
+      .find((row) => row.getBoundingClientRect().bottom > containerTop);
+    pendingScrollAnchorRef.current = firstVisibleRow ? {
+      messageId: firstVisibleRow.dataset.messageId,
+      offsetTop: firstVisibleRow.getBoundingClientRect().top - containerTop,
+    } : null;
+    preserveScrollOnNextRenderRef.current = true;
+    if (targetMessageId && firstVisibleMessageIndex > 0) {
+      setTargetMessageId(null);
+      return;
+    }
+    if (!hasMoreMessages || loadingOlderMessagesRef.current) {
+      preserveScrollOnNextRenderRef.current = false;
+      return;
+    }
+
+    loadingOlderMessagesRef.current = true;
+    setLoadingOlderMessages(true);
+    const requestId = messagesRequestIdRef.current;
+    const conversationId = selectedConversation.id;
+    try {
+      const page = await conversationService.listMessagesPage(conversationId, messagePage + 1);
+      if (requestId !== messagesRequestIdRef.current
+          || Number(selectedConversationRef.current?.id) !== Number(conversationId)) return;
+      const olderMessages = Array.isArray(page?.content) ? [...page.content].reverse() : [];
+      setMessages((current) => {
+        const currentIds = new Set(current.map((message) => String(message?.id)));
+        return [...olderMessages.filter((message) => !currentIds.has(String(message?.id))), ...current];
+      });
+      setMessagePage(Number(page?.page ?? messagePage + 1));
+      setHasMoreMessages(!page?.last && olderMessages.length > 0);
+    } catch {
+      if (requestId !== messagesRequestIdRef.current) return;
+      pendingScrollAnchorRef.current = null;
+      preserveScrollOnNextRenderRef.current = false;
+      toast.error("Não foi possível carregar mensagens anteriores.");
+    } finally {
+      if (requestId === messagesRequestIdRef.current) {
+        loadingOlderMessagesRef.current = false;
+        setLoadingOlderMessages(false);
+      }
+    }
+  };
+
+  useLayoutEffect(() => {
+    const anchor = pendingScrollAnchorRef.current;
+    const container = messagesContainerRef.current;
+    if (!anchor || !container) return;
+    const rowIndex = visibleMessages.findIndex((message) => String(message?.id) === anchor.messageId);
+    if (rowIndex < 0) return;
+    messageListRef.current?.scrollToRow({ index: rowIndex, align: "start" });
+    requestAnimationFrame(() => {
+      const row = messageRefs.current[anchor.messageId];
+      const scrollElement = messageListRef.current?.element;
+      if (!row || !scrollElement) return;
+      const actualOffset = row.getBoundingClientRect().top - scrollElement.getBoundingClientRect().top;
+      scrollElement.scrollTop += actualOffset - anchor.offsetTop;
+    });
+    pendingScrollAnchorRef.current = null;
+  }, [firstVisibleMessageIndex, visibleMessages]);
 
   const sendMessage = async () => {
     if (!input.trim() || !selectedConversation?.id) return;
@@ -494,8 +735,11 @@ export default function ChatPage() {
             : conversation
         ))));
       } else {
-        const updated = await conversationService.listMessages(selectedConversation.id);
-        setMessages(Array.isArray(updated) ? updated : []);
+        const page = await conversationService.listMessagesPage(selectedConversation.id);
+        const latest = Array.isArray(page?.content) ? [...page.content].reverse() : [];
+        setMessages(latest);
+        setMessagePage(Number(page?.page ?? 0));
+        setHasMoreMessages(!page?.last && latest.length > 0);
       }
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== temp.id));
@@ -513,11 +757,18 @@ export default function ChatPage() {
     }
   };
 
+  const handleConversationSelect = useCallback((conversation) => {
+    setTargetMessageId(null);
+    setSelectedConversation(conversation);
+    markConversationAsRead(conversation.id);
+    setShowMobileList(false);
+  }, [markConversationAsRead]);
+
   // Edição via modal
-  const abrirModalEdicao = (m) => {
+  const abrirModalEdicao = useCallback((m) => {
     setModalEdicao(m);
     setEditandoTexto(m.conteudo);
-  };
+  }, []);
 
   const fecharModalEdicao = () => {
     setModalEdicao(null);
@@ -536,9 +787,9 @@ export default function ChatPage() {
   };
 
   // Exclusão via modal de confirmação
-  const abrirModalExclusao = (m) => {
+  const abrirModalExclusao = useCallback((m) => {
     setModalExclusao(m);
-  };
+  }, []);
 
   const fecharModalExclusao = () => {
     setModalExclusao(null);
@@ -574,6 +825,23 @@ export default function ChatPage() {
     }
   };
 
+  const messageRowProps = useMemo(() => ({
+    messages: visibleMessages,
+    allMessages: messages,
+    firstMessageIndex: firstVisibleMessageIndex,
+    targetMessageId,
+    user,
+    conversation: selectedConversation,
+    loadingPrivateId: abrindoPrivada,
+    onEdit: abrirModalEdicao,
+    onDelete: abrirModalExclusao,
+    onOpenProfile: abrirPerfil,
+    messageRefs,
+  }), [visibleMessages, messages, firstVisibleMessageIndex, targetMessageId, user, selectedConversation, abrindoPrivada, abrirModalEdicao, abrirModalExclusao, abrirPerfil]);
+  const messageRowKey = useCallback((index, data) => (
+    String(data.messages[index]?.id ?? data.firstMessageIndex + index)
+  ), []);
+
   if (loading) return <ChatPageSkeleton />;
   if (error) return <StatusView title="Erro" description="Falha ao carregar" />;
 
@@ -596,31 +864,14 @@ export default function ChatPage() {
         </div>
 
         <div className="pagina-chat__rolagem-conversas">
-          {filtered.map((c) => (
-            <motion.button
-              key={c.id}
-              onClick={() => { setSelectedConversation(c); markConversationAsRead(c.id); setShowMobileList(false); }}
-              className={`conversa-item ${selectedConversation?.id === c.id ? "conversa-item--selecionada" : ""} ${unreadConversationIds.has(Number(c.id)) ? "conversa-item--nao-lida" : ""}`}
-            >
-              <ChatAvatar name={c?.titulo} src={c?.fotoPerfilUrl} className="conversa-item__avatar" />
-              <div className="conversa-item__info">
-                <div className="conversa-item__header">
-                  <p className="conversa-item__nome">{c?.titulo ?? "Conversa"}</p>
-                  <span className={`conversa-item__badge ${c.tipo === "PRIVADA" ? "conversa-item__badge--privada" : "conversa-item__badge--grupo"}`}>
-                    {c.tipo === "PRIVADA" ? "Direto" : "Grupo"}
-                  </span>
-                </div>
-                <div className="conversa-item__rodape">
-                  <p className="conversa-item__preview">{c?.ultimaMensagem ?? "Nenhuma mensagem ainda"}</p>
-                  {c?.ultimaMensagemHorario && (
-                    <span className="conversa-item__horario">{formatarHora(c.ultimaMensagemHorario)}</span>
-                  )}
-                  {unreadConversationIds.has(Number(c.id)) && (
-                    <span className="conversa-item__ping" aria-label="Nova mensagem" title="Nova mensagem" />
-                  )}
-                </div>
-              </div>
-            </motion.button>
+          {filtered.map((conversation) => (
+            <ConversationItem
+              key={conversation.id}
+              conversation={conversation}
+              selected={selectedConversation?.id === conversation.id}
+              unread={unreadConversationIds.has(Number(conversation.id))}
+              onSelect={handleConversationSelect}
+            />
           ))}
         </div>
       </div>
@@ -649,123 +900,29 @@ export default function ChatPage() {
                 <MessageSkeletonRows />
               ) : (
                 <>
-                  {messages.map((m, i) => {
-                    const mine = Number(m?.remetenteId) === Number(user?.id);
-                    const carregando = abrindoPrivada === m?.remetenteId;
-
-                    const dataAtual = new Date(m.dataEnvio).toDateString();
-                    const dataAnterior =
-                      i > 0
-                        ? new Date(messages[i - 1].dataEnvio).toDateString()
-                        : null;
-
-                    const mostrarData = dataAtual !== dataAnterior;
-
-                    return (
-                      <div
-                        key={m.id ?? i}
-                        ref={(node) => {
-                          if (m?.id == null) return;
-                          const key = String(m.id);
-                          if (node) {
-                            messageRefs.current[key] = node;
-                          } else {
-                            delete messageRefs.current[key];
-                          }
-                        }}
-                        className={String(m?.id) === String(targetMessageId) ? "mensagem-alvo" : undefined}
-                      >
-
-                        {mostrarData && (
-                          <div className="chat-data-divider">
-                            <span>{formatarDia(m.dataEnvio)}</span>
-                          </div>
-                        )}
-
-                        <div
-                          className={`mensagem-linha ${
-                            mine ? "mensagem-linha--usuario" : "mensagem-linha--contato"
-                          } ${m._temporaria ? "mensagem-linha--temporaria" : ""}`}
-                        >
-                          {mine && !m._temporaria && (
-                            <div className="mensagem-acoes">
-                              <button
-                                type="button"
-                                className="mensagem-acoes__gatilho"
-                                aria-label="Ações da mensagem"
-                                title="Ações da mensagem"
-                              >
-                                <MoreVertical size={18} />
-                              </button>
-                              <div className="mensagem-acoes__menu" role="menu" aria-label="Ações da mensagem">
-                                <button
-                                  type="button"
-                                  className="mensagem-acao-btn"
-                                  onClick={() => abrirModalEdicao(m)}
-                                  title="Editar mensagem"
-                                  aria-label="Editar mensagem"
-                                  role="menuitem"
-                                >
-                                  <Pencil size={20} />
-                                </button>
-                                <button
-                                  type="button"
-                                  className="mensagem-acao-btn mensagem-acao-btn--excluir"
-                                  onClick={() => abrirModalExclusao(m)}
-                                  title="Excluir mensagem"
-                                  aria-label="Excluir mensagem"
-                                  role="menuitem"
-                                >
-                                  <Trash2 size={20} />
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
-                          {!mine && (
-                            <ChatAvatar
-                              name={m?.remetenteNome}
-                              src={getMessagePhotoUrl(m, user, mine, selectedConversation)}
-                              className="mensagem-avatar"
-                            />
-                          )}
-
-                          <div className="bolha-mensagem">
-                            {!mine && (
-                              <button
-                                className={`mensagem-nome mensagem-nome--clicavel ${
-                                  carregando ? "mensagem-nome--carregando" : ""
-                                }`}
-                                onClick={() => abrirPerfil(m?.remetenteId)}
-                                title={`Enviar mensagem para ${m?.remetenteNome}`}
-                                disabled={carregando}
-                              >
-                                {m?.remetenteNome}
-                              </button>
-                            )}
-                            <div className="mensagem-texto">{m?.conteudo}</div>
-                            <div className="mensagem-rodape">
-                              {m?.editada && (
-                                <span className="mensagem-editada">editada</span>
-                              )}
-                              <div className="mensagem-hora">
-                                {formatarHora(m?.dataEnvio)}
-                              </div>
-                            </div>
-                          </div>
-
-                          {mine && (
-                            <ChatAvatar
-                              name={user?.nome}
-                              src={getMessagePhotoUrl(m, user, mine, selectedConversation)}
-                              className="mensagem-avatar mensagem-avatar--usuario"
-                            />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
+                  {(firstVisibleMessageIndex > 0 || hasMoreMessages) && (
+                    <button
+                      type="button"
+                      className="pagina-chat__carregar-anteriores"
+                      onClick={loadOlderMessages}
+                      disabled={loadingOlderMessages}
+                      aria-label="Carregar mensagens anteriores"
+                    >
+                      {loadingOlderMessages ? "Carregando mensagens..." : "Carregar mensagens anteriores"}
+                    </button>
+                  )}
+                  <List
+                    className="pagina-chat__lista-virtualizada"
+                    listRef={messageListRef}
+                    rowComponent={VirtualMessageRow}
+                    rowCount={visibleMessages.length}
+                    rowHeight={messageRowHeight}
+                    rowProps={messageRowProps}
+                    rowKey={messageRowKey}
+                    overscanCount={8}
+                    defaultHeight={480}
+                    style={{ flex: 1, minHeight: 0, width: "100%" }}
+                  />
                 </>
               )}
             </div>

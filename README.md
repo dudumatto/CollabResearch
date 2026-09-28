@@ -2,7 +2,7 @@
 
 # CollabResearch
 
-**Plataforma digital para inscrição, gerenciamento e acompanhamento de projetos de Iniciação Científica — conectando alunos, orientadores e instituições em um único ambiente integrado.**
+**Plataforma para organizar projetos acadêmicos e de TCC, da publicação e inscrição ao acompanhamento das etapas e da comunicação entre alunos e orientadores.**
 
 <p>
   <img alt="Java" src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white">
@@ -16,10 +16,9 @@
   <img alt="Status" src="https://img.shields.io/badge/status-em%20desenvolvimento-yellow?style=for-the-badge">
   <img alt="Versão" src="https://img.shields.io/badge/vers%C3%A3o-0.1.0-blue?style=for-the-badge">
   <img alt="Licença" src="https://img.shields.io/badge/licen%C3%A7a-MIT-green?style=for-the-badge">
-  <img alt="Cobertura de Testes" src="https://img.shields.io/badge/cobertura%20de%20testes-%3E80%25-brightgreen?style=for-the-badge">
 </p>
 
-Monorepo com API Spring Boot, interface web React, aplicativo Flutter e painel desktop Electron.
+Monorepo com API Spring Boot, interface web React, aplicativo Flutter e painel desktop Electron. Alunos encontram projetos e acompanham inscrições e prazos; orientadores publicam oportunidades e acompanham participantes; administradores gerenciam cadastros e configurações institucionais.
 
 </div>
 

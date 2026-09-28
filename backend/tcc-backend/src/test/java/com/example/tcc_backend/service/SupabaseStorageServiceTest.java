@@ -175,6 +175,30 @@ class SupabaseStorageServiceTest {
         assertThat(displayUrl).isEqualTo(publicUrl);
     }
 
+    @Test
+    void deleteUserDocumentDeveRemoverObjetoDoBucketConfigurado() throws Exception {
+        HttpClient httpClient = mock(HttpClient.class);
+        HttpResponse<String> response = mock(HttpResponse.class);
+        when(response.statusCode()).thenReturn(204);
+        when(httpClient.send(any(HttpRequest.class), anyStringBodyHandler())).thenReturn(response);
+        SupabaseStorageService service = new SupabaseStorageService(
+                httpClient,
+                "https://example.supabase.co",
+                "service-role-key",
+                "project-deliveries",
+                "documents",
+                new ObjectMapper()
+        );
+
+        service.deleteUserDocument("https://example.supabase.co/storage/v1/object/public/documents/usuarios/1/meu%20arquivo.pdf");
+
+        org.mockito.ArgumentCaptor<HttpRequest> captor = org.mockito.ArgumentCaptor.forClass(HttpRequest.class);
+        org.mockito.Mockito.verify(httpClient).send(captor.capture(), anyStringBodyHandler());
+        assertThat(captor.getValue().method()).isEqualTo("DELETE");
+        assertThat(captor.getValue().uri().getPath())
+                .isEqualTo("/storage/v1/object/documents/usuarios/1/meu%20arquivo.pdf");
+    }
+
     @SuppressWarnings("unchecked")
     private static HttpResponse.BodyHandler<String> anyStringBodyHandler() {
         return (HttpResponse.BodyHandler<String>) any(HttpResponse.BodyHandler.class);

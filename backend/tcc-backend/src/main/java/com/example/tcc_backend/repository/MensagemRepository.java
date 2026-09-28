@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface MensagemRepository extends JpaRepository<Mensagem, Integer> {
     List<Mensagem> findByConversaIdOrderByDataEnvioAsc(Integer conversaId);
-    Page<Mensagem> findByConversaIdOrderByDataEnvioAsc(Integer conversaId, Pageable pageable);
+    Page<Mensagem> findByConversaId(Integer conversaId, Pageable pageable);
 }

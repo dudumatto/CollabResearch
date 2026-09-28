@@ -64,6 +64,18 @@ export default defineConfig(({ mode }) => {
     build: {
       // Current bundle is ~970 kB; increase the warning limit to avoid false-positive noise in CI/local builds.
       chunkSizeWarningLimit: 1200,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return undefined
+            if (id.includes('/node_modules/react/') || id.includes('/node_modules/react-dom/') || id.includes('/node_modules/scheduler/')) return 'react-vendor'
+            if (id.includes('/node_modules/@ant-design/') || id.includes('/node_modules/antd/') || id.includes('/node_modules/@rc-component/')) return 'antd-vendor'
+            if (id.includes('/node_modules/@radix-ui/')) return 'radix-vendor'
+            if (id.includes('/node_modules/lucide-react/')) return 'icons'
+            if (id.includes('/node_modules/framer-motion/') || id.includes('/node_modules/motion/')) return 'motion'
+          },
+        },
+      },
     },
   }
 })

@@ -105,6 +105,48 @@ const AdvisorProfilePage = lazyRoute(() => import("./pages/AdvisorProfilePage"))
 const StudentEvaluationsPage = lazyRoute(() => import("./pages/StudentEvaluationsPage"));
 const StudentDeadlinesPage = lazyRoute(() => import("./pages/StudentDeadlinesPage"));
 
+const routePreloaders = {
+  "/app": {
+    ALUNO: [() => import("./pages/DashboardPage")],
+    ORIENTADOR: [() => import("./pages/AdvisorDashboardPage")],
+  },
+  "/app/projects": {
+    ALUNO: [() => import("./pages/ProjectsPage")],
+    ORIENTADOR: [() => import("./pages/AdvisorProjectsPage")],
+  },
+  "/app/applications": {
+    ALUNO: [() => import("./pages/ApplicationsPage")],
+    ORIENTADOR: [() => import("./pages/AdvisorApplicationsPage")],
+  },
+  "/app/progress": {
+    ALUNO: [() => import("./pages/ProgressPage")],
+    ORIENTADOR: [() => import("./pages/AdvisorProgressPage")],
+  },
+  "/app/avaliacoes": {
+    ALUNO: [() => import("./pages/StudentEvaluationsPage")],
+    ORIENTADOR: [() => import("./pages/AdvisorEvaluationsPage")],
+  },
+  "/app/deadlines": { ALUNO: [() => import("./pages/StudentDeadlinesPage")] },
+  "/app/chat": [() => import("./pages/ChatPage")],
+  "/app/notifications": [() => import("./pages/NotificationsPage")],
+  "/app/profile": {
+    ALUNO: [() => import("./pages/ProfilePage")],
+    ORIENTADOR: [() => import("./pages/AdvisorProfilePage")],
+  },
+  "/app/advisees": { ORIENTADOR: [() => import("./pages/AdvisorAdviseesPage")] },
+  "/app/deliveries": { ORIENTADOR: [() => import("./pages/AdvisorDeliveriesPage")] },
+  "/app/configuracoes": [() => import("./pages/SettingsPage")],
+};
+const preloadedRoutes = new Set();
+
+export function prefetchRoute(path, role) {
+  const route = routePreloaders[path];
+  const preloaders = Array.isArray(route) ? route : route?.[role];
+  if (!preloaders || preloadedRoutes.has(path)) return;
+  preloadedRoutes.add(path);
+  preloaders.forEach((preload) => preload().catch(() => preloadedRoutes.delete(path)));
+}
+
 function useIsAdvisor() {
   const { user } = useAuth();
   return user?.tipo === "ORIENTADOR";

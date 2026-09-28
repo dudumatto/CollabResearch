@@ -45,7 +45,7 @@ class DocumentoServiceTest {
     private DocumentoService documentoService;
 
     @Test
-    void uploadDeveSalvarDocumentoValido() throws Exception {
+    void uploadDeveSalvarDocumentoValidoNoStoragePrivado() throws Exception {
         Usuario usuario = TestDataFactory.usuarioAluno(1);
         when(authHelper.getCurrentUser()).thenReturn(usuario);
         MockMultipartFile arquivo = new MockMultipartFile(
@@ -58,6 +58,8 @@ class DocumentoServiceTest {
         // 1. MUDANÇA AQUI: Nós não usamos mais o authHelper nesse método.
         // Agora o Service busca o usuário pelo ID, então precisamos simular o banco:
         when(usuarioRepository.findById(1)).thenReturn(java.util.Optional.of(usuario));
+        when(supabaseStorageService.uploadUserDocument(any(), any(), any(), any(), any(Boolean.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0) + "/" + invocation.getArgument(1));
 
         when(documentoRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -65,7 +67,7 @@ class DocumentoServiceTest {
         Documento documento = documentoService.upload(1, TipoDocumento.CURRICULO, arquivo);
 
         Path caminho = Path.of(documento.getCaminho());
-        assertThat(Files.exists(caminho)).isTrue();
+        assertThat(documento.getCaminho()).startsWith("usuarios/1/documentos/");
         assertThat(caminho.getFileName().toString()).endsWith(".pdf");
 
         // BÔNUS: Já que adicionamos a coluna nova, vamos garantir que ela está sendo preenchida!
@@ -73,7 +75,6 @@ class DocumentoServiceTest {
 
         verify(documentoRepository).save(any());
 
-        limparArquivoCriado(caminho);
     }
 
     @Test
@@ -82,6 +83,7 @@ class DocumentoServiceTest {
         String url = "https://qqusyyzkroensiazmslf.supabase.co/storage/v1/object/public/documents/usuarios/1/curriculo.pdf";
 
         when(authHelper.getCurrentUser()).thenReturn(usuario);
+        when(supabaseStorageService.isUserDocumentReferenceForOwner(url, 1)).thenReturn(true);
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
         when(documentoRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -124,6 +126,18 @@ class DocumentoServiceTest {
                 .isInstanceOf(ResponseStatusException.class)
                 .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void uploadComCaminhoDeOutroUsuarioDeveSerNegado() {
+        Usuario usuario = TestDataFactory.usuarioAluno(1);
+        when(authHelper.getCurrentUser()).thenReturn(usuario);
+        when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
+
+        assertThatThrownBy(() -> documentoService.upload(1, TipoDocumento.CURRICULO, "curriculo.pdf", "usuarios/2/curriculo/arquivo.pdf"))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -189,13 +203,14 @@ class DocumentoServiceTest {
     }
 
     @Test
-    void listarPorUsuarioDevePermitirUsuarioAutenticadoAcessarCurriculoDeAluno() {
+    void listarPorUsuarioDeveNegarAcessoAosDocumentosDeOutroUsuario() {
         when(authHelper.getCurrentUser()).thenReturn(TestDataFactory.usuarioAluno(1));
-        when(documentoRepository.findByUsuarioIdAndTipo(2, TipoDocumento.CURRICULO)).thenReturn(java.util.List.of());
 
-        assertThat(documentoService.listarPorUsuario(2)).isEmpty();
-
-        verify(documentoRepository).findByUsuarioIdAndTipo(2, TipoDocumento.CURRICULO);
+        assertThatThrownBy(() -> documentoService.listarPorUsuario(2))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        verify(documentoRepository, org.mockito.Mockito.never()).findByUsuarioIdAndTipo(any(), any());
     }
 
     @Test
@@ -218,6 +233,19 @@ class DocumentoServiceTest {
         when(documentoRepository.findById(5)).thenReturn(Optional.of(documento));
 
         assertThatThrownBy(() -> documentoService.remover(5))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void obterDocumentoDeOutroUsuarioDeveNegarInclusiveCurriculo() {
+        Usuario dono = TestDataFactory.usuarioAluno(2);
+        Documento documento = TestDataFactory.documento(5, dono, "uploads/documentos/2/doc.pdf");
+        when(authHelper.getCurrentUser()).thenReturn(TestDataFactory.usuarioAluno(1));
+        when(documentoRepository.findById(5)).thenReturn(Optional.of(documento));
+
+        assertThatThrownBy(() -> documentoService.obterDocumento(5))
                 .isInstanceOf(ResponseStatusException.class)
                 .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
                 .isEqualTo(HttpStatus.FORBIDDEN);

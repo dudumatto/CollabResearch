@@ -203,7 +203,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void changePassword(ChangePasswordRequest dto) {
+    public void changePassword(ChangePasswordRequest dto, String authorizationHeader) {
         Usuario usuario = authHelper.getCurrentUser();
 
         if (!passwordEncoder.matches(dto.getSenhaAtual(), usuario.getSenha())) {
@@ -212,6 +212,10 @@ public class AuthService {
 
         usuario.setSenha(passwordEncoder.encode(dto.getNovaSenha()));
         usuarioRepository.save(usuario);
+        String token = extractBearerToken(authorizationHeader);
+        if (token != null) {
+            tokenRevocationService.revoke(token);
+        }
         SecurityContextHolder.clearContext();
     }
 

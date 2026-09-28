@@ -5,8 +5,10 @@ import com.example.tcc_backend.model.StatusProjeto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,6 +19,14 @@ import jakarta.persistence.LockModeType;
 
 @Repository
 public interface ProjetoRepository extends JpaRepository<Projeto, Integer>, JpaSpecificationExecutor<Projeto> {
+    @Override
+    @EntityGraph(attributePaths = {"area.curso", "orientador.usuario", "alunoCriador.usuario"})
+    List<Projeto> findAll(Specification<Projeto> spec);
+
+    @Override
+    @EntityGraph(attributePaths = {"area.curso", "orientador.usuario", "alunoCriador.usuario"})
+    Page<Projeto> findAll(Specification<Projeto> spec, Pageable pageable);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Projeto p WHERE p.id = :id")
     Optional<Projeto> findByIdForUpdate(@Param("id") Integer id);

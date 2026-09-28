@@ -1,54 +1,5 @@
 import { useState } from "react";
-import { getStoredToken } from "../app/utils/storage";
 import { useUploadDocumento } from "../hooks/useUploadDocumento";
-
-function buildBackendUrl(path) {
-  const baseUrl = (
-    import.meta.env.DEV
-      ? ""
-      : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "https://tcc-backend-jqod.onrender.com"
-  ).replace(/\/$/, "");
-
-  if (!baseUrl && !import.meta.env.DEV) {
-    throw new Error("Backend não configurado. Defina VITE_API_URL ou VITE_BACKEND_URL.");
-  }
-
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  if (baseUrl.endsWith("/api") && normalizedPath.startsWith("/api/")) {
-    return `${baseUrl}${normalizedPath.slice(4)}`;
-  }
-
-  return `${baseUrl}${normalizedPath}`;
-}
-
-async function saveDocumentoMetadata({ usuarioId, tipo, storagePath, fileName }) {
-  const token = getStoredToken();
-  const headers = new Headers({
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  });
-
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-
-  const response = await fetch(buildBackendUrl("/api/documentos/upload"), {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      usuarioId,
-      tipo: tipo?.toUpperCase(),
-      nomeArquivo: fileName,
-      url: storagePath,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Falha ao salvar informações no servidor.");
-  }
-
-  return response;
-}
 
 function UploadDocumento({ candidatoId, usuarioId, tipo }) {
   const { upload, uploading, erro, progresso } = useUploadDocumento();
@@ -68,16 +19,7 @@ function UploadDocumento({ candidatoId, usuarioId, tipo }) {
         throw new Error("Usuário não informado para vincular o documento.");
       }
 
-      const result = await upload(file, `usuarios/${ownerId}/${tipo?.toLowerCase() || "documento"}`);
-
-      if (!result?.path) return;
-
-      await saveDocumentoMetadata({
-        usuarioId: ownerId,
-        tipo,
-        storagePath: result.path,
-        fileName: file.name,
-      });
+      await upload(file, { usuarioId: ownerId, tipo });
 
       setSuccess(true);
       event.target.value = "";

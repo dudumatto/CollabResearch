@@ -455,6 +455,8 @@
   min-height: 17rem;
   min-width: 0;
   transition: var(--transicao-normal);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 17rem;
 }
 
 @media (min-width: 768px) {
@@ -696,5 +698,23 @@
 }
 
 .projeto-card:hover .projeto-card__seta-acesso {
+  color: var(--cor-primaria);
+}
+
+.pagina-projetos__botao-carregar-mais {
+  align-self: center;
+  margin: var(--espaco-4) auto 0;
+  padding: 0.7rem 1.1rem;
+  border: 1px solid var(--cor-borda-media);
+  border-radius: var(--raio-medio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font: inherit;
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.pagina-projetos__botao-carregar-mais:hover {
+  border-color: var(--cor-primaria);
   color: var(--cor-primaria);
 }

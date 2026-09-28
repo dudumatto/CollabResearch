@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../providers/NotificationsProvider";
 import { formatUserType } from "../utils/formatters";
+import { prefetchRoute } from "../routes";
 import "./Topbar.css";
 
 function getInitials(name) {
@@ -80,6 +81,8 @@ export function Topbar({ onMenuClick, title, subtitle }) {
         <div className="barra-topo__secao-direita">
           <button
             onClick={() => navigate("/app/notifications")}
+            onMouseEnter={() => prefetchRoute("/app/notifications")}
+            onFocus={() => prefetchRoute("/app/notifications")}
             className="barra-topo__botao-notificacoes"
           >
             <Bell size={18} className="barra-topo__icone-notificacoes" />
@@ -98,7 +101,7 @@ export function Topbar({ onMenuClick, title, subtitle }) {
             >
               <div className="barra-topo__avatar">
                 {avatarUrl && !avatarFailed ? (
-                  <img src={avatarUrl} alt="Foto de perfil" onError={() => setAvatarFailed(true)} />
+                  <img src={avatarUrl} alt="Foto de perfil" loading="lazy" decoding="async" onError={() => setAvatarFailed(true)} />
                 ) : (
                   <span className="barra-topo__iniciais-avatar">{getInitials(user?.nome)}</span>
                 )}
@@ -114,12 +117,16 @@ export function Topbar({ onMenuClick, title, subtitle }) {
                 <div className="barra-topo__menu-dropdown barra-topo__menu-dropdown--entrando">
                   <button
                     onClick={() => { navigate("/app/profile"); setDropdownOpen(false); }}
+            onMouseEnter={() => prefetchRoute("/app/profile", user?.tipo)}
+            onFocus={() => prefetchRoute("/app/profile", user?.tipo)}
                     className="barra-topo__item-menu"
                   >
                     Meu Perfil
                   </button>
                   <button
                     onClick={() => { navigate("/app/configuracoes"); setDropdownOpen(false); }}
+                    onMouseEnter={() => prefetchRoute("/app/configuracoes")}
+                    onFocus={() => prefetchRoute("/app/configuracoes")}
                     className="barra-topo__item-menu"
                   >
                     Configurações

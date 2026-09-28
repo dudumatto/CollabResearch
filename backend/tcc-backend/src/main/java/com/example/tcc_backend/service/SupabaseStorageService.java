@@ -29,15 +29,17 @@ public class SupabaseStorageService {
     private final String supabaseServiceRoleKey;
     private final String projectDocumentsBucket;
     private final String userDocumentsBucket;
+    private final String avatarsBucket;
 
     @Autowired
     public SupabaseStorageService(@Value("${SUPABASE_URL:}") String supabaseUrl,
                                   @Value("${SUPABASE_SERVICE_ROLE_KEY:}") String supabaseServiceRoleKey,
                                   @Value("${SUPABASE_PROJECT_DOCUMENTS_BUCKET:project-deliveries}") String projectDocumentsBucket,
                                   @Value("${SUPABASE_STORAGE_BUCKET:documents}") String userDocumentsBucket,
+                                  @Value("${SUPABASE_AVATARS_BUCKET:avatars}") String avatarsBucket,
                                   ObjectMapper objectMapper) {
         this(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build(),
-                supabaseUrl, supabaseServiceRoleKey, projectDocumentsBucket, userDocumentsBucket, objectMapper);
+                supabaseUrl, supabaseServiceRoleKey, projectDocumentsBucket, userDocumentsBucket, avatarsBucket, objectMapper);
     }
 
     SupabaseStorageService(HttpClient httpClient,
@@ -46,16 +48,28 @@ public class SupabaseStorageService {
                            String projectDocumentsBucket,
                            String userDocumentsBucket,
                            ObjectMapper objectMapper) {
+        this(httpClient, supabaseUrl, supabaseServiceRoleKey, projectDocumentsBucket, userDocumentsBucket, "avatars", objectMapper);
+    }
+
+    SupabaseStorageService(HttpClient httpClient,
+                           String supabaseUrl,
+                           String supabaseServiceRoleKey,
+                           String projectDocumentsBucket,
+                           String userDocumentsBucket,
+                           String avatarsBucket,
+                           ObjectMapper objectMapper) {
         this.httpClient = httpClient;
         this.supabaseUrl = supabaseUrl;
         this.supabaseServiceRoleKey = supabaseServiceRoleKey;
         this.projectDocumentsBucket = projectDocumentsBucket;
         this.userDocumentsBucket = userDocumentsBucket;
+        this.avatarsBucket = avatarsBucket;
         this.objectMapper = objectMapper;
     }
 
     public boolean isConfigured() {
-        return !isBlank(supabaseUrl) && !isBlank(supabaseServiceRoleKey) && !isBlank(projectDocumentsBucket) && !isBlank(userDocumentsBucket);
+        return !isBlank(supabaseUrl) && !isBlank(supabaseServiceRoleKey)
+                && !isBlank(projectDocumentsBucket) && !isBlank(userDocumentsBucket) && !isBlank(avatarsBucket);
     }
 
     public String upload(String pastaRelativa, String nomeArquivo, byte[] conteudo, String contentType) {
@@ -72,12 +86,25 @@ public class SupabaseStorageService {
         return uploadToBucket(userDocumentsBucket, pastaRelativa, nomeArquivo, conteudo, contentType, upsert);
     }
 
+    public String uploadUserAvatar(String pastaRelativa, String nomeArquivo, byte[] conteudo, String contentType, boolean upsert) {
+        if (!isConfigured()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Armazenamento de avatares nao configurado");
+        }
+        return uploadToBucket(avatarsBucket, pastaRelativa, nomeArquivo, conteudo, contentType, upsert);
+    }
+
     public String createPublicUserDocumentUrl(String caminho) {
         if (!isConfigured() || isBlank(caminho)) {
             return null;
         }
         String cleanPath = caminho.replaceAll("^/+", "");
         return normalizedUrl() + "/storage/v1/object/public/" + URLEncoder.encode(userDocumentsBucket, StandardCharsets.UTF_8) + "/" + cleanPath;
+    }
+
+    public String createPublicAvatarUrl(String caminho) {
+        if (!isConfigured() || isBlank(caminho)) return null;
+        String cleanPath = caminho.replaceAll("^/+", "");
+        return normalizedUrl() + "/storage/v1/object/public/" + URLEncoder.encode(avatarsBucket, StandardCharsets.UTF_8) + "/" + cleanPath;
     }
 
     private String uploadToBucket(String bucket, String pastaRelativa, String nomeArquivo, byte[] conteudo, String contentType, boolean upsert) {
@@ -129,7 +156,13 @@ public class SupabaseStorageService {
             return documentReference;
         }
         String signedUrl = createSignedUserDocumentUrl(documentReference);
-        return !isBlank(signedUrl) ? signedUrl : documentReference;
+        if (!isBlank(signedUrl)) return signedUrl;
+        StorageObjectRef ref = parseUserDocumentReference(documentReference);
+        if (ref != null && ref.bucket().equals(avatarsBucket)) {
+            return createPublicAvatarUrl(ref.path());
+        }
+        if (ref != null && ref.bucket().equals(userDocumentsBucket)) return null;
+        return documentReference;
     }
 
     public boolean isUserDocumentReference(String documentReference) {
@@ -137,8 +170,44 @@ public class SupabaseStorageService {
         return ref != null && ref.bucket().equals(userDocumentsBucket);
     }
 
+    public boolean isUserDocumentReferenceForOwner(String documentReference, Integer usuarioId) {
+        StorageObjectRef ref = parseUserDocumentReference(documentReference);
+        return usuarioId != null && ref != null && ref.bucket().equals(userDocumentsBucket)
+                && ref.path().startsWith("usuarios/" + usuarioId + "/");
+    }
+
     public boolean isUserDocumentPublicUrl(String publicUrl) {
         return isUserDocumentReference(publicUrl);
+    }
+
+    public void deleteUserDocument(String documentReference) {
+        StorageObjectRef ref = parseUserDocumentReference(documentReference);
+        if (ref == null || !ref.bucket().equals(userDocumentsBucket) || !isConfigured()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Arquivo remoto nao identificado ou armazenamento nao configurado");
+        }
+
+        String encodedPath = java.util.Arrays.stream(ref.path().split("/"))
+                .map(segment -> URLEncoder.encode(segment, StandardCharsets.UTF_8).replace("+", "%20"))
+                .collect(java.util.stream.Collectors.joining("/"));
+        String endpoint = "/storage/v1/object/" + URLEncoder.encode(ref.bucket(), StandardCharsets.UTF_8) + "/" + encodedPath;
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(normalizedUrl() + endpoint))
+                    .timeout(Duration.ofSeconds(30))
+                    .header("apikey", supabaseServiceRoleKey)
+                    .header("Authorization", "Bearer " + supabaseServiceRoleKey)
+                    .DELETE()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if ((response.statusCode() < 200 || response.statusCode() >= 300) && response.statusCode() != 404) {
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Falha ao remover arquivo do armazenamento");
+            }
+        } catch (IOException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Falha ao remover arquivo do armazenamento");
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Remocao do arquivo foi interrompida");
+        }
     }
 
     private String createSignedUrl(String bucket, String caminho) {

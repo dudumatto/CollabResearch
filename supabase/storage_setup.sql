@@ -1,10 +1,9 @@
 -- CollabResearch Supabase Storage bootstrap.
 -- Run this in the Supabase SQL editor for the target project.
 --
--- The current web upload flow uses the public anon key directly for the
--- `documents` bucket. Keep that bucket limited to safe MIME types and size.
--- For stricter access control, move all user document uploads through the
--- Spring backend and remove the anon/authenticated INSERT policy below.
+-- User documents are private. Uploads must go through the authenticated Spring API,
+-- which uses the service-role key after checking document ownership.
+-- Public profile pictures live in a separate bucket and contain no user documents.
 
 insert into storage.buckets (
   id,
@@ -17,9 +16,16 @@ values
   (
     'documents',
     'documents',
-    true,
+    false,
     5242880,
     array['application/pdf', 'image/jpeg', 'image/png']
+  ),
+  (
+    'avatars',
+    'avatars',
+    true,
+    2097152,
+    array['image/jpeg', 'image/png']
   ),
   (
     'project-deliveries',
@@ -34,21 +40,10 @@ on conflict (id) do update set
   allowed_mime_types = excluded.allowed_mime_types;
 
 drop policy if exists "collabresearch_documents_public_read" on storage.objects;
-create policy "collabresearch_documents_public_read"
-on storage.objects
-for select
-to public
-using (bucket_id = 'documents');
-
 drop policy if exists "collabresearch_documents_public_insert" on storage.objects;
-create policy "collabresearch_documents_public_insert"
-on storage.objects
-for insert
-to anon, authenticated
-with check (
-  bucket_id = 'documents'
-  and lower(storage.extension(name)) in ('pdf', 'jpg', 'jpeg', 'png')
-);
+drop policy if exists "collabresearch_documents_authenticated_insert" on storage.objects;
+drop policy if exists "collabresearch_avatars_public_read" on storage.objects;
 
 -- No public policies are created for `project-deliveries`.
--- The backend accesses it with SUPABASE_SERVICE_ROLE_KEY and serves signed URLs.
+-- The backend accesses private buckets with SUPABASE_SERVICE_ROLE_KEY and serves
+-- short-lived signed document URLs. `avatars` is public by design.

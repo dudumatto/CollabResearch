@@ -18,6 +18,7 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../providers/NotificationsProvider";
 import { features } from "../config/features";
+import { prefetchRoute } from "../routes";
 import "./Sidebar.css";
 
 const studentSections = [
@@ -126,6 +127,8 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
                     to={item.path}
                     end={item.exact}
                     onClick={() => setMobileOpen(false)}
+                    onMouseEnter={() => prefetchRoute(item.path, user?.tipo)}
+                    onFocus={() => prefetchRoute(item.path, user?.tipo)}
                     className={({ isActive }) =>
                       [
                         "barra-lateral__item-nav",
@@ -172,6 +175,8 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
           <NavLink
             to="/app/configuracoes"
             onClick={() => setMobileOpen(false)}
+            onMouseEnter={() => prefetchRoute("/app/configuracoes", user?.tipo)}
+            onFocus={() => prefetchRoute("/app/configuracoes", user?.tipo)}
             className={({ isActive }) =>
               [
                 "barra-lateral__item-configuracoes",

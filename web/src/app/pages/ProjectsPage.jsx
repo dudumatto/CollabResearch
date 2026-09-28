@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Search, FolderOpen, Users, Clock, ChevronRight, SlidersHorizontal, X, Plus } from "lucide-react";
+import { Search, SlidersHorizontal, X, Plus } from "lucide-react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useAuth } from "../hooks/useAuth";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
@@ -11,8 +11,8 @@ import { courseService } from "../services/courseService";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
-import { getProjectSlotsUsage, getUserId, getUserPhotoUrl, mapApplication, mapProject } from "../utils/adapters";
-import { formatProjectStatus } from "../utils/formatters";
+import ProjectGridCard from "../components/ProjectGridCard";
+import { getUserId, mapApplication, mapProject } from "../utils/adapters";
 import "./ProjectsPage.css";
 
 function normalizeValue(value) {
@@ -54,31 +54,9 @@ function canShowProjectForUser(project, user, approvedProjectIds) {
   );
 }
 
-function AdvisorAvatar({ advisor }) {
-  const photoUrl = getUserPhotoUrl(advisor);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    setFailed(false);
-  }, [photoUrl]);
-
-  const showPhoto = Boolean(photoUrl) && !failed;
-
-  return (
-    <div className="projeto-card__avatar-orientador">
-      {showPhoto ? (
-        <img src={photoUrl} alt={`Foto de perfil de ${advisor?.name ?? "orientador"}`} onError={() => setFailed(true)} />
-      ) : (
-        <span className="projeto-card__iniciais-orientador">
-          {(advisor?.name ?? "IC").split(" ").slice(0, 2).map((part) => part[0]).join("")}
-        </span>
-      )}
-    </div>
-  );
-}
-
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const handleOpenProject = useCallback((projectId) => navigate(`/app/projects/${projectId}`), [navigate]);
   const { user } = useAuth();
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 350);
@@ -86,6 +64,11 @@ export default function ProjectsPage() {
   const [selectedArea, setSelectedArea] = useState("Todas");
   const [selectedStatus, setSelectedStatus] = useState("Todos");
   const [showFilters, setShowFilters] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
+  const filterKey = `${selectedCourse}|${selectedArea}|${selectedStatus}|${debouncedSearch}`;
+  const filterKeyRef = useRef(filterKey);
+  filterKeyRef.current = filterKey;
 
   const { data: areaNames } = useAsyncData(
     async () => {
@@ -107,19 +90,44 @@ export default function ProjectsPage() {
     { initialData: [] },
   );
 
-  const { data, loading, error } = useAsyncData(
+  const { data, setData, loading, error } = useAsyncData(
     async ({ signal } = {}) => {
       const result = await projectService.listPaged({
         curso: selectedCourse === "Todos" ? "" : selectedCourse,
         area: selectedArea === "Todas" ? "" : selectedArea,
         status: selectedStatus === "Todos" ? "" : selectedStatus,
         busca: debouncedSearch,
-      }, { signal });
-      return Array.isArray(result) ? result.map(mapProject) : [];
+      }, { signal, page: 0, size: 24 });
+      return { ...result, content: result.content.map(mapProject) };
     },
     [selectedCourse, selectedArea, selectedStatus, debouncedSearch],
-    { initialData: [] },
+    { initialData: { content: [], page: 0, totalElements: 0, totalPages: 0, last: true } },
   );
+
+  const loadMoreProjects = useCallback(async () => {
+    if (loadingMore || loading || data?.last) return;
+    const requestedFilterKey = filterKey;
+    setLoadingMore(true);
+    setLoadMoreError(false);
+    try {
+      const result = await projectService.listPaged({
+        curso: selectedCourse === "Todos" ? "" : selectedCourse,
+        area: selectedArea === "Todas" ? "" : selectedArea,
+        status: selectedStatus === "Todos" ? "" : selectedStatus,
+        busca: debouncedSearch,
+      }, { page: (data?.page ?? 0) + 1, size: 24 });
+      if (filterKeyRef.current !== requestedFilterKey) return;
+      const nextPage = { ...result, content: result.content.map(mapProject) };
+      setData((current) => ({
+        ...nextPage,
+        content: [...(current?.content ?? []), ...nextPage.content],
+      }));
+    } catch {
+      setLoadMoreError(true);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, loading, data, filterKey, selectedCourse, selectedArea, selectedStatus, debouncedSearch, setData]);
 
   const { data: myApplications } = useAsyncData(
     async () => {
@@ -131,7 +139,7 @@ export default function ProjectsPage() {
     { initialData: [] },
   );
 
-  const projects = Array.isArray(data) ? data : [];
+  const projects = Array.isArray(data?.content) ? data.content : [];
   const approvedProjectIds = useMemo(
     () => new Set(
       (Array.isArray(myApplications) ? myApplications : [])
@@ -191,7 +199,7 @@ export default function ProjectsPage() {
     >
       <div className="pagina-projetos__cabecalho">
         <div>
-          <h2 className="pagina-projetos__titulo">{filtered.length} projetos disponíveis</h2>
+          <h2 className="pagina-projetos__titulo">{filtered.length} projetos carregados</h2>
           <p className="pagina-projetos__subtitulo">Explore projetos abertos, acompanhe vinculados e mantenha finalizados como histórico de consulta.</p>
         </div>
         <div className="pagina-projetos__acoes-cabecalho">
@@ -347,76 +355,24 @@ export default function ProjectsPage() {
       )}
 
       {!loading && filtered.length > 0 && (
-        <div className="pagina-projetos__grade">
-          {filtered.map((project, index) => {
-            const slots = getProjectSlotsUsage(project);
-            const isFull = slots.remaining <= 0;
-            const statusClass = project.status === "FINALIZADO"
-              ? "projeto-card__status--encerrado"
-              : project.status === "EM_ANDAMENTO"
-                ? "projeto-card__status--andamento"
-                : isFull
-                  ? "projeto-card__status--encerrado"
-                  : "projeto-card__status--aberto";
-
-            return (
-              <motion.div
-                key={project.id}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.04 }}
-                whileHover={{ y: -2, boxShadow: "0 18px 30px rgba(37,99,235,0.14)" }}
-                onClick={() => navigate(`/app/projects/${project.id}`)}
-                className="projeto-card"
-              >
-                <div className="projeto-card__corpo">
-                  <div className="projeto-card__cabecalho">
-                    <span className={`projeto-card__status ${statusClass}`}>
-                      {isFull && project.status === "ABERTO" ? "Cheio" : formatProjectStatus(project.status)}
-                    </span>
-                  </div>
-
-                  <h3 className="projeto-card__titulo">{project.title}</h3>
-                  <p className="projeto-card__descricao">{project.description}</p>
-
-                  <div className="projeto-card__tags">
-                    {project.tags.slice(0, 3).map((tag) => (
-                      <span key={tag} className="projeto-card__etiqueta">{tag}</span>
-                    ))}
-                  </div>
-
-                  <div className="projeto-card__informacoes">
-                    <div className="projeto-card__info-item">
-                      <div className="projeto-card__info-icone"><Users size={12} /></div>
-                      <p className="projeto-card__info-valor">{`${slots.used} / ${slots.total}`}</p>
-                      <p className="projeto-card__info-rotulo">vagas ocupadas</p>
-                    </div>
-                    <div className="projeto-card__info-item">
-                      <div className="projeto-card__info-icone"><Clock size={12} /></div>
-                      <p className="projeto-card__info-valor">{project.createdAt ? new Date(project.createdAt).toLocaleDateString("pt-BR") : "-"}</p>
-                      <p className="projeto-card__info-rotulo">publicado</p>
-                    </div>
-                    <div className="projeto-card__info-item">
-                      <div className="projeto-card__info-icone"><FolderOpen size={12} /></div>
-                      <p className="projeto-card__info-valor">{project.area}</p>
-                      <p className="projeto-card__info-rotulo">área</p>
-                    </div>
-                  </div>
-
-                  <div className="projeto-card__orientador">
-                    <div className="projeto-card__orientador-dados">
-                      <AdvisorAvatar advisor={project.advisor} />
-                      <span className="projeto-card__nome-orientador">
-                        {project.advisor?.name ? `${project.advisor.name} (orientador)` : "Sem orientador"}
-                      </span>
-                    </div>
-                    <ChevronRight size={14} className="projeto-card__seta-acesso" />
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+        <>
+          <div className="pagina-projetos__grade">
+            {filtered.map((project, index) => (
+              <ProjectGridCard key={project.id} project={project} index={index} onOpen={handleOpenProject} />
+            ))}
+          </div>
+        </>
+      )}
+      {!loading && !data?.last && (
+        <button
+          type="button"
+          className="pagina-projetos__botao-carregar-mais"
+          onClick={loadMoreProjects}
+          disabled={loadingMore}
+          aria-label="Carregar mais projetos"
+        >
+          {loadingMore ? "Carregando..." : loadMoreError ? "Tentar novamente" : "Carregar mais projetos"}
+        </button>
       )}
     </motion.div>
   );

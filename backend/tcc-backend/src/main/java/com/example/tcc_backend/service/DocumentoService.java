@@ -33,17 +33,18 @@ public class DocumentoService {
 
     private static final Map<String, List<String>> EXTENSOES_PERMITIDAS = Map.of(
             "application/pdf", List.of(".pdf"),
-            "application/msword", List.of(".doc"),
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", List.of(".docx")
+            "image/jpeg", List.of(".jpg", ".jpeg"),
+            "image/png", List.of(".png")
     );
 
-    private static final long MAX_FILE_BYTES = 10L * 1024 * 1024; // 10MB (alinhado com application.properties)
+    private static final long MAX_FILE_BYTES = 5L * 1024 * 1024;
 
     private final DocumentoRepository documentoRepository;
     private final UsuarioRepository usuarioRepository;
     private final AuthHelper authHelper;
     private final SupabaseStorageService supabaseStorageService;
 
+    @org.springframework.transaction.annotation.Transactional
     public Documento upload(Integer usuarioId, TipoDocumento tipo, MultipartFile arquivo) {
         if (usuarioId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "usuarioId obrigatorio");
@@ -76,7 +77,14 @@ public class DocumentoService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         // 2. Salva o arquivo na pasta correta desse usuário
-        String caminho = salvarArquivo(usuarioAlvo, arquivo);
+        String extensao = validarArquivo(arquivo);
+        String nomeNoStorage = UUID.randomUUID() + extensao;
+        String caminho = supabaseStorageService.uploadUserDocument(
+                "usuarios/" + usuarioAlvo.getId() + "/documentos",
+                nomeNoStorage,
+                lerConteudo(arquivo),
+                arquivo.getContentType(),
+                false);
 
         // 3. Monta o documento vinculando ao usuário alvo
         Documento documento = Documento.builder()
@@ -87,7 +95,16 @@ public class DocumentoService {
                 .caminho(caminho)
                 .build();
 
-        return documentoRepository.save(documento);
+        try {
+            return documentoRepository.save(documento);
+        } catch (RuntimeException ex) {
+            try {
+                supabaseStorageService.deleteUserDocument(caminho);
+            } catch (RuntimeException cleanupError) {
+                ex.addSuppressed(cleanupError);
+            }
+            throw ex;
+        }
     }
 
     public Documento upload(Integer usuarioId, TipoDocumento tipo, String nomeArquivo, String url) {
@@ -113,7 +130,7 @@ public class DocumentoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "nomeArquivo obrigatorio");
         }
 
-        String urlValidada = validarUrlDocumento(url);
+        String urlValidada = validarUrlDocumento(url, usuarioId);
 
         Usuario usuarioAlvo = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado"));
@@ -139,10 +156,8 @@ public class DocumentoService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nao autenticado");
         }
 
-        // Removemos a verificação do authHelper que bloqueava o Admin
-        // Agora ele simplesmente vai no banco e devolve os arquivos do usuário
         if (!usuarioLogado.getId().equals(usuarioId) && usuarioLogado.getTipo() != TipoUsuario.ADMIN) {
-            return documentoRepository.findByUsuarioIdAndTipo(usuarioId, TipoDocumento.CURRICULO);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para listar documentos deste usuario");
         }
 
         return documentoRepository.findByUsuarioId(usuarioId);
@@ -150,9 +165,18 @@ public class DocumentoService {
 
     public void remover(Integer id) {
         Documento documento = buscarDocumentoParaEdicao(id);
+        Integer donoId = documento.getUsuario() == null ? null : documento.getUsuario().getId();
 
-        if (!isRemoteUrl(documento.getCaminho())) {
+        if (isLocalDocumentPath(documento.getCaminho())) {
+            if (!isLocalDocumentPathForOwner(documento.getCaminho(), donoId)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Arquivo local nao pertence ao usuario do documento");
+            }
             apagarArquivo(documento.getCaminho());
+        } else if (supabaseStorageService.isUserDocumentReferenceForOwner(documento.getCaminho(), donoId)) {
+            supabaseStorageService.deleteUserDocument(documento.getCaminho());
+        } else {
+            // Não apaga metadados nem paths arbitrários se o objeto não for próprio do bucket.
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Nao foi possivel identificar o arquivo remoto para exclusao");
         }
         documentoRepository.delete(documento);
     }
@@ -165,7 +189,7 @@ public class DocumentoService {
         Documento documento = documentoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Documento nao encontrado"));
         boolean isDono = documento.getUsuario() != null && documento.getUsuario().getId().equals(usuarioLogado.getId());
-        if (!isDono && usuarioLogado.getTipo() != TipoUsuario.ADMIN && documento.getTipo() != TipoDocumento.CURRICULO) {
+        if (!isDono && usuarioLogado.getTipo() != TipoUsuario.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para acessar este documento");
         }
         return documento;
@@ -179,7 +203,7 @@ public class DocumentoService {
         Documento documento = documentoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Documento nao encontrado"));
 
-        if (!documento.getUsuario().getId().equals(usuarioLogado.getId())
+        if ((documento.getUsuario() == null || !documento.getUsuario().getId().equals(usuarioLogado.getId()))
                 && usuarioLogado.getTipo() != TipoUsuario.ADMIN) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para acessar este documento");
         }
@@ -206,17 +230,15 @@ public class DocumentoService {
     public String obterUrlDocumento(Integer id) {
         Documento documento = buscarDocumentoDoUsuario(id);
         String referencia = documento.getCaminho();
+        Integer donoId = documento.getUsuario() == null ? null : documento.getUsuario().getId();
+        if (!supabaseStorageService.isUserDocumentReferenceForOwner(referencia, donoId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Arquivo do documento nao encontrado");
+        }
         String signedUrl = supabaseStorageService.createSignedUserDocumentUrl(referencia);
         if (signedUrl != null) {
             return signedUrl;
         }
-        if (supabaseStorageService.isUserDocumentReference(referencia)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Arquivo do documento nao encontrado");
-        }
-        if (isRemoteUrl(referencia)) {
-            return referencia;
-        }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL do documento nao encontrada");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Arquivo do documento nao encontrado");
     }
 
     private String salvarArquivo(Usuario usuario, MultipartFile arquivo) {
@@ -288,6 +310,29 @@ public class DocumentoService {
             if (read < ole.length || !Arrays.equals(Arrays.copyOf(header, ole.length), ole)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arquivo invalido");
             }
+            return;
+        }
+
+        if ("image/jpeg".equals(contentType)) {
+            if (read < 3 || (header[0] & 0xFF) != 0xFF || (header[1] & 0xFF) != 0xD8 || (header[2] & 0xFF) != 0xFF) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arquivo invalido");
+            }
+            return;
+        }
+
+        if ("image/png".equals(contentType)) {
+            byte[] png = new byte[]{(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
+            if (read < png.length || !Arrays.equals(header, png)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arquivo invalido");
+            }
+        }
+    }
+
+    private byte[] lerConteudo(MultipartFile arquivo) {
+        try {
+            return arquivo.getBytes();
+        } catch (IOException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Falha ao ler arquivo enviado");
         }
     }
 
@@ -299,7 +344,7 @@ public class DocumentoService {
         return cleaned.length() > 255 ? cleaned.substring(0, 255) : cleaned;
     }
 
-    private String validarUrlDocumento(String url) {
+    private String validarUrlDocumento(String url, Integer usuarioId) {
         if (url == null || url.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "url obrigatoria");
         }
@@ -313,6 +358,9 @@ public class DocumentoService {
             String path = cleaned.replaceAll("^/+", "");
             if (path.isBlank() || path.contains("..") || path.contains(":") || path.contains("\\") || path.startsWith("object/") || path.startsWith("storage/")) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "caminho do documento invalido");
+            }
+            if (!path.startsWith("usuarios/" + usuarioId + "/")) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "O arquivo nao pertence ao usuario");
             }
             return path;
         }
@@ -330,6 +378,10 @@ public class DocumentoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "url do documento invalida");
         }
 
+        if (!supabaseStorageService.isUserDocumentReferenceForOwner(cleaned, usuarioId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "URL deve apontar para um objeto do bucket privado de documentos");
+        }
+
         return cleaned;
     }
 
@@ -339,6 +391,28 @@ public class DocumentoService {
             URI uri = new URI(caminho);
             return "http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme());
         } catch (URISyntaxException e) {
+            return false;
+        }
+    }
+
+    private boolean isLocalDocumentPath(String caminho) {
+        if (caminho == null || caminho.isBlank()) return false;
+        try {
+            Path baseDir = Path.of("uploads", "documentos").toAbsolutePath().normalize();
+            Path resolved = Path.of(caminho).toAbsolutePath().normalize();
+            return resolved.startsWith(baseDir);
+        } catch (RuntimeException ex) {
+            return false;
+        }
+    }
+
+    private boolean isLocalDocumentPathForOwner(String caminho, Integer usuarioId) {
+        if (!isLocalDocumentPath(caminho) || usuarioId == null) return false;
+        try {
+            Path baseDir = Path.of("uploads", "documentos").toAbsolutePath().normalize();
+            Path resolved = Path.of(caminho).toAbsolutePath().normalize();
+            return resolved.startsWith(baseDir.resolve(usuarioId.toString()));
+        } catch (RuntimeException ex) {
             return false;
         }
     }

@@ -81,6 +81,7 @@ JWT_SECRET=base64_com_pelo_menos_32_bytes
 SUPABASE_URL=https://seu-projeto.supabase.co
 SUPABASE_ANON_KEY=sua_chave
 SUPABASE_STORAGE_BUCKET=documents
+SUPABASE_AVATARS_BUCKET=avatars
 ```
 
 ## Instalacao

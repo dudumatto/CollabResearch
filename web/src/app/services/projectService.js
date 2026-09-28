@@ -36,16 +36,23 @@ export const projectService = {
     return api.get(`/api/projetos${buildQs(filters)}`);
   },
 
-  async listPaged(filters = {}, options = {}) {
+  async listPaged(filters = {}, { page = 0, size = 24, ...options } = {}) {
     const payload = await api.get(`/api/projetos/pagina${buildQs({
-      page: 0,
-      size: 200,
+      page,
+      size,
       sort: "dataCriacao",
       direction: "DESC",
       ...filters,
     })}`, options);
     const content = Array.isArray(payload) ? payload : payload?.content ?? payload?.data ?? [];
-    return Array.isArray(content) ? content : [];
+    return {
+      content: Array.isArray(content) ? content : [],
+      page: Number(payload?.page ?? page),
+      size: Number(payload?.size ?? size),
+      totalElements: Number(payload?.totalElements ?? content.length),
+      totalPages: Number(payload?.totalPages ?? (content.length < size ? page + 1 : page + 2)),
+      last: payload?.last ?? content.length < size,
+    };
   },
 
   async listMine(filters = {}) {

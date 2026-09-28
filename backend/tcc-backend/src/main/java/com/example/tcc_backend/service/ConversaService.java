@@ -145,7 +145,7 @@ public class ConversaService {
         Conversa conversa = conversaRepository.findById(conversaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversa nao encontrada"));
         validarParticipacao(conversa, usuarioLogado.getId());
-        return mensagemRepository.findByConversaIdOrderByDataEnvioAsc(conversaId, pageable);
+        return mensagemRepository.findByConversaId(conversaId, pageable);
     }
 
     public Mensagem enviarMensagem(Integer conversaId, String conteudo) {

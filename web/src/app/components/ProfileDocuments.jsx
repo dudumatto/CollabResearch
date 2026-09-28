@@ -33,13 +33,8 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
     if (!file || !userId) return;
 
     try {
-      const uploaded = await upload(file, `usuarios/${userId}/curriculo`);
-      if (!uploaded?.path) {
-        throw new Error("Não foi possível enviar o currículo.");
-      }
-
       setSavingMetadata(true);
-      await documentService.upload(userId, "CURRICULO", file.name, uploaded.path);
+      await upload(file, { usuarioId: userId, tipo: "CURRICULO" });
       toast.success("Currículo enviado com sucesso.");
       await onUploaded?.();
     } catch (err) {

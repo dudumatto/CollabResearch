@@ -183,14 +183,14 @@ public class UsuarioService {
     public UsuarioProfileResponse atualizarFotoPerfil(MultipartFile arquivo) {
         Usuario usuario = authHelper.getCurrentUser();
         validarFotoPerfil(arquivo);
-        String caminho = supabaseStorageService.uploadUserDocument(
+        String caminho = supabaseStorageService.uploadUserAvatar(
                 "usuarios/" + usuario.getId() + "/foto-perfil",
                 "foto-perfil",
                 lerBytes(arquivo),
                 arquivo.getContentType(),
                 true
         );
-        String publicUrl = withCacheVersion(supabaseStorageService.createPublicUserDocumentUrl(caminho));
+        String publicUrl = withCacheVersion(supabaseStorageService.createPublicAvatarUrl(caminho));
         if (publicUrl == null || publicUrl.isBlank()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falha ao gerar URL da foto de perfil");
         }

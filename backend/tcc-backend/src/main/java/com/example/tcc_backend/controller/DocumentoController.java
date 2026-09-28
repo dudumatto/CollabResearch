@@ -2,6 +2,7 @@ package com.example.tcc_backend.controller;
 
 import com.example.tcc_backend.dto.request.DocumentoUploadRequest;
 import com.example.tcc_backend.dto.response.DocumentoResponse;
+import com.example.tcc_backend.model.TipoDocumento;
 import com.example.tcc_backend.service.DocumentoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,7 +20,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,7 +39,7 @@ public class DocumentoController {
 
     private final DocumentoService documentoService;
 
-    @Operation(summary = "Upload de documento", description = "Salva os metadados de um documento enviado ao Supabase Storage.")
+    @Operation(summary = "Registrar documento existente", description = "Registra uma referência do próprio usuário no bucket privado de documentos.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Documento registrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados invalidos")
@@ -51,7 +55,21 @@ public class DocumentoController {
                 )));
     }
 
-    @Operation(summary = "Download de documento", description = "Redireciona para a URL publica do documento no Supabase.")
+    @PostMapping(value = "/usuario/{usuarioId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Enviar documento privado", description = "Faz upload autenticado para o bucket privado e cria os metadados do documento.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Documento enviado"),
+            @ApiResponse(responseCode = "403", description = "O documento pertence a outro usuario"),
+            @ApiResponse(responseCode = "413", description = "Arquivo excede 10 MB")
+    })
+    public ResponseEntity<DocumentoResponse> uploadArquivo(@PathVariable Integer usuarioId,
+                                                           @RequestParam TipoDocumento tipo,
+                                                           @RequestPart("arquivo") MultipartFile arquivo) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(DocumentoResponse.fromEntity(documentoService.upload(usuarioId, tipo, arquivo)));
+    }
+
+    @Operation(summary = "Download de documento", description = "Redireciona para uma URL assinada de curta duração após validar a propriedade do documento.")
     @ApiResponses({
             @ApiResponse(responseCode = "302", description = "Redirecionamento realizado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Documento nao encontrado")
@@ -65,7 +83,7 @@ public class DocumentoController {
                 .build();
     }
 
-    @Operation(summary = "Preview de documento", description = "Redireciona para a URL publica do documento no Supabase.")
+    @Operation(summary = "Preview de documento", description = "Redireciona para uma URL assinada de curta duração após validar a propriedade do documento.")
     @ApiResponses({
             @ApiResponse(responseCode = "302", description = "Redirecionamento realizado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Documento nao encontrado")

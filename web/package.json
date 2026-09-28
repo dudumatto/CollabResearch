@@ -58,6 +58,7 @@
     "react-hook-form": "7.55.0",
     "react-resizable-panels": "2.1.7",
     "react-router": "7.13.0",
+    "react-window": "^2.3.3",
     "sockjs-client": "^1.6.1",
     "sonner": "2.0.3",
     "tailwind-merge": "3.2.0",

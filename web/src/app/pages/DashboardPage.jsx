@@ -26,22 +26,6 @@ import "./DashboardPage.css";
 
 const DASHBOARD_PREVIEW_LIMIT = 3;
 
-function buildActivityData(projects, applications) {
-  const entries = [...projects, ...applications]
-    .map((item) => item.createdAt ?? item.appliedAt ?? item.updatedAt)
-    .filter(Boolean)
-    .map((date) =>
-      new Date(date).toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""),
-    );
-
-  const grouped = entries.reduce((acc, month) => {
-    acc[month] = (acc[month] ?? 0) + 1;
-    return acc;
-  }, {});
-
-  return Object.entries(grouped).map(([month, atividade]) => ({ month, atividade }));
-}
-
 const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
   <div className="skeleton" style={{ width: w, height: h, borderRadius: r, marginBottom: mb || undefined }} />
 );
@@ -128,18 +112,19 @@ export default function DashboardPage() {
   const { notifications } = useNotifications();
 
   const { data, loading, error } = useAsyncData(async () => {
-    const [projects, applications] = await Promise.all([
-      projectService.list(),
+    const [projectPage, applications] = await Promise.all([
+      projectService.listPaged({}, { page: 0, size: DASHBOARD_PREVIEW_LIMIT }),
       applicationService.listMine().catch(() => []),
     ]);
 
-    const mappedProjects = Array.isArray(projects) ? projects.map(mapProject) : [];
+    const mappedProjects = Array.isArray(projectPage?.content) ? projectPage.content.map(mapProject) : [];
 
     return {
       projects: mappedProjects,
+      projectTotal: projectPage?.totalElements ?? mappedProjects.length,
       applications: Array.isArray(applications) ? applications.map(mapApplication) : [],
     };
-  }, [], { initialData: { projects: [], applications: [] } });
+  }, [], { initialData: { projects: [], projectTotal: 0, applications: [] } });
 
   const derived = useMemo(() => {
     const projects = data?.projects ?? [];
@@ -152,9 +137,7 @@ export default function DashboardPage() {
     const recentProjects = projects.slice(0, DASHBOARD_PREVIEW_LIMIT);
     const recentApplications = applications.slice(0, DASHBOARD_PREVIEW_LIMIT);
     const recentNotifications = notifications.slice(0, DASHBOARD_PREVIEW_LIMIT);
-    const activityData = buildActivityData(projects, applications);
-    const totalActivity = activityData.reduce((acc, item) => acc + item.atividade, 0);
-    const activityPeak = Math.max(1, ...activityData.map((item) => item.atividade));
+    const totalActivity = (data?.projectTotal ?? projects.length) + applications.length;
 
     return {
       activeProjects,
@@ -162,8 +145,6 @@ export default function DashboardPage() {
       recentApplications,
       recentNotifications,
       unreadNotifications,
-      activityData,
-      activityPeak,
       totalActivity,
     };
   }, [data, notifications, user?.id, user?.tipo]);

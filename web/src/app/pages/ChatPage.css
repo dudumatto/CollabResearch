@@ -88,6 +88,12 @@
   transition: background 0.2s;
 }
 
+/* Adia layout/paint de conversas fora da área visível, preservando rolagem e foco. */
+.pagina-chat__rolagem-conversas .conversa-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 74px;
+}
+
 .conversa-item:hover {
   background: var(--cor-superficie-brand);
 }
@@ -281,12 +287,36 @@
 .pagina-chat__mensagens {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   background: linear-gradient(180deg, var(--cor-superficie-2) 0%, var(--cor-fundo) 100%);
+}
+
+.pagina-chat__lista-virtualizada {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.pagina-chat__carregar-anteriores {
+  align-self: center;
+  flex: 0 0 auto;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--cor-borda-media);
+  border-radius: var(--raio-medio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto-secundario);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.pagina-chat__carregar-anteriores:hover {
+  color: var(--cor-primaria);
+  border-color: var(--cor-primaria);
 }
 
 .pagina-chat__loading-mensagens {

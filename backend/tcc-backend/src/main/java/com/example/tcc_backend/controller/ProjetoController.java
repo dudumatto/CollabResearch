@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping({"/api/projetos", "/api/projects"})
@@ -40,6 +41,10 @@ public class ProjetoController {
 
     private ProjetoResponse toResponse(com.example.tcc_backend.model.Projeto projeto) {
         return ProjetoResponse.fromEntity(projeto, projetoService.contarVagasOcupadas(projeto.getId()), usuarioService::resolverFotoPerfilParaExibicao);
+    }
+
+    private ProjetoResponse toResponse(com.example.tcc_backend.model.Projeto projeto, Map<Integer, Integer> vagasOcupadas) {
+        return ProjetoResponse.fromEntity(projeto, vagasOcupadas.getOrDefault(projeto.getId(), 0), usuarioService::resolverFotoPerfilParaExibicao);
     }
 
     private InscricaoResponse toInscricaoResponse(com.example.tcc_backend.model.Inscricao inscricao) {
@@ -66,12 +71,10 @@ public class ProjetoController {
             @RequestParam(required = false) String busca) {
         String cursoFiltro = curso != null ? curso : course;
 
-        return ResponseEntity.ok(
-                projetoService.findAll(status, areaId, area, cursoFiltro, busca)
-                        .stream()
-                        .map(this::toResponse)
-                        .toList()
-        );
+        List<com.example.tcc_backend.model.Projeto> projetos = projetoService.findAll(status, areaId, area, cursoFiltro, busca);
+        Map<Integer, Integer> vagasOcupadas = projetoService.contarVagasOcupadas(
+                projetos.stream().map(com.example.tcc_backend.model.Projeto::getId).toList());
+        return ResponseEntity.ok(projetos.stream().map(projeto -> toResponse(projeto, vagasOcupadas)).toList());
     }
 
     @Operation(
@@ -102,16 +105,16 @@ public class ProjetoController {
         String buscaFiltro = busca != null ? busca : search;
 
         if (Boolean.TRUE.equals(meusProjetos)) {
-            return ResponseEntity.ok(PageResponse.from(
-                    projetoService.findMeusProjetos(status, areaId, area, cursoFiltro, buscaFiltro, pageable)
-                            .map(this::toResponse)
-            ));
+            var projetos = projetoService.findMeusProjetos(status, areaId, area, cursoFiltro, buscaFiltro, pageable);
+            Map<Integer, Integer> vagasOcupadas = projetoService.contarVagasOcupadas(
+                    projetos.getContent().stream().map(com.example.tcc_backend.model.Projeto::getId).toList());
+            return ResponseEntity.ok(PageResponse.from(projetos.map(projeto -> toResponse(projeto, vagasOcupadas))));
         }
 
-        return ResponseEntity.ok(PageResponse.from(
-                projetoService.findAll(status, areaId, area, cursoFiltro, buscaFiltro, pageable)
-                        .map(this::toResponse)
-        ));
+        var projetos = projetoService.findAll(status, areaId, area, cursoFiltro, buscaFiltro, pageable);
+        Map<Integer, Integer> vagasOcupadas = projetoService.contarVagasOcupadas(
+                projetos.getContent().stream().map(com.example.tcc_backend.model.Projeto::getId).toList());
+        return ResponseEntity.ok(PageResponse.from(projetos.map(projeto -> toResponse(projeto, vagasOcupadas))));
     }
 
     @Operation(

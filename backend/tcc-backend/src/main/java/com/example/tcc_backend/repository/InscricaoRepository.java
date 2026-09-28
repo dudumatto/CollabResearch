@@ -14,6 +14,7 @@ import jakarta.persistence.LockModeType;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 
 @Repository
 public interface InscricaoRepository extends JpaRepository<Inscricao, Integer> {
@@ -34,6 +35,9 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Integer> {
     Page<Inscricao> findByStatus(StatusInscricao status, Pageable pageable);
     long countByStatus(StatusInscricao status);
     long countByProjetoIdAndStatus(Integer projetoId, StatusInscricao status);
+    @Query("SELECT i.projeto.id, COUNT(i.id) FROM Inscricao i WHERE i.projeto.id IN :projetoIds AND i.status = :status GROUP BY i.projeto.id")
+    List<Object[]> contarPorProjetosEStatus(@Param("projetoIds") Collection<Integer> projetoIds,
+                                            @Param("status") StatusInscricao status);
     Optional<Inscricao> findByProjetoIdAndAlunoUsuarioId(Integer projetoId, Integer usuarioId);
     boolean existsByProjetoIdAndAlunoUsuarioIdAndStatus(Integer projetoId, Integer usuarioId, StatusInscricao status);
     List<Inscricao> findByProjetoOrientadorUsuarioId(Integer usuarioId);

@@ -3,6 +3,7 @@ package com.example.tcc_backend.service;
 import com.example.tcc_backend.dto.request.LoginRequest;
 import com.example.tcc_backend.dto.request.GoogleLoginRequest;
 import com.example.tcc_backend.dto.request.RegisterRequest;
+import com.example.tcc_backend.dto.request.ChangePasswordRequest;
 import com.example.tcc_backend.dto.response.AuthResponse;
 import com.example.tcc_backend.model.Aluno;
 import com.example.tcc_backend.model.Curso;
@@ -103,6 +104,24 @@ class AuthServiceTest {
 
         verify(alunoRepository).save(any(Aluno.class));
         verify(orientadorRepository, never()).save(any(Orientador.class));
+    }
+
+    @Test
+    void changePasswordDeveSalvarHashERevogarTokenAtual() {
+        Usuario usuario = TestDataFactory.usuarioAluno(1);
+        usuario.setSenha("hash-antigo");
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setSenhaAtual("senha-antiga");
+        request.setNovaSenha("senha-nova-segura");
+        when(authHelper.getCurrentUser()).thenReturn(usuario);
+        when(passwordEncoder.matches("senha-antiga", "hash-antigo")).thenReturn(true);
+        when(passwordEncoder.encode("senha-nova-segura")).thenReturn("hash-novo");
+
+        authService.changePassword(request, "Bearer token-atual");
+
+        assertThat(usuario.getSenha()).isEqualTo("hash-novo");
+        verify(usuarioRepository).save(usuario);
+        verify(tokenRevocationService).revoke("token-atual");
     }
 
     @Test

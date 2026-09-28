@@ -172,7 +172,7 @@ function DocumentViewer({ doc, onClose }) {
 export default function DocumentsPage() {
   const { user } = useAuth();
   const fileInputRef = useRef(null);
-  const { upload: uploadDocumentoStorage, uploading: uploadingStorage, erro: storageError, progresso } = useUploadDocumento();
+  const { upload: uploadDocumentoStorage, uploading: uploadingStorage, progresso } = useUploadDocumento();
   const [dragging, setDragging] = useState(false);
   const [savingMetadata, setSavingMetadata] = useState(false);
   const [tipoDocumento, setTipoDocumento] = useState("HISTORICO");
@@ -202,13 +202,8 @@ export default function DocumentsPage() {
     }
     setSavingMetadata(false);
     try {
-      const uploaded = await uploadDocumentoStorage(file, `usuarios/${user.id}/${tipoDocumento.toLowerCase()}`);
-      if (!uploaded?.path) {
-        throw new Error(storageError || "Não foi possível enviar o documento para a nuvem.");
-      }
-
       setSavingMetadata(true);
-      await documentService.upload(user.id, tipoDocumento, file.name, uploaded.path);
+      await uploadDocumentoStorage(file, { usuarioId: user.id, tipo: tipoDocumento });
       toast.success(`${tipoDocumento === "HISTORICO" ? "Histórico" : "Currículo"} enviado com sucesso.`);
       await reload();
     } catch (uploadError) {

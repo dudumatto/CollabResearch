@@ -71,8 +71,9 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @PutMapping("/senha")
-    public ResponseEntity<Void> changePassword(@RequestBody @Valid ChangePasswordRequest dto) {
-        service.changePassword(dto);
+    public ResponseEntity<Void> changePassword(@RequestBody @Valid ChangePasswordRequest dto,
+                                               @RequestHeader(value = "Authorization", required = false) String authorization) {
+        service.changePassword(dto, authorization);
         return ResponseEntity.noContent().build();
     }
 
