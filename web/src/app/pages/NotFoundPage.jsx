@@ -160,11 +160,7 @@ export default function NotFoundPage() {
       <div className="noise" aria-hidden="true" />
       <nav>
         <a className="logo" href="/" aria-label="CollabResearch">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="9" cy="12" r="6.2" stroke="#1d7a4f" strokeWidth="2.4" />
-            <circle cx="15" cy="12" r="6.2" stroke="#0e4d31" strokeWidth="2.4" />
-          </svg>
-          collab
+          <img src="/brand/logo-full.svg" width="101" height="24" alt="CollabResearch" />
         </a>
         <div className="navlinks">
           <a href="/#problema">Problema</a>
