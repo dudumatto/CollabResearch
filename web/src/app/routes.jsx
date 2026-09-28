@@ -77,6 +77,7 @@ function RouteErrorView() {
 }
 
 const LandingPage = lazyRoute(() => import("./pages/LandingPage"));
+const NotFoundPage = lazyRoute(() => import("./pages/NotFoundPage"));
 const LoginPage = lazyRoute(() => import("./pages/LoginPage"));
 const RegisterPage = lazyRoute(() => import("./pages/RegisterPage"));
 const DashboardPage = lazyRoute(() => import("./pages/DashboardPage"));
@@ -127,6 +128,10 @@ export const router = createBrowserRouter([
     path: "/",
     Component: LandingPage,
     errorElement: <RouteErrorFallback />,
+  },
+  {
+    path: "*",
+    Component: NotFoundPage,
   },
   {
     path: "/login",
