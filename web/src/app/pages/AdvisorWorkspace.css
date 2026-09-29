@@ -2088,7 +2088,7 @@
 /* ---- Calendario de prazos ---- */
 .calendario-pagina {
   width: 100%;
-  max-width: none;
+  max-width: 80rem;
   height: auto;
   display: flex;
   flex-direction: column;
@@ -2180,10 +2180,10 @@
   overflow: visible;
 }
 
-@media (min-width: 1120px) {
+@media (min-width: 1280px) {
   .calendario-layout {
     grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
-    justify-content: stretch;
+    justify-content: start;
   }
 }
 
@@ -2257,7 +2257,7 @@
 }
 
 .calendario-card--principal > .calendario-grade:not(.calendario-grade--semana) {
-  grid-template-rows: repeat(6, minmax(5.25rem, auto));
+  grid-template-rows: repeat(6, auto);
   flex: 0 0 auto;
 }
 
@@ -2274,6 +2274,7 @@
 }
 
 .calendario-dia {
+  aspect-ratio: 1;
   padding: 0.45rem;
   border: 1px solid var(--cor-borda-clara);
   border-radius: var(--raio-medio);
@@ -2627,10 +2628,6 @@
     gap: 0.25rem;
   }
 
-  .calendario-card--principal > .calendario-grade:not(.calendario-grade--semana) {
-    grid-template-rows: repeat(6, 4rem);
-  }
-
   .calendario-dia {
     padding: 0.3rem;
     gap: 0.2rem;
@@ -2671,10 +2668,6 @@
 
   .calendario-grade--semana span {
     font-size: 0.68rem;
-  }
-
-  .calendario-card--principal > .calendario-grade:not(.calendario-grade--semana) {
-    grid-template-rows: repeat(6, 3.35rem);
   }
 
   .calendario-dia {
