@@ -126,7 +126,10 @@ public class JwtStompChannelInterceptor implements ChannelInterceptor {
             if (!id.matches("\\d+")) {
                 throw new IllegalArgumentException("Destino de conversa invalido");
             }
-            Usuario usuario = (Usuario) accessor.getUser().getPrincipal();
+            if (!(accessor.getUser() instanceof UsernamePasswordAuthenticationToken authentication)
+                    || !(authentication.getPrincipal() instanceof Usuario usuario)) {
+                throw new IllegalArgumentException("Sessao WebSocket invalida");
+            }
             conversaService.validarParticipacao(Integer.valueOf(id), usuario.getId());
         }
     }
