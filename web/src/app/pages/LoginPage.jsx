@@ -26,32 +26,41 @@ export default function LoginPage() {
     }
 
     let cancelled = false;
+    let renderedWidth = 0;
+    let googleInitialized = false;
+    let resizeObserver;
 
     const renderGoogleButton = () => {
       if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) return;
 
-      // Não usamos hosted_domain para permitir múltiplos domínios (unicamp.br, cotil.unicamp.br)
-      // A validação de domínio é feita no backend
-      window.google.accounts.id.initialize({
-        client_id: googleClientId,
-        callback: async ({ credential }) => {
-          if (!credential) {
-            setError("Não foi possível validar sua conta Google.");
-            return;
-          }
+      const width = Math.min(400, Math.floor(googleButtonRef.current.clientWidth));
+      if (!width || width === renderedWidth) return;
 
-          setError("");
-          setGoogleLoading(true);
-          try {
-            await googleLogin({ idToken: credential });
-            navigate("/app");
-          } catch (err) {
-            setError(err.message || "Conta Google não aceita. Use seu e-mail institucional cadastrado.");
-          } finally {
-            setGoogleLoading(false);
-          }
-        },
-      });
+      if (!googleInitialized) {
+        // Não usamos hosted_domain para permitir múltiplos domínios (unicamp.br, cotil.unicamp.br)
+        // A validação de domínio é feita no backend
+        window.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: async ({ credential }) => {
+            if (!credential) {
+              setError("Não foi possível validar sua conta Google.");
+              return;
+            }
+
+            setError("");
+            setGoogleLoading(true);
+            try {
+              await googleLogin({ idToken: credential });
+              navigate("/app");
+            } catch (err) {
+              setError(err.message || "Conta Google não aceita. Use seu e-mail institucional cadastrado.");
+            } finally {
+              setGoogleLoading(false);
+            }
+          },
+        });
+        googleInitialized = true;
+      }
 
       googleButtonRef.current.innerHTML = "";
       window.google.accounts.id.renderButton(googleButtonRef.current, {
@@ -59,14 +68,18 @@ export default function LoginPage() {
         size: "large",
         text: "continue_with",
         shape: "rectangular",
-        width: googleButtonRef.current.offsetWidth || 384,
+        width,
       });
+      renderedWidth = width;
     };
 
     if (window.google?.accounts?.id) {
       renderGoogleButton();
+      resizeObserver = new ResizeObserver(renderGoogleButton);
+      resizeObserver.observe(googleButtonRef.current);
       return () => {
         cancelled = true;
+        resizeObserver?.disconnect();
       };
     }
 
@@ -79,6 +92,12 @@ export default function LoginPage() {
     script.onerror = () => {
       if (!cancelled) setGoogleUnavailable(true);
     };
+    script.addEventListener("load", () => {
+      if (cancelled || !googleButtonRef.current) return;
+      renderGoogleButton();
+      resizeObserver = new ResizeObserver(renderGoogleButton);
+      resizeObserver.observe(googleButtonRef.current);
+    }, { once: true });
 
     if (!existingScript) {
       document.head.appendChild(script);
@@ -86,6 +105,7 @@ export default function LoginPage() {
 
     return () => {
       cancelled = true;
+      resizeObserver?.disconnect();
     };
   }, [googleClientId, googleLogin, navigate]);
 

@@ -1,4 +1,4 @@
-.not-found-page{--bg:#f6f7f3;--ink:#12271c;--soft:#3d5547;--mute:#7a8b80;--green:#1d7a4f;--deep:#0e4d31;--line:rgba(18,39,28,.1);position:fixed;inset:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.not-found-page{--bg:#f6f7f3;--ink:#12271c;--soft:#3d5547;--mute:#7a8b80;--green:#1d7a4f;--deep:#0e4d31;--line:rgba(18,39,28,.1);position:fixed;inset:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--fonte-principal),system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 .not-found-page *{box-sizing:border-box}
 .not-found-page #net{position:fixed;inset:0;z-index:0}
 .not-found-page .cursor-reveal{position:fixed;inset:0;z-index:1;pointer-events:none;background:url('/brand/research-reveal.svg') center/cover no-repeat;opacity:0;mask-image:radial-gradient(circle 175px at var(--reveal-x, -999px) var(--reveal-y, -999px),#000 0 42%,transparent 100%);-webkit-mask-image:radial-gradient(circle 175px at var(--reveal-x, -999px) var(--reveal-y, -999px),#000 0 42%,transparent 100%);transition:opacity .24s ease}
