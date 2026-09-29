@@ -258,9 +258,19 @@ export default function StudentDeadlinesPage() {
       setActiveTooltipKey(null);
       setHoverTooltipKey(null);
     };
+    const closeTooltipOnPageScroll = (event) => {
+      if (event.target instanceof Element && event.target.closest(".calendario-dia__tooltip")) return;
+      closeTooltip();
+    };
 
     window.addEventListener("pointerdown", closeTooltip, true);
-    return () => window.removeEventListener("pointerdown", closeTooltip, true);
+    window.addEventListener("scroll", closeTooltipOnPageScroll, true);
+    window.addEventListener("resize", closeTooltip);
+    return () => {
+      window.removeEventListener("pointerdown", closeTooltip, true);
+      window.removeEventListener("scroll", closeTooltipOnPageScroll, true);
+      window.removeEventListener("resize", closeTooltip);
+    };
   }, [activeTooltipKey, hoverTooltipKey]);
 
   const toggleDayTooltip = (event, key) => {

@@ -2089,12 +2089,12 @@
 .calendario-pagina {
   width: 100%;
   max-width: none;
-  height: calc(100dvh - var(--altura-topbar) - var(--espaco-6) * 2);
+  height: auto;
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
-  min-height: 0;
-  overflow: hidden;
+  min-height: auto;
+  overflow: visible;
 }
 
 .calendario-cabecalho {
@@ -2174,10 +2174,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--espaco-4);
-  align-items: stretch;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
+  align-items: start;
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow: visible;
 }
 
 @media (min-width: 1120px) {
@@ -2209,9 +2209,9 @@
 }
 
 .calendario-card--lateral {
-  height: 100%;
+  height: auto;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .calendario-card__topo {
@@ -2257,9 +2257,8 @@
 }
 
 .calendario-card--principal > .calendario-grade:not(.calendario-grade--semana) {
-  grid-template-rows: repeat(6, minmax(0, 1fr));
-  flex: 1 1 auto;
-  min-height: 0;
+  grid-template-rows: repeat(6, minmax(5.25rem, auto));
+  flex: 0 0 auto;
 }
 
 .calendario-grade--semana {
@@ -2491,10 +2490,10 @@
 
 .calendario-lateral {
   display: grid;
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
+  grid-template-rows: repeat(2, minmax(12rem, auto));
+  height: auto;
+  min-height: auto;
+  overflow: visible;
 }
 
 .calendario-lista--rolagem {
