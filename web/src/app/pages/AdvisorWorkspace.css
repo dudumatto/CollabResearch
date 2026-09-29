@@ -2089,6 +2089,7 @@
 .calendario-pagina {
   width: 100%;
   max-width: 80rem;
+  margin-inline: auto;
   height: auto;
   display: flex;
   flex-direction: column;
