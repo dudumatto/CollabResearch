@@ -2088,7 +2088,7 @@
 /* ---- Calendario de prazos ---- */
 .calendario-pagina {
   width: 100%;
-  max-width: 80rem;
+  max-width: 68rem;
   margin-inline: auto;
   height: auto;
   display: flex;
@@ -2185,6 +2185,15 @@
   .calendario-layout {
     grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
     justify-content: start;
+    align-items: stretch;
+  }
+
+  .calendario-lateral {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    align-self: stretch;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
   }
 }
 
