@@ -561,6 +561,23 @@ export default function ChatPage() {
     targetScrollHandledRef.current = false;
   }, [targetMessageId]);
 
+  const filtered = useMemo(() =>
+    conversations.filter((c) =>
+      (c?.titulo ?? "").toLowerCase().includes(search.toLowerCase())
+    ), [conversations, search]);
+
+  const firstVisibleMessageIndex = useMemo(() => {
+    if (!targetMessageId) return 0;
+    const targetIndex = messages.findIndex((message) => String(message?.id) === String(targetMessageId));
+    if (targetIndex < 0) return 0;
+    return Math.max(0, Math.min(targetIndex - 30, messages.length - 100));
+  }, [messages, targetMessageId]);
+  const visibleMessages = useMemo(
+    () => targetMessageId
+      ? messages.slice(firstVisibleMessageIndex, firstVisibleMessageIndex + 100)
+      : messages,
+    [messages, firstVisibleMessageIndex, targetMessageId],
+  );
   useEffect(() => {
     if (targetMessageId) {
       const targetNode = messageRefs.current[String(targetMessageId)];
@@ -594,24 +611,6 @@ export default function ChatPage() {
       });
     }
   }, [visibleMessages, targetMessageId, loadingMessages]);
-
-  const filtered = useMemo(() =>
-    conversations.filter((c) =>
-      (c?.titulo ?? "").toLowerCase().includes(search.toLowerCase())
-    ), [conversations, search]);
-
-  const firstVisibleMessageIndex = useMemo(() => {
-    if (!targetMessageId) return 0;
-    const targetIndex = messages.findIndex((message) => String(message?.id) === String(targetMessageId));
-    if (targetIndex < 0) return 0;
-    return Math.max(0, Math.min(targetIndex - 30, messages.length - 100));
-  }, [messages, targetMessageId]);
-  const visibleMessages = useMemo(
-    () => targetMessageId
-      ? messages.slice(firstVisibleMessageIndex, firstVisibleMessageIndex + 100)
-      : messages,
-    [messages, firstVisibleMessageIndex, targetMessageId],
-  );
   const messageRowHeight = useDynamicRowHeight({
     defaultRowHeight: 84,
     key: `${selectedConversation?.id ?? "none"}:${firstVisibleMessageIndex}`,

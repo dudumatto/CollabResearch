@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: collabresearch-db
+    environment:
+      POSTGRES_DB: collabresearch
+      POSTGRES_USER: collab
+      POSTGRES_PASSWORD: ${COLLABRESEARCH_DB_PASSWORD:?Set COLLABRESEARCH_DB_PASSWORD before starting the local database}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d:ro
+      - ./src/main/resources/db/seed/dev_seed.sql:/docker-entrypoint-initdb.d/zz-dev-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U collab -d collabresearch"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
