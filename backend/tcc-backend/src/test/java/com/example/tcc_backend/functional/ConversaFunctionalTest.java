@@ -40,6 +40,47 @@ class ConversaFunctionalTest extends FunctionalTestSupport {
     }
 
     @Test
+    void listarConversasDeProjetoNaoDeveExporConversaPrivadaAssociadaAoProjeto() throws Exception {
+        TestUser orientador = registerOrientador("conv-private-leak");
+        TestUser participante1 = registerAluno("conv-private-leak-1");
+        TestUser participante2 = registerAluno("conv-private-leak-2");
+        Integer areaId = createArea("IA", createCurso("CC"));
+        Integer projetoId = createProjetoAsOrientador(orientador.token(), "Projeto Conversa Privada", areaId);
+        Integer conversaGrupoId = criarConversa(orientador.token(), projetoId);
+
+        jdbc.update(
+                "INSERT INTO conversa (id_projeto, tipo, data_criacao) VALUES (?, 'PRIVADA', CURRENT_TIMESTAMP)",
+                projetoId
+        );
+        Integer conversaPrivadaId = jdbc.queryForObject("SELECT MAX(id_conversa) FROM conversa", Integer.class);
+        jdbc.update("INSERT INTO conversa_participantes (id_conversa, id_usuario) VALUES (?, ?)", conversaPrivadaId, participante1.userId());
+        jdbc.update("INSERT INTO conversa_participantes (id_conversa, id_usuario) VALUES (?, ?)", conversaPrivadaId, participante2.userId());
+
+        JsonNode conversas = objectMapper.readTree(
+                mockMvc.perform(get("/api/conversas/" + orientador.userId() + "/todas")
+                                .header("Authorization", authHeader(orientador.token())))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString()
+        );
+
+        assertThat(conversas.size()).isEqualTo(1);
+        assertThat(conversas.get(0).get("id").asInt()).isEqualTo(conversaGrupoId);
+
+        JsonNode conversasPaginadas = objectMapper.readTree(
+                mockMvc.perform(get("/api/conversas/" + orientador.userId() + "/pagina")
+                                .header("Authorization", authHeader(orientador.token())))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString()
+        );
+        assertThat(conversasPaginadas.get("content").size()).isEqualTo(1);
+        assertThat(conversasPaginadas.get("content").get(0).get("id").asInt()).isEqualTo(conversaGrupoId);
+
+        mockMvc.perform(get("/api/conversas/" + conversaPrivadaId + "/mensagens/pagina")
+                        .header("Authorization", authHeader(orientador.token())))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void enviarMensagemDeveRetornar201() throws Exception {
         TestUser orientador = registerOrientador("conv-send");
         Integer areaId = createArea("IA", createCurso("CC"));

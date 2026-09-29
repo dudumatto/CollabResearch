@@ -40,7 +40,7 @@ public class ConversaService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
         validarParticipacaoProjeto(projeto, usuarioLogado.getId());
 
-        return conversaRepository.findByProjetoId(projetoId)
+        return conversaRepository.findByProjetoIdAndTipo(projetoId, TipoConversa.GRUPO)
                 .orElseGet(() -> conversaRepository.save(
                         Conversa.builder()
                                 .projeto(projeto)
@@ -54,7 +54,7 @@ public class ConversaService {
         Projeto projeto = projetoRepository.findById(projetoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
         validarParticipacaoProjeto(projeto, usuarioLogado.getId());
-        return conversaRepository.findByProjetoId(projetoId)
+        return conversaRepository.findByProjetoIdAndTipo(projetoId, TipoConversa.GRUPO)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversa nao encontrada para este projeto"));
     }
 
@@ -106,8 +106,8 @@ public class ConversaService {
             projetos.add(i.getProjeto());
         }
 
-        return conversaRepository.findByProjetoIdIn(
-                projetos.stream().map(Projeto::getId).toList()
+        return conversaRepository.findByProjetoIdInAndTipo(
+                projetos.stream().map(Projeto::getId).toList(), TipoConversa.GRUPO
         );
     }
 

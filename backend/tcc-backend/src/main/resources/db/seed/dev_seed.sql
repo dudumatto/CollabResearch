@@ -238,8 +238,8 @@ INSERT INTO conversa (id_conversa, id_projeto, tipo, data_criacao) VALUES (1, 4,
 INSERT INTO conversa (id_conversa, id_projeto, tipo, data_criacao) VALUES (2, 5, 'GRUPO', CURRENT_TIMESTAMP - INTERVAL '14 days');
 INSERT INTO conversa (id_conversa, id_projeto, tipo, data_criacao) VALUES (3, 6, 'GRUPO', CURRENT_TIMESTAMP - INTERVAL '15 days');
 INSERT INTO conversa (id_conversa, id_projeto, tipo, data_criacao) VALUES (4, 7, 'GRUPO', CURRENT_TIMESTAMP - INTERVAL '16 days');
-INSERT INTO conversa (id_conversa, id_projeto, tipo, data_criacao) VALUES (5, 1, 'PRIVADA', CURRENT_TIMESTAMP - INTERVAL '17 days');
-INSERT INTO conversa (id_conversa, id_projeto, tipo, data_criacao) VALUES (6, 3, 'PRIVADA', CURRENT_TIMESTAMP - INTERVAL '18 days');
+INSERT INTO conversa (id_conversa, id_projeto, tipo, data_criacao) VALUES (5, NULL, 'PRIVADA', CURRENT_TIMESTAMP - INTERVAL '17 days');
+INSERT INTO conversa (id_conversa, id_projeto, tipo, data_criacao) VALUES (6, NULL, 'PRIVADA', CURRENT_TIMESTAMP - INTERVAL '18 days');
 INSERT INTO conversa_participantes (id_conversa, id_usuario) VALUES (1, 2);
 INSERT INTO conversa_participantes (id_conversa, id_usuario) VALUES (1, 7);
 INSERT INTO conversa_participantes (id_conversa, id_usuario) VALUES (1, 8);

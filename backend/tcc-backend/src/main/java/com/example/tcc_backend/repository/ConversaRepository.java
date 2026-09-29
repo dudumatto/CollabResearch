@@ -1,6 +1,7 @@
 package com.example.tcc_backend.repository;
 
 import com.example.tcc_backend.model.Conversa;
+import com.example.tcc_backend.model.TipoConversa;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +13,7 @@ import java.util.Optional;
 
 public interface ConversaRepository extends JpaRepository<Conversa, Integer> {
 
-    List<Conversa> findByProjetoIdIn(List<Integer> projetoIds);
+    List<Conversa> findByProjetoIdInAndTipo(List<Integer> projetoIds, TipoConversa tipo);
 
     List<Conversa> findByProjetoOrientadorUsuarioIdOrProjetoAlunoCriadorUsuarioId(
             Integer orientadorUsuarioId, Integer alunoCriadorUsuarioId);
@@ -20,7 +21,7 @@ public interface ConversaRepository extends JpaRepository<Conversa, Integer> {
     Page<Conversa> findByProjetoOrientadorUsuarioIdOrProjetoAlunoCriadorUsuarioId(
             Integer orientadorUsuarioId, Integer alunoCriadorUsuarioId, Pageable pageable);
 
-    Optional<Conversa> findByProjetoId(Integer projetoId);
+    Optional<Conversa> findByProjetoIdAndTipo(Integer projetoId, TipoConversa tipo);
 
     @Query("""
         SELECT c FROM Conversa c
@@ -48,7 +49,8 @@ public interface ConversaRepository extends JpaRepository<Conversa, Integer> {
         LEFT JOIN p.orientador o
         LEFT JOIN p.alunoCriador ac
         LEFT JOIN Inscricao i ON i.projeto = p AND i.aluno.usuario.id = :usuarioId AND i.status = 'APROVADO'
-        WHERE (o.usuario.id = :usuarioId OR ac.usuario.id = :usuarioId OR i IS NOT NULL)
+        WHERE c.tipo = 'GRUPO'
+          AND (o.usuario.id = :usuarioId OR ac.usuario.id = :usuarioId OR i IS NOT NULL)
     """)
     Page<Conversa> findByParticipacaoDoUsuario(@Param("usuarioId") Integer usuarioId, Pageable pageable);
 }

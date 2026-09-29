@@ -244,7 +244,7 @@ class OwnershipValidationTest {
                     .thenReturn(java.util.List.of());
             when(inscricaoRepository.findByAlunoUsuarioIdAndStatus(1, StatusInscricao.APROVADO))
                     .thenReturn(java.util.List.of());
-            when(conversaRepository.findByProjetoIdIn(java.util.List.of()))
+            when(conversaRepository.findByProjetoIdInAndTipo(java.util.List.of(), TipoConversa.GRUPO))
                     .thenReturn(java.util.List.of());
 
             var result = conversaService.listarConversasDoUsuario(1);

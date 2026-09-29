@@ -82,11 +82,13 @@ class ConversaServiceTest {
         when(authHelper.getCurrentUser()).thenReturn(usuario);
         when(inscricaoRepository.findByAlunoUsuarioIdAndStatus(1, StatusInscricao.APROVADO)).thenReturn(List.of(inscricao));
         when(projetoRepository.findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(1, 1)).thenReturn(List.of(projetoDireto));
-        when(conversaRepository.findByProjetoIdIn(List.of(10, 11))).thenReturn(List.of(conversaDireta, conversaAprovada));
+        when(conversaRepository.findByProjetoIdInAndTipo(List.of(10, 11), TipoConversa.GRUPO))
+                .thenReturn(List.of(conversaDireta, conversaAprovada));
 
         List<Conversa> conversas = conversaService.listarConversasDoUsuario(1);
 
         assertThat(conversas).hasSize(2);
+        verify(conversaRepository).findByProjetoIdInAndTipo(List.of(10, 11), TipoConversa.GRUPO);
     }
 
     @Test
