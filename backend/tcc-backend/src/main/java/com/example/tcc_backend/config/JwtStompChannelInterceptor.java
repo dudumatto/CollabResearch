@@ -7,6 +7,7 @@ import com.example.tcc_backend.service.ConversaService;
 import com.example.tcc_backend.service.JwtService;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -26,7 +27,7 @@ public class JwtStompChannelInterceptor implements ChannelInterceptor {
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
     private final TokenRevocationService tokenRevocationService;
-    private final ConversaService conversaService;
+    private final ObjectProvider<ConversaService> conversaServiceProvider;
     private final Map<String, UsernamePasswordAuthenticationToken> authenticationsBySession = new ConcurrentHashMap<>();
     private final Map<String, String> tokensBySession = new ConcurrentHashMap<>();
 
@@ -130,7 +131,7 @@ public class JwtStompChannelInterceptor implements ChannelInterceptor {
                     || !(authentication.getPrincipal() instanceof Usuario usuario)) {
                 throw new IllegalArgumentException("Sessao WebSocket invalida");
             }
-            conversaService.validarParticipacao(Integer.valueOf(id), usuario.getId());
+            conversaServiceProvider.getObject().validarParticipacao(Integer.valueOf(id), usuario.getId());
         }
     }
 
