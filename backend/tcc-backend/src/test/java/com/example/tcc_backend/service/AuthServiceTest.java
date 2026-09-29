@@ -17,6 +17,7 @@ import com.example.tcc_backend.repository.UsuarioRepository;
 import com.example.tcc_backend.security.AuthHelper;
 import com.example.tcc_backend.security.LoginBruteForceProtectionService;
 import com.example.tcc_backend.security.TokenRevocationService;
+import com.example.tcc_backend.support.TestDataFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
