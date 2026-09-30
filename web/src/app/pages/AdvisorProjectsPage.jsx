@@ -10,6 +10,7 @@ import {
   UserX,
   Inbox,
   Compass,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -312,6 +313,15 @@ export default function AdvisorProjectsPage() {
             </button>
           )}
         </div>
+
+        <button
+          type="button"
+          className="advisor-botao advisor-botao--primario"
+          onClick={() => navigate("/app/projects/new")}
+        >
+          <Plus size={16} />
+          Novo projeto
+        </button>
       </div>
 
       {loading && <ListaSkeleton linhas={5} />}
