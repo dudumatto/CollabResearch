@@ -181,7 +181,7 @@ export function mapProject(project) {
   const alunoCriadorUsuario = project?.alunoCriador?.usuario ?? null;
 
   const orientadorId = project?.orientadorId ?? orientadorUsuario?.id ?? null;
-  const orientadorNome = project?.orientadorNome ?? getUserName(orientadorUsuario) ?? null;
+  const orientadorNome = project?.orientadorNome ?? (orientadorUsuario ? getUserName(orientadorUsuario) : null);
   const orientadorEmail = project?.orientadorEmail ?? getUserEmail(orientadorUsuario) ?? null;
   const orientadorFotoPerfilUrl =
     project?.orientadorFotoPerfilUrl ||
@@ -190,7 +190,7 @@ export function mapProject(project) {
     getUserPhotoUrl(orientadorUsuario);
 
   const alunoCriadorId = project?.alunoCriadorId ?? alunoCriadorUsuario?.id ?? null;
-  const alunoCriadorNome = project?.alunoCriadorNome ?? getUserName(alunoCriadorUsuario) ?? null;
+  const alunoCriadorNome = project?.alunoCriadorNome ?? (alunoCriadorUsuario ? getUserName(alunoCriadorUsuario) : null);
   const alunoCriadorFotoPerfilUrl =
     project?.alunoCriadorFotoPerfilUrl ||
     project?.alunoCriadorFotoUrl ||
