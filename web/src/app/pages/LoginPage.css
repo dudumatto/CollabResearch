@@ -181,7 +181,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--espaco-4) var(--espaco-8);
+  padding: var(--espaco-4) var(--espaco-4);
+  overflow-y: auto;
 }
 
 @media (min-width: 640px) {
@@ -502,12 +503,14 @@
   min-height: 2.75rem;
   display: flex;
   justify-content: center;
+  overflow: visible;
 }
 
 .pagina-login__google-render iframe {
   display: block;
   width: 100% !important;
   max-width: 100%;
+  min-height: 2.75rem;
 }
 
 .pagina-login__google-render--loading {
@@ -622,5 +625,60 @@
 
   .campo-formulario__input {
     height: 2.55rem;
+  }
+}
+
+/* ================================================================
+   Telas pequenas / médias — formulário em cartão
+   ================================================================ */
+@media (max-width: 1023px) {
+  .pagina-login {
+    background: radial-gradient(
+        circle at 50% 0%,
+        var(--cor-fundo-leve) 0%,
+        var(--cor-fundo) 55%
+      )
+      var(--cor-fundo);
+  }
+
+  .pagina-login__painel-direito {
+    padding: var(--espaco-6) var(--espaco-4);
+  }
+
+  .pagina-login__formulario-area {
+    max-width: 23rem;
+    margin: auto;
+    padding: var(--espaco-6) var(--espaco-5);
+    background-color: var(--cor-branco);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-extra);
+    box-shadow: var(--sombra-grande);
+  }
+
+  .pagina-login__logo-mobile {
+    margin-bottom: var(--espaco-5);
+  }
+
+  .pagina-login__logo-full-mobile {
+    height: 30px;
+  }
+
+  .pagina-login__cabecalho {
+    text-align: center;
+  }
+
+  .pagina-login__link-cadastro {
+    margin-top: var(--espaco-5);
+  }
+}
+
+@media (max-width: 380px) {
+  .pagina-login__painel-direito {
+    padding: var(--espaco-4) var(--espaco-3);
+  }
+
+  .pagina-login__formulario-area {
+    padding: var(--espaco-5) var(--espaco-4);
+    border-radius: var(--raio-grande);
   }
 }

@@ -3,14 +3,21 @@
    ============================================================ */
 
 .pagina-cadastro {
-  height: 100svh;
+  min-height: 100svh;
   background-color: var(--cor-branco);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  padding: var(--espaco-3);
+  overflow-y: auto;
+  padding: var(--espaco-4);
   font-family: var(--fonte-principal);
+}
+
+@media (max-width: 479px) {
+  .pagina-cadastro {
+    align-items: flex-start;
+    padding: var(--espaco-3);
+  }
 }
 
 .pagina-cadastro__container {
@@ -555,7 +562,6 @@
 @media (max-height: 760px) {
   .pagina-cadastro {
     align-items: flex-start;
-    padding-top: var(--espaco-3);
   }
 
   .pagina-cadastro__logo-link,
@@ -733,4 +739,56 @@ body .app-combobox__option:focus-visible,
 body .app-combobox__option--selected {
   background: #eff5ec !important;
   color: #185e46 !important;
+}
+/* ================================================================
+   Telas pequenas / médias — cadastro em cartão
+   ================================================================ */
+@media (max-width: 1023px) {
+  .pagina-cadastro {
+    background: radial-gradient(
+        circle at 50% 0%,
+        var(--cor-fundo-leve) 0%,
+        var(--cor-fundo) 55%
+      )
+      var(--cor-fundo);
+    padding: var(--espaco-6) var(--espaco-4);
+  }
+
+  .pagina-cadastro__container {
+    max-width: 26rem;
+    padding: var(--espaco-6) var(--espaco-5);
+    background-color: var(--cor-branco);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-extra);
+    box-shadow: var(--sombra-grande);
+  }
+
+  .pagina-cadastro__cabecalho {
+    text-align: center;
+    margin-bottom: var(--espaco-5);
+  }
+
+  .pagina-cadastro__logo-link {
+    justify-content: center;
+    margin-bottom: var(--espaco-4);
+  }
+
+  .pagina-cadastro__logo-full {
+    height: 30px;
+  }
+
+  .pagina-cadastro__rodape {
+    margin-top: var(--espaco-5);
+  }
+}
+
+@media (max-width: 380px) {
+  .pagina-cadastro {
+    padding: var(--espaco-4) var(--espaco-3);
+  }
+
+  .pagina-cadastro__container {
+    padding: var(--espaco-5) var(--espaco-4);
+    border-radius: var(--raio-grande);
+  }
 }
