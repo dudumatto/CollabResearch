@@ -25,16 +25,20 @@ export default function LoginPage() {
       return;
     }
 
+    const container = googleButtonRef.current;
+    if (!container) return;
+
     let cancelled = false;
     let renderedWidth = 0;
     let googleInitialized = false;
-    let resizeObserver;
 
     const renderGoogleButton = () => {
-      if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) return;
+      if (cancelled || !window.google?.accounts?.id) return;
 
-      const width = Math.min(400, Math.floor(googleButtonRef.current.clientWidth));
-      if (!width || width === renderedWidth) return;
+      // O GSI só aceita largura entre 200px e 400px e desenha o botão exatamente
+      // nessa medida, então ela precisa acompanhar a largura real do container.
+      const width = Math.min(400, Math.max(200, Math.floor(container.clientWidth)));
+      if (width === renderedWidth) return;
 
       if (!googleInitialized) {
         // Não usamos hosted_domain para permitir múltiplos domínios (unicamp.br, cotil.unicamp.br)
@@ -62,8 +66,8 @@ export default function LoginPage() {
         googleInitialized = true;
       }
 
-      googleButtonRef.current.innerHTML = "";
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
+      container.innerHTML = "";
+      window.google.accounts.id.renderButton(container, {
         theme: "outline",
         size: "large",
         text: "continue_with",
@@ -73,39 +77,27 @@ export default function LoginPage() {
       renderedWidth = width;
     };
 
+    const resizeObserver = new ResizeObserver(renderGoogleButton);
+    resizeObserver.observe(container);
+
     if (window.google?.accounts?.id) {
       renderGoogleButton();
-      resizeObserver = new ResizeObserver(renderGoogleButton);
-      resizeObserver.observe(googleButtonRef.current);
-      return () => {
-        cancelled = true;
-        resizeObserver?.disconnect();
-      };
-    }
-
-    const existingScript = document.querySelector("script[src='https://accounts.google.com/gsi/client']");
-    const script = existingScript || document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = renderGoogleButton;
-    script.onerror = () => {
-      if (!cancelled) setGoogleUnavailable(true);
-    };
-    script.addEventListener("load", () => {
-      if (cancelled || !googleButtonRef.current) return;
-      renderGoogleButton();
-      resizeObserver = new ResizeObserver(renderGoogleButton);
-      resizeObserver.observe(googleButtonRef.current);
-    }, { once: true });
-
-    if (!existingScript) {
-      document.head.appendChild(script);
+    } else {
+      const existingScript = document.querySelector("script[src='https://accounts.google.com/gsi/client']");
+      const script = existingScript || document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.addEventListener("load", renderGoogleButton, { once: true });
+      script.addEventListener("error", () => {
+        if (!cancelled) setGoogleUnavailable(true);
+      }, { once: true });
+      if (!existingScript) document.head.appendChild(script);
     }
 
     return () => {
       cancelled = true;
-      resizeObserver?.disconnect();
+      resizeObserver.disconnect();
     };
   }, [googleClientId, googleLogin, navigate]);
 

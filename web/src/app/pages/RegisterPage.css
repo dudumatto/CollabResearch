@@ -6,7 +6,7 @@
   min-height: 100svh;
   background-color: var(--cor-branco);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   overflow-y: auto;
   padding: var(--espaco-4);
@@ -15,7 +15,6 @@
 
 @media (max-width: 479px) {
   .pagina-cadastro {
-    align-items: flex-start;
     padding: var(--espaco-3);
   }
 }
@@ -23,6 +22,8 @@
 .pagina-cadastro__container {
   width: 100%;
   max-width: 31rem;
+  /* centraliza no eixo Y quando sobra espaço, sem cortar o topo quando não sobra */
+  margin: auto;
 }
 
 /* ================================================================
@@ -560,10 +561,6 @@
 }
 
 @media (max-height: 760px) {
-  .pagina-cadastro {
-    align-items: flex-start;
-  }
-
   .pagina-cadastro__logo-link,
   .pagina-cadastro__subtitulo,
   .cadastro-step__subtitulo {
