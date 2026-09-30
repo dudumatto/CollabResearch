@@ -274,7 +274,7 @@ export default function CreateProjectPage() {
               value={form.descricao} onChange={handleChange}
               placeholder="Descreva os objetivos, metodologia e resultados esperados..."
               className="formulario-projeto__textarea"
-              rows={4} disabled={isDisabled}
+              rows={3} disabled={isDisabled}
             />
           </div>
 

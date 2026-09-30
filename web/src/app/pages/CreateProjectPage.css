@@ -5,9 +5,11 @@
 .pagina-criar-projeto {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-6);
+  gap: var(--espaco-4);
   font-family: var(--fonte-principal);
   max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* ================================================================
@@ -59,7 +61,7 @@
   background-color: var(--cor-branco);
   border-radius: var(--raio-grande);
   border: 1px solid var(--cor-borda-clara);
-  padding: var(--espaco-6);
+  padding: var(--espaco-4) var(--espaco-5);
   box-shadow: var(--sombra-minima);
 }
 
@@ -69,7 +71,7 @@
 .formulario-projeto {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-5);
+  gap: var(--espaco-3);
 }
 
 /* Alertas */
@@ -97,11 +99,11 @@
 .formulario-projeto__campo {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-2);
+  gap: var(--espaco-1);
 }
 
 .formulario-projeto__rotulo {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: var(--peso-semi);
   color: var(--cor-texto-secundario);
 }
@@ -121,11 +123,11 @@
 .formulario-projeto__input,
 .formulario-projeto__select {
   width: 100%;
-  padding: 0.7rem var(--espaco-4);
+  padding: 0.5rem var(--espaco-3);
   background-color: var(--cor-fundo);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-grande);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--cor-texto);
   font-family: var(--fonte-principal);
   outline: none;
@@ -148,14 +150,14 @@
 
 .formulario-projeto__lista-input {
   display: grid;
-  grid-template-columns: 1fr 2.75rem;
+  grid-template-columns: 1fr 2.25rem;
   gap: var(--espaco-2);
   align-items: center;
 }
 
 .formulario-projeto__botao-adicionar {
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.25rem;
+  height: 2.25rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -218,18 +220,18 @@
 /* Textarea */
 .formulario-projeto__textarea {
   width: 100%;
-  padding: 0.7rem var(--espaco-4);
+  padding: 0.5rem var(--espaco-3);
   background-color: var(--cor-fundo);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-grande);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--cor-texto);
   font-family: var(--fonte-principal);
   outline: none;
   resize: vertical;
-  min-height: 8rem;
+  min-height: 4.5rem;
   transition: var(--transicao-normal);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .formulario-projeto__textarea:focus {
@@ -277,8 +279,8 @@
 .formulario-projeto__acoes {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-3);
-  padding-top: var(--espaco-2);
+  gap: var(--espaco-2);
+  padding-top: var(--espaco-1);
 }
 
 @media (min-width: 480px) {
@@ -292,7 +294,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.7rem var(--espaco-5);
+  padding: 0.5rem var(--espaco-5);
   background-color: var(--cor-branco);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-grande);
@@ -317,7 +319,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--espaco-2);
-  padding: 0.7rem var(--espaco-6);
+  padding: 0.5rem var(--espaco-6);
   background-color: var(--cor-primaria);
   color: var(--cor-branco);
   border: none;

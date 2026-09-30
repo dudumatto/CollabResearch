@@ -6,6 +6,7 @@
   position: relative;
   overflow: hidden;
   max-width: 680px;
+  margin: 0 auto;
 }
 
 /* ── Page header ──────────────────────────────────────── */
