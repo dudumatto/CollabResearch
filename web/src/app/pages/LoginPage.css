@@ -506,11 +506,10 @@
   overflow: visible;
 }
 
+.pagina-login__google-render > div,
 .pagina-login__google-render iframe {
-  display: block;
-  width: 100% !important;
+  margin: 0 auto !important;
   max-width: 100%;
-  min-height: 2.75rem;
 }
 
 .pagina-login__google-render--loading {
@@ -522,7 +521,7 @@
   width: 100%;
   min-height: 2.75rem;
   border: 1px solid var(--cor-borda);
-  border-radius: 8px;
+  border-radius: var(--raio-completo);
   background-color: var(--cor-branco);
   color: var(--cor-texto-medio);
   font-size: var(--tamanho-medio);

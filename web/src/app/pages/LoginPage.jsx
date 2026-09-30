@@ -67,7 +67,7 @@ export default function LoginPage() {
         theme: "outline",
         size: "large",
         text: "continue_with",
-        shape: "rectangular",
+        shape: "pill",
         width,
       });
       renderedWidth = width;
