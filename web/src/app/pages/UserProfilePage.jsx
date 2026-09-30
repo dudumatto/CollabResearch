@@ -61,13 +61,38 @@ export default function UserProfilePage() {
   if (loading) {
     return (
       <div className="pagina-perfil">
+        <div className="skeleton perfil-sk-voltar" style={{ marginBottom: "var(--espaco-4)" }} />
         <div className="pagina-perfil__grade">
           <div className="cartao-perfil">
-            <div className="cartao-perfil__capa skeleton" style={{ borderRadius: "var(--raio-grande) var(--raio-grande) 0 0" }} />
-            <div className="cartao-perfil__corpo" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-              <div className="skeleton" style={{ width: 80, height: 80, borderRadius: "50%" }} />
-              <div className="skeleton" style={{ width: "60%", height: 18 }} />
-              <div className="skeleton" style={{ width: "40%", height: 13 }} />
+            <div className="cartao-perfil__capa skeleton" />
+            <div className="cartao-perfil__corpo">
+              <div className="cartao-perfil__avatar-wrapper">
+                <div className="skeleton perfil-sk-avatar" />
+              </div>
+              <div className="skeleton perfil-sk-nome" style={{ marginBottom: 8 }} />
+              <div className="skeleton perfil-sk-tipo" style={{ marginBottom: 4 }} />
+              <div className="skeleton perfil-sk-inst" style={{ marginBottom: "var(--espaco-4)" }} />
+              <div className="skeleton perfil-sk-stats" style={{ marginBottom: "var(--espaco-4)" }} />
+              <div className="perfil-sk-info-lista">
+                {["--w80", "--w70", "--w75", "--w60", "--w65"].map((w) => (
+                  <div key={w} className={`skeleton perfil-sk-info perfil-sk-info${w}`} />
+                ))}
+              </div>
+              <div className="skeleton perfil-sk-botao" />
+            </div>
+          </div>
+          <div className="pagina-perfil__conteudo-principal">
+            <div className="secao-perfil perfil-sk-secao">
+              <div className="skeleton perfil-sk-sec-titulo" />
+              <div className="skeleton perfil-sk-texto perfil-sk-texto--100" />
+              <div className="skeleton perfil-sk-texto perfil-sk-texto--85" />
+              <div className="skeleton perfil-sk-texto perfil-sk-texto--90" />
+            </div>
+            <div className="secao-perfil perfil-sk-secao">
+              <div className="skeleton perfil-sk-sec-titulo" />
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="skeleton perfil-sk-projeto" />
+              ))}
             </div>
           </div>
         </div>

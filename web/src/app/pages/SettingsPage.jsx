@@ -301,11 +301,18 @@ export default function SettingsPage() {
   return (
     <div className="pagina-configuracoes">
 
+      <div className="cfg-page-header">
+        <h2 className="cfg-page-header__title">Configurações</h2>
+        <p className="cfg-page-header__sub">Gerencie sua conta e preferências</p>
+      </div>
+
       <div className="cfg-profile-card">
-        <Avatar name={form.nome} src={form.fotoPerfilUrl} size={52} />
-        <div>
-          <p className="cfg-profile-card__name">{form.nome || "—"}</p>
-          <p className="cfg-profile-card__sub">{form.email} · {formatUserType(tipoPerfil)}</p>
+        <div className="cfg-profile-card__body">
+          <Avatar name={form.nome} src={form.fotoPerfilUrl} size={56} />
+          <div>
+            <p className="cfg-profile-card__name">{form.nome || "—"}</p>
+            <p className="cfg-profile-card__sub">{form.email} · {formatUserType(tipoPerfil)}</p>
+          </div>
         </div>
       </div>
 

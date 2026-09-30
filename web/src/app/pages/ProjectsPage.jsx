@@ -13,6 +13,7 @@ import { AppCombobox } from "../components/ui/AppCombobox";
 import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
 import ProjectGridCard from "../components/ProjectGridCard";
 import { getUserId, mapApplication, mapProject } from "../utils/adapters";
+import { formatProjectStatus } from "../utils/formatters";
 import "./ProjectsPage.css";
 
 function normalizeValue(value) {

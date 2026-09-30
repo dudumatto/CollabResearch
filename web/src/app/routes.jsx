@@ -313,6 +313,7 @@ export const router = createBrowserRouter([
       { path: "notifications", Component: NotificationsPage },
       { path: "configuracoes", Component: SettingsPage },
       { path: "users/:id", Component: UserProfilePage },
+      { path: "*", Component: NotFoundPage },
     ],
   },
 ]);

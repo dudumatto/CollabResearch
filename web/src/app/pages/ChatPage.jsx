@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, Search, Pencil, Trash2, ArrowLeft, MoreVertical } from "lucide-react";
+import { ArrowUp, Search, Pencil, Trash2, ArrowLeft, MoreVertical, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { conversationService } from "../services/conversationService";
@@ -863,7 +863,14 @@ export default function ChatPage() {
         </div>
 
         <div className="pagina-chat__rolagem-conversas">
-          {filtered.map((conversation) => (
+          {filtered.length === 0 ? (
+            <div className="pagina-chat__lista-vazia">
+              <MessageSquare size={36} className="pagina-chat__lista-vazia-icone" />
+              <p className="pagina-chat__lista-vazia-texto">
+                {search ? "Nenhuma conversa encontrada" : "Nenhuma conversa ainda"}
+              </p>
+            </div>
+          ) : filtered.map((conversation) => (
             <ConversationItem
               key={conversation.id}
               conversation={conversation}
@@ -945,8 +952,14 @@ export default function ChatPage() {
           </>
         ) : (
           <div className="pagina-chat__estado-vazio">
-            <p style={{ color: "#888" }}>
-              {conversations.length === 0 ? "Você ainda não tem nenhuma conversa." : "Selecione uma conversa"}
+            <MessageSquare size={48} className="pagina-chat__estado-vazio-icone" />
+            <p className="pagina-chat__estado-vazio-titulo">
+              {conversations.length === 0 ? "Nenhuma conversa ainda" : "Selecione uma conversa"}
+            </p>
+            <p className="pagina-chat__estado-vazio-subtitulo">
+              {conversations.length === 0
+                ? "Suas conversas aparecerão aqui quando você iniciar uma."
+                : "Escolha uma conversa na lista para começar a trocar mensagens."}
             </p>
           </div>
         )}

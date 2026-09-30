@@ -755,16 +755,61 @@
 }
 
 /* =========================
+   Lista vazia (painel esquerdo)
+========================= */
+.pagina-chat__lista-vazia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.pagina-chat__lista-vazia-icone {
+  color: var(--cor-texto-mudo);
+  opacity: 0.35;
+}
+
+.pagina-chat__lista-vazia-texto {
+  font-size: 0.85rem;
+  color: var(--cor-texto-mudo);
+  margin: 0;
+}
+
+/* =========================
    Estado vazio
 ========================= */
 .pagina-chat__estado-vazio {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--cor-texto-mudo);
+  gap: 12px;
   text-align: center;
-  padding: 20px;
+  padding: 40px 24px;
+}
+
+.pagina-chat__estado-vazio-icone {
+  color: var(--cor-texto-mudo);
+  opacity: 0.4;
+}
+
+.pagina-chat__estado-vazio-titulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  margin: 0;
+}
+
+.pagina-chat__estado-vazio-subtitulo {
+  font-size: 0.85rem;
+  color: var(--cor-texto-mudo);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.5;
 }
 
 /* =========================

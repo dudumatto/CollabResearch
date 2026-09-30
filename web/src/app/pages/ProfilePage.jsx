@@ -27,14 +27,15 @@ function initials(name = "") {
 function ProfileSkeleton() {
   return (
     <div className="advisor-pagina advisor-profile-standard student-profile-standard">
+      <div className="skeleton perfil-sk-hero" style={{ marginBottom: "var(--espaco-6)" }} />
       <div className="advisor-detalhe-grade">
         <div className="advisor-detalhe-lateral">
-          <div className="skeleton" style={{ width: "100%", height: 260, borderRadius: "var(--raio-grande)" }} />
-          <div className="skeleton" style={{ width: "100%", height: 120, borderRadius: "var(--raio-grande)" }} />
+          <div className="skeleton perfil-sk-card perfil-sk-card--alto" />
+          <div className="skeleton perfil-sk-card perfil-sk-card--med" />
         </div>
         <div className="student-profile-standard__main">
-          <div className="skeleton" style={{ width: "100%", height: 320, borderRadius: "var(--raio-grande)" }} />
-          <div className="skeleton" style={{ width: "100%", height: 220, borderRadius: "var(--raio-grande)" }} />
+          <div className="skeleton perfil-sk-card perfil-sk-card--form" />
+          <div className="skeleton perfil-sk-card perfil-sk-card--docs" />
         </div>
       </div>
     </div>
@@ -262,7 +263,6 @@ export default function ProfilePage() {
                 Dados do perfil
               </p>
               <div className="student-profile-standard__actions">
-                <span className="advisor-etiqueta advisor-etiqueta--cinza">{profileType}</span>
                 {!editing ? (
                   <button type="button" onClick={() => setEditing(true)} className="advisor-botao advisor-botao--secundario">
                     <Edit3 size={16} />

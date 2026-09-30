@@ -738,6 +738,38 @@
 }
 
 /* ================================================================
+   Skeletons de perfil
+   ================================================================ */
+.perfil-sk-voltar    { width: 5rem;  height: 1rem; }
+.perfil-sk-avatar    { width: 4rem;  height: 4rem; border-radius: var(--raio-grande); }
+.perfil-sk-nome      { width: 65%;   height: 1.1rem; }
+.perfil-sk-tipo      { width: 40%;   height: 0.8rem; }
+.perfil-sk-inst      { width: 55%;   height: 0.75rem; }
+.perfil-sk-stats     { height: 3.25rem; border-radius: var(--raio-grande); }
+.perfil-sk-info      { height: 0.8rem; }
+.perfil-sk-info--w80 { width: 80%; }
+.perfil-sk-info--w70 { width: 70%; }
+.perfil-sk-info--w75 { width: 75%; }
+.perfil-sk-info--w60 { width: 60%; }
+.perfil-sk-info--w65 { width: 65%; }
+.perfil-sk-botao     { width: 100%;  height: 2.5rem; border-radius: var(--raio-grande); }
+.perfil-sk-info-lista { display: flex; flex-direction: column; gap: 0.625rem; margin: var(--espaco-4) 0; }
+.perfil-sk-secao     { display: flex; flex-direction: column; gap: var(--espaco-3); }
+.perfil-sk-sec-titulo { width: 35%; height: 1.1rem; }
+.perfil-sk-texto     { height: 0.8rem; }
+.perfil-sk-texto--100 { width: 100%; }
+.perfil-sk-texto--85  { width: 85%; }
+.perfil-sk-texto--90  { width: 90%; }
+.perfil-sk-projeto   { height: 3.5rem; border-radius: var(--raio-grande); }
+/* ProfilePage (meu perfil) */
+.perfil-sk-hero      { height: 3rem; border-radius: var(--raio-grande); }
+.perfil-sk-card      { border-radius: var(--raio-grande); }
+.perfil-sk-card--alto { height: 260px; }
+.perfil-sk-card--med  { height: 120px; }
+.perfil-sk-card--form { height: 320px; }
+.perfil-sk-card--docs { height: 180px; }
+
+/* ================================================================
    Perfil do aluno no layout do orientador
    ================================================================ */
 .student-profile-standard__main {
