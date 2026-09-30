@@ -301,11 +301,6 @@ export default function SettingsPage() {
   return (
     <div className="pagina-configuracoes">
 
-      <div className="cfg-page-header">
-        <h2 className="cfg-page-header__title">Configurações</h2>
-        <p className="cfg-page-header__sub">Gerencie sua conta e preferências</p>
-      </div>
-
       <div className="cfg-profile-card">
         <div className="cfg-profile-card__body">
           <Avatar name={form.nome} src={form.fotoPerfilUrl} size={56} />
