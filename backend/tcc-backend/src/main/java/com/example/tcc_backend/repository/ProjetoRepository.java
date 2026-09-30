@@ -85,4 +85,18 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Integer>, JpaS
 """)
     Page<Projeto> findRelacionadosAoUsuario(@Param("usuarioId") Integer usuarioId, Pageable pageable);
 
+    @Query("""
+    SELECT COUNT(p) > 0 FROM Projeto p
+    LEFT JOIN Inscricao ia ON ia.projeto = p
+       AND ia.aluno.usuario.id = :usuarioAId
+       AND ia.status = com.example.tcc_backend.model.StatusInscricao.APROVADO
+    LEFT JOIN Inscricao ib ON ib.projeto = p
+       AND ib.aluno.usuario.id = :usuarioBId
+       AND ib.status = com.example.tcc_backend.model.StatusInscricao.APROVADO
+    WHERE (p.orientador.usuario.id = :usuarioAId OR p.alunoCriador.usuario.id = :usuarioAId OR ia IS NOT NULL)
+      AND (p.orientador.usuario.id = :usuarioBId OR p.alunoCriador.usuario.id = :usuarioBId OR ib IS NOT NULL)
+""")
+    boolean existsProjetoCompartilhado(@Param("usuarioAId") Integer usuarioAId,
+                                       @Param("usuarioBId") Integer usuarioBId);
+
 }

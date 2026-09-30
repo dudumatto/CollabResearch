@@ -7,6 +7,7 @@ import com.example.tcc_backend.model.Curso;
 import com.example.tcc_backend.model.Inscricao;
 import com.example.tcc_backend.model.Usuario;
 import com.example.tcc_backend.repository.AlunoRepository;
+import com.example.tcc_backend.repository.ConversaRepository;
 import com.example.tcc_backend.repository.CursoRepository;
 import com.example.tcc_backend.repository.InscricaoRepository;
 import com.example.tcc_backend.repository.OrientadorRepository;
@@ -51,6 +52,8 @@ class UsuarioServiceTest {
     private AuthHelper authHelper;
     @Mock
     private SupabaseStorageService supabaseStorageService;
+    @Mock
+    private ConversaRepository conversaRepository;
 
     @InjectMocks
     private UsuarioService usuarioService;
@@ -201,6 +204,27 @@ class UsuarioServiceTest {
 
         assertThat(profile.getId()).isEqualTo(1);
         assertThat(profile.getCursoNome()).isEqualTo("ADS");
+    }
+
+    @Test
+    void findProfileByIdDevePermitirUsuarioComProjetoEmComumOcultandoPreferencias() {
+        Usuario aluno = TestDataFactory.usuarioAluno(1);
+        Usuario orientador = TestDataFactory.usuarioOrientador(2);
+        orientador.setTema("escuro");
+        orientador.setNotificacoesAtivas(true);
+
+        when(authHelper.getCurrentUser()).thenReturn(aluno);
+        when(usuarioRepository.findById(2)).thenReturn(Optional.of(orientador));
+        when(projetoRepository.existsProjetoCompartilhado(1, 2)).thenReturn(true);
+        when(alunoRepository.findByUsuarioId(2)).thenReturn(Optional.empty());
+        when(orientadorRepository.findByUsuarioId(2)).thenReturn(Optional.empty());
+
+        UsuarioProfileResponse profile = usuarioService.findProfileById(2);
+
+        assertThat(profile.getId()).isEqualTo(2);
+        // Preferencias pessoais nao devem vazar para terceiros.
+        assertThat(profile.getTema()).isNull();
+        assertThat(profile.getNotificacoesAtivas()).isNull();
     }
 
     @Test

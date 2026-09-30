@@ -11,6 +11,7 @@ import com.example.tcc_backend.model.Projeto;
 import com.example.tcc_backend.model.TipoUsuario;
 import com.example.tcc_backend.model.Usuario;
 import com.example.tcc_backend.repository.AlunoRepository;
+import com.example.tcc_backend.repository.ConversaRepository;
 import com.example.tcc_backend.repository.CursoRepository;
 import com.example.tcc_backend.repository.InscricaoRepository;
 import com.example.tcc_backend.repository.OrientadorRepository;
@@ -48,6 +49,7 @@ public class UsuarioService {
     private final InscricaoRepository inscricaoRepository;
     private final AuthHelper authHelper;
     private final SupabaseStorageService supabaseStorageService;
+    private final ConversaRepository conversaRepository;
 
     @Autowired
     public UsuarioService(UsuarioRepository usuarioRepository,
@@ -57,7 +59,8 @@ public class UsuarioService {
                           ProjetoRepository projetoRepository,
                           InscricaoRepository inscricaoRepository,
                           AuthHelper authHelper,
-                          SupabaseStorageService supabaseStorageService) {
+                          SupabaseStorageService supabaseStorageService,
+                          ConversaRepository conversaRepository) {
         this.usuarioRepository = usuarioRepository;
         this.alunoRepository = alunoRepository;
         this.orientadorRepository = orientadorRepository;
@@ -66,6 +69,7 @@ public class UsuarioService {
         this.inscricaoRepository = inscricaoRepository;
         this.authHelper = authHelper;
         this.supabaseStorageService = supabaseStorageService;
+        this.conversaRepository = conversaRepository;
     }
 
     public UsuarioService(UsuarioRepository usuarioRepository,
@@ -76,7 +80,7 @@ public class UsuarioService {
                           InscricaoRepository inscricaoRepository,
                           AuthHelper authHelper) {
         this(usuarioRepository, alunoRepository, orientadorRepository, cursoRepository,
-                projetoRepository, inscricaoRepository, authHelper, null);
+                projetoRepository, inscricaoRepository, authHelper, null, null);
     }
 
     public List<Usuario> findAll() {
@@ -116,7 +120,19 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado"));
         validarAcessoAoUsuario(usuario, true);
-        return montarPerfil(usuario);
+
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        boolean proprioUsuario = usuarioLogado.getId().equals(usuario.getId());
+        boolean admin = usuarioLogado.getTipo() == TipoUsuario.ADMIN;
+
+        UsuarioProfileResponse perfil = montarPerfil(usuario);
+        if (!proprioUsuario && !admin) {
+            // Perfil publico: nao expor preferencias pessoais de outro usuario.
+            perfil.setTema(null);
+            perfil.setNotificacoesAtivas(null);
+            perfil.setRa(null);
+        }
+        return perfil;
     }
 
     @Transactional
@@ -258,7 +274,23 @@ public class UsuarioService {
             return;
         }
 
+        // Permite visualizar o perfil de pessoas com quem ha vinculo (projeto ou conversa em comum).
+        if (possuemVinculo(usuarioLogado.getId(), usuario.getId())) {
+            return;
+        }
+
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para acessar dados de outro usuario");
+    }
+
+    private boolean possuemVinculo(Integer usuarioAId, Integer usuarioBId) {
+        if (usuarioAId == null || usuarioBId == null) {
+            return false;
+        }
+        if (projetoRepository.existsProjetoCompartilhado(usuarioAId, usuarioBId)) {
+            return true;
+        }
+        return conversaRepository != null
+                && conversaRepository.findPrivadaEntreUsuarios(usuarioAId, usuarioBId).isPresent();
     }
 
     private UsuarioProfileResponse montarPerfil(Usuario usuario) {
