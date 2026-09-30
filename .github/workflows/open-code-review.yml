@@ -1,0 +1,25 @@
+name: OpenCodeReview
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    name: AI code review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Review pull request
+        uses: alibaba/open-code-review@v1.12.11
+        with:
+          llm_url: ${{ secrets.OCR_LLM_URL }}
+          llm_auth_token: ${{ secrets.OCR_LLM_TOKEN }}
+          llm_model: ${{ secrets.OCR_LLM_MODEL }}
+          llm_use_anthropic: ${{ secrets.OCR_LLM_USE_ANTHROPIC || 'false' }}
+          language: Portuguese
+          effort: medium
+          sticky_summary: 'true'

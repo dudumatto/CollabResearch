@@ -581,9 +581,6 @@ export default function ProjectDetailPage() {
         {/* ── Conteúdo principal ── */}
         <div className="pagina-detalhe-projeto__conteudo-principal">
           <div className="detalhe-card">
-            {project.coverUrl ? (
-              <img className="detalhe-card__foto-projeto" src={project.coverUrl} alt={`Foto do projeto ${project.title}`} />
-            ) : null}
             <div className="detalhe-card__topo">
               <div className="detalhe-card__badges">
                 <span className={`detalhe-card__badge-status ${statusClass}`}>

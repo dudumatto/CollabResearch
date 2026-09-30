@@ -90,7 +90,7 @@ public class SupabaseStorageService {
         if (!isConfigured()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Armazenamento de avatares nao configurado");
         }
-        return uploadToBucket(avatarsBucket, pastaRelativa, nomeArquivo, conteudo, contentType, upsert);
+        return uploadToBucket(userDocumentsBucket, pastaRelativa, nomeArquivo, conteudo, contentType, upsert);
     }
 
     public String createPublicUserDocumentUrl(String caminho) {
@@ -104,7 +104,7 @@ public class SupabaseStorageService {
     public String createPublicAvatarUrl(String caminho) {
         if (!isConfigured() || isBlank(caminho)) return null;
         String cleanPath = caminho.replaceAll("^/+", "");
-        return normalizedUrl() + "/storage/v1/object/public/" + URLEncoder.encode(avatarsBucket, StandardCharsets.UTF_8) + "/" + cleanPath;
+        return normalizedUrl() + "/storage/v1/object/public/" + URLEncoder.encode(userDocumentsBucket, StandardCharsets.UTF_8) + "/" + cleanPath;
     }
 
     private String uploadToBucket(String bucket, String pastaRelativa, String nomeArquivo, byte[] conteudo, String contentType, boolean upsert) {
@@ -124,7 +124,8 @@ public class SupabaseStorageService {
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falha ao enviar arquivo ao armazenamento");
+                System.err.println("[SupabaseStorage] Upload falhou: status=" + response.statusCode() + " bucket=" + bucket + " path=" + caminho + " body=" + response.body());
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falha ao enviar arquivo ao armazenamento: " + response.statusCode());
             }
             return caminho;
         } catch (IOException ex) {

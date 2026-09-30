@@ -101,7 +101,7 @@ export function Topbar({ onMenuClick, title, subtitle }) {
             >
               <div className="barra-topo__avatar">
                 {avatarUrl && !avatarFailed ? (
-                  <img src={avatarUrl} alt="Foto de perfil" loading="lazy" decoding="async" onError={() => setAvatarFailed(true)} />
+                  <img src={avatarUrl} alt="Foto de perfil" onError={() => setAvatarFailed(true)} />
                 ) : (
                   <span className="barra-topo__iniciais-avatar">{getInitials(user?.nome)}</span>
                 )}

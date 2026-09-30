@@ -37,3 +37,6 @@ Thumbs.db
 
 .mimocode
 docs
+
+# Graphify cache
+graphify-out/

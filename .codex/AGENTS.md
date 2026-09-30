@@ -16,6 +16,8 @@ Use o agente mais específico; para mudanças que cruzam contratos, comece pelo 
 - `desktop_engineer` — `desktop/` (Electron + React).
 - `flutter_engineer` — `mobile/` (Flutter/Dart).
 - `qa_reviewer` — revisão somente leitura: bugs, regressões, riscos, testes ausentes.
+- `security_reviewer` — revisão somente leitura de autenticação, autorização, secrets e dependências.
+- `release_engineer` — revisão de build, CI/CD, migrações, rollback e prontidão para produção.
 - `playwright_e2e` — testes E2E com Playwright.
 - `visual-designer` — direção visual antes de implementar UI relevante.
 - `ui-reviewer` — revisão visual após implementar UI.
@@ -32,12 +34,14 @@ Use o agente mais específico; para mudanças que cruzam contratos, comece pelo 
 - `redesign-existing-projects` — elevar qualidade visual de telas existentes sem quebrar funcionalidade.
 - `caveman` — modo de resposta conciso (lite é o padrão via `.codex/hooks.json`).
 
-Carregue skills por necessidade, não por hábito. Para dashboard e componentes existentes, respeite primeiro o design system do próprio módulo.
+Carregue um agente e skills por necessidade, não por hábito. Nunca carregue árvores inteiras de referências; leia somente os arquivos relevantes. Para dashboard e componentes existentes, respeite primeiro o design system do próprio módulo.
 
 ## Roteamento
 
 - Mudança em um módulo: agente do módulo.
 - Mudança em API, banco ou mais de um cliente: planner primeiro.
+- Autenticação, autorização, secrets ou dependências: security_reviewer depois do agente do módulo.
+- Build, CI/CD, migração, deploy ou rollback: release_engineer e qa_reviewer antes de qualquer publicação.
 - UI relevante: visual-designer → implementação → ui-reviewer.
 - Bug: agente do módulo + systematic-debugging; feche com verification-before-completion.
 - Antes de entregar: qa_reviewer (e ui-reviewer se houver UI).
