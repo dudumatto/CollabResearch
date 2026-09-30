@@ -432,19 +432,8 @@
   to { transform: rotate(360deg); }
 }
 
-/* Efeito de shimmer para loading */
-@keyframes shimmer {
-  0% { background-position: -200px 0; }
-  100% { background-position: 200px 0; }
-}
-
 .pagina-login__google-render--loading {
-  opacity: 0.65;
   pointer-events: none;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200px 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 8px;
 }
 
 /* Divisor */
@@ -498,26 +487,32 @@
   gap: var(--espaco-2);
 }
 
-.pagina-login__google-render {
+.pagina-login__google-botao {
+  position: relative;
   width: 100%;
-  min-height: 2.75rem;
-  display: flex;
-  justify-content: center;
-  overflow: visible;
+}
+
+/* iframe do Google por cima, invisível: o visual vem do nosso botão */
+.pagina-login__google-render {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  overflow: hidden;
 }
 
 .pagina-login__google-render > div,
 .pagina-login__google-render iframe {
-  margin: 0 auto !important;
-  max-width: 100%;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
 }
 
-.pagina-login__google-render--loading {
+.pagina-login__google-botao:has(.pagina-login__google-render--loading) .pagina-login__botao-google {
   opacity: 0.65;
-  pointer-events: none;
 }
 
 .pagina-login__botao-google {
+  box-sizing: border-box;
   width: 100%;
   min-height: 2.75rem;
   border: 1px solid var(--cor-borda);
@@ -533,6 +528,7 @@
   gap: var(--espaco-2);
 }
 
+.pagina-login__google-botao:hover .pagina-login__botao-google,
 .pagina-login__botao-google:hover:not(:disabled) {
   background-color: #f8f9fa;
   border-color: var(--cor-texto-medio);
@@ -540,6 +536,7 @@
   transform: translateY(-1px);
 }
 
+.pagina-login__google-botao:active .pagina-login__botao-google,
 .pagina-login__botao-google:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);

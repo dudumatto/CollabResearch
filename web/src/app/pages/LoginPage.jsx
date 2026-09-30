@@ -4,6 +4,17 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import "./LoginPage.css";
 
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2.5 24 .5 14.6.5 6.5 5.8 2.6 13.6l7.8 6.1C12.3 13.7 17.7 9.5 24 9.5Z" />
+      <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.2 5.4-4.7 7l7.6 5.9c4.4-4.1 6.8-10.1 6.8-17.4Z" />
+      <path fill="#FBBC05" d="M10.4 28.3a14.5 14.5 0 0 1 0-8.6l-7.8-6.1a23.5 23.5 0 0 0 0 20.8l7.8-6.1Z" />
+      <path fill="#34A853" d="M24 47.5c6.2 0 11.5-2 15.3-5.5l-7.6-5.9c-2.1 1.4-4.8 2.3-7.7 2.3-6.3 0-11.7-4.2-13.6-10.1l-7.8 6.1C6.5 42.2 14.6 47.5 24 47.5Z" />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { googleLogin, login } = useAuth();
@@ -256,11 +267,18 @@ export default function LoginPage() {
                 Login Google indisponível
               </button>
             ) : (
-              <div
-                ref={googleButtonRef}
-                className={`pagina-login__google-render ${googleLoading ? "pagina-login__google-render--loading" : ""}`}
-                aria-busy={googleLoading}
-              />
+              // O botão do Google é renderizado num iframe com medidas próprias, então
+              // ele fica invisível por cima do nosso botão, que define o visual e a largura.
+              <div className="pagina-login__google-botao">
+                <span className="pagina-login__botao-google" aria-hidden="true">
+                  <GoogleIcon /> Continuar com o Google
+                </span>
+                <div
+                  ref={googleButtonRef}
+                  className={`pagina-login__google-render ${googleLoading ? "pagina-login__google-render--loading" : ""}`}
+                  aria-busy={googleLoading}
+                />
+              </div>
             )}
             <p className="pagina-login__google-ajuda">
               Use sua conta Google institucional (@unicamp.br, @g.unicamp.br ou @cotil.unicamp.br) já cadastrada na plataforma.
