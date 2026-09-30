@@ -767,6 +767,20 @@
   color: var(--cor-texto);
 }
 
+.card-orientador__nome--clicavel {
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.card-orientador__nome--clicavel:hover {
+  color: var(--cor-primaria);
+  text-decoration: underline;
+}
+
 .card-orientador__departamento {
   font-size: 0.75rem;
   color: var(--cor-texto-fraco);
@@ -1144,6 +1158,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.card-colaboradores__nome-link {
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+.card-colaboradores__nome-link:hover {
+  color: var(--cor-primaria);
+  text-decoration: underline;
 }
 
 .card-colaboradores__botao-remover {

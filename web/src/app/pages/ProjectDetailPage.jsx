@@ -517,6 +517,11 @@ export default function ProjectDetailPage() {
   const getCollaboratorPhotoUrl = (c) =>
     getUserPhotoUrl(c?.participante ?? c?.colaborador ?? c);
 
+  const abrirPerfil = (usuarioId) => {
+    if (usuarioId == null) return;
+    navigate(`/app/users/${usuarioId}`);
+  };
+
   const canRemoveCollaborator = (c) => {
     const collaboratorId = getCollaboratorId(c);
     return (
@@ -807,7 +812,18 @@ export default function ProjectDetailPage() {
                 fallback="IC"
               />
               <div>
-                <p className="card-orientador__nome">{project.advisor?.name ?? "Sem orientador"}</p>
+                {project.advisor?.id ? (
+                  <button
+                    type="button"
+                    className="card-orientador__nome card-orientador__nome--clicavel"
+                    onClick={() => abrirPerfil(project.advisor.id)}
+                    title={`Ver perfil de ${project.advisor.name}`}
+                  >
+                    {project.advisor.name}
+                  </button>
+                ) : (
+                  <p className="card-orientador__nome">{project.advisor?.name ?? "Sem orientador"}</p>
+                )}
                 <p className="card-orientador__departamento">{project.advisor?.specialty || project.area}</p>
               </div>
             </div>
@@ -848,7 +864,18 @@ export default function ProjectDetailPage() {
                       fallback={getCollaboratorName(c).charAt(0).toUpperCase() || "?"}
                     />
                     <span className="card-colaboradores__nome">
-                      {getCollaboratorName(c)}  
+                      {getCollaboratorId(c) != null ? (
+                        <button
+                          type="button"
+                          className="card-colaboradores__nome-link"
+                          onClick={() => abrirPerfil(getCollaboratorId(c))}
+                          title={`Ver perfil de ${getCollaboratorName(c)}`}
+                        >
+                          {getCollaboratorName(c)}
+                        </button>
+                      ) : (
+                        getCollaboratorName(c)
+                      )}
                       {isProjectAdvisor(project, c) && (
                         <span className="card-colaboradores__papel"> (Orientador)</span>
                       )}
