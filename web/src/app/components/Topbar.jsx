@@ -3,18 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../providers/NotificationsProvider";
-import { formatUserType } from "../utils/formatters";
+import { formatUserType, getInitials } from "../utils/formatters";
 import { prefetchRoute } from "../routes";
 import "./Topbar.css";
-
-function getInitials(name) {
-  if (!name) return "IC";
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
 
 export function Topbar({ onMenuClick, title, subtitle }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);

@@ -17,66 +17,34 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../providers/NotificationsProvider";
-import { features } from "../config/features";
+import { getInitials } from "../utils/formatters";
 import { prefetchRoute } from "../routes";
 import "./Sidebar.css";
 
-const studentSections = [
-  {
-    label: "Geral",
-    items: [{ path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true }],
-  },
-  {
-    label: "Pesquisa",
-    items: [
-      { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
-      { path: "/app/applications", label: "Inscrições", icon: FileText },
-      { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
-      { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
-      { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
-    ],
-  },
-  {
-    label: "Comunicação",
-    items: [
-      { path: "/app/chat", label: "Conversas", icon: MessageSquare },
-      { path: "/app/notifications", label: "Notificações", icon: Bell },
-    ],
-  },
-  {
-    label: "Conta",
-    items: [{ path: "/app/profile", label: "Meu perfil", icon: User }],
-  },
+const studentItems = [
+  { path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { path: "/app/projects", label: "Projetos", icon: FolderOpen },
+  { path: "/app/applications", label: "Inscrições", icon: FileText },
+  { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
+  { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
+  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
+  { path: "/app/chat", label: "Conversas", icon: MessageSquare },
+  { path: "/app/notifications", label: "Notificações", icon: Bell },
+  { path: "/app/profile", label: "Meu perfil", icon: User },
 ];
 
-const advisorSections = [
-  {
-    label: "Geral",
-    items: [{ path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true }],
-  },
-  {
-    label: "Orientação",
-    items: [
-      { path: "/app/projects", label: "Meus projetos", icon: FolderOpen },
-      { path: "/app/advisees", label: "Alunos", icon: GraduationCap },
-      { path: "/app/applications", label: "Inscrições", icon: FileText },
-      { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
-      { path: "/app/progress", label: "Progresso", icon: TrendingUp },
-      { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
-      { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
-    ],
-  },
-  {
-    label: "Comunicação",
-    items: [
-      { path: "/app/chat", label: "Conversas", icon: MessageSquare },
-      { path: "/app/notifications", label: "Notificações", icon: Bell },
-    ],
-  },
-  {
-    label: "Conta",
-    items: [{ path: "/app/profile", label: "Meu perfil", icon: User }],
-  },
+const advisorItems = [
+  { path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { path: "/app/projects", label: "Projetos", icon: FolderOpen },
+  { path: "/app/applications", label: "Inscrições", icon: FileText },
+  { path: "/app/advisees", label: "Alunos", icon: GraduationCap },
+  { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
+  { path: "/app/progress", label: "Progresso", icon: TrendingUp },
+  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
+  { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
+  { path: "/app/chat", label: "Conversas", icon: MessageSquare },
+  { path: "/app/notifications", label: "Notificações", icon: Bell },
+  { path: "/app/profile", label: "Meu perfil", icon: User },
 ];
 
 export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
@@ -84,13 +52,10 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
   const { notifications } = useNotifications();
   const unreadCount = notifications.filter((item) => !item.read).length;
   const isAdvisor = user?.tipo === "ORIENTADOR";
-  const activeSections = useMemo(
-    () => (isAdvisor ? advisorSections : studentSections)
-      .map((section) => ({
-        ...section,
-        items: section.items.filter((item) => !item.roles || item.roles.includes(user?.tipo)),
-      }))
-      .filter((section) => section.items.length > 0),
+  const items = useMemo(
+    () => (isAdvisor ? advisorItems : studentItems).filter(
+      (item) => !item.roles || item.roles.includes(user?.tipo),
+    ),
     [isAdvisor, user?.tipo],
   );
 
@@ -112,63 +77,65 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
               height={20}
               alt="CollabResearch"
             />
+            <img
+              className="barra-lateral__marca barra-lateral__marca--icone"
+              src="/brand/logo-icon.svg"
+              width={24}
+              height={24}
+              alt="CollabResearch"
+            />
           </div>
         </div>
 
+        <div className="barra-lateral__divisor" aria-hidden="true" />
+
         <nav className="barra-lateral__navegacao">
-          {activeSections.map((section) => (
-            <div key={section.label} className="barra-lateral__setor">
-              <div className="barra-lateral__setor-marca" aria-hidden="true" />
-              <span className="barra-lateral__setor-rotulo">{section.label}</span>
-              <div className="barra-lateral__setor-itens">
-                {section.items.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.exact}
-                    onClick={() => setMobileOpen(false)}
-                    onMouseEnter={() => prefetchRoute(item.path, user?.tipo)}
-                    onFocus={() => prefetchRoute(item.path, user?.tipo)}
-                    className={({ isActive }) =>
-                      [
-                        "barra-lateral__item-nav",
-                        isActive ? "barra-lateral__item-nav--ativo" : "",
-                        isCollapsed ? "barra-lateral__item-nav--centralizado" : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        {isActive && <span className="barra-lateral__indicador-ativo" />}
-                        <item.icon
-                          size={18}
-                          className={
-                            isActive
-                              ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo"
-                              : "barra-lateral__icone-nav"
-                          }
-                        />
-                        <span
-                          className={
-                            isActive
-                              ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo"
-                              : "barra-lateral__rotulo-nav"
-                          }
-                        >
-                          {item.label}
-                        </span>
-                        {item.path === "/app/notifications" && unreadCount > 0 && (
-                          <span className="barra-lateral__contador">{unreadCount}</span>
-                        )}
-                      </>
+          <div className="barra-lateral__setor-itens">
+            {items.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.exact}
+                onClick={() => setMobileOpen(false)}
+                onMouseEnter={() => prefetchRoute(item.path, user?.tipo)}
+                onFocus={() => prefetchRoute(item.path, user?.tipo)}
+                className={({ isActive }) =>
+                  [
+                    "barra-lateral__item-nav",
+                    isActive ? "barra-lateral__item-nav--ativo" : "",
+                    isCollapsed ? "barra-lateral__item-nav--centralizado" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <item.icon
+                      size={18}
+                      className={
+                        isActive
+                          ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo"
+                          : "barra-lateral__icone-nav"
+                      }
+                    />
+                    <span
+                      className={
+                        isActive
+                          ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo"
+                          : "barra-lateral__rotulo-nav"
+                      }
+                    >
+                      {item.label}
+                    </span>
+                    {item.path === "/app/notifications" && unreadCount > 0 && (
+                      <span className="barra-lateral__contador">{unreadCount}</span>
                     )}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          ))}
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         </nav>
 
         <div className="barra-lateral__rodape">
@@ -179,7 +146,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             onFocus={() => prefetchRoute("/app/configuracoes", user?.tipo)}
             className={({ isActive }) =>
               [
-                "barra-lateral__item-configuracoes",
+                "barra-lateral__item-nav",
                 isActive ? "barra-lateral__item-nav--ativo" : "",
                 isCollapsed ? "barra-lateral__item-nav--centralizado" : "",
               ].filter(Boolean).join(" ")
@@ -187,21 +154,44 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
           >
             {({ isActive }) => (
               <>
-                {isActive && <span className="barra-lateral__indicador-ativo" />}
                 <Settings
                   size={18}
                   className={isActive ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo" : "barra-lateral__icone-nav"}
                 />
                 <span className={isActive ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo" : "barra-lateral__rotulo-nav"}>
-                  Configuracoes
+                  Configurações
                 </span>
               </>
             )}
           </NavLink>
+
+          <div className="barra-lateral__divisor barra-lateral__divisor--rodape" aria-hidden="true" />
+
+          <NavLink
+            to="/app/profile"
+            onClick={() => setMobileOpen(false)}
+            onMouseEnter={() => prefetchRoute("/app/profile", user?.tipo)}
+            onFocus={() => prefetchRoute("/app/profile", user?.tipo)}
+            className={`barra-lateral__perfil ${isCollapsed ? "barra-lateral__perfil--centralizado" : ""}`}
+          >
+            {user?.fotoPerfilUrl || user?.avatarUrl ? (
+              <img
+                className="barra-lateral__perfil-avatar barra-lateral__perfil-avatar--foto"
+                src={user?.fotoPerfilUrl ?? user?.avatarUrl}
+                alt=""
+              />
+            ) : (
+              <span className="barra-lateral__perfil-avatar">{getInitials(user?.nome)}</span>
+            )}
+            <span className="barra-lateral__perfil-info">
+              <span className="barra-lateral__perfil-nome">{user?.nome ?? "Usuário"}</span>
+              <span className="barra-lateral__perfil-papel">{isAdvisor ? "Orientador(a)" : "Aluno(a)"}</span>
+            </span>
+          </NavLink>
         </div>
       </div>
     );
-  }, [activeSections, collapsed, setMobileOpen, unreadCount]);
+  }, [items, collapsed, setMobileOpen, unreadCount, user, isAdvisor]);
 
   return (
     <>
