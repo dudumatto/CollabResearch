@@ -276,12 +276,11 @@ export default function AdvisorDashboardPage() {
   const metricas = data?.metricas ?? {};
   const filas = data?.filas ?? {};
   const metricCards = buildMetricCards(metricas);
-  const highPriorityQueues = filasConfig.filter((config) =>
-    ["solicitacoesOrientacao", "inscricoesPendentes", "entregasAguardandoRevisao", "etapasAtrasadas"].includes(config.key),
-  );
-  const followUpQueues = filasConfig.filter((config) =>
-    !["solicitacoesOrientacao", "inscricoesPendentes", "entregasAguardandoRevisao", "etapasAtrasadas"].includes(config.key),
-  );
+  const priorityOrder = ["etapasAtrasadas", "entregasAguardandoRevisao", "solicitacoesOrientacao", "inscricoesPendentes"];
+  const highPriorityQueues = priorityOrder
+    .map((key) => filasConfig.find((config) => config.key === key))
+    .filter(Boolean);
+  const followUpQueues = filasConfig.filter((config) => !priorityOrder.includes(config.key));
   const pendingTotal =
     (metricas.solicitacoesOrientacao ?? 0) +
     (metricas.inscricoesPendentes ?? 0) +

@@ -160,8 +160,10 @@
   /* ------------------------------------------
      Layout — largura da barra lateral
   ------------------------------------------ */
-  --largura-sidebar:          12.5rem;
-  --largura-sidebar-recolhida: 4rem;  /*  64px / w-16 */
+  --largura-sidebar-interna:           13rem;
+  --largura-sidebar-recolhida-interna: 4.5rem;
+  --largura-sidebar:          calc(var(--largura-sidebar-interna) + 2rem);
+  --largura-sidebar-recolhida: calc(var(--largura-sidebar-recolhida-interna) + 2rem);
   --altura-topbar:             4rem;  /*  64px / h-16 */
 
   /* ------------------------------------------

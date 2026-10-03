@@ -12,6 +12,15 @@ export function formatUserType(value) {
   return value === "ALUNO" ? "Aluno" : value === "ORIENTADOR" ? "Orientador" : value ?? "-";
 }
 
+export function getInitials(name) {
+  if (!name) return "IC";
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
 export function formatProjectStatus(value) {
   const map = {
     PENDENTE_ORIENTADOR: "Aguardando orientador",
