@@ -157,7 +157,14 @@ export const progressService = {
         overallPercent: Number(response?.overallPercent ?? 0),
       };
     } catch {
-      throw new Error("Seu ambiente ainda está usando o backend legado, que não suporta concluir etapas.");
+      // Endpoint novo indisponível: etapas sintéticas (DEFAULT_STEPS) não têm
+      // linha no backend legado, então não há o que concluir.
+      if (String(stepId).startsWith("legacy-")) {
+        throw new Error("Seu ambiente ainda está usando o backend legado, que não suporta concluir etapas.");
+      }
+      const status = String(payload?.status ?? "DONE").toUpperCase();
+      const response = await etapaService.complete(projectId, stepId, status);
+      return { step: normalizeLegacyStage(response) };
     }
   },
 

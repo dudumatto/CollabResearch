@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { User, Lock, Palette, SignOut, CaretRight, ArrowLeft, Check, Monitor, Moon, Sun } from "@phosphor-icons/react";
+import { User, Lock, Palette, SignOut, Trash, CaretRight, ArrowLeft, Check, Monitor, Moon, Sun } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../providers/ThemeProvider";
 import { userService } from "../services/userService";
@@ -11,6 +11,7 @@ import { authService } from "../services/authService";
 import { formatUserType } from "../utils/formatters";
 import { getUserPhotoUrl } from "../utils/adapters";
 import { LogoutConfirmModal } from "../components/LogoutConfirmModal";
+import { DeleteAccountModal } from "../components/DeleteAccountModal";
 import "./SettingsPage.css";
 
 function getInitials(name = "") {
@@ -145,24 +146,8 @@ function ThemeSelector({ value, onChange }) {
   );
 }
 
-function SettingsSkeleton() {
-  const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
-    <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
-  );
-  return (
-    <div className="cfg-skeleton-wrap">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="cfg-skeleton-block">
-          <div className="cfg-skeleton-block__row">
-            <Sk w={18} h={18} r="50%" />
-            <Sk w={120} h={14} />
-          </div>
-          <Sk w="100%" h={48} r="12px" />
-          <Sk w="100%" h={48} r="12px" />
-        </div>
-      ))}
-    </div>
-  );
+function Sk({ w = "100%", h = 14, r = "0.5rem" }) {
+  return <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />;
 }
 
 import { useSidebarContext } from "../layouts/DashboardLayout";
@@ -184,6 +169,7 @@ export default function SettingsPage() {
   const [activePanel, setActivePanel] = useState(null);
   const [saving, setSaving] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const [form, setForm] = useState({
     nome: "", email: "", fotoPerfilUrl: "",
@@ -285,23 +271,46 @@ export default function SettingsPage() {
     }
   };
 
+  const deleteAccount = async () => {
+    if (!user?.id) return;
+    try {
+      await userService.remove(user.id);
+      setDeleteModalOpen(false);
+      toast.success("Conta excluída. Sentiremos sua falta.");
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (err) {
+      toast.error(err.message || "Não foi possível excluir a conta.");
+    }
+  };
+
   const open = (id) => setActivePanel(id);
   const close = () => setActivePanel(null);
 
   const panelProps = { activePanel, onBack: close, collapsed };
-
-  if (loading) return <SettingsSkeleton />;
 
   return (
     <div className="pagina-configuracoes">
 
       <div className="cfg-profile-card">
         <div className="cfg-profile-card__body">
-          <Avatar name={form.nome} src={form.fotoPerfilUrl} size={56} />
-          <div>
-            <p className="cfg-profile-card__name">{form.nome || "—"}</p>
-            <p className="cfg-profile-card__sub">{form.email} · {formatUserType(tipoPerfil)}</p>
-          </div>
+          {loading ? (
+            <>
+              <Sk w={56} h={56} r="50%" />
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <Sk w={160} h={16} />
+                <Sk w={220} h={12} />
+              </div>
+            </>
+          ) : (
+            <>
+              <Avatar name={form.nome} src={form.fotoPerfilUrl} size={56} />
+              <div>
+                <p className="cfg-profile-card__name">{form.nome || "—"}</p>
+                <p className="cfg-profile-card__sub">{form.email} · {formatUserType(tipoPerfil)}</p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -327,6 +336,15 @@ export default function SettingsPage() {
               <span className="cfg-nav-item__title cfg-nav-item__title--danger">Sair da conta</span>
             </span>
           </button>
+          {!loading && tipoPerfil === "ALUNO" && (
+            <button className="cfg-nav-item cfg-nav-item--danger" onClick={() => setDeleteModalOpen(true)}>
+              <span className="cfg-nav-item__icon icon-red"><Trash size={18} /></span>
+              <span className="cfg-nav-item__text">
+                <span className="cfg-nav-item__title cfg-nav-item__title--danger">Excluir conta</span>
+                <span className="cfg-nav-item__sub">Remove permanentemente sua conta</span>
+              </span>
+            </button>
+          )}
         </SectionGroup>
       </div>
 
@@ -386,6 +404,14 @@ export default function SettingsPage() {
         open={logoutModalOpen}
         onConfirm={logout}
         onCancel={() => setLogoutModalOpen(false)}
+      />
+
+      <DeleteAccountModal
+        open={deleteModalOpen}
+        expectedName={form.nome}
+        expectedEmail={form.email}
+        onConfirm={deleteAccount}
+        onCancel={() => setDeleteModalOpen(false)}
       />
 
     </div>

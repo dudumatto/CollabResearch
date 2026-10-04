@@ -34,6 +34,9 @@ import "../components/DashboardKit.css";
 
 const DASHBOARD_PREVIEW_LIMIT = 3;
 const MESSAGES_PREVIEW_LIMIT = 2;
+// Calendário mostra 3 prazos inteiros + o 4º cortado com fade e "Ver mais"
+// (mesmo comportamento do painel do orientador, ver AdvisorDashboardPage).
+const CALENDAR_PREVIEW_LIMIT = 3;
 
 const applicationTone = {
   APROVADO: "verde",
@@ -322,8 +325,19 @@ export default function DashboardPage() {
             title="Calendário"
             caption="Veja seus próximos prazos"
             onOpen={() => navigate("/app/deadlines")}
+            className="dash-card--sombra dash-card--calendario"
           >
-            <DashAgenda items={derived.agenda} emptyLabel="Nenhum prazo próximo cadastrado." />
+            <div className="dash-agenda-lista">
+              <DashAgenda
+                items={derived.agenda.slice(0, CALENDAR_PREVIEW_LIMIT + 1)}
+                emptyLabel="Nenhum prazo próximo cadastrado."
+              />
+              {derived.agenda.length > CALENDAR_PREVIEW_LIMIT && (
+                <button type="button" className="dash-agenda-vermais" onClick={() => navigate("/app/deadlines")}>
+                  Ver mais
+                </button>
+              )}
+            </div>
           </DashCard>
 
           <DashCard

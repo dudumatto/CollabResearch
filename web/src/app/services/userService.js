@@ -19,6 +19,9 @@ export const userService = {
   update(id, payload) {
     return api.put(`/api/usuarios/${id}`, payload);
   },
+  remove(id) {
+    return api.delete(`/api/usuarios/${id}`);
+  },
   updatePreferencias(payload) {
     return api.put("/api/usuarios/me/preferencias", payload);
   },

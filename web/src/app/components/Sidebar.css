@@ -154,6 +154,12 @@
   padding-inline: calc(var(--sidebar-trilho) - 0.75rem);
 }
 
+/* Expandida, a marca encosta mais à esquerda (referência Figma); recolhida
+   mantém o padding do trilho acima, que centra o ícone. */
+.barra-lateral:not(.barra-lateral--recolhida) .barra-lateral__cabecalho {
+  padding-left: var(--espaco-4);
+}
+
 /* As duas marcas ficam sobrepostas no mesmo ponto e fazem cross-fade, em vez
    de alternar com display, que cortava a troca no meio da animacao. */
 .barra-lateral__marca {
@@ -177,7 +183,7 @@
 
 .barra-lateral--recolhida .barra-lateral__marca--icone {
   opacity: 1;
-  transition-delay: 150ms;
+  transition-delay: 90ms;
 }
 
 .barra-lateral__marca-lockup {
@@ -203,7 +209,7 @@
   width: 6.55rem;
   height: auto;
   max-width: none;
-  transition-delay: 150ms;
+  transition-delay: 90ms;
 }
 
 /* ---- Divisores ---- */
@@ -317,6 +323,14 @@
 .barra-lateral__item-nav--ativo {
   background-color: var(--sidebar-ativo-bg);
   color: var(--sidebar-ativo-texto);
+}
+
+.barra-lateral__item-nav--sair {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
 }
 
 .barra-lateral__icone-nav {
@@ -473,34 +487,6 @@
 
 .barra-lateral__rodape-conta .barra-lateral__perfil {
   flex: 1 1 auto;
-}
-
-.barra-lateral__sair {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: none;
-  border-radius: var(--raio-medio);
-  background: none;
-  color: var(--sidebar-texto-fraco);
-  cursor: pointer;
-  transition: background-color 160ms ease, color 160ms ease;
-}
-
-.barra-lateral__sair:hover,
-.barra-lateral__sair:focus-visible {
-  background-color: var(--cor-erro-clara, var(--sidebar-hover-bg));
-  color: var(--cor-erro, var(--sidebar-texto));
-  outline: none;
-}
-
-/* Recolhida, a coluna fica estreita demais para o par perfil+sair lado a
-   lado; o botão de sair some e o avatar do perfil ocupa o espaço sozinho. */
-.barra-lateral--recolhida .barra-lateral__sair {
-  display: none;
 }
 
 /* ---- Overlay mobile ---- */

@@ -7,7 +7,12 @@ const API_BASE_URL = (
     : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "https://tcc-backend-jqod.onrender.com"
 ).replace(/\/$/, "");
 
-const GET_DEDUPE_TTL_MS = 750;
+// Cache de GET por sessao de navegacao. Qualquer mutacao (POST/PUT/PATCH/DELETE)
+// limpa todo o cache, entao durante leitura/navegacao as mesmas rotas nao sao
+// refetchadas. Backend remoto (Render + Supabase) e lento, entao reaproveitar
+// respostas entre paginas e o maior ganho de velocidade percebida.
+// ponytail: TTL global unico; usar TTL por rota so se alguma precisar de dado mais fresco.
+const GET_DEDUPE_TTL_MS = 30000;
 const getRequestCache = new Map();
 
 function buildRequestUrl(path) {
