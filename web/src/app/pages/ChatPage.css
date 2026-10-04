@@ -3,7 +3,8 @@
 ========================= */
 .pagina-chat {
   display: flex;
-  height: calc(100vh - 8rem);
+  /* +1rem: a topbar flutua com margem no topo a partir de 768px (Topbar.css) */
+  height: calc(100vh - 9rem);
   background: var(--cor-superficie);
   border-radius: 12px;
   border: 1px solid transparent;

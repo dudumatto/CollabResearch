@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import {
-  Search, FileText, TrendingUp, MessageSquare,
-  CheckCircle, ArrowRight, Star, Users, Zap, Shield,
-  Globe, Menu, X, GraduationCap, Award,
-} from "lucide-react";
+import { MagnifyingGlass, FileText, TrendUp, ChatCircleText, CheckCircle, ArrowRight, Star, Users, Lightning, Shield, Globe, List, X, GraduationCap, Trophy } from "@phosphor-icons/react";
 import "./LandingPage.css";
 
 const navItems = [
@@ -16,10 +12,10 @@ const navItems = [
 ];
 
 const features = [
-  { icon: Search,       title: "Busca Inteligente de Projetos",  description: "Pesquise projetos por área de pesquisa, curso ou orientador e encontre a oportunidade certa para você.", colorClass: "landing__card-feature__icone-area--azul" },
+  { icon: MagnifyingGlass,       title: "Busca Inteligente de Projetos",  description: "Pesquise projetos por área de pesquisa, curso ou orientador e encontre a oportunidade certa para você.", colorClass: "landing__card-feature__icone-area--azul" },
   { icon: FileText,     title: "Inscrição 100% Online",          description: "Candidate-se a projetos, envie documentos e acompanhe tudo em um único lugar.", colorClass: "landing__card-feature__icone-area--violeta" },
-  { icon: TrendingUp,   title: "Acompanhamento de Progresso",    description: "Visualize marcos, entregas e evolução do projeto com timelines interativas.", colorClass: "landing__card-feature__icone-area--esmeralda" },
-  { icon: MessageSquare,title: "Chat com Orientadores",          description: "Comunicação direta e ágil com seu orientador sem precisar de e-mails.", colorClass: "landing__card-feature__icone-area--laranja" },
+  { icon: TrendUp,   title: "Acompanhamento de Progresso",    description: "Visualize marcos, entregas e evolução do projeto com timelines interativas.", colorClass: "landing__card-feature__icone-area--esmeralda" },
+  { icon: ChatCircleText,title: "Chat com Orientadores",          description: "Comunicação direta e ágil com seu orientador sem precisar de e-mails.", colorClass: "landing__card-feature__icone-area--laranja" },
   { icon: Star,         title: "Sistema de Feedback",            description: "Receba avaliações detalhadas e construtivas ao longo da pesquisa.", colorClass: "landing__card-feature__icone-area--amarelo" },
   { icon: Shield,       title: "Gestão de Documentos",           description: "Faça upload e gerencie todos os seus documentos acadêmicos com segurança.", colorClass: "landing__card-feature__icone-area--rosa" },
 ];
@@ -134,7 +130,7 @@ export default function LandingPage() {
           </div>
 
           <motion.button {...buttonMotion} onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="landing__botao-menu-mobile">
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            {mobileMenuOpen ? <X size={20} /> : <List size={20} />}
           </motion.button>
         </div>
 
@@ -267,7 +263,7 @@ export default function LandingPage() {
                 <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }} className="landing__toast landing__toast--direita">
                   <div className="landing__toast-interno">
                     <div className="landing__toast-icone landing__toast-icone--azul">
-                      <MessageSquare size={16} />
+                      <ChatCircleText size={16} />
                     </div>
                     <div>
                       <span className="landing__toast-titulo">Nova mensagem</span>
@@ -332,7 +328,7 @@ export default function LandingPage() {
             {[
               { icon: Users, label: "Para alunos e orientadores" },
               { icon: Globe, label: "100% online e acessível" },
-              { icon: Zap,   label: "Rápido e fácil de usar" },
+              { icon: Lightning,   label: "Rápido e fácil de usar" },
             ].map((item) => (
               <motion.div key={item.label} variants={itemFadeUp} whileHover={{ scale: 1.03 }} className="landing__card-solucao">
                 <item.icon size={20} style={{ flexShrink: 0 }} />
@@ -411,7 +407,7 @@ export default function LandingPage() {
             <motion.div variants={itemFadeUp} whileHover={{ scale: 1.03 }} className="landing__card-beneficios landing__card-beneficios--orientadores">
               <div className="landing__card-beneficios__cabecalho">
                 <div className="landing__card-beneficios__icone landing__card-beneficios__icone--violeta">
-                  <Award size={22} style={{ color: "white" }} />
+                  <Trophy size={22} style={{ color: "white" }} />
                 </div>
                 <h3 className="landing__card-beneficios__titulo">Para Orientadores</h3>
               </div>

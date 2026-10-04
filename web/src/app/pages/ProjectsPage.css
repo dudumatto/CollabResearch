@@ -36,6 +36,13 @@
   color: var(--cor-texto);
 }
 
+.pagina-projetos__titulo-skeleton {
+  display: inline-block;
+  width: 10rem;
+  height: 1.1em;
+  vertical-align: middle;
+}
+
 .pagina-projetos__acoes-cabecalho {
   display: flex;
   flex-direction: column;

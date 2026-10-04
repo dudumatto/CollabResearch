@@ -1,57 +1,59 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import {
-  FolderOpen,
-  FileText,
-  Bell,
-  TrendingUp,
-  ArrowRight,
-  ChevronRight,
-} from "lucide-react";
+import { FileText, Bell, TrendUp, MagnifyingGlass, Sparkle, Users, CalendarCheck, ChatCircleText, Star } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useNotifications } from "../providers/NotificationsProvider";
 import { projectService } from "../services/projectService";
 import { applicationService } from "../services/applicationService";
+import { etapaService } from "../services/etapaService";
+import { conversationService } from "../services/conversationService";
+import { progressService } from "../services/progressService";
 import { StatusView } from "../components/StatusView";
 import { WelcomeBanner } from "../components/WelcomeBanner";
 import {
-  getProjectSlotsUsage,
+  DashCard,
+  DashMetric,
+  DashRow,
+  DashEmpty,
+  DashAvatar,
+  DashAgenda,
+  DashProgress,
+  DashPromo,
+  DashFit,
+} from "../components/DashboardKit";
+import {
   mapApplication,
   mapProject,
+  mapDeadlineAgenda,
+  getUserId,
 } from "../utils/adapters";
-import { formatApplicationStatus, formatProjectStatus } from "../utils/formatters";
-import "./DashboardPage.css";
+import { formatApplicationStatus, getInitials } from "../utils/formatters";
+import "../components/DashboardKit.css";
 
 const DASHBOARD_PREVIEW_LIMIT = 3;
+const MESSAGES_PREVIEW_LIMIT = 2;
 
-const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
-  <div className="skeleton" style={{ width: w, height: h, borderRadius: r, marginBottom: mb || undefined }} />
+const applicationTone = {
+  APROVADO: "verde",
+  PENDENTE: "laranja",
+  REJEITADO: "vermelho",
+};
+
+const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
+  <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
 );
 
-function CardRow({ lines = 2 }) {
+function SkeletonCard({ rows = 3 }) {
   return (
-    <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--cor-borda-clara)" }}>
-      <Sk w={32} h={32} r="var(--raio-pequeno)" />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
-        <Sk w="60%" h={13} />
-        {lines > 1 && <Sk w="40%" h={11} />}
+    <div className="dash-card">
+      <div className="dash-card__cabecalho">
+        <Sk w={28} h={28} r="0.5rem" />
+        <Sk w={140} h={16} />
       </div>
-      <Sk w={60} h={22} r="var(--raio-completo)" />
-    </div>
-  );
-}
-
-function InnerCard({ rows = DASHBOARD_PREVIEW_LIMIT, titleW = 120 }) {
-  return (
-    <div style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", overflow: "hidden" }}>
-      <div style={{ padding: "var(--espaco-4)", borderBottom: "1px solid var(--cor-borda-clara)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Sk w={titleW} h={15} />
-        <Sk w={75} h={13} />
-      </div>
-      <div style={{ padding: "0 var(--espaco-4)" }}>
-        {Array.from({ length: rows }).map((_, i) => <CardRow key={i} />)}
+      <div className="dash-card__corpo" style={{ gap: "var(--espaco-4)", paddingTop: "var(--espaco-2)" }}>
+        {Array.from({ length: rows }).map((_, i) => <Sk key={i} w="100%" h={30} />)}
       </div>
     </div>
   );
@@ -59,95 +61,107 @@ function InnerCard({ rows = DASHBOARD_PREVIEW_LIMIT, titleW = 120 }) {
 
 function DashboardSkeleton() {
   return (
-    <div className="painel">
-      <Sk w="100%" h={176} r="var(--raio-grande)" mb={24} />
-      <div className="painel__grade-resumos">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", padding: "var(--espaco-5)", border: "1px solid var(--cor-borda-clara)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--espaco-4)" }}>
-              <Sk w={40} h={40} r="var(--raio-medio)" />
-              <Sk w={14} h={14} />
-            </div>
-            <Sk w="45%" h={28} mb={8} />
-            <Sk w="65%" h={13} />
-          </div>
-        ))}
+    <div className="dash" aria-busy="true" aria-label="Carregando painel">
+      <Sk w="100%" h={140} r="var(--raio-grande)" />
+      <div className="dash-grade">
+        {[1, 2, 3].map((i) => <SkeletonCard key={i} rows={1} />)}
       </div>
-      <div className="painel__grade-principal" style={{ marginTop: "var(--espaco-6)" }}>
-        <div className="painel__coluna-esquerda">
-          <InnerCard rows={DASHBOARD_PREVIEW_LIMIT} titleW={130} />
-          <InnerCard rows={DASHBOARD_PREVIEW_LIMIT} titleW={115} />
-          <div style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-5)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--espaco-4)" }}>
-              <Sk w={130} h={15} />
-              <Sk w={75} h={13} />
-            </div>
-            <Sk w="100%" h={120} r="var(--raio-medio)" />
+      <div className="dash-colunas">
+        <div className="dash-coluna">
+          <SkeletonCard />
+          <div className="dash-grade" style={{ "--dash-colunas": 2 }}>
+            <SkeletonCard rows={1} />
+            <SkeletonCard rows={1} />
           </div>
+          <SkeletonCard rows={2} />
         </div>
-        <div className="painel__coluna-direita">
-          <InnerCard rows={DASHBOARD_PREVIEW_LIMIT} titleW={140} />
-          <InnerCard rows={DASHBOARD_PREVIEW_LIMIT} titleW={110} />
+        <div className="dash-coluna">
+          <SkeletonCard rows={5} />
+          <SkeletonCard rows={2} />
         </div>
       </div>
     </div>
   );
 }
 
-const statusClassMap = {
-  APROVADO: "inscricao-item__status--aprovado",
-  PENDENTE: "inscricao-item__status--pendente",
-  REJEITADO: "inscricao-item__status--rejeitado",
-};
+function formatShortDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
 
-const projectStatusClassMap = {
-  ABERTO: "inscricao-item__status--aberto",
-  EM_ANDAMENTO: "inscricao-item__status--andamento",
-  FINALIZADO: "inscricao-item__status--finalizado",
-};
+function formatTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function notificationGroup(value) {
+  if (!value) return "Recente";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recente";
+  return date.toDateString() === new Date().toDateString()
+    ? "Hoje"
+    : date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { notifications } = useNotifications();
+  const userId = getUserId(user);
 
   const { data, loading, error } = useAsyncData(async () => {
-    const [projectPage, applications] = await Promise.all([
+    const [projectPage, applications, prazos, conversas] = await Promise.all([
       projectService.listPaged({}, { page: 0, size: DASHBOARD_PREVIEW_LIMIT }),
       applicationService.listMine().catch(() => []),
+      etapaService.listMine().catch(() => []),
+      userId != null ? conversationService.listByUser(userId).catch(() => []) : Promise.resolve([]),
     ]);
 
     const mappedProjects = Array.isArray(projectPage?.content) ? projectPage.content.map(mapProject) : [];
+    const mappedApplications = Array.isArray(applications) ? applications.map(mapApplication) : [];
+
+    const activeApplication = mappedApplications.find(
+      (item) => item.status === "APROVADO" && item.project?.status !== "FINALIZADO",
+    );
+    const activeProjectId = activeApplication?.project?.id ?? activeApplication?.projectId ?? null;
+
+    const progress = activeProjectId != null
+      ? await progressService.getProgress(activeProjectId).catch(() => null)
+      : null;
 
     return {
       projects: mappedProjects,
-      projectTotal: projectPage?.totalElements ?? mappedProjects.length,
-      applications: Array.isArray(applications) ? applications.map(mapApplication) : [],
+      applications: mappedApplications,
+      agenda: mapDeadlineAgenda(prazos),
+      conversations: Array.isArray(conversas) ? conversas : [],
+      progress,
     };
-  }, [], { initialData: { projects: [], projectTotal: 0, applications: [] } });
+  }, [userId], {
+    initialData: { projects: [], applications: [], agenda: [], conversations: [], progress: null },
+  });
 
   const derived = useMemo(() => {
-    const projects = data?.projects ?? [];
     const applications = data?.applications ?? [];
-
-    const activeProjects = user?.tipo === "ORIENTADOR"
-      ? projects.filter((item) => Number(item.advisorId) === Number(user.id) && item.status !== "FINALIZADO").length
-      : applications.filter((item) => item.status === "APROVADO" && item.project?.status !== "FINALIZADO").length;
-    const unreadNotifications = notifications.filter((item) => !item.read).length;
-    const recentProjects = projects.slice(0, DASHBOARD_PREVIEW_LIMIT);
-    const recentApplications = applications.slice(0, DASHBOARD_PREVIEW_LIMIT);
-    const recentNotifications = notifications.slice(0, DASHBOARD_PREVIEW_LIMIT);
-    const totalActivity = (data?.projectTotal ?? projects.length) + applications.length;
+    const progress = data?.progress ?? null;
+    const steps = Array.isArray(progress?.steps) ? progress.steps : [];
+    const doneSteps = steps.filter((step) => step.status === "DONE").length;
 
     return {
-      activeProjects,
-      recentProjects,
-      recentApplications,
-      recentNotifications,
-      unreadNotifications,
-      totalActivity,
+      recentProjects: (data?.projects ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT),
+      recentApplications: applications.slice(0, DASHBOARD_PREVIEW_LIMIT),
+      conversations: (data?.conversations ?? []).slice(0, MESSAGES_PREVIEW_LIMIT),
+      agenda: data?.agenda ?? [],
+      latestNotification: notifications[0] ?? null,
+      unreadNotifications: notifications.filter((item) => !item.read).length,
+      progress: progress
+        ? { total: steps.length, done: doneSteps, percent: progress.overallPercent ?? 0 }
+        : null,
     };
-  }, [data, notifications, user?.id, user?.tipo]);
+  }, [data, notifications]);
 
   if (loading) return <DashboardSkeleton />;
 
@@ -155,253 +169,194 @@ export default function DashboardPage() {
     return <StatusView title="Falha ao carregar" description={error.message} />;
   }
 
-  const statCards = [
-    {
-      label: "Projetos ativos",
-      value: derived.activeProjects,
-      icon: FolderOpen,
-      areaClass: "cartao-resumo__icone-area--azul",
-      iconClass: "cartao-resumo__icone--azul",
-      href: "/app/projects",
-    },
-    {
-      label: "Inscrições",
-      value: derived.recentApplications.length,
-      icon: FileText,
-      areaClass: "cartao-resumo__icone-area--violeta",
-      iconClass: "cartao-resumo__icone--violeta",
-      href: "/app/applications",
-    },
-    {
-      label: "Notificações",
-      value: derived.unreadNotifications,
-      icon: Bell,
-      areaClass: "cartao-resumo__icone-area--laranja",
-      iconClass: "cartao-resumo__icone--laranja",
-      href: "/app/notifications",
-    },
-    {
-      label: "Atualizações",
-      value: derived.totalActivity,
-      icon: TrendingUp,
-      areaClass: "cartao-resumo__icone-area--verde",
-      iconClass: "cartao-resumo__icone--verde",
-      href: "/app/progress",
-      variant: "progress",
-    },
-  ];
+  const featured = derived.recentProjects[0] ?? null;
 
   return (
-    <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="painel"
-      >
-        <WelcomeBanner
-          name={user?.nome?.split(" ")[0] ?? "pesquisador"}
-          avatarUrl={user?.fotoPerfilUrl ?? user?.avatarUrl}
-          summary={<>
-            Você tem <strong>{derived.unreadNotifications} notificações</strong> pendentes e <strong>{derived.recentApplications.length} inscrições</strong> vinculadas ao seu perfil.
-          </>}
-          primaryAction={{ label: "Buscar projetos", onClick: () => navigate("/app/projects") }}
-          secondaryAction={{ label: "Ver progresso", onClick: () => navigate("/app/progress") }}
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="dash"
+    >
+      <DashFit>
+      <WelcomeBanner
+        name={user?.nome?.split(" ")[0] ?? "pesquisador"}
+        role="Estudante"
+        institution={user?.instituicao}
+        summary={<>
+          Você tem <strong>{derived.unreadNotifications} notificações</strong> pendentes e <strong>{derived.recentApplications.length} inscrições</strong> vinculadas ao seu perfil.
+        </>}
+        secondaryAction={{ label: "Ver progresso", icon: TrendUp, onClick: () => navigate("/app/progress") }}
+        primaryAction={{ label: "Buscar projetos", icon: MagnifyingGlass, onClick: () => navigate("/app/projects") }}
+      />
+
+      <div className="dash-grade">
+        <DashMetric
+          icon={FileText}
+          tone="azul"
+          title="Inscrições"
+          caption="Inscrições enviadas por você"
+          value={derived.recentApplications.length}
+          onOpen={() => navigate("/app/applications")}
         />
 
-        {/* Grade de cartões de resumo */}
-        <div className="painel__grade-resumos">
-          {statCards.map((card) => (
-            <motion.button
-              key={card.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate(card.href)}
-              className={`cartao-resumo ${card.variant === "progress" ? "cartao-resumo--progresso" : ""}`}
+        <DashCard
+          icon={Bell}
+          tone="verde"
+          title="Notificações recentes"
+          onOpen={() => navigate("/app/notifications")}
+        >
+          {derived.latestNotification ? (
+            <div>
+              <p className="dash-notif__grupo">{notificationGroup(derived.latestNotification.createdAt)}</p>
+              <p className="dash-notif__titulo">{derived.latestNotification.title}</p>
+              {derived.latestNotification.message && (
+                <p className="dash-notif__texto">{derived.latestNotification.message}</p>
+              )}
+            </div>
+          ) : (
+            <DashEmpty>As notificações do sistema aparecerão aqui.</DashEmpty>
+          )}
+        </DashCard>
+
+        <DashCard icon={Sparkle} tone="roxo" title="Lumen AI" caption="Pergunte a IA">
+          <DashPromo>
+            Use gratuitamente a nova IA da plataforma para pesquisas, perguntas e muito mais.
+          </DashPromo>
+        </DashCard>
+      </div>
+
+      <div className="dash-colunas">
+        <div className="dash-coluna">
+          <DashCard
+            icon={FileText}
+            tone="azul"
+            title="Inscrições"
+            caption="Resumo das suas inscrições"
+            onOpen={() => navigate("/app/applications")}
+          >
+            {derived.recentApplications.length === 0 ? (
+              <DashEmpty>Quando você se candidatar a projetos, elas aparecerão aqui.</DashEmpty>
+            ) : (
+              derived.recentApplications.map((application) => {
+                const projectId = application.project?.id ?? application.projectId;
+                const enviada = formatShortDate(application.appliedAt);
+                return (
+                  <DashRow
+                    key={application.id}
+                    title={application.project?.title ?? "Projeto"}
+                    subtitle={enviada ? `Enviada em ${enviada}` : undefined}
+                    badge={formatApplicationStatus(application.status)}
+                    badgeTone={applicationTone[application.status] ?? "laranja"}
+                    onOpen={projectId != null ? () => navigate(`/app/projects/${projectId}`) : undefined}
+                    openLabel={`Abrir projeto ${application.project?.title ?? "Projeto"}`}
+                  />
+                );
+              })
+            )}
+          </DashCard>
+
+          <div className="dash-grade" style={{ "--dash-colunas": 2 }}>
+            <DashCard
+              icon={TrendUp}
+              tone="verde"
+              title="Progresso"
+              onOpen={() => navigate("/app/progress")}
             >
-              <div className="cartao-resumo__cabecalho">
-                <div className={`cartao-resumo__icone-area ${card.areaClass}`}>
-                  <card.icon size={16} className={card.iconClass} />
-                </div>
-                <ChevronRight size={14} className="cartao-resumo__seta" />
-              </div>
-              <p className="cartao-resumo__valor">{card.value}</p>
-              <p className="cartao-resumo__descricao">{card.label}</p>
-            </motion.button>
-          ))}
-        </div>
+              {derived.progress ? (
+                <DashProgress
+                  status="Em andamento"
+                  statusTone="verde"
+                  label="Andamento do projeto"
+                  done={derived.progress.done}
+                  total={derived.progress.total}
+                  percent={derived.progress.percent}
+                />
+              ) : (
+                <DashEmpty>Seu progresso aparecerá quando você entrar em um projeto.</DashEmpty>
+              )}
+            </DashCard>
 
-        {/* Grade principal */}
-        <div className="painel__grade-principal">
-          <div className="painel__coluna-esquerda">
-            <div className="painel__card painel__card--recentes">
-              <div className="painel__card-cabecalho">
-                <h3 className="painel__card-titulo">Projetos recentes</h3>
-                <button onClick={() => navigate("/app/projects")} className="painel__link-ver-mais">
-                  Ver detalhes <ArrowRight size={13} />
-                </button>
-              </div>
-              <div className="projeto-andamento__corpo">
-                {derived.recentProjects.length === 0 ? (
-                  <StatusView title="Nenhum projeto encontrado" description="A API ainda não retornou projetos para exibir aqui." />
-                ) : (
-                  derived.recentProjects.map((project, index) => (
-                    <motion.button
-                      key={project.id}
-                      type="button"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25, delay: index * 0.04 }}
-                      onClick={() => navigate(`/app/projects/${project.id}`)}
-                      className="inscricao-item inscricao-item--clicavel"
-                      aria-label={`Abrir informações do projeto ${project.title}`}
-                    >
-                      <div className="inscricao-item__icone-area">
-                        <FolderOpen size={15} style={{ color: "var(--cor-texto-fraco)" }} />
-                      </div>
-                      <div className="inscricao-item__info">
-                        <p className="inscricao-item__titulo">{project.title}</p>
-                        <p className="inscricao-item__orientador">{project.advisor?.name ?? "Sem orientador"}</p>
-                      </div>
-                      <span className={`inscricao-item__status ${projectStatusClassMap[project.status] ?? "inscricao-item__status--pendente"}`}>
-                        {formatProjectStatus(project.status)}
-                      </span>
-                      <ChevronRight size={14} className="inscricao-item__seta" aria-hidden="true" />
-                    </motion.button>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div className="painel__card painel__card--inscricoes">
-              <div className="painel__card-cabecalho">
-                <h3 className="painel__card-titulo">Minhas inscrições</h3>
-                <button onClick={() => navigate("/app/applications")} className="painel__link-ver-mais">
-                  Ver todas <ArrowRight size={13} />
-                </button>
-              </div>
-              <div>
-                {derived.recentApplications.length === 0 ? (
-                  <StatusView title="Sem inscrições" description="Quando você se candidatar a projetos, elas aparecerão aqui." />
-                ) : (
-                  derived.recentApplications.map((application, index) => {
-                    const projectId = application.project?.id ?? application.projectId;
-                    return (
-                      <motion.button
-                        key={application.id}
-                        type="button"
-                        disabled={projectId == null}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.25, delay: index * 0.04 }}
-                        onClick={projectId != null ? () => navigate(`/app/projects/${projectId}`) : undefined}
-                        className={`inscricao-item ${projectId != null ? "inscricao-item--clicavel" : ""}`}
-                        aria-label={projectId != null ? `Abrir informações do projeto ${application.project?.title ?? "Projeto"}` : undefined}
-                      >
-                        <div className="inscricao-item__icone-area">
-                          <FileText size={15} style={{ color: "var(--cor-texto-fraco)" }} />
-                        </div>
-                        <div className="inscricao-item__info">
-                          <p className="inscricao-item__titulo">{application.project?.title ?? "Projeto"}</p>
-                          <p className="inscricao-item__orientador">{application.project?.advisor?.name ?? "Sem orientador"}</p>
-                        </div>
-                        <span className={`inscricao-item__status ${statusClassMap[application.status] ?? "inscricao-item__status--pendente"}`}>
-                          {formatApplicationStatus(application.status)}
-                        </span>
-                        {projectId != null && <ChevronRight size={14} className="inscricao-item__seta" aria-hidden="true" />}
-                      </motion.button>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+            <DashCard icon={Users} tone="roxo" title="Entregas aguardando revisão">
+              <DashPromo>
+                Em <strong>Comunidade</strong> você pode explorar e compartilhar novidades com outros usuários.
+              </DashPromo>
+            </DashCard>
           </div>
 
-          <div className="painel__coluna-direita">
-            <div className="painel__card painel__card--sugeridos painel__card-projetos-sugeridos">
-              <div className="painel__card-cabecalho">
-                <h3 className="painel__card-titulo">Projetos sugeridos</h3>
-                <button onClick={() => navigate("/app/projects")} className="painel__link-ver-mais">
-                  Ver todos <ArrowRight size={12} />
-                </button>
-              </div>
-              <div className="painel__card-lista">
-                {derived.recentProjects.map((project, index) => {
-                  const slots = getProjectSlotsUsage(project);
-                  return (
-                    <motion.button
-                      key={project.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25, delay: index * 0.05 }}
-                      onClick={() => navigate(`/app/projects/${project.id}`)}
-                      className="projeto-sugerido"
-                    >
-                      <div className="projeto-sugerido__linha">
-                        <div className="projeto-sugerido__icone-area">
-                          <FolderOpen size={14} style={{ color: "var(--cor-primaria)" }} />
-                        </div>
-                        <div className="projeto-sugerido__info">
-                          <p className="projeto-sugerido__titulo">{project.title}</p>
-                          <div className="projeto-sugerido__metadados">
-                            <span className="projeto-sugerido__indicador-vaga" />
-                            <span className="projeto-sugerido__vagas">{slots.remaining} vagas</span>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="painel__card painel__card--notificacoes">
-              <div className="painel__card-cabecalho">
-                <h3 className="painel__card-titulo">Notificações</h3>
-                <button onClick={() => navigate("/app/notifications")} className="painel__link-ver-mais">
-                  Ver todas <ArrowRight size={12} />
-                </button>
-              </div>
-              <div>
-                {derived.recentNotifications.length === 0 ? (
-                  <StatusView title="Sem notificações" description="As notificações do sistema aparecerão aqui." />
-                ) : (
-                  derived.recentNotifications.map((notif, index) => (
-                    <motion.button
-                      key={notif.id}
-                      type="button"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25, delay: index * 0.05 }}
-                      onClick={() => navigate(notif.actionUrl || "/app/notifications")}
-                      className={`notificacao-resumo notificacao-resumo--clicavel ${!notif.read ? "notificacao-resumo--nao-lida" : ""}`}
-                      aria-label={`Abrir notificação ${notif.title}`}
-                    >
-                      <div className="notificacao-resumo__icone-area notificacao-resumo__icone-area--info">
-                        <Bell size={14} style={{ color: "var(--cor-primaria)" }} />
-                      </div>
-                      <div className="notificacao-resumo__info">
-                        <p className={`notificacao-resumo__titulo ${!notif.read ? "notificacao-resumo__titulo--nao-lida" : ""}`}>
-                          {notif.title}
-                        </p>
-                        <p className="notificacao-resumo__data">
-                          {notif.createdAt ? new Date(notif.createdAt).toLocaleDateString("pt-BR") : "-"}
-                        </p>
-                      </div>
-                      {!notif.read && <div className="notificacao-resumo__ponto-nao-lido" />}
-                      <ChevronRight size={14} className="notificacao-resumo__seta" aria-hidden="true" />
-                    </motion.button>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
+          <DashCard
+            icon={Star}
+            tone="laranja"
+            title="Projetos recomendados para você"
+            onOpen={() => navigate("/app/projects")}
+          >
+            {featured ? (
+              <button
+                type="button"
+                className="dash-linha dash-linha--acionavel"
+                onClick={() => navigate(`/app/projects/${featured.id}`)}
+                aria-label={`Abrir projeto ${featured.title}`}
+              >
+                <span className="dash-destaque">
+                  {featured.area && <span className="dash-destaque__area">{featured.area}</span>}
+                  <span className="dash-destaque__titulo">{featured.title}</span>
+                  <span className="dash-destaque__meta">
+                    Orientado por {featured.advisor?.name ?? "Orientador a definir"}
+                  </span>
+                  <span className="dash-destaque__rodape">
+                    <span>{featured.courses?.[0] ?? featured.area ?? "Pesquisa"}</span>
+                    <span>{featured.slotsRemaining} vagas</span>
+                  </span>
+                </span>
+              </button>
+            ) : (
+              <DashEmpty>Sem recomendações por enquanto.</DashEmpty>
+            )}
+          </DashCard>
         </div>
-      </motion.div>
-    </>
+
+        <div className="dash-coluna">
+          <DashCard
+            icon={CalendarCheck}
+            tone="roxo"
+            title="Calendário"
+            caption="Veja seus próximos prazos"
+            onOpen={() => navigate("/app/deadlines")}
+          >
+            <DashAgenda items={derived.agenda} emptyLabel="Nenhum prazo próximo cadastrado." />
+          </DashCard>
+
+          <DashCard
+            icon={ChatCircleText}
+            tone="verde"
+            title="Mensagens"
+            caption="Últimas mensagens recebidas"
+            onOpen={() => navigate("/app/chat")}
+          >
+            {derived.conversations.length === 0 ? (
+              <DashEmpty>Suas conversas aparecerão aqui.</DashEmpty>
+            ) : (
+              derived.conversations.map((conversa) => (
+                <DashRow
+                  key={conversa.id}
+                  title={conversa.titulo ?? "Conversa"}
+                  subtitle={conversa.ultimaMensagem ?? "Nenhuma mensagem ainda"}
+                  avatar={
+                    <DashAvatar
+                      src={conversa.fotoPerfilUrl || undefined}
+                      initials={getInitials(conversa.titulo)}
+                    />
+                  }
+                  trailing={formatTime(conversa.ultimaMensagemHorario)}
+                  onOpen={() => navigate("/app/chat")}
+                  openLabel={`Abrir conversa ${conversa.titulo ?? ""}`}
+                />
+              ))
+            )}
+          </DashCard>
+        </div>
+      </div>
+      </DashFit>
+    </motion.div>
   );
 }
-
-

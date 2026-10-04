@@ -1,8 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from "react";
-import {
-  Upload, FileText, CheckCircle, Trash2, Eye,
-  FolderOpen, Plus, X, AlertCircle,
-} from "lucide-react";
+import { Upload, FileText, CheckCircle, Trash, Eye, FolderOpen, Plus, X, WarningCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -130,7 +127,7 @@ function DocumentViewer({ doc, onClose }) {
 
           {!loadingPreview && previewError && (
             <div className="doc-viewer__estado doc-viewer__estado--erro">
-              <AlertCircle size={32} />
+              <WarningCircle size={32} />
               <p>{previewError}</p>
               {!isPdf && (
                 <p style={{ fontSize: "0.8rem", color: "var(--cor-texto-mudo)", marginTop: 4 }}>
@@ -372,7 +369,7 @@ export default function DocumentsPage() {
                     className="documento-item__botao-acao documento-item__botao-excluir"
                     title="Excluir"
                   >
-                    <Trash2 size={15} />
+                    <Trash size={15} />
                   </button>
                 </div>
               </div>

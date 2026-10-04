@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Star, Send, CheckCircle, MessageSquare, Award } from "lucide-react";
+import { Star, PaperPlaneTilt, CheckCircle, ChatCircleText, Trophy } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -100,9 +100,9 @@ function StarRating({ value, onChange, readOnly = false }) {
 }
 
 const statConfig = [
-  { label: "Feedbacks recebidos", icon: MessageSquare, areaClass: "resumo-feedback__icone-area--azul", iconClass: "resumo-feedback__icone--azul" },
+  { label: "Feedbacks recebidos", icon: ChatCircleText, areaClass: "resumo-feedback__icone-area--azul", iconClass: "resumo-feedback__icone--azul" },
   { label: "Nota média", icon: Star, areaClass: "resumo-feedback__icone-area--amarelo", iconClass: "resumo-feedback__icone--amarelo" },
-  { label: "Desempenho geral", icon: Award, areaClass: "resumo-feedback__icone-area--violeta", iconClass: "resumo-feedback__icone--violeta" },
+  { label: "Desempenho geral", icon: Trophy, areaClass: "resumo-feedback__icone-area--violeta", iconClass: "resumo-feedback__icone--violeta" },
 ];
 
 export default function FeedbackPage() {
@@ -281,7 +281,7 @@ export default function FeedbackPage() {
                       Cancelar
                     </button>
                     <button type="submit" disabled={loadingSubmit || rating === 0 || !comment || !selectedProject} className="formulario-avaliacao__botao-enviar">
-                      {loadingSubmit ? <div className="formulario-avaliacao__spinner" /> : <><Send size={15} /> Enviar avaliação</>}
+                      {loadingSubmit ? <div className="formulario-avaliacao__spinner" /> : <><PaperPlaneTilt size={15} /> Enviar avaliação</>}
                     </button>
                   </div>
                 </form>

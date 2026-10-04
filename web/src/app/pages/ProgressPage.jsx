@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ClipboardList, FolderKanban, Plus, TrendingUp, Users } from "lucide-react";
+import { CalendarBlank, ClipboardText, Kanban, Plus, TrendUp, Users } from "@phosphor-icons/react";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
@@ -363,7 +363,7 @@ export default function ProgressPage() {
     return (
       <div className="progress-page">
         <div className="progress-page__empty">
-          <div className="progress-page__empty-icon"><ClipboardList size={24} /></div>
+          <div className="progress-page__empty-icon"><ClipboardText size={24} /></div>
           <h2 className="progress-page__empty-title">Nenhum projeto vinculado</h2>
           <p className="progress-page__empty-description">As etapas aparecerão aqui quando você participar de um projeto aprovado.</p>
         </div>
@@ -418,12 +418,12 @@ export default function ProgressPage() {
 
           <div className="progress-page__stats-grid">
             <div className="progress-stat">
-              <CalendarDays size={16} />
+              <CalendarBlank size={16} />
               <span>Criado em</span>
               <strong>{formatDate(selectedProject.createdAt)}</strong>
             </div>
             <div className="progress-stat">
-              <TrendingUp size={16} />
+              <TrendUp size={16} />
               <span>Etapa atual</span>
               <strong>{currentStep?.title ?? "Todas concluídas"}</strong>
             </div>
@@ -433,7 +433,7 @@ export default function ProgressPage() {
               <strong>{acceptedCollaborators.length + 1}</strong>
             </div>
             <div className="progress-stat">
-              <FolderKanban size={16} />
+              <Kanban size={16} />
               <span>Vagas</span>
               <strong>
                 {selectedProjectSlots.used}/{selectedProjectSlots.total}

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Search, SlidersHorizontal, X, Plus } from "lucide-react";
+import { MagnifyingGlass, SlidersHorizontal, X, Plus } from "@phosphor-icons/react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useAuth } from "../hooks/useAuth";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
@@ -200,7 +200,9 @@ export default function ProjectsPage() {
     >
       <div className="pagina-projetos__cabecalho">
         <div>
-          <h2 className="pagina-projetos__titulo">{filtered.length} projetos carregados</h2>
+          <h2 className="pagina-projetos__titulo">
+            {loading ? <span className="skeleton pagina-projetos__titulo-skeleton" /> : `${filtered.length} projetos carregados`}
+          </h2>
           <p className="pagina-projetos__subtitulo">Explore projetos abertos, acompanhe vinculados e mantenha finalizados como histórico de consulta.</p>
         </div>
         <div className="pagina-projetos__acoes-cabecalho">
@@ -242,14 +244,14 @@ export default function ProjectsPage() {
             onClick={() => setSelectedStatus(status)}
             className={`pagina-projetos__atalho-status ${selectedStatus === status ? "pagina-projetos__atalho-status--ativo" : ""}`}
           >
-            <span className="pagina-projetos__atalho-status-valor">{count}</span>
+            <span className="pagina-projetos__atalho-status-valor">{loading ? "–" : count}</span>
             <span className="pagina-projetos__atalho-status-label">{label}</span>
           </button>
         ))}
       </div>
 
       <div className="pagina-projetos__busca">
-        <Search size={18} className="pagina-projetos__icone-busca" />
+        <MagnifyingGlass size={18} className="pagina-projetos__icone-busca" />
         <input
           type="text"
           value={search}
@@ -348,7 +350,7 @@ export default function ProjectsPage() {
       {!loading && filtered.length === 0 && (
         <div className="pagina-projetos__estado-vazio">
           <div className="pagina-projetos__icone-vazio">
-            <Search size={24} style={{ color: "var(--cor-texto-mudo)" }} />
+            <MagnifyingGlass size={24} style={{ color: "var(--cor-texto-mudo)" }} />
           </div>
           <h3 className="pagina-projetos__titulo-vazio">Nenhum projeto encontrado</h3>
           <p className="pagina-projetos__descricao-vazio">Tente ajustar os filtros ou o termo de busca.</p>

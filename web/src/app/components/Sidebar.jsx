@@ -1,74 +1,125 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { NavLink } from "react-router";
-import {
-  FolderOpen,
-  LayoutDashboard,
-  MessageSquare,
-  Bell,
-  User,
-  FileText,
-  TrendingUp,
-  ChevronLeft,
-  Settings,
-  Users,
-  ClipboardCheck,
-  GraduationCap,
-  CalendarClock,
-} from "lucide-react";
+import { FolderOpen, SquaresFour, ChatCircleText, Bell, User, FileText, TrendUp, CaretLeft, Gear, Users, ClipboardText, GraduationCap, CalendarCheck, SignOut } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../providers/NotificationsProvider";
 import { getInitials } from "../utils/formatters";
 import { prefetchRoute } from "../routes";
+import { LogoutConfirmModal } from "./LogoutConfirmModal";
 import "./Sidebar.css";
 
-const studentItems = [
-  { path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { path: "/app/projects", label: "Projetos", icon: FolderOpen },
-  { path: "/app/applications", label: "Inscrições", icon: FileText },
-  { path: "/app/progress", label: "Minhas etapas", icon: TrendingUp },
-  { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
-  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
-  { path: "/app/chat", label: "Conversas", icon: MessageSquare },
-  { path: "/app/notifications", label: "Notificações", icon: Bell },
-  { path: "/app/profile", label: "Meu perfil", icon: User },
+// Itens agrupados por categoria. A primeira seção não tem rótulo (fica logo
+// abaixo da marca); as demais abrem com uma divisória + rótulo da categoria.
+const studentSections = [
+  {
+    items: [
+      { path: "/app", label: "Dashboard", icon: SquaresFour, exact: true },
+      { path: "/app/projects", label: "Projetos", icon: FolderOpen },
+    ],
+  },
+  {
+    label: "Pesquisa",
+    items: [
+      { path: "/app/applications", label: "Inscrições", icon: FileText },
+      { path: "/app/progress", label: "Minhas etapas", icon: TrendUp },
+      { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
+      { path: "/app/deadlines", label: "Calendário", icon: CalendarCheck },
+      { path: "/app/chat", label: "Conversas", icon: ChatCircleText },
+    ],
+  },
+  {
+    label: "Conta",
+    items: [
+      { path: "/app/notifications", label: "Notificações", icon: Bell },
+      { path: "/app/profile", label: "Meu perfil", icon: User },
+    ],
+  },
 ];
 
-const advisorItems = [
-  { path: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { path: "/app/projects", label: "Projetos", icon: FolderOpen },
-  { path: "/app/applications", label: "Inscrições", icon: FileText },
-  { path: "/app/advisees", label: "Alunos", icon: GraduationCap },
-  { path: "/app/deliveries", label: "Entregas", icon: ClipboardCheck },
-  { path: "/app/progress", label: "Progresso", icon: TrendingUp },
-  { path: "/app/deadlines", label: "Calendário", icon: CalendarClock },
-  { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
-  { path: "/app/chat", label: "Conversas", icon: MessageSquare },
-  { path: "/app/notifications", label: "Notificações", icon: Bell },
-  { path: "/app/profile", label: "Meu perfil", icon: User },
+const advisorSections = [
+  {
+    items: [
+      { path: "/app", label: "Dashboard", icon: SquaresFour, exact: true },
+      { path: "/app/projects", label: "Projetos", icon: FolderOpen },
+    ],
+  },
+  {
+    label: "Pesquisa",
+    items: [
+      { path: "/app/applications", label: "Inscrições", icon: FileText },
+      { path: "/app/advisees", label: "Alunos", icon: GraduationCap },
+      { path: "/app/deliveries", label: "Entregas", icon: ClipboardText },
+      { path: "/app/progress", label: "Progresso", icon: TrendUp },
+      { path: "/app/avaliacoes", label: "Avaliações", icon: Users },
+      { path: "/app/deadlines", label: "Calendário", icon: CalendarCheck },
+      { path: "/app/chat", label: "Conversas", icon: ChatCircleText },
+    ],
+  },
+  {
+    label: "Conta",
+    items: [
+      { path: "/app/notifications", label: "Notificações", icon: Bell },
+      { path: "/app/profile", label: "Meu perfil", icon: User },
+    ],
+  },
 ];
 
 export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { notifications } = useNotifications();
   const unreadCount = notifications.filter((item) => !item.read).length;
   const isAdvisor = user?.tipo === "ORIENTADOR";
-  const items = useMemo(
-    () => (isAdvisor ? advisorItems : studentItems).filter(
-      (item) => !item.roles || item.roles.includes(user?.tipo),
-    ),
-    [isAdvisor, user?.tipo],
-  );
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
-  const SidebarContent = useCallback(({ forceExpanded = false } = {}) => {
-    const isCollapsed = forceExpanded ? false : collapsed;
+  const handleConfirmLogout = async () => {
+    setLogoutConfirmOpen(false);
+    await logout();
+  };
+  const sections = useMemo(() => {
+    const base = isAdvisor ? advisorSections : studentSections;
+    return base
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => !item.roles || item.roles.includes(user?.tipo)),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [isAdvisor, user?.tipo]);
+
+  const SidebarContent = useCallback(() => {
+    const renderItem = (item) => (
+      <NavLink
+        key={item.path}
+        to={item.path}
+        end={item.exact}
+        onClick={() => setMobileOpen(false)}
+        onMouseEnter={() => prefetchRoute(item.path, user?.tipo)}
+        onFocus={() => prefetchRoute(item.path, user?.tipo)}
+        className={({ isActive }) =>
+          ["barra-lateral__item-nav", isActive ? "barra-lateral__item-nav--ativo" : ""]
+            .filter(Boolean)
+            .join(" ")
+        }
+      >
+        {({ isActive }) => (
+          <>
+            <item.icon
+              size={18}
+              className={isActive ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo" : "barra-lateral__icone-nav"}
+            />
+            <span className={isActive ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo" : "barra-lateral__rotulo-nav"}>
+              {item.label}
+            </span>
+            {item.path === "/app/notifications" && unreadCount > 0 && (
+              <span className="barra-lateral__contador">{unreadCount}</span>
+            )}
+          </>
+        )}
+      </NavLink>
+    );
 
     return (
       <div className="barra-lateral__conteudo-interno">
-        <div
-          className={`barra-lateral__cabecalho ${
-            isCollapsed ? "barra-lateral__cabecalho--centralizado" : ""
-          }`}
-        >
+        <div className="barra-lateral__cabecalho">
           <div className="barra-lateral__marca-lockup" aria-label="CollabResearch">
             <img
               className="barra-lateral__marca barra-lateral__marca--completa"
@@ -90,52 +141,19 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
         <div className="barra-lateral__divisor" aria-hidden="true" />
 
         <nav className="barra-lateral__navegacao">
-          <div className="barra-lateral__setor-itens">
-            {items.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.exact}
-                onClick={() => setMobileOpen(false)}
-                onMouseEnter={() => prefetchRoute(item.path, user?.tipo)}
-                onFocus={() => prefetchRoute(item.path, user?.tipo)}
-                className={({ isActive }) =>
-                  [
-                    "barra-lateral__item-nav",
-                    isActive ? "barra-lateral__item-nav--ativo" : "",
-                    isCollapsed ? "barra-lateral__item-nav--centralizado" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <item.icon
-                      size={18}
-                      className={
-                        isActive
-                          ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo"
-                          : "barra-lateral__icone-nav"
-                      }
-                    />
-                    <span
-                      className={
-                        isActive
-                          ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo"
-                          : "barra-lateral__rotulo-nav"
-                      }
-                    >
-                      {item.label}
-                    </span>
-                    {item.path === "/app/notifications" && unreadCount > 0 && (
-                      <span className="barra-lateral__contador">{unreadCount}</span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </div>
+          {sections.map((section, index) => (
+            <div className="barra-lateral__setor" key={section.label ?? `secao-${index}`}>
+              {index > 0 && (
+                <div className="barra-lateral__divisor barra-lateral__divisor--secao" aria-hidden="true" />
+              )}
+              {section.label && (
+                <span className="barra-lateral__setor-rotulo">{section.label}</span>
+              )}
+              <div className="barra-lateral__setor-itens">
+                {section.items.map(renderItem)}
+              </div>
+            </div>
+          ))}
         </nav>
 
         <div className="barra-lateral__rodape">
@@ -148,13 +166,12 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
               [
                 "barra-lateral__item-nav",
                 isActive ? "barra-lateral__item-nav--ativo" : "",
-                isCollapsed ? "barra-lateral__item-nav--centralizado" : "",
               ].filter(Boolean).join(" ")
             }
           >
             {({ isActive }) => (
               <>
-                <Settings
+                <Gear
                   size={18}
                   className={isActive ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo" : "barra-lateral__icone-nav"}
                 />
@@ -167,31 +184,43 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
 
           <div className="barra-lateral__divisor barra-lateral__divisor--rodape" aria-hidden="true" />
 
-          <NavLink
-            to="/app/profile"
-            onClick={() => setMobileOpen(false)}
-            onMouseEnter={() => prefetchRoute("/app/profile", user?.tipo)}
-            onFocus={() => prefetchRoute("/app/profile", user?.tipo)}
-            className={`barra-lateral__perfil ${isCollapsed ? "barra-lateral__perfil--centralizado" : ""}`}
-          >
-            {user?.fotoPerfilUrl || user?.avatarUrl ? (
-              <img
-                className="barra-lateral__perfil-avatar barra-lateral__perfil-avatar--foto"
-                src={user?.fotoPerfilUrl ?? user?.avatarUrl}
-                alt=""
-              />
-            ) : (
-              <span className="barra-lateral__perfil-avatar">{getInitials(user?.nome)}</span>
-            )}
-            <span className="barra-lateral__perfil-info">
-              <span className="barra-lateral__perfil-nome">{user?.nome ?? "Usuário"}</span>
-              <span className="barra-lateral__perfil-papel">{isAdvisor ? "Orientador(a)" : "Aluno(a)"}</span>
-            </span>
-          </NavLink>
+          <div className="barra-lateral__rodape-conta">
+            <NavLink
+              to="/app/profile"
+              onClick={() => setMobileOpen(false)}
+              onMouseEnter={() => prefetchRoute("/app/profile", user?.tipo)}
+              onFocus={() => prefetchRoute("/app/profile", user?.tipo)}
+              className="barra-lateral__perfil"
+            >
+              {user?.fotoPerfilUrl || user?.avatarUrl ? (
+                <img
+                  className="barra-lateral__perfil-avatar barra-lateral__perfil-avatar--foto"
+                  src={user?.fotoPerfilUrl ?? user?.avatarUrl}
+                  alt=""
+                />
+              ) : (
+                <span className="barra-lateral__perfil-avatar">{getInitials(user?.nome)}</span>
+              )}
+              <span className="barra-lateral__perfil-info">
+                <span className="barra-lateral__perfil-nome">{user?.nome ?? "Usuário"}</span>
+                <span className="barra-lateral__perfil-papel">{isAdvisor ? "Orientador(a)" : "Aluno(a)"}</span>
+              </span>
+            </NavLink>
+
+            <button
+              type="button"
+              className="barra-lateral__sair"
+              onClick={() => setLogoutConfirmOpen(true)}
+              aria-label="Sair da conta"
+              title="Sair da conta"
+            >
+              <SignOut size={18} />
+            </button>
+          </div>
         </div>
       </div>
     );
-  }, [items, collapsed, setMobileOpen, unreadCount, user, isAdvisor]);
+  }, [sections, setMobileOpen, unreadCount, user, isAdvisor]);
 
   return (
     <>
@@ -199,10 +228,13 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
         className={`barra-lateral ${collapsed ? "barra-lateral--recolhida" : ""}`}
       >
         <button
+          type="button"
           onClick={() => setCollapsed(!collapsed)}
           className="barra-lateral__botao-recolher"
+          aria-label={collapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
+          aria-expanded={!collapsed}
         >
-          <ChevronLeft
+          <CaretLeft
             size={14}
             className={`barra-lateral__icone-recolher ${
               collapsed ? "barra-lateral__icone-recolher--invertido" : ""
@@ -222,9 +254,15 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
 
       {mobileOpen && (
         <aside className="barra-lateral-mobile barra-lateral-mobile--entrando">
-          <SidebarContent forceExpanded />
+          <SidebarContent />
         </aside>
       )}
+
+      <LogoutConfirmModal
+        open={logoutConfirmOpen}
+        onConfirm={handleConfirmLogout}
+        onCancel={() => setLogoutConfirmOpen(false)}
+      />
     </>
   );
 }

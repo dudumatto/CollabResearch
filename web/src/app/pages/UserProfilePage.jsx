@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { ArrowLeft, Mail, BookOpen, Building2, GraduationCap, Award, Calendar, MessageSquare } from "lucide-react";
+import { ArrowLeft, Envelope, BookOpen, Buildings, GraduationCap, Trophy, Calendar, ChatCircleText } from "@phosphor-icons/react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { userService } from "../services/userService";
 import { conversationService } from "../services/conversationService";
@@ -64,8 +64,7 @@ export default function UserProfilePage() {
         <div className="skeleton perfil-sk-voltar" style={{ marginBottom: "var(--espaco-4)" }} />
         <div className="pagina-perfil__grade">
           <div className="cartao-perfil">
-            <div className="cartao-perfil__capa skeleton" />
-            <div className="cartao-perfil__corpo">
+            <div className="cartao-perfil__corpo cartao-perfil__corpo--sem-capa">
               <div className="cartao-perfil__avatar-wrapper">
                 <div className="skeleton perfil-sk-avatar" />
               </div>
@@ -119,8 +118,7 @@ export default function UserProfilePage() {
       <div className="pagina-perfil__grade">
         {/* Card lateral */}
         <div className="cartao-perfil">
-          <div className="cartao-perfil__capa" />
-          <div className="cartao-perfil__corpo">
+          <div className="cartao-perfil__corpo cartao-perfil__corpo--sem-capa">
             <div className="cartao-perfil__avatar-wrapper">
               <div className="cartao-perfil__avatar">
                 {showProfilePhoto ? (
@@ -154,9 +152,9 @@ export default function UserProfilePage() {
 
             <div className="cartao-perfil__info-lista">
               {[
-                { icon: Mail, label: profile.email },
+                { icon: Envelope, label: profile.email },
                 { icon: BookOpen, label: profile.cursoNome ?? "Curso não informado" },
-                { icon: Building2, label: profile.instituicao ?? "Instituição não informada" },
+                { icon: Buildings, label: profile.instituicao ?? "Instituição não informada" },
                 { icon: GraduationCap, label: profile.semestre ?? "Semestre não informado" },
                 { icon: Calendar, label: `Membro desde ${profile.dataCadastro ? new Date(profile.dataCadastro).toLocaleDateString("pt-BR") : "-"}` },
               ].map((item) => (
@@ -188,7 +186,7 @@ export default function UserProfilePage() {
                 gap: "var(--espaco-2)",
               }}
             >
-              <MessageSquare size={15} /> Enviar mensagem
+              <ChatCircleText size={15} /> Enviar mensagem
             </button>
           </div>
         </div>
@@ -226,7 +224,7 @@ export default function UserProfilePage() {
                     onClick={() => navigate(`/app/projects/${p.id}`)}
                   >
                     <div className="historico-item__icone-area">
-                      <Award size={18} style={{ color: "var(--cor-primaria)" }} />
+                      <Trophy size={18} style={{ color: "var(--cor-primaria)" }} />
                     </div>
                     <div className="historico-item__info">
                       <p className="historico-item__titulo">{p.titulo ?? p.title ?? "Projeto"}</p>

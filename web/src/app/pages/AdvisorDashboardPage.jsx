@@ -1,266 +1,121 @@
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import {
-  FolderOpen,
-  FileText,
-  GraduationCap,
-  ClipboardCheck,
-  AlertTriangle,
-  Users,
-  Star,
-  ChevronRight,
-  CheckCircle2,
-} from "lucide-react";
+import { FolderOpen, FileText, GraduationCap, ClipboardText, Warning, Users, CalendarCheck, TrendUp } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
-import { mapOrientadorDashboard } from "../utils/adapters";
-import { formatProjectStatus, formatApplicationStatus, formatEntregaStatus, formatEtapaStatus } from "../utils/formatters";
+import { etapaService } from "../services/etapaService";
+import { mapOrientadorDashboard, mapDeadlineAgenda } from "../utils/adapters";
+import {
+  formatProjectStatus,
+  formatApplicationStatus,
+  getInitials,
+} from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
 import { WelcomeBanner } from "../components/WelcomeBanner";
-import "./AdvisorWorkspace.css";
+import {
+  DashCard,
+  DashMetric,
+  DashRow,
+  DashAvatar,
+  DashEmpty,
+  DashAgenda,
+  DashListaCortada,
+  DashFit,
+} from "../components/DashboardKit";
+import "../components/DashboardKit.css";
 
 const DASHBOARD_PREVIEW_LIMIT = 3;
+// Calendário e Orientandos ativos dividem a coluna lateral em partes
+// desiguais (ver .dash-coluna--preencher / .dash-card--preencher).
+const RIGHT_COLUMN_LIMIT = 6;
+// Calendário mostra só os 3 prazos mais próximos inteiros; o 4º aparece
+// cortado pela metade com fade (ver .dash-agenda-lista), convidando a
+// clicar em "Ver mais" em vez de rolar a lista.
+const CALENDAR_PREVIEW_LIMIT = 3;
 
-const Sk = ({ w = "100%", h = 14, r = "0.5rem", mb = 0 }) => (
-  <div className="skeleton" style={{ width: w, height: h, borderRadius: r, marginBottom: mb || undefined }} />
+const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
+  <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
 );
 
+function SkeletonCard({ rows = 3, className = "" }) {
+  return (
+    <div className={`dash-card ${className}`}>
+      <div className="dash-card__cabecalho">
+        <Sk w={28} h={28} r="0.5rem" />
+        <Sk w={150} h={16} />
+      </div>
+      <div className="dash-card__corpo" style={{ gap: "var(--espaco-4)", paddingTop: "var(--espaco-2)" }}>
+        {Array.from({ length: rows }).map((_, i) => <Sk key={i} w="100%" h={30} />)}
+      </div>
+    </div>
+  );
+}
 
 function AdvisorDashboardSkeleton() {
-  const metricSkeletons = Array.from({ length: 6 }, (_, index) => index);
-  const prioritySkeletons = Array.from({ length: 4 }, (_, index) => index);
-  const followUpSkeletons = Array.from({ length: 3 }, (_, index) => index);
-
-  const renderQueueSkeleton = (item) => (
-    <div key={item} className="advisor-card advisor-card--skeleton">
-      <div className="advisor-card__cabecalho">
-        <Sk w={140} h={15} />
-        <Sk w={24} h={24} r="var(--raio-completo)" />
-      </div>
-      <div className="advisor-card__corpo">
-        <Sk w="100%" h={46} r="var(--raio-medio)" />
-      </div>
-    </div>
-  );
-
   return (
-    <div className="advisor-pagina advisor-pagina--dashboard advisor-pagina--skeleton" aria-busy="true" aria-label="Carregando painel do orientador">
-      <Sk w="100%" h={128} r="var(--raio-grande)" mb={16} />
-      <div className="advisor-dashboard-overview advisor-dashboard-overview--skeleton">
-        {metricSkeletons.map((item) => (
-          <div key={item} className="advisor-metrica advisor-metrica--overview advisor-metrica--normal advisor-metrica--skeleton">
-            <Sk w={34} h={34} r="var(--raio-medio)" />
-            <div className="advisor-metrica__conteudo">
-              <Sk w={28} h={22} mb={6} />
-              <Sk w="70%" h={12} />
-            </div>
-          </div>
-        ))}
+    <div className="dash" aria-busy="true" aria-label="Carregando painel do orientador">
+      <Sk w="100%" h={140} r="var(--raio-grande)" />
+      <div className="dash-grade">
+        {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} rows={1} />)}
       </div>
-      <div className="advisor-dashboard-layout advisor-dashboard-layout--skeleton">
-        <div className="advisor-dashboard-principal">
-          <section className="advisor-dashboard-section">
-            <div className="advisor-dashboard-section__cabecalho advisor-dashboard-section__cabecalho--skeleton">
-              <div>
-                <Sk w={120} h={18} mb={8} />
-                <Sk w={260} h={12} />
-              </div>
-            </div>
-            <div className="advisor-grade-filas advisor-grade-filas--prioridade advisor-grade-filas--skeleton">
-              {prioritySkeletons.map(renderQueueSkeleton)}
-            </div>
-          </section>
-
-          <section className="advisor-dashboard-section">
-            <div className="advisor-dashboard-section__cabecalho advisor-dashboard-section__cabecalho--skeleton">
-              <div>
-                <Sk w={150} h={18} mb={8} />
-                <Sk w={300} h={12} />
-              </div>
-            </div>
-            <div className="advisor-grade-filas advisor-grade-filas--acompanhamento advisor-grade-filas--skeleton">
-              {followUpSkeletons.map(renderQueueSkeleton)}
-            </div>
-          </section>
+      <div className="dash-colunas">
+        <div className="dash-coluna">
+          <SkeletonCard />
+          <div className="dash-grade" style={{ "--dash-colunas": 2 }}>
+            <SkeletonCard rows={1} />
+            <SkeletonCard rows={1} />
+          </div>
+          <SkeletonCard rows={2} />
+        </div>
+        <div className="dash-coluna dash-coluna--preencher">
+          <SkeletonCard rows={3} className="dash-card--preencher" />
+          <SkeletonCard rows={3} className="dash-card--preencher" />
         </div>
       </div>
     </div>
   );
 }
 
-function statusLabelFor(status, kind) {
-  if (kind === "project") return formatProjectStatus(status);
-  if (kind === "application") return formatApplicationStatus(status);
-  if (kind === "delivery") return formatEntregaStatus(status);
-  if (kind === "etapa") return formatEtapaStatus(status);
-  return status ?? "";
-}
+const applicationTone = {
+  APROVADO: "verde",
+  PENDENTE: "laranja",
+  REJEITADO: "vermelho",
+};
 
-function statusClassFor(status, kind) {
-  if (kind === "project") {
-    if (status === "ABERTO") return "advisor-fila-item__status--verde";
-    if (status === "EM_ANDAMENTO") return "advisor-fila-item__status--amarelo";
-    if (status === "FINALIZADO") return "advisor-fila-item__status--vermelho";
-  }
-
-  if (kind === "etapa") {
-    if (status === "PENDING") return "advisor-fila-item__status--verde";
-    if (status === "ACTIVE") return "advisor-fila-item__status--amarelo";
-    if (status === "DONE" || status === "REJECTED") return "advisor-fila-item__status--vermelho";
-  }
-
-  return "";
-}
-
-function buildMetricCards(metricas) {
-  return [
-    {
-      label: "Projetos ativos",
-      value: metricas.projetosAtivos,
-      icon: FolderOpen,
-      areaClass: "advisor-metrica__icone-area--azul",
-      iconClass: "advisor-metrica__icone--azul",
-      href: "/app/projects",
-      priority: "normal",
-    },
-    {
-      label: "Solicitações de orientação",
-      value: metricas.solicitacoesOrientacao,
-      icon: FileText,
-      areaClass: "advisor-metrica__icone-area--violeta",
-      iconClass: "advisor-metrica__icone--violeta",
-      href: "/app/projects",
-      priority: "action",
-    },
-    {
-      label: "Inscrições aguardando análise",
-      value: metricas.inscricoesPendentes,
-      icon: Users,
-      areaClass: "advisor-metrica__icone-area--laranja",
-      iconClass: "advisor-metrica__icone--laranja",
-      href: "/app/applications",
-      priority: "action",
-    },
-    {
-      label: "Orientandos ativos",
-      value: metricas.orientandosAtivos,
-      icon: GraduationCap,
-      areaClass: "advisor-metrica__icone-area--verde",
-      iconClass: "advisor-metrica__icone--verde",
-      href: "/app/advisees",
-      priority: "normal",
-    },
-    {
-      label: "Etapas atrasadas",
-      value: metricas.etapasAtrasadas,
-      icon: AlertTriangle,
-      areaClass: "advisor-metrica__icone-area--erro",
-      iconClass: "advisor-metrica__icone--erro",
-      href: "/app/progress",
-      priority: "risk",
-    },
-    {
-      label: "Entregas aguardando revisão",
-      value: metricas.entregasAguardandoRevisao,
-      icon: ClipboardCheck,
-      areaClass: "advisor-metrica__icone-area--laranja",
-      iconClass: "advisor-metrica__icone--laranja",
-      href: "/app/deliveries",
-      priority: "action",
-    },
-  ];
-}
-
-const filasConfig = [
-  { key: "projetosAtivos", title: "Projetos ativos", icon: FolderOpen, kind: "project" },
-  { key: "solicitacoesOrientacao", title: "Solicitações de orientação", icon: FileText, kind: "project" },
-  { key: "inscricoesPendentes", title: "Inscrições pendentes", icon: Users, kind: "application" },
-  { key: "orientandosAtivos", title: "Orientandos ativos", icon: GraduationCap, kind: "advisee" },
-  { key: "etapasAtrasadas", title: "Etapas atrasadas", icon: AlertTriangle, kind: "etapa" },
-  { key: "entregasAguardandoRevisao", title: "Entregas aguardando revisão", icon: ClipboardCheck, kind: "delivery" },
-  { key: "avaliacoesAguardandoCiencia", title: "Avaliações aguardando ciência", icon: Star, kind: "evaluation" },
-];
-
-function QueueCard({ title, icon: Icon, items, kind, onNavigate }) {
-  const visibleItems = items.slice(0, DASHBOARD_PREVIEW_LIMIT);
-
-  return (
-    <div className={`advisor-card advisor-card--${kind} ${items.length === 0 ? "advisor-card--sem-itens" : ""}`}>
-      <div className="advisor-card__cabecalho">
-        <span className="advisor-card__titulo">{title}</span>
-        <span className="advisor-card__contador">{items.length}</span>
-      </div>
-      <div className="advisor-card__corpo">
-        {items.length === 0 ? (
-          <div className="advisor-card__vazio">
-            <CheckCircle2 size={17} />
-            <span>Nada pendente por aqui.</span>
-          </div>
-        ) : (
-          visibleItems.map((item, index) => (
-            <motion.button
-              key={`${item.id}-${index}`}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, delay: index * 0.03 }}
-              onClick={() => item.destino && onNavigate(item.destino)}
-              className="advisor-fila-item"
-            >
-              <div className="advisor-fila-item__icone">
-                <Icon size={14} />
-              </div>
-              <div className="advisor-fila-item__info">
-                <p className="advisor-fila-item__titulo">{item.titulo}</p>
-                {item.subtitulo && <p className="advisor-fila-item__subtitulo">{item.subtitulo}</p>}
-              </div>
-              {item.status && (
-                <span className={`advisor-fila-item__status ${statusClassFor(item.status, kind)}`}>
-                  {statusLabelFor(item.status, kind)}
-                </span>
-              )}
-            </motion.button>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-function AdvisorSection({ title, description, children }) {
-  return (
-    <section className="advisor-dashboard-section">
-      <div className="advisor-dashboard-section__cabecalho">
-        <div>
-          <h3 className="advisor-dashboard-section__titulo">{title}</h3>
-          {description && <p className="advisor-dashboard-section__descricao">{description}</p>}
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
+const projectTone = {
+  ABERTO: "verde",
+  EM_ANDAMENTO: "laranja",
+  FINALIZADO: "neutro",
+};
 
 export default function AdvisorDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const { data, loading, error } = useAsyncData(
-    async () => mapOrientadorDashboard(await advisorService.dashboard()),
+    async () => {
+      const [dashboard, prazos] = await Promise.all([
+        advisorService.dashboard(),
+        etapaService.listMine().catch(() => []),
+      ]);
+
+      return {
+        ...mapOrientadorDashboard(dashboard),
+        agenda: mapDeadlineAgenda(prazos, RIGHT_COLUMN_LIMIT),
+      };
+    },
     [],
     {
       initialData: {
         metricas: {
-          projetosAtivos: 0,
-          solicitacoesOrientacao: 0,
           inscricoesPendentes: 0,
-          orientandosAtivos: 0,
           etapasAtrasadas: 0,
           entregasAguardandoRevisao: 0,
-          avaliacoesAguardandoCiencia: 0,
         },
         filas: {},
+        agenda: [],
       },
     },
   );
@@ -275,91 +130,225 @@ export default function AdvisorDashboardPage() {
 
   const metricas = data?.metricas ?? {};
   const filas = data?.filas ?? {};
-  const metricCards = buildMetricCards(metricas);
-  const priorityOrder = ["etapasAtrasadas", "entregasAguardandoRevisao", "solicitacoesOrientacao", "inscricoesPendentes"];
-  const highPriorityQueues = priorityOrder
-    .map((key) => filasConfig.find((config) => config.key === key))
-    .filter(Boolean);
-  const followUpQueues = filasConfig.filter((config) => !priorityOrder.includes(config.key));
-  const pendingTotal =
-    (metricas.solicitacoesOrientacao ?? 0) +
-    (metricas.inscricoesPendentes ?? 0) +
-    (metricas.entregasAguardandoRevisao ?? 0) +
-    (metricas.etapasAtrasadas ?? 0);
+  const agenda = data?.agenda ?? [];
+  const go = (destino) => navigate(destino);
 
-  const handleNavigate = (destino) => navigate(destino);
+  const etapasAtrasadas = (filas.etapasAtrasadas ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT);
+  const entregasAguardandoRevisao = (filas.entregasAguardandoRevisao ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT);
+
+  // "Ver mais" só aparece quando a lista tem mais itens do que o limite
+  // exibido — nesse caso mostra limite+1 (o excedente fica cortado com fade,
+  // ver DashListaCortada) em vez de rolar.
+  const inscricoesTotal = filas.inscricoesPendentes ?? [];
+  const inscricoesExcede = inscricoesTotal.length > DASHBOARD_PREVIEW_LIMIT;
+  const inscricoesPendentes = inscricoesTotal.slice(0, DASHBOARD_PREVIEW_LIMIT + (inscricoesExcede ? 1 : 0));
+
+  const projetosTotal = filas.projetosAtivos ?? [];
+  const projetosExcede = projetosTotal.length > DASHBOARD_PREVIEW_LIMIT;
+  const projetosAtivos = projetosTotal.slice(0, DASHBOARD_PREVIEW_LIMIT + (projetosExcede ? 1 : 0));
+
+  const orientandosTotal = filas.orientandosAtivos ?? [];
+  const orientandosExcede = orientandosTotal.length > RIGHT_COLUMN_LIMIT;
+  const orientandosAtivos = orientandosTotal.slice(0, RIGHT_COLUMN_LIMIT + (orientandosExcede ? 1 : 0));
+
+  const pendingTotal =
+    (metricas.inscricoesPendentes ?? 0) +
+    (metricas.etapasAtrasadas ?? 0) +
+    (metricas.entregasAguardandoRevisao ?? 0);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="advisor-pagina advisor-pagina--dashboard"
+      className="dash"
     >
+      <DashFit>
       <WelcomeBanner
         name={user?.nome?.split(" ")[0] ?? "professor(a)"}
+        role="Orientador"
+        institution={user?.instituicao}
         summary={pendingTotal > 0
           ? <>Você tem <strong>{pendingTotal} pendências</strong> para revisar antes de seguir a rotina.</>
           : <>Nenhuma <strong>pendência crítica</strong> no momento.</>}
-        primaryAction={{ label: "Inscrições", onClick: () => handleNavigate("/app/applications") }}
-        secondaryAction={{ label: "Ver progresso", onClick: () => handleNavigate("/app/progress") }}
+        secondaryAction={{ label: "Ver progresso", icon: TrendUp, onClick: () => go("/app/progress") }}
+        primaryAction={{ label: "Ver inscrições", icon: FileText, onClick: () => go("/app/applications") }}
       />
 
-      <div className="advisor-dashboard-overview">
-        {metricCards.map((card, index) => (
-          <motion.button
-            key={card.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: index * 0.025 }}
-            onClick={() => handleNavigate(card.href)}
-            className={`advisor-metrica advisor-metrica--overview advisor-metrica--${card.priority}`}
-          >
-            <div className={`advisor-metrica__icone-area ${card.areaClass}`}>
-              <card.icon size={16} className={card.iconClass} />
-            </div>
-            <div className="advisor-metrica__conteudo">
-              <p className="advisor-metrica__valor">{card.value}</p>
-              <p className="advisor-metrica__rotulo">{card.label}</p>
-            </div>
-            <ChevronRight size={14} className="advisor-metrica__seta" />
-          </motion.button>
-        ))}
+      <div className="dash-grade">
+        <DashMetric
+          icon={FileText}
+          tone="azul"
+          title="Inscrições"
+          caption="Inscrições aguardando análise"
+          value={metricas.inscricoesPendentes ?? 0}
+          onOpen={() => go("/app/applications")}
+        />
+        <DashMetric
+          icon={TrendUp}
+          tone="verde"
+          title="Progresso"
+          caption="Etapas atrasadas em seu projeto"
+          value={metricas.etapasAtrasadas ?? 0}
+          onOpen={() => go("/app/progress")}
+        />
+        <DashMetric
+          icon={ClipboardText}
+          tone="laranja"
+          title="Entregas"
+          caption="Entregas aguardando revisão"
+          value={metricas.entregasAguardandoRevisao ?? 0}
+          onOpen={() => go("/app/deliveries")}
+        />
       </div>
 
-      <div className="advisor-dashboard-layout">
-        <div className="advisor-dashboard-principal">
-          <AdvisorSection title="Prioridades" description="Pendências que bloqueiam inscrição, entrega ou avanço.">
-            <div className="advisor-grade-filas advisor-grade-filas--prioridade">
-              {highPriorityQueues.map((config) => (
-                <QueueCard
-                  key={config.key}
-                  title={config.title}
-                  icon={config.icon}
-                  kind={config.kind}
-                  items={filas[config.key] ?? []}
-                  onNavigate={handleNavigate}
-                />
-              ))}
-            </div>
-          </AdvisorSection>
+      <div className="dash-colunas">
+        <div className="dash-coluna">
+          <DashCard
+            icon={FileText}
+            tone="azul"
+            title="Inscrições pendentes"
+            caption="Resumo de suas inscrições pendentes para análise"
+            onOpen={() => go("/app/applications")}
+          >
+            {inscricoesPendentes.length === 0 ? (
+              <DashEmpty>Nenhuma inscrição aguardando análise.</DashEmpty>
+            ) : (
+              <DashListaCortada excedeLimite={inscricoesExcede} onVerMais={() => go("/app/applications")}>
+                {inscricoesPendentes.map((item, index) => (
+                  <DashRow
+                    key={`${item.id}-${index}`}
+                    title={item.titulo}
+                    subtitle={item.subtitulo}
+                    badge={item.status ? formatApplicationStatus(item.status) : undefined}
+                    badgeTone={applicationTone[item.status] ?? "laranja"}
+                    onOpen={item.destino ? () => go(item.destino) : undefined}
+                    openLabel={item.titulo}
+                  />
+                ))}
+              </DashListaCortada>
+            )}
+          </DashCard>
 
-          <AdvisorSection title="Acompanhamento" description="Projetos, orientandos e avaliações em andamento.">
-            <div className="advisor-grade-filas advisor-grade-filas--acompanhamento">
-              {followUpQueues.map((config) => (
-                <QueueCard
-                  key={config.key}
-                  title={config.title}
-                  icon={config.icon}
-                  kind={config.kind}
-                  items={filas[config.key] ?? []}
-                  onNavigate={handleNavigate}
-                />
-              ))}
+          <div className="dash-grade" style={{ "--dash-colunas": 2 }}>
+            <DashCard
+              icon={Warning}
+              tone="vermelho"
+              title="Etapas atrasadas"
+              onOpen={() => go("/app/progress")}
+            >
+              {etapasAtrasadas.length === 0 ? (
+                <DashEmpty>Nenhuma etapa atrasada.</DashEmpty>
+              ) : (
+                etapasAtrasadas.map((item, index) => (
+                  <DashRow
+                    key={`${item.id}-${index}`}
+                    title={item.titulo}
+                    subtitle={item.subtitulo}
+                    onOpen={item.destino ? () => go(item.destino) : undefined}
+                    openLabel={item.titulo}
+                  />
+                ))
+              )}
+            </DashCard>
+
+            <DashCard
+              icon={Users}
+              tone="roxo"
+              title="Entregas aguardando revisão"
+              onOpen={() => go("/app/deliveries")}
+            >
+              {entregasAguardandoRevisao.length === 0 ? (
+                <DashEmpty>Nenhuma entrega aguardando revisão.</DashEmpty>
+              ) : (
+                entregasAguardandoRevisao.map((item, index) => (
+                  <DashRow
+                    key={`${item.id}-${index}`}
+                    title={item.titulo}
+                    subtitle={item.subtitulo}
+                    onOpen={item.destino ? () => go(item.destino) : () => go("/app/deliveries")}
+                    openLabel={item.titulo}
+                  />
+                ))
+              )}
+            </DashCard>
+          </div>
+
+          <DashCard
+            icon={FolderOpen}
+            tone="laranja"
+            title="Projetos Ativos"
+            onOpen={() => go("/app/projects")}
+          >
+            {projetosAtivos.length === 0 ? (
+              <DashEmpty>Nenhum projeto ativo no momento.</DashEmpty>
+            ) : (
+              <DashListaCortada excedeLimite={projetosExcede} onVerMais={() => go("/app/projects")}>
+                {projetosAtivos.map((item, index) => (
+                  <DashRow
+                    key={`${item.id}-${index}`}
+                    title={item.titulo}
+                    subtitle={item.subtitulo}
+                    badge={item.status ? formatProjectStatus(item.status) : undefined}
+                    badgeTone={projectTone[item.status] ?? "neutro"}
+                    onOpen={item.destino ? () => go(item.destino) : undefined}
+                    openLabel={item.titulo}
+                  />
+                ))}
+              </DashListaCortada>
+            )}
+          </DashCard>
+        </div>
+
+        <div className="dash-coluna dash-coluna--preencher">
+          <DashCard
+            icon={CalendarCheck}
+            tone="roxo"
+            title="Calendário"
+            caption="Veja seus próximos prazos"
+            onOpen={() => go("/app/deadlines")}
+            className="dash-card--sombra dash-card--calendario"
+          >
+            <div className="dash-agenda-lista">
+              <DashAgenda
+                items={agenda.slice(0, CALENDAR_PREVIEW_LIMIT + 1)}
+                emptyLabel="Nenhum prazo próximo cadastrado."
+              />
+              {agenda.length > CALENDAR_PREVIEW_LIMIT && (
+                <button type="button" className="dash-agenda-vermais" onClick={() => go("/app/deadlines")}>
+                  Ver mais
+                </button>
+              )}
             </div>
-          </AdvisorSection>
+          </DashCard>
+
+          <DashCard
+            icon={GraduationCap}
+            tone="verde"
+            title="Orientandos ativos"
+            onOpen={() => go("/app/advisees")}
+            className="dash-card--preencher"
+          >
+            {orientandosAtivos.length === 0 ? (
+              <DashEmpty>Nenhum orientando ativo.</DashEmpty>
+            ) : (
+              <DashListaCortada excedeLimite={orientandosExcede} onVerMais={() => go("/app/advisees")}>
+                {orientandosAtivos.map((item, index) => (
+                  <DashRow
+                    key={`${item.id}-${index}`}
+                    title={item.titulo}
+                    subtitle={item.subtitulo}
+                    avatar={<DashAvatar initials={getInitials(item.titulo)} />}
+                    onOpen={item.destino ? () => go(item.destino) : undefined}
+                    openLabel={item.titulo}
+                  />
+                ))}
+              </DashListaCortada>
+            )}
+          </DashCard>
         </div>
       </div>
+      </DashFit>
     </motion.div>
   );
 }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { FolderOpen, Star, X, Pencil, CheckCircle2 } from "lucide-react";
+import { FolderOpen, Star, X, Pencil, CheckCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
@@ -147,15 +147,22 @@ export default function AdvisorEvaluationsPage() {
   );
 
   const todosProjetos = useMemo(() => (Array.isArray(projetos) ? projetos : []), [projetos]);
-  const activeProjectId = projectId ?? todosProjetos[0]?.id ?? null;
+  // null = "Todos" (sem projeto específico selecionado no combobox).
+  const activeProjectId = projectId;
 
   const { data: avaliacoes, loading: loadingAvaliacoes, error: erroAvaliacoes, reload } = useAsyncData(
     async () => {
-      if (!activeProjectId) return [];
-      const raw = await evaluationService.list(activeProjectId);
-      return (Array.isArray(raw) ? raw : []).map(mapAvaliacaoAcademica);
+      if (activeProjectId) {
+        const raw = await evaluationService.list(activeProjectId);
+        return (Array.isArray(raw) ? raw : []).map(mapAvaliacaoAcademica);
+      }
+      if (todosProjetos.length === 0) return [];
+      const porProjeto = await Promise.all(
+        todosProjetos.map((p) => evaluationService.list(p.id).catch(() => [])),
+      );
+      return porProjeto.flat().map(mapAvaliacaoAcademica);
     },
-    [activeProjectId],
+    [activeProjectId, todosProjetos],
     { initialData: [] },
   );
 
@@ -166,9 +173,10 @@ export default function AdvisorEvaluationsPage() {
 
   const abrirModal = async (avaliacao = null) => {
     setErroForm("");
-    if (!activeProjectId) return;
+    const modalProjectId = avaliacao?.projetoId ?? activeProjectId;
+    if (!modalProjectId) return;
 
-    setModal({ avaliacao });
+    setModal({ avaliacao, projetoId: modalProjectId });
     setOpcoes((prev) => ({ ...prev, loading: true }));
     setCampos(
       avaliacao
@@ -194,8 +202,8 @@ export default function AdvisorEvaluationsPage() {
 
     try {
       const [orientandosRaw, etapasRaw] = await Promise.all([
-        advisorService.orientandos({ projetoId: activeProjectId }).catch(() => []),
-        etapaService.list(activeProjectId).catch(() => []),
+        advisorService.orientandos({ projetoId: modalProjectId }).catch(() => []),
+        etapaService.list(modalProjectId).catch(() => []),
       ]);
       const alunos = (Array.isArray(orientandosRaw) ? orientandosRaw : []).map(mapOrientando);
       const etapas = (Array.isArray(etapasRaw) ? etapasRaw : [])
@@ -246,10 +254,10 @@ export default function AdvisorEvaluationsPage() {
     setSalvando(true);
     try {
       if (modal.avaliacao) {
-        await evaluationService.update(activeProjectId, modal.avaliacao.id, payload);
+        await evaluationService.update(modal.projetoId, modal.avaliacao.id, payload);
         toast.success("Avaliação atualizada.");
       } else {
-        await evaluationService.create(activeProjectId, payload);
+        await evaluationService.create(modal.projetoId, payload);
         toast.success("Avaliação registrada.");
       }
       fecharModal();
@@ -303,11 +311,20 @@ export default function AdvisorEvaluationsPage() {
             ariaLabel="Selecionar projeto"
             className="advisor-busca__input app-combobox--with-leading-icon"
             value={activeProjectId ?? ""}
-            onChange={(nextValue) => setProjectId(Number(nextValue))}
-            options={todosProjetos.map((p) => ({ value: p.id, label: p.title }))}
+            onChange={(nextValue) => setProjectId(nextValue ? Number(nextValue) : null)}
+            options={[
+              { value: "", label: "Todos" },
+              ...todosProjetos.map((p) => ({ value: p.id, label: p.title })),
+            ]}
           />
         </div>
-        <button type="button" className="advisor-botao advisor-botao--primario" onClick={() => abrirModal()}>
+        <button
+          type="button"
+          className="advisor-botao advisor-botao--primario"
+          onClick={() => abrirModal()}
+          disabled={!activeProjectId}
+          title={!activeProjectId ? "Selecione um projeto específico para registrar uma avaliação." : undefined}
+        >
           Nova avaliação
         </button>
       </div>
@@ -344,13 +361,14 @@ export default function AdvisorEvaluationsPage() {
                     <p className="advisor-avaliacao__aluno">{avaliacao.alunoNome}</p>
                     <p className="advisor-avaliacao__etapa">
                       {avaliacao.etapaTitulo || `Etapa #${avaliacao.etapaId ?? "-"}`} · {formatDate(avaliacao.criadaEm)}
+                      {!activeProjectId && ` · ${todosProjetos.find((p) => p.id === avaliacao.projetoId)?.title ?? "Projeto"}`}
                     </p>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <span className="advisor-percentual">Média {formatAvaliacaoNota(media)}</span>
                     {avaliacao.cienciaRegistrada ? (
                       <span className="advisor-etiqueta advisor-etiqueta--verde">
-                        <CheckCircle2 size={12} style={{ marginRight: 4 }} />
+                        <CheckCircle size={12} style={{ marginRight: 4 }} />
                         Ciência registrada
                       </span>
                     ) : (

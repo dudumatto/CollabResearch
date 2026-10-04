@@ -65,11 +65,21 @@
   }
 }
 
+/* Sem a faixa de capa acima (perfil de outro usuário), o corpo precisa do
+   próprio respiro no topo em vez da margem negativa que compensava a capa. */
+.cartao-perfil__corpo--sem-capa {
+  padding-top: var(--espaco-6);
+}
+
 .cartao-perfil__avatar-wrapper {
   position: relative;
   margin-top: -2rem;
   margin-bottom: var(--espaco-4);
   width: fit-content;
+}
+
+.cartao-perfil__corpo--sem-capa .cartao-perfil__avatar-wrapper {
+  margin-top: 0;
 }
 
 .cartao-perfil__avatar {

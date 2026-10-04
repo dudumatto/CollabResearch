@@ -470,11 +470,8 @@
 }
 
 .dark .advisor-hero {
-  background:
-    radial-gradient(circle at top right, rgba(126, 160, 106, 0.22), transparent 28%),
-    radial-gradient(circle at 78% 100%, rgba(85, 124, 85, 0.2), transparent 24%),
-    linear-gradient(135deg, #101a14 0%, #17251d 45%, #24382b 100%);
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: linear-gradient(135deg, #0d3c2c 0%, #12654a 55%, #1d8560 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .advisor-hero__conteudo {
@@ -1338,6 +1335,14 @@
   border-color: var(--cor-borda);
 }
 
+.advisor-linha-card--selecionavel {
+  width: 100%;
+  text-align: left;
+  font-family: var(--fonte-principal);
+  cursor: pointer;
+  justify-content: space-between;
+}
+
 .advisor-linha-card__icone {
   width: 2.5rem;
   height: 2.5rem;
@@ -1483,6 +1488,21 @@
   white-space: nowrap;
 }
 
+.advisor-botao:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--sombra-minima);
+}
+
+.advisor-botao:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.advisor-botao:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
 .advisor-botao--primario {
   background-color: var(--cor-primaria);
   color: #f6f8f5;
@@ -1516,9 +1536,20 @@
   color: var(--cor-sucesso-escura);
 }
 
+.advisor-botao--sucesso:hover:not(:disabled) {
+  background-color: var(--cor-sucesso-leve);
+}
+
 .advisor-botao:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.advisor-botao--pequeno {
+  padding: 0.3rem 0.65rem;
+  font-size: var(--tamanho-pequeno);
+  gap: var(--espaco-1);
+  border-radius: var(--raio-pequeno);
 }
 
 /* ---- Modal genérico ---- */
@@ -1535,6 +1566,7 @@
 
 .advisor-modal-overlay--conteudo {
   backdrop-filter: blur(6px);
+  transition: left var(--sidebar-duracao) var(--sidebar-curva);
 }
 
 @media (min-width: 1024px) {
@@ -1710,7 +1742,7 @@
 .advisor-barra-progresso {
   height: 0.5rem;
   border-radius: var(--raio-completo);
-  background-color: var(--cor-fundo-leve);
+  background-color: var(--cor-borda-media);
   overflow: hidden;
   width: 100%;
 }
@@ -1718,7 +1750,7 @@
 .advisor-barra-progresso__preenchimento {
   height: 100%;
   border-radius: var(--raio-completo);
-  background: linear-gradient(to right, #1f7a5a, #7ea06a);
+  background: linear-gradient(to right, var(--cor-sucesso), var(--cor-sucesso-media));
   transition: width 0.4s ease;
 }
 
@@ -1826,6 +1858,72 @@
 }
 
 /* ---- Etapas ---- */
+.advisor-etapas-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.advisor-etapas-grupo__cabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  width: 100%;
+  background: none;
+  border: none;
+  padding: var(--espaco-1) 0;
+  cursor: pointer;
+  font-family: var(--fonte-principal);
+  text-align: left;
+}
+
+.advisor-etapas-grupo__seta {
+  color: var(--cor-texto-mudo);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.advisor-etapas-grupo__titulo {
+  margin: 0;
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-negrito);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cor-texto-fraco);
+}
+
+.advisor-etapas-grupo__titulo--atrasada  { color: var(--cor-erro); }
+.advisor-etapas-grupo__titulo--andamento { color: var(--cor-atencao); }
+.advisor-etapas-grupo__titulo--concluida { color: var(--cor-sucesso); }
+
+.advisor-etapas-grupo__contador {
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  color: var(--cor-texto-mudo);
+  background: var(--cor-fundo-leve);
+  padding: 0.1rem 0.55rem;
+  border-radius: var(--raio-completo);
+}
+
+.advisor-etapas-grupo__vazio {
+  margin: 0;
+  padding: var(--espaco-3) 0 0 var(--espaco-6);
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-mudo);
+  font-style: italic;
+}
+
+.advisor-etapa__prazo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.advisor-etapa__prazo--atrasado {
+  color: var(--cor-erro);
+  font-weight: var(--peso-semi);
+}
+
 .advisor-etapa {
   background: color-mix(in srgb, var(--cor-fundo-leve) 78%, var(--cor-primaria-clara));
   border: 1px solid var(--cor-borda-clara);

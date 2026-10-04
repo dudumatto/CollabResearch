@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, Search, Pencil, Trash2, ArrowLeft, MoreVertical, MessageSquare } from "lucide-react";
+import { ArrowUp, MagnifyingGlass, Pencil, Trash, ArrowLeft, DotsThreeVertical, ChatCircleText } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { conversationService } from "../services/conversationService";
@@ -18,14 +18,28 @@ function getInitials(name) {
 
 const ChatAvatar = memo(function ChatAvatar({ name, src, className }) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setFailed(false);
+    setLoaded(false);
   }, [src]);
 
   return (
     <div className={className}>
-      {src && !failed ? <img src={src} alt={`Foto de perfil de ${name}`} loading="lazy" decoding="async" onError={() => setFailed(true)} /> : <span>{getInitials(name)}</span>}
+      {src && !failed ? (
+        <img
+          src={src}
+          alt={`Foto de perfil de ${name}`}
+          loading="lazy"
+          decoding="async"
+          className={loaded ? "loaded" : undefined}
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <span>{getInitials(name)}</span>
+      )}
     </div>
   );
 });
@@ -214,10 +228,10 @@ const MessageRow = memo(function MessageRow({ message, showDate, highlighted, mi
       {showDate && <div className="chat-data-divider"><span>{formatarDia(message.dataEnvio)}</span></div>}
       <div className={`mensagem-linha ${mine ? "mensagem-linha--usuario" : "mensagem-linha--contato"} ${message._temporaria ? "mensagem-linha--temporaria" : ""}`}>
         {mine && !message._temporaria && <div className="mensagem-acoes">
-          <button type="button" className="mensagem-acoes__gatilho" aria-label="Ações da mensagem" title="Ações da mensagem"><MoreVertical size={18} /></button>
+          <button type="button" className="mensagem-acoes__gatilho" aria-label="Ações da mensagem" title="Ações da mensagem"><DotsThreeVertical size={18} /></button>
           <div className="mensagem-acoes__menu" role="menu" aria-label="Ações da mensagem">
             <button type="button" className="mensagem-acao-btn" onClick={() => onEdit(message)} title="Editar mensagem" aria-label="Editar mensagem" role="menuitem"><Pencil size={20} /></button>
-            <button type="button" className="mensagem-acao-btn mensagem-acao-btn--excluir" onClick={() => onDelete(message)} title="Excluir mensagem" aria-label="Excluir mensagem" role="menuitem"><Trash2 size={20} /></button>
+            <button type="button" className="mensagem-acao-btn mensagem-acao-btn--excluir" onClick={() => onDelete(message)} title="Excluir mensagem" aria-label="Excluir mensagem" role="menuitem"><Trash size={20} /></button>
           </div>
         </div>}
         {!mine && <ChatAvatar name={message?.remetenteNome} src={getMessagePhotoUrl(message, user, mine, conversation)} className="mensagem-avatar" />}
@@ -852,7 +866,7 @@ export default function ChatPage() {
         <div className="pagina-chat__cabecalho-lista">
           <h2 className="pagina-chat__titulo-lista">Mensagens</h2>
           <div className="pagina-chat__busca-conversa">
-            <Search size={15} className="pagina-chat__icone-busca" />
+            <MagnifyingGlass size={15} className="pagina-chat__icone-busca" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -865,7 +879,7 @@ export default function ChatPage() {
         <div className="pagina-chat__rolagem-conversas">
           {filtered.length === 0 ? (
             <div className="pagina-chat__lista-vazia">
-              <MessageSquare size={36} className="pagina-chat__lista-vazia-icone" />
+              <ChatCircleText size={36} className="pagina-chat__lista-vazia-icone" />
               <p className="pagina-chat__lista-vazia-texto">
                 {search ? "Nenhuma conversa encontrada" : "Nenhuma conversa ainda"}
               </p>
@@ -952,7 +966,7 @@ export default function ChatPage() {
           </>
         ) : (
           <div className="pagina-chat__estado-vazio">
-            <MessageSquare size={48} className="pagina-chat__estado-vazio-icone" />
+            <ChatCircleText size={48} className="pagina-chat__estado-vazio-icone" />
             <p className="pagina-chat__estado-vazio-titulo">
               {conversations.length === 0 ? "Nenhuma conversa ainda" : "Selecione uma conversa"}
             </p>
@@ -1013,7 +1027,7 @@ export default function ChatPage() {
                 Cancelar
               </button>
               <button className="modal__btn modal__btn--excluir" onClick={confirmarExclusao}>
-                <Trash2 size={14} /> Excluir
+                <Trash size={14} /> Excluir
               </button>
             </div>
           </div>

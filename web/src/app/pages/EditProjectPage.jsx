@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, CircleNotch } from "@phosphor-icons/react";
 import { areaService } from "../services/areaService";
 import { projectService } from "../services/projectService";
 import { StatusView } from "../components/StatusView";
@@ -233,7 +233,7 @@ export default function EditProjectPage() {
               className="formulario-projeto__botao-criar"
               disabled={isDisabled}>
               {loading
-                ? <><Loader2 size={16} className="formulario-projeto__spinner" /> Salvando...</>
+                ? <><CircleNotch size={16} className="formulario-projeto__spinner" /> Salvando...</>
                 : "Salvar alterações"}
             </motion.button>
           </div>

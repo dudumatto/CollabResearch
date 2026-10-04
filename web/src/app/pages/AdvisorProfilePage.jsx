@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Building2, GraduationCap, Save, X, Edit3, User } from "lucide-react";
+import { Envelope, Buildings, GraduationCap, FloppyDisk, X, PencilSimple, User } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -9,7 +9,11 @@ import { userService } from "../services/userService";
 import { mapOrientadorPerfil, withImageCacheBuster } from "../utils/adapters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
+import { INSTITUICOES, TITULACOES, DEPARTAMENTOS } from "../constants/academicOptions";
 import "./AdvisorWorkspace.css";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function iniciais(nome = "") {
   return String(nome)
@@ -84,6 +88,10 @@ export default function AdvisorProfilePage() {
     }
     if (!form.email.trim()) {
       toast.error("Informe o seu e-mail.");
+      return;
+    }
+    if (!EMAIL_REGEX.test(form.email.trim())) {
+      toast.error("Informe um e-mail válido.");
       return;
     }
     setSalvando(true);
@@ -192,7 +200,7 @@ export default function AdvisorProfilePage() {
                     disabled={busy}
                     title="Alterar foto"
                   >
-                    <Edit3 size={12} />
+                    <PencilSimple size={12} />
                   </button>
                 </>
               )}
@@ -202,13 +210,13 @@ export default function AdvisorProfilePage() {
             <div className="advisor-perfil-cartao__info">
               {perfil.email && (
                 <div className="advisor-perfil-cartao__info-item">
-                  <Mail size={14} className="advisor-perfil-cartao__info-icone" />
+                  <Envelope size={14} className="advisor-perfil-cartao__info-icone" />
                   <span>{perfil.email}</span>
                 </div>
               )}
               {perfil.instituicao && (
                 <div className="advisor-perfil-cartao__info-item">
-                  <Building2 size={14} className="advisor-perfil-cartao__info-icone" />
+                  <Buildings size={14} className="advisor-perfil-cartao__info-icone" />
                   <span>{perfil.instituicao}</span>
                 </div>
               )}
@@ -251,7 +259,7 @@ export default function AdvisorProfilePage() {
               <span className="advisor-etiqueta advisor-etiqueta--cinza">Professor/Orientador</span>
               {!editing && (
                 <button type="button" onClick={() => setEditing(true)} className="advisor-botao advisor-botao--secundario">
-                  <Edit3 size={16} />
+                  <PencilSimple size={16} />
                   Editar perfil
                 </button>
               )}
@@ -280,7 +288,7 @@ export default function AdvisorProfilePage() {
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="perfil-email">E-mail *</label>
                   <div className="advisor-profile-standard__input-wrap">
-                    <Mail size={14} className="advisor-profile-standard__input-icon" />
+                    <Envelope size={14} className="advisor-profile-standard__input-icon" />
                     <input
                       id="perfil-email"
                       type="email"
@@ -293,46 +301,42 @@ export default function AdvisorProfilePage() {
                 </div>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="perfil-instituicao">Instituição</label>
-                  <div className="advisor-profile-standard__input-wrap">
-                    <Building2 size={14} className="advisor-profile-standard__input-icon" />
-                    <input
-                      id="perfil-instituicao"
-                      type="text"
-                      value={form.instituicao}
-                      disabled={!editing}
-                      onChange={(e) => setForm({ ...form, instituicao: e.target.value })}
-                      className="advisor-campo__input advisor-profile-standard__input"
-                    />
-                  </div>
+                  <AppCombobox
+                    id="perfil-instituicao"
+                    ariaLabel="Selecionar instituição"
+                    disabled={!editing}
+                    className="advisor-campo__input app-combobox--advisor-input"
+                    value={form.instituicao}
+                    placeholder="Selecione a instituição"
+                    onChange={(nextValue) => setForm({ ...form, instituicao: nextValue })}
+                    options={INSTITUICOES.map((instituicao) => ({ value: instituicao, label: instituicao }))}
+                  />
                 </div>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="perfil-departamento">Departamento</label>
-                  <div className="advisor-profile-standard__input-wrap">
-                    <GraduationCap size={14} className="advisor-profile-standard__input-icon" />
-                    <input
-                      id="perfil-departamento"
-                      type="text"
-                      value={form.departamento}
-                      disabled={!editing}
-                      onChange={(e) => setForm({ ...form, departamento: e.target.value })}
-                      className="advisor-campo__input advisor-profile-standard__input"
-                    />
-                  </div>
+                  <AppCombobox
+                    id="perfil-departamento"
+                    ariaLabel="Selecionar departamento"
+                    disabled={!editing}
+                    className="advisor-campo__input app-combobox--advisor-input"
+                    value={form.departamento}
+                    placeholder="Selecione o departamento"
+                    onChange={(nextValue) => setForm({ ...form, departamento: nextValue })}
+                    options={DEPARTAMENTOS.map((departamento) => ({ value: departamento, label: departamento }))}
+                  />
                 </div>
                 <div className="advisor-campo">
                   <label className="advisor-campo__rotulo" htmlFor="perfil-titulacao">Titulação</label>
-                  <div className="advisor-profile-standard__input-wrap">
-                    <GraduationCap size={14} className="advisor-profile-standard__input-icon" />
-                    <input
-                      id="perfil-titulacao"
-                      type="text"
-                      value={form.titulacao}
-                      disabled={!editing}
-                      onChange={(e) => setForm({ ...form, titulacao: e.target.value })}
-                      className="advisor-campo__input advisor-profile-standard__input"
-                      placeholder="Ex.: Doutor em Ciência da Computação"
-                    />
-                  </div>
+                  <AppCombobox
+                    id="perfil-titulacao"
+                    ariaLabel="Selecionar titulação"
+                    disabled={!editing}
+                    className="advisor-campo__input app-combobox--advisor-input"
+                    value={form.titulacao}
+                    placeholder="Selecione a titulação"
+                    onChange={(nextValue) => setForm({ ...form, titulacao: nextValue })}
+                    options={TITULACOES.map((titulacao) => ({ value: titulacao, label: titulacao }))}
+                  />
                 </div>
               </div>
 
@@ -353,7 +357,7 @@ export default function AdvisorProfilePage() {
               {editing && (
                 <div className="advisor-modal__rodape" style={{ justifyContent: "flex-start" }}>
                   <button type="button" className="advisor-botao advisor-botao--primario" onClick={salvar} disabled={busy}>
-                    {busy ? <span className="secao-perfil__spinner" /> : <Save size={16} />}
+                    {busy ? <span className="secao-perfil__spinner" /> : <FloppyDisk size={16} />}
                     Salvar alterações
                   </button>
                   <button

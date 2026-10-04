@@ -464,6 +464,35 @@ export function mapOrientadorDashboard(dashboard) {
   };
 }
 
+const MESES_CURTOS = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+
+// Monta os itens da agenda "próximos prazos" a partir das etapas (fonte:
+// /api/me/prazos-etapas). Considera apenas etapas com prazo definido, ordena
+// da mais próxima para a mais distante e limita a quantidade exibida.
+export function mapDeadlineAgenda(rawStages, limit = 5) {
+  const list = Array.isArray(rawStages) ? rawStages : rawStages?.content ?? rawStages?.data ?? [];
+
+  return list
+    .map((raw) => {
+      const etapa = mapEtapa(raw);
+      const match = String(etapa?.prazo ?? "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (!match) return null;
+
+      const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      return {
+        id: etapa?.id ?? `${raw?.projetoTitulo ?? "p"}-${etapa?.titulo ?? "e"}`,
+        time: date.getTime(),
+        day: match[3],
+        month: MESES_CURTOS[Number(match[2]) - 1] ?? "",
+        title: etapa?.titulo ?? "Etapa",
+        subtitle: raw?.projetoTitulo ?? raw?.tituloProjeto ?? "Projeto",
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.time - b.time)
+    .slice(0, limit);
+}
+
 export function mapOrientando(orientando) {
   if (!orientando) return null;
 

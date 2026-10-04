@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, ChevronLeft, ChevronRight, CircleAlert, ClipboardList } from "lucide-react";
+import { CalendarCheck, CaretLeft, CaretRight, WarningCircle, ClipboardText } from "@phosphor-icons/react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { etapaService } from "../services/etapaService";
 import { mapEtapa } from "../utils/adapters";
@@ -144,7 +144,7 @@ function DeadlineItem({ item, compact = false }) {
   return (
     <article className={`calendario-prazo ${compact ? "calendario-prazo--compacto" : ""}`}>
       <div className="calendario-prazo__icone">
-        <CalendarClock size={16} />
+        <CalendarCheck size={16} />
       </div>
       <div className="calendario-prazo__conteudo">
         <h3 className="calendario-prazo__titulo">{item.titulo}</h3>
@@ -348,7 +348,7 @@ export default function StudentDeadlinesPage() {
 
       {scheduled.length === 0 && withoutDate.length === 0 ? (
         <div className="advisor-estado-vazio">
-          <div className="advisor-estado-vazio__icone"><ClipboardList size={24} /></div>
+          <div className="advisor-estado-vazio__icone"><ClipboardText size={24} /></div>
           <h2 className="advisor-estado-vazio__titulo">Nenhum prazo cadastrado</h2>
           <p className="advisor-estado-vazio__descricao">Datas de entrega criadas nas etapas aparecerão aqui.</p>
         </div>
@@ -357,11 +357,11 @@ export default function StudentDeadlinesPage() {
           <section className="calendario-card calendario-card--principal">
             <div className="calendario-card__topo">
               <button type="button" onClick={() => moveMonth(-1)} aria-label="Mês anterior">
-                <ChevronLeft size={17} />
+                <CaretLeft size={17} />
               </button>
               <h2>{monthLabel(visibleMonth)}</h2>
               <button type="button" onClick={() => moveMonth(1)} aria-label="Próximo mês">
-                <ChevronRight size={17} />
+                <CaretRight size={17} />
               </button>
             </div>
 
@@ -469,7 +469,7 @@ export default function StudentDeadlinesPage() {
 
             <section className="calendario-card calendario-card--lateral calendario-card--alerta">
               <div className="calendario-alerta__topo">
-                <CircleAlert size={17} />
+                <WarningCircle size={17} />
                 <h2>Etapas sem data</h2>
               </div>
               {withoutDate.length === 0 ? (

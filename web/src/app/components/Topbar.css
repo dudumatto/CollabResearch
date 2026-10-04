@@ -17,21 +17,37 @@
   z-index: 90;
   overflow: visible;
   backdrop-filter: none;
+  transition: left var(--sidebar-duracao) var(--sidebar-curva);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .barra-topo {
+    transition-duration: 1ms;
+  }
+}
+
+/* ---- A partir de tablet, a topbar flutua: arredondada e com margem em
+   volta, no mesmo padrão visual da sidebar flutuante (referência Figma). ---- */
 @media (min-width: 768px) {
   .barra-topo {
+    top: var(--espaco-4);
+    left: calc(var(--espaco-4) + var(--espaco-6));
+    right: calc(var(--espaco-4) + var(--espaco-6));
     padding: 0 var(--espaco-6);
+    border: 1px solid var(--cor-separador-suave);
+    border-radius: var(--raio-extra);
+    box-shadow: var(--sombra-media);
+    transition: left var(--sidebar-duracao) var(--sidebar-curva), right 0s;
   }
 }
 
 @media (min-width: 1024px) {
   .barra-topo {
-    left: var(--largura-sidebar);
+    left: calc(var(--largura-sidebar) + var(--espaco-6));
   }
 
   .pagina-app__principal--recolhida .barra-topo {
-    left: var(--largura-sidebar-recolhida);
+    left: calc(var(--largura-sidebar-recolhida) + var(--espaco-6));
   }
 }
 /* ---- Seção esquerda (título) ---- */
@@ -93,7 +109,84 @@
 .barra-topo__secao-direita {
   display: flex;
   align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+/* ---- Campo de busca (modelo da topbar) ---- */
+.barra-topo__busca {
+  display: flex;
+  align-items: center;
   gap: var(--espaco-2);
+  width: clamp(10rem, 32vw, 22rem);
+  padding: 0 var(--espaco-3);
+  height: 2.5rem;
+  border-radius: var(--raio-completo);
+  background-color: var(--cor-fundo-leve, var(--cor-superficie-brand));
+  border: 1px solid var(--cor-separador-suave);
+  min-width: 0;
+}
+
+.barra-topo__busca:focus-within {
+  border-color: var(--cor-primaria);
+}
+
+.barra-topo__busca-icone {
+  flex: 0 0 auto;
+  color: var(--cor-texto-fraco);
+}
+
+.barra-topo__busca-campo {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--cor-texto);
+  font-family: inherit;
+  font-size: var(--tamanho-medio);
+}
+
+.barra-topo__busca-campo::placeholder {
+  color: var(--cor-texto-fraco);
+}
+
+/* remove o X nativo do input[type=search] para manter o visual do modelo */
+.barra-topo__busca-campo::-webkit-search-decoration,
+.barra-topo__busca-campo::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.barra-topo__busca-atalho {
+  flex: 0 0 auto;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--cor-superficie-3, var(--cor-superficie));
+  border: 1px solid var(--cor-separador-suave);
+  color: var(--cor-texto-fraco);
+  font-family: var(--fonte-principal);
+  font-size: 0.65rem;
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.02em;
+}
+
+.barra-topo__divisor-acoes {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 1.75rem;
+  background-color: var(--cor-separador-suave);
+}
+
+/* Em telas estreitas a busca encolhe para só o ícone/placeholder curto. */
+@media (max-width: 520px) {
+  .barra-topo__busca {
+    width: auto;
+    flex: 1 1 auto;
+  }
+  .barra-topo__busca-atalho {
+    display: none;
+  }
 }
 
 /* ---- Botão de notificações ---- */
@@ -131,260 +224,5 @@
   color: var(--cor-branco);
 }
 
-/* ---- Perfil do usuário ---- */
-.barra-topo__area-perfil {
-  position: relative;
-  z-index: 70;
-}
-
-.barra-topo__botao-perfil {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.375rem var(--espaco-3) 0.375rem var(--espaco-2);
-  border-radius: var(--raio-medio);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: var(--transicao-normal);
-}
-
-.barra-topo__botao-perfil:hover {
-  background-color: var(--cor-superficie-brand);
-}
-
-.barra-topo__avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--raio-completo);
-  background: var(--gradiente-avatar);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.barra-topo__avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
-
-.barra-topo__iniciais-avatar {
-  color: var(--cor-branco);
-  font-size: var(--tamanho-xs);
-  font-weight: var(--peso-negrito);
-}
-
-.barra-topo__info-perfil {
-  display: none;
-  text-align: left;
-}
-
-@media (min-width: 640px) {
-  .barra-topo__info-perfil {
-    display: block;
-  }
-}
-
-.barra-topo__nome-perfil {
-  color: var(--cor-texto-forte);
-  font-size: var(--tamanho-base);
-  font-weight: var(--peso-semi);
-}
-
-.barra-topo__tipo-perfil {
-  color: var(--cor-texto-mudo);
-  font-size: var(--tamanho-xs);
-}
-
-.barra-topo__icone-dropdown {
-  color: var(--cor-texto-mudo);
-  display: none;
-}
-
-@media (min-width: 640px) {
-  .barra-topo__icone-dropdown {
-    display: block;
-  }
-}
-
-/* ---- Menu dropdown ---- */
-.barra-topo__menu-dropdown {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  margin-top: var(--espaco-2);
-  width: 12rem;
-  background-color: var(--cor-superficie-3);
-  border-radius: var(--raio-grande);
-  box-shadow: var(--sombra-extra);
-  border: 1px solid var(--cor-separador-suave);
-  padding: var(--espaco-2) 0;
-  z-index: 80;
-}
-
-.barra-topo__menu-dropdown--entrando {
-  animation: topbar-menu-in 140ms ease-out both;
-}
-
-@keyframes topbar-menu-in {
-  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.barra-topo__item-menu {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.625rem var(--espaco-4);
-  color: var(--cor-texto-secundario);
-  font-size: var(--tamanho-medio);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: var(--transicao-normal);
-}
-
-.barra-topo__item-menu:hover {
-  background-color: var(--cor-superficie-brand);
-}
-
-.barra-topo__divisor-menu {
-  border: none;
-  border-top: 1px solid var(--cor-separador-suave);
-  margin: var(--espaco-1) 0;
-}
-
-.barra-topo__item-menu--sair {
-  color: var(--cor-erro-media);
-}
-
-.barra-topo__item-menu--sair:hover {
-  background-color: var(--cor-erro-clara);
-}
-.barra-topo__logout-overlay {
-  align-items: center;
-  background: rgba(15, 23, 42, 0.42);
-  display: flex;
-  inset: 0;
-  justify-content: center;
-  padding: var(--espaco-4);
-  position: fixed;
-  z-index: 200;
-}
-
-.barra-topo__logout-overlay[data-entering="true"] {
-  animation: topbar-overlay-in 150ms ease-out both;
-}
-
-.barra-topo__logout-modal {
-  align-items: center;
-  background: var(--cor-superficie);
-  border: 1px solid var(--cor-separador-suave);
-  border-radius: var(--raio-grande);
-  box-shadow: var(--sombra-extra);
-  color: var(--cor-texto);
-  display: flex;
-  flex-direction: column;
-  max-width: 22rem;
-  padding: var(--espaco-6) var(--espaco-5);
-  text-align: center;
-  width: min(100%, 22rem);
-}
-
-.barra-topo__logout-modal[data-entering="true"] {
-  animation: topbar-modal-in 180ms ease-out both;
-}
-
-@keyframes topbar-overlay-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes topbar-modal-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.99); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .barra-topo__menu-dropdown--entrando,
-  .barra-topo__logout-overlay[data-entering="true"],
-  .barra-topo__logout-modal[data-entering="true"] {
-    animation: none;
-  }
-}
-
-.barra-topo__logout-icon {
-  align-items: center;
-  background-color: color-mix(in srgb, var(--cor-erro) 15%, transparent);
-  border-radius: 999px;
-  color: var(--cor-erro);
-  display: flex;
-  height: 4rem;
-  justify-content: center;
-  margin-bottom: var(--espaco-4);
-  width: 4rem;
-}
-
-.barra-topo__logout-title {
-  color: var(--cor-texto);
-  font-size: var(--tamanho-normal);
-  font-weight: var(--peso-negrito);
-  line-height: 1.25;
-  margin: 0 0 var(--espaco-2);
-}
-
-.barra-topo__logout-desc {
-  color: var(--cor-texto-fraco);
-  font-size: var(--tamanho-pequeno);
-  line-height: 1.6;
-  margin: 0 0 var(--espaco-5);
-  max-width: 17.5rem;
-}
-
-.barra-topo__logout-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--espaco-3);
-  width: 100%;
-}
-
-.barra-topo__logout-confirm,
-.barra-topo__logout-cancel {
-  align-items: center;
-  border-radius: var(--raio-medio);
-  cursor: pointer;
-  display: inline-flex;
-  font-family: var(--fonte-principal);
-  font-size: var(--tamanho-base);
-  font-weight: var(--peso-semi);
-  justify-content: center;
-  min-height: 2.75rem;
-  padding: 0.75rem 1rem;
-  transition: var(--transicao-normal);
-  width: 100%;
-}
-
-.barra-topo__logout-confirm {
-  background: var(--cor-erro);
-  border: 1px solid var(--cor-erro);
-  color: var(--cor-branco);
-}
-
-.barra-topo__logout-confirm:hover,
-.barra-topo__logout-confirm:focus-visible {
-  background: var(--cor-erro-escura);
-  border-color: var(--cor-erro-escura);
-  outline: none;
-}
-
-.barra-topo__logout-cancel {
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--cor-texto-fraco);
-}
-
-.barra-topo__logout-cancel:hover,
-.barra-topo__logout-cancel:focus-visible {
-  background: var(--cor-superficie-brand);
-  color: var(--cor-texto);
-  outline: none;
-}
+/* O menu de perfil e o logout foram movidos para o rodapé da sidebar
+   (modelo do Figma): a topbar fica só com título, busca e notificações. */

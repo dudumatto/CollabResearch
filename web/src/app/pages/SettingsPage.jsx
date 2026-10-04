@@ -3,17 +3,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import {
-  User, Lock,
-  Palette, LogOut, ChevronRight,
-  ArrowLeft, Check, Monitor, Moon, Sun,
-} from "lucide-react";
+import { User, Lock, Palette, SignOut, CaretRight, ArrowLeft, Check, Monitor, Moon, Sun } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../providers/ThemeProvider";
 import { userService } from "../services/userService";
 import { authService } from "../services/authService";
 import { formatUserType } from "../utils/formatters";
 import { getUserPhotoUrl } from "../utils/adapters";
+import { LogoutConfirmModal } from "../components/LogoutConfirmModal";
 import "./SettingsPage.css";
 
 function getInitials(name = "") {
@@ -47,7 +44,7 @@ function NavItem({ icon: Icon, iconClass = "", title, sub, badge, onClick }) {
         {sub && <span className="cfg-nav-item__sub">{sub}</span>}
       </span>
       {badge != null && <span className="cfg-nav-item__badge">{badge}</span>}
-      <ChevronRight size={16} className="cfg-nav-item__chevron" />
+      <CaretRight size={16} className="cfg-nav-item__chevron" />
     </button>
   );
 }
@@ -109,10 +106,6 @@ function Input(props) {
 
 function PrimaryBtn({ children, ...props }) {
   return <button className="cfg-btn cfg-btn--primary" {...props}>{children}</button>;
-}
-
-function DangerBtn({ children, ...props }) {
-  return <button className="cfg-btn cfg-btn--danger" {...props}>{children}</button>;
 }
 
 const THEME_OPTIONS = [
@@ -190,6 +183,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [activePanel, setActivePanel] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
   const [form, setForm] = useState({
     nome: "", email: "", fotoPerfilUrl: "",
@@ -327,8 +321,8 @@ export default function SettingsPage() {
       </div>
       <div className="cfg-section">
         <SectionGroup>
-          <button className="cfg-nav-item cfg-nav-item--danger" onClick={() => open("logout")}>
-            <span className="cfg-nav-item__icon icon-red"><LogOut size={18} /></span>
+          <button className="cfg-nav-item cfg-nav-item--danger" onClick={() => setLogoutModalOpen(true)}>
+            <span className="cfg-nav-item__icon icon-red"><SignOut size={18} /></span>
             <span className="cfg-nav-item__text">
               <span className="cfg-nav-item__title cfg-nav-item__title--danger">Sair da conta</span>
             </span>
@@ -388,17 +382,11 @@ export default function SettingsPage() {
         </SectionGroup>
       </Panel>
 
-      <Panel panelId="logout" title="Sair da conta" {...panelProps}>
-        <div className="cfg-logout-confirm">
-          <div className="cfg-logout-confirm__icon"><LogOut size={28} /></div>
-          <p className="cfg-logout-confirm__title">Sair da conta?</p>
-          <p className="cfg-logout-confirm__desc">
-            Você precisará fazer login novamente para acessar a plataforma.
-          </p>
-          <DangerBtn onClick={logout}>Confirmar saída</DangerBtn>
-          <button className="cfg-logout-confirm__cancel" onClick={close}>Cancelar</button>
-        </div>
-      </Panel>
+      <LogoutConfirmModal
+        open={logoutModalOpen}
+        onConfirm={logout}
+        onCancel={() => setLogoutModalOpen(false)}
+      />
 
     </div>
   );

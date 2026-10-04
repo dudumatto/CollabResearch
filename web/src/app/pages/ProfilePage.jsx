@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { User, Mail, BookOpen, Building2, GraduationCap, Edit3, Save, X, Award } from "lucide-react";
+import { User, Envelope, BookOpen, Buildings, GraduationCap, PencilSimple, FloppyDisk, X, Trophy } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -11,8 +11,11 @@ import { formatUserType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import { ProfileDocuments } from "../components/ProfileDocuments";
+import { INSTITUICOES } from "../constants/academicOptions";
 import "./AdvisorWorkspace.css";
 import "./ProfilePage.css";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function initials(name = "") {
   return String(name)
@@ -103,6 +106,14 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!user?.id) return;
+    if (!form.nome.trim()) {
+      toast.error("Informe o seu nome.");
+      return;
+    }
+    if (!form.email.trim() || !EMAIL_REGEX.test(form.email.trim())) {
+      toast.error("Informe um e-mail válido.");
+      return;
+    }
     setLoadingSave(true);
 
     try {
@@ -204,7 +215,7 @@ export default function ProfilePage() {
                     disabled={uploadingAvatar}
                     title="Alterar foto"
                   >
-                    <Edit3 size={12} />
+                    <PencilSimple size={12} />
                   </button>
                 </>
               )}
@@ -216,7 +227,7 @@ export default function ProfilePage() {
             <div className="advisor-perfil-cartao__info">
               {profile.email && (
                 <div className="advisor-perfil-cartao__info-item">
-                  <Mail size={14} className="advisor-perfil-cartao__info-icone" />
+                  <Envelope size={14} className="advisor-perfil-cartao__info-icone" />
                   <span>{profile.email}</span>
                 </div>
               )}
@@ -225,7 +236,7 @@ export default function ProfilePage() {
                 <span>{profile.cursoNome ?? "Curso não informado"}</span>
               </div>
               <div className="advisor-perfil-cartao__info-item">
-                <Building2 size={14} className="advisor-perfil-cartao__info-icone" />
+                <Buildings size={14} className="advisor-perfil-cartao__info-icone" />
                 <span>{profile.instituicao ?? "Instituição não informada"}</span>
               </div>
               <div className="advisor-perfil-cartao__info-item">
@@ -265,7 +276,7 @@ export default function ProfilePage() {
               <div className="student-profile-standard__actions">
                 {!editing ? (
                   <button type="button" onClick={() => setEditing(true)} className="advisor-botao advisor-botao--secundario">
-                    <Edit3 size={16} />
+                    <PencilSimple size={16} />
                     Editar perfil
                   </button>
                 ) : null}
@@ -290,7 +301,7 @@ export default function ProfilePage() {
               <div className="advisor-campo">
                 <label className="advisor-campo__rotulo" htmlFor="perfil-email">E-mail *</label>
                 <div className="student-profile-standard__input-wrap">
-                  <Mail size={14} className="student-profile-standard__input-icon" />
+                  <Envelope size={14} className="student-profile-standard__input-icon" />
                   <input
                     id="perfil-email"
                     type="email"
@@ -321,17 +332,16 @@ export default function ProfilePage() {
               </div>
               <div className="advisor-campo">
                 <label className="advisor-campo__rotulo" htmlFor="perfil-instituicao">Instituição</label>
-                <div className="student-profile-standard__input-wrap">
-                  <Building2 size={14} className="student-profile-standard__input-icon" />
-                  <input
-                    id="perfil-instituicao"
-                    type="text"
-                    value={form.instituicao}
-                    disabled={!editing}
-                    onChange={(e) => setForm((prev) => ({ ...prev, instituicao: e.target.value }))}
-                    className="advisor-campo__input student-profile-standard__input"
-                  />
-                </div>
+                <AppCombobox
+                  id="perfil-instituicao"
+                  ariaLabel="Selecionar instituição"
+                  disabled={!editing}
+                  className="advisor-campo__input app-combobox--advisor-input"
+                  value={form.instituicao}
+                  placeholder="Selecione a instituição"
+                  onChange={(nextValue) => setForm((prev) => ({ ...prev, instituicao: nextValue }))}
+                  options={INSTITUICOES.map((instituicao) => ({ value: instituicao, label: instituicao }))}
+                />
               </div>
               <div className="advisor-campo">
                 <label className="advisor-campo__rotulo" htmlFor="perfil-semestre">Semestre</label>
@@ -351,7 +361,7 @@ export default function ProfilePage() {
               <div className="advisor-campo">
                 <label className="advisor-campo__rotulo" htmlFor="perfil-tipo">Tipo</label>
                 <div className="student-profile-standard__input-wrap">
-                  <Award size={14} className="student-profile-standard__input-icon" />
+                  <Trophy size={14} className="student-profile-standard__input-icon" />
                   <input
                     id="perfil-tipo"
                     type="text"
@@ -380,7 +390,7 @@ export default function ProfilePage() {
             {editing && (
               <div className="advisor-modal__rodape" style={{ justifyContent: "flex-start" }}>
                 <button type="button" className="advisor-botao advisor-botao--primario" onClick={handleSave} disabled={loadingSave || uploadingAvatar}>
-                  {loadingSave || uploadingAvatar ? <span className="secao-perfil__spinner" /> : <Save size={16} />}
+                  {loadingSave || uploadingAvatar ? <span className="secao-perfil__spinner" /> : <FloppyDisk size={16} />}
                   Salvar alterações
                 </button>
                 <button

@@ -268,7 +268,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  transition: left 0.3s ease;
+  transition: left var(--sidebar-duracao) var(--sidebar-curva);
 }
 
 .cfg-panel--recolhida {
@@ -285,12 +285,33 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px 12px;
+  height: var(--altura-topbar);
+  padding: 0 var(--espaco-4);
   border-bottom: 1px solid var(--cor-separador-suave);
   background-color: var(--cor-superficie);
   position: sticky;
   top: 0;
   z-index: 5;
+  box-sizing: border-box;
+}
+
+/* ---- A partir de tablet, o header do painel flutua igual à topbar do
+   dashboard (mesma margem, cantos arredondados e sombra). ---- */
+@media (min-width: 768px) {
+  .cfg-panel__header {
+    top: var(--espaco-4);
+    margin: var(--espaco-4) calc(var(--espaco-4) + var(--espaco-6)) 0 calc(var(--espaco-4) + var(--espaco-6));
+    padding: 0 var(--espaco-6);
+    border: 1px solid var(--cor-separador-suave);
+    border-radius: var(--raio-extra);
+    box-shadow: var(--sombra-media);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cfg-panel__header {
+    margin-left: var(--espaco-6);
+  }
 }
  
 .cfg-panel__back {
@@ -456,16 +477,6 @@
 .cfg-btn--primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
- 
-.cfg-btn--danger {
-  background-color: color-mix(in srgb, var(--cor-erro) 15%, transparent);
-  color: var(--cor-erro);
-  border: 1px solid color-mix(in srgb, var(--cor-erro) 30%, transparent);
-}
- 
-.cfg-btn--danger:hover {
-  background-color: color-mix(in srgb, var(--cor-erro) 25%, transparent);
 }
  
 /* ── Password hint ────────────────────────────────────── */
@@ -837,58 +848,6 @@
   font-size: 13px;
   color: var(--cor-texto-medio);
   line-height: 1.6;
-}
- 
-/* ── Logout confirm ───────────────────────────────────── */
-.cfg-logout-confirm {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 40px;
-  text-align: center;
-  gap: 0;
-}
- 
-.cfg-logout-confirm__icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background-color: color-mix(in srgb, var(--cor-erro) 15%, transparent);
-  color: var(--cor-erro);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
- 
-.cfg-logout-confirm__title {
-  font-size: 16px;
-  font-weight: var(--peso-negrito);
-  color: var(--cor-texto);
-  margin-bottom: 8px;
-}
- 
-.cfg-logout-confirm__desc {
-  font-size: 13px;
-  color: var(--cor-texto-fraco);
-  margin-bottom: 32px;
-  line-height: 1.6;
-  max-width: 280px;
-}
- 
-.cfg-logout-confirm .cfg-btn {
-  max-width: 320px;
-}
- 
-.cfg-logout-confirm__cancel {
-  margin-top: 12px;
-  background: none;
-  border: none;
-  color: var(--cor-texto-fraco);
-  font-size: 14px;
-  cursor: pointer;
-  font-family: var(--fonte-principal);
-  padding: 8px;
 }
  
 /* ── Skeleton ─────────────────────────────────────────── */

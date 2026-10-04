@@ -59,12 +59,11 @@ export function DashboardLayout() {
 
   const isChatPage = location.pathname === "/app/chat";
   const baseInfo = pageInfoFor(location, user);
+  // No dashboard a topbar mostra só o título "Dashboard" — o resumo de boas-vindas
+  // já vive no banner da própria página, sem repetir como subtítulo aqui.
   const pageInfo = {
     ...baseInfo,
-    subtitle:
-      location.pathname === "/app" && user?.nome
-        ? `Bem-vindo de volta, ${user.nome.split(" ")[0]}!`
-        : baseInfo.subtitle,
+    subtitle: location.pathname === "/app" ? "" : baseInfo.subtitle,
   };
 
   return (

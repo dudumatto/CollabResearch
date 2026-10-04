@@ -1,4 +1,4 @@
-import { CheckCircle2, GripVertical, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle, DotsSixVertical, Lock, PlayCircle } from "@phosphor-icons/react";
 import { formatUserType } from "../../utils/formatters";
 
 function canCompleteStep(step, currentUserRole) {
@@ -49,13 +49,13 @@ export function StepCard({
     >
       {canReorder ? (
         <div className="step-card__drag-handle" aria-hidden="true" title="Arraste para reordenar">
-          <GripVertical size={17} />
+          <DotsSixVertical size={17} />
           <span>Mover</span>
         </div>
       ) : null}
 
       <div className="step-card__marker">
-        {isDone ? <CheckCircle2 size={18} /> : isActive ? <PlayCircle size={18} /> : <span>{displayOrder ?? step.stepOrder}</span>}
+        {isDone ? <CheckCircle size={18} /> : isActive ? <PlayCircle size={18} /> : <span>{displayOrder ?? step.stepOrder}</span>}
       </div>
 
       <div className="step-card__content">

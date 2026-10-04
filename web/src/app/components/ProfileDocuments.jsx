@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Download, FileText, Plus, Trash2, Upload } from "lucide-react";
+import { Download, FileText, Plus, Trash, Upload } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useUploadDocumento } from "../../hooks/useUploadDocumento";
 import { documentService } from "../services/documentService";
@@ -142,7 +142,7 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
                     className="perfil-documentos__acao perfil-documentos__acao--perigo"
                     title="Remover documento"
                   >
-                    <Trash2 size={15} />
+                    <Trash size={15} />
                   </button>
                 )}
               </div>

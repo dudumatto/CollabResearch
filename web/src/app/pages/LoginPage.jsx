@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router";
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { Eye, EyeSlash, Envelope, Lock, ArrowRight } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import "./LoginPage.css";
 
@@ -199,7 +199,7 @@ export default function LoginPage() {
             <div className="campo-formulario">
               <label className="campo-formulario__rotulo">E-mail institucional</label>
               <div className="campo-formulario__area-input">
-                <Mail size={16} className="campo-formulario__icone-esquerda" />
+                <Envelope size={16} className="campo-formulario__icone-esquerda" />
                 <input
                   type="email"
                   value={email}
@@ -233,7 +233,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="campo-formulario__botao-visibilidade"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeSlash size={16} /> : <Eye size={16} />}
                 </button>
               </div>
               {fieldErrors.password ? <p className="campo-formulario__erro">{fieldErrors.password}</p> : null}

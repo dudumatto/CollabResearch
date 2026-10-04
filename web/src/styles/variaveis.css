@@ -51,8 +51,8 @@
   --cor-secundaria-borda:   #bfd2b4;
   --cor-secundaria-media:   #7ea06a;
 
-  --cor-sucesso:            #1f7a5a;
-  --cor-sucesso-escura:     #185e46;
+  --cor-sucesso:            #14965f;
+  --cor-sucesso-escura:     #0d7a4c;
   --cor-sucesso-clara:      #eff5ec;
   --cor-sucesso-leve:       #e0e7d2;
   --cor-sucesso-borda:      #c7d7bd;
@@ -157,6 +157,20 @@
   --transicao-normal:  all 0.2s ease;
   --transicao-lenta:   all 0.3s ease;
 
+  /* Recolher/expandir a barra lateral: a mesma curva e duracao precisam valer
+     para sidebar, topbar, conteudo e overlays, senao os blocos dessincronizam.
+     Curva ease-in-out suave (parte e chega devagar) em vez de um ease-out
+     abrupto, para o movimento inteiro parecer uma coisa so. */
+  --sidebar-duracao: 380ms;
+  --sidebar-curva: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Entrada/saida do conteudo que some ao recolher (rotulos, contador, perfil).
+     Sai rapido e logo no inicio, para nunca aparecer texto cortado pela metade;
+     entra uma vez que a largura ja abriu espaco. Todos usam o mesmo par, assim
+     o conteudo aparece e some como um bloco, sem cascata. */
+  --sidebar-conteudo-entra: opacity 200ms ease 150ms, transform 240ms cubic-bezier(0.4, 0, 0.2, 1) 150ms;
+  --sidebar-conteudo-sai: opacity 120ms ease, transform 160ms ease;
+
   /* ------------------------------------------
      Layout — largura da barra lateral
   ------------------------------------------ */
@@ -210,9 +224,12 @@
 .dark {
   --cor-fundo:          #101a14;
   --cor-branco:         #17251d;
-  --cor-borda-clara:    #24382b;
-  --cor-borda:          #35493c;
-  --cor-borda-media:    #4d5f53;
+  /* Bordas em alfa sobre branco, não tons sólidos: assim elas se adaptam a
+     qualquer fundo escuro do componente em vez de criar um contorno
+     "esbranquiçado" destacado demais sobre o verde bem escuro do tema. */
+  --cor-borda-clara:    rgba(255, 255, 255, 0.07);
+  --cor-borda:          rgba(255, 255, 255, 0.12);
+  --cor-borda-media:    rgba(255, 255, 255, 0.2);
   --cor-texto-mudo:     #9faf9d;
   --cor-texto-fraco:    #c4d0be;
   --cor-texto-medio:    #d7e2d2;
@@ -243,6 +260,29 @@
   --cor-erro-borda:      #6b3739;
   --cor-esmeralda-clara: #183b2b;
   --cor-rosa-clara:      #3a2030;
+
+  /* As cores de status (verde/amarelo/vermelho) abaixo normalmente servem de
+     texto/ícone sobre o fundo "-clara"/"-leve" do próprio badge. Como esses
+     fundos ficam bem escuros no dark mode, as variantes originais (pensadas
+     para texto sobre fundo claro) ficam com baixo contraste e "apagadas".
+     Aqui elas ganham versões mais vivas, mesma família de cor, só para o
+     dark mode — o modo claro continua igual. */
+  --cor-sucesso:         #34d399;
+  --cor-sucesso-escura:  #6ee7b7;
+  --cor-sucesso-media:   #5fcf93;
+
+  --cor-atencao:         #eab308;
+  --cor-atencao-escura:  #facc15;
+
+  --cor-alerta:          #fbbf24;
+
+  --cor-laranja:         #fb923c;
+  --cor-laranja-escura:  #fdba74;
+
+  --cor-erro:            #f87171;
+  --cor-erro-escura:     #fca5a5;
+
+  --cor-secundaria-escura: #9fc98f;
 
   --cor-superficie:       #17251d;
   --cor-superficie-2:     #142018;

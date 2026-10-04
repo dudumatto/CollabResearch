@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { ArrowLeft, FolderPlus, Loader2, Plus, X } from "lucide-react";
+import { ArrowLeft, FolderPlus, CircleNotch, Plus, X } from "@phosphor-icons/react";
 import { areaService } from "../services/areaService";
 import { projectService } from "../services/projectService";
 import { userService } from "../services/userService";
@@ -436,7 +436,7 @@ export default function CreateProjectPage() {
               disabled={isDisabled}
             >
               {loading ? (
-                <><Loader2 size={16} className="formulario-projeto__spinner" /> Criando...</>
+                <><CircleNotch size={16} className="formulario-projeto__spinner" /> Criando...</>
               ) : (
                 <><FolderPlus size={16} /> Criar projeto</>
               )}

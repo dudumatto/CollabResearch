@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Clock3, UserCircle2 } from "lucide-react";
+import { CaretDown, CaretUp, Clock, UserCircle } from "@phosphor-icons/react";
 import { CategoryBadge } from "./CategoryBadge";
 import { formatUserType } from "../../utils/formatters";
 
@@ -44,7 +44,7 @@ export function UpdateFeed({ updates = [] }) {
             <div className="update-feed__header">
               <div className="update-feed__author">
                 <div className="update-feed__avatar">
-                  <UserCircle2 size={18} />
+                  <UserCircle size={18} />
                 </div>
                 <div>
                   <strong>{update.createdBy?.nome ?? "Usuário"}</strong>
@@ -63,7 +63,7 @@ export function UpdateFeed({ updates = [] }) {
                 </p>
                 {shouldTruncate ? (
                   <button type="button" className="update-feed__toggle" onClick={() => toggle(update.id)}>
-                    {isExpanded ? <><ChevronUp size={14} /> Menos</> : <><ChevronDown size={14} /> Mais</>}
+                    {isExpanded ? <><CaretUp size={14} /> Menos</> : <><CaretDown size={14} /> Mais</>}
                   </button>
                 ) : null}
               </div>
@@ -74,7 +74,7 @@ export function UpdateFeed({ updates = [] }) {
                 <span className="update-feed__step">Etapa: {update.stepTitle}</span>
               ) : null}
               <span className="update-feed__date">
-                <Clock3 size={13} /> {formatDate(update.createdAt)}
+                <Clock size={13} /> {formatDate(update.createdAt)}
               </span>
             </div>
           </article>

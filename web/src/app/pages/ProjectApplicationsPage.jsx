@@ -1,17 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  Loader2,
-  UserRound,
-  Users,
-  XCircle,
-} from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle, CaretDown, CaretRight, Clock, CircleNotch, User, Users, XCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useAuth } from "../hooks/useAuth";
@@ -310,7 +299,7 @@ export default function ProjectApplicationsPage() {
                           navigate(`/app/users/${application.userId}`);
                         }}
                       >
-                        <UserRound size={13} />
+                        <User size={13} />
                         Ver perfil do aluno
                       </button>
                     )}
@@ -325,7 +314,7 @@ export default function ProjectApplicationsPage() {
                         className="pagina-inscricoes-projeto__motivacao-toggle"
                         onClick={() => toggleMotivation(application.id)}
                       >
-                        {motivationOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        {motivationOpen ? <CaretDown size={16} /> : <CaretRight size={16} />}
                         Carta de motivação
                       </button>
                       {motivationOpen && (
@@ -343,7 +332,7 @@ export default function ProjectApplicationsPage() {
                         onClick={() => openActionModal("approve", application.id)}
                       >
                         {cardActionLoadingId === application.id ? (
-                          <Loader2 size={14} className="girando" />
+                          <CircleNotch size={14} className="girando" />
                         ) : (
                           <>
                             <CheckCircle size={14} /> Aprovar
@@ -357,7 +346,7 @@ export default function ProjectApplicationsPage() {
                         onClick={() => openActionModal("reject", application.id)}
                       >
                         {cardActionLoadingId === application.id ? (
-                          <Loader2 size={14} className="girando" />
+                          <CircleNotch size={14} className="girando" />
                         ) : (
                           <>
                             <XCircle size={14} /> Rejeitar

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle, ClipboardList, MessageSquare } from "lucide-react";
+import { CheckCircle, ClipboardText, ChatCircleText } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
@@ -134,7 +134,7 @@ export default function StudentEvaluationsPage() {
     return (
       <div className="advisor-pagina student-evaluations-page">
         <div className="advisor-estado-vazio">
-          <div className="advisor-estado-vazio__icone"><ClipboardList size={24} /></div>
+          <div className="advisor-estado-vazio__icone"><ClipboardText size={24} /></div>
           <h2 className="advisor-estado-vazio__titulo">Nenhum projeto vinculado</h2>
           <p className="advisor-estado-vazio__descricao">As avaliações aparecerão aqui quando você participar de um projeto aprovado.</p>
         </div>
@@ -208,7 +208,7 @@ export default function StudentEvaluationsPage() {
                 onChange={(e) => setComments({ ...comments, [item.id]: e.target.value })}
               />
               <button className="advisor-botao advisor-botao--primario" onClick={() => acknowledge(item)}>
-                <MessageSquare size={15} />
+                <ChatCircleText size={15} />
                 Registrar ciência
               </button>
             </div>

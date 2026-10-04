@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { FolderOpen, Plus, X, CheckCircle2, Pencil, Trash2, Calendar, Play, Flag } from "lucide-react";
+import { FolderOpen, Plus, X, CheckCircle, Pencil, Trash, Calendar, Play, Flag, CaretDown, WarningCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
@@ -39,6 +39,37 @@ function projetoPillClass(status) {
   return "advisor-etiqueta--cinza";
 }
 
+function etapaAtrasada(etapa) {
+  if (!etapa.prazo || etapa.status === "DONE") return false;
+  const prazo = new Date(etapa.prazo);
+  if (Number.isNaN(prazo.getTime())) return false;
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  return prazo < hoje;
+}
+
+function agruparEtapas(etapas) {
+  const atrasadasPendentes = [];
+  const emAndamento = [];
+  const concluidas = [];
+
+  etapas.forEach((etapa) => {
+    if (etapa.status === "DONE") {
+      concluidas.push(etapa);
+    } else if (etapa.status === "ACTIVE" && !etapaAtrasada(etapa)) {
+      emAndamento.push(etapa);
+    } else {
+      atrasadasPendentes.push(etapa);
+    }
+  });
+
+  return [
+    { key: "atrasadasPendentes", titulo: "Atrasadas e pendentes", classe: "advisor-etapas-grupo__titulo--atrasada", itens: atrasadasPendentes },
+    { key: "emAndamento", titulo: "Em andamento", classe: "advisor-etapas-grupo__titulo--andamento", itens: emAndamento },
+    { key: "concluidas", titulo: "Concluídas", classe: "advisor-etapas-grupo__titulo--concluida", itens: concluidas },
+  ];
+}
+
 function camposVazios() {
   return { titulo: "", descricao: "", responsavel: "AMBOS", prazo: "", semData: false, obrigatoria: true };
 }
@@ -69,6 +100,7 @@ export default function AdvisorProgressPage() {
   const [campos, setCampos] = useState(camposVazios());
   const [campoErro, setCampoErro] = useState("");
   const [mutando, setMutando] = useState(false);
+  const [colapsoManual, setColapsoManual] = useState({});
 
   const { data: projetos, loading: loadingProjetos, error: erroProjetos } = useAsyncData(
     async () => {
@@ -84,7 +116,7 @@ export default function AdvisorProgressPage() {
     [projetos],
   );
 
-  const activeProjectId = selectedProjectId ?? projetosAtivos[0]?.id ?? null;
+  const activeProjectId = selectedProjectId;
 
   const { data: etapas, loading: loadingEtapas, error: erroEtapas, reload } = useAsyncData(
     async () => {
@@ -97,13 +129,16 @@ export default function AdvisorProgressPage() {
   );
 
   const listaEtapas = useMemo(() => (Array.isArray(etapas) ? etapas : []), [etapas]);
+  const gruposEtapas = useMemo(() => agruparEtapas(listaEtapas), [listaEtapas]);
   const projetoAtivo = projetosAtivos.find((p) => p.id === activeProjectId) ?? null;
   const projetoFinalizado = projetoAtivo?.status === "FINALIZADO";
   const concluidas = listaEtapas.filter((e) => e.status === "DONE").length;
   const progresso = listaEtapas.length > 0 ? Math.round((concluidas / listaEtapas.length) * 100) : 0;
 
   useEffect(() => {
-    if (!selectedProjectId && projetosAtivos.length > 0) {
+    // Só pula direto pro projeto quando não há escolha real a fazer — com
+    // 2+ projetos ativos, o orientador decide na tela de seleção abaixo.
+    if (!selectedProjectId && projetosAtivos.length === 1) {
       setSelectedProjectId(projetosAtivos[0].id);
     }
   }, [projetosAtivos, selectedProjectId]);
@@ -198,6 +233,10 @@ export default function AdvisorProgressPage() {
     }
   };
 
+  const alternarGrupo = (key, estaColapsado) => {
+    setColapsoManual((prev) => ({ ...prev, [key]: !estaColapsado }));
+  };
+
   const excluirEtapa = async () => {
     if (projetoFinalizado) {
       toast.warning("Projeto finalizado não permite alterações de progresso.");
@@ -252,6 +291,49 @@ export default function AdvisorProgressPage() {
           </p>
         </div>
       </div>
+    );
+  }
+
+  if (!activeProjectId) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="advisor-pagina advisor-pagina--progresso"
+      >
+        <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
+          <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
+            Escolha um projeto
+          </h2>
+          <p className="advisor-hero__subtitulo">
+            Selecione o projeto para organizar etapas e prazos.
+          </p>
+        </div>
+
+        <div className="advisor-lista">
+          {projetosAtivos.map((projeto) => (
+            <button
+              key={projeto.id}
+              type="button"
+              className="advisor-linha-card advisor-linha-card--selecionavel"
+              onClick={() => setSelectedProjectId(projeto.id)}
+            >
+              <div className="advisor-linha-card__conteudo">
+                <p className="advisor-linha-card__titulo">{projeto.title}</p>
+                <p className="advisor-linha-card__meta">
+                  {projeto.area ? `${projeto.area} · ` : ""}{formatProjectStatus(projeto.status)}
+                </p>
+              </div>
+              <div className="advisor-linha-card__acoes">
+                <span className={`advisor-etiqueta ${projetoPillClass(projeto.status)}`}>
+                  {formatProjectStatus(projeto.status)}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </motion.div>
     );
   }
 
@@ -358,66 +440,101 @@ export default function AdvisorProgressPage() {
       )}
 
       {!loadingEtapas && !normErroEtapas && listaEtapas.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
-          {listaEtapas.map((etapa, index) => {
-            const concluida = etapa.status === "DONE";
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-4)" }}>
+          {gruposEtapas.map((grupo) => {
+            const vazio = grupo.itens.length === 0;
+            const colapsado = colapsoManual[grupo.key] ?? vazio;
             return (
-              <motion.div
-                key={etapa.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.03 }}
-                className="advisor-etapa"
-              >
-                <div className="advisor-etapa__cabecalho">
-                  <div>
-                    <p className="advisor-etapa__titulo">{etapa.titulo}</p>
-                    {etapa.descricao && <p className="advisor-etapa__descricao">{etapa.descricao}</p>}
-                  </div>
-                  <span className={`advisor-etiqueta ${etapaPillClass(etapa.status)}`}>
-                    {formatEtapaStatus(etapa.status)}
-                  </span>
-                </div>
-                <div className="advisor-etapa__meta">
-                  <span>Responsável: {formatEtapaResponsavel(etapa.responsavel)}</span>
-                  {etapa.obrigatoria && <span>Obrigatória</span>}
-                  {etapa.prazo && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      <Calendar size={12} /> Prazo: {formatDate(etapa.prazo)}
-                    </span>
-                  )}
-                  {etapa.concluidaEm && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      <CheckCircle2 size={12} /> Concluída em {formatDate(etapa.concluidaEm)}
-                    </span>
-                  )}
-                </div>
-                <div className="advisor-etapa__acoes">
-                  {!concluida && !projetoFinalizado && (
-                    <button
-                      type="button"
-                      className="advisor-botao advisor-botao--sucesso"
-                      disabled={mutando}
-                      onClick={() => concluirEtapa(etapa)}
-                    >
-                      <CheckCircle2 size={15} />
-                      Concluir
-                    </button>
-                  )}
-                  {!concluida && !projetoFinalizado && (
-                    <button type="button" className="advisor-botao advisor-botao--secundario" onClick={() => abrirModal("editar", etapa)}>
-                      <Pencil size={15} />
-                      Editar
-                    </button>
-                  )}
-                  {!concluida && !projetoFinalizado && (
-                    <button type="button" className="advisor-botao advisor-botao--perigo" onClick={() => setModal({ tipo: "excluir", etapa })}>
-                      <Trash2 size={15} />
-                      Excluir
-                    </button>
-                  )}
-                </div>
-              </motion.div>
+              <div key={grupo.key} className="advisor-etapas-grupo">
+                <button
+                  type="button"
+                  className="advisor-etapas-grupo__cabecalho"
+                  onClick={() => alternarGrupo(grupo.key, colapsado)}
+                  aria-expanded={!colapsado}
+                >
+                  <CaretDown
+                    size={14}
+                    className="advisor-etapas-grupo__seta"
+                    style={{ transform: colapsado ? "rotate(-90deg)" : "rotate(0deg)" }}
+                  />
+                  <h4 className={`advisor-etapas-grupo__titulo ${grupo.classe}`}>{grupo.titulo}</h4>
+                  <span className="advisor-etapas-grupo__contador">{grupo.itens.length}</span>
+                </button>
+                {!colapsado && (
+                  vazio ? (
+                    <p className="advisor-etapas-grupo__vazio">Nenhuma etapa nesta categoria.</p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
+                      {grupo.itens.map((etapa, index) => {
+                        const concluida = etapa.status === "DONE";
+                        const atrasada = etapaAtrasada(etapa);
+                        return (
+                          <motion.div
+                            key={etapa.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.2, delay: index * 0.03 }}
+                            className="advisor-etapa"
+                          >
+                            <div className="advisor-etapa__cabecalho">
+                              <div>
+                                <p className="advisor-etapa__titulo">{etapa.titulo}</p>
+                                {etapa.descricao && <p className="advisor-etapa__descricao">{etapa.descricao}</p>}
+                              </div>
+                              <span className={`advisor-etiqueta ${etapaPillClass(etapa.status)}`}>
+                                {formatEtapaStatus(etapa.status)}
+                              </span>
+                            </div>
+                            <div className="advisor-etapa__meta">
+                              <span>Responsável: {formatEtapaResponsavel(etapa.responsavel)}</span>
+                              {etapa.obrigatoria && <span>Obrigatória</span>}
+                              {etapa.prazo && (
+                                <span
+                                  className={atrasada ? "advisor-etapa__prazo advisor-etapa__prazo--atrasado" : "advisor-etapa__prazo"}
+                                >
+                                  {atrasada ? <WarningCircle size={12} weight="fill" /> : <Calendar size={12} />}
+                                  Prazo: {formatDate(etapa.prazo)}
+                                  {atrasada && " (atrasada)"}
+                                </span>
+                              )}
+                              {etapa.concluidaEm && (
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                  <CheckCircle size={12} /> Concluída em {formatDate(etapa.concluidaEm)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="advisor-etapa__acoes">
+                              {!concluida && !projetoFinalizado && (
+                                <button
+                                  type="button"
+                                  className="advisor-botao advisor-botao--sucesso advisor-botao--pequeno"
+                                  disabled={mutando}
+                                  onClick={() => concluirEtapa(etapa)}
+                                >
+                                  <CheckCircle size={13} />
+                                  Concluir
+                                </button>
+                              )}
+                              {!concluida && !projetoFinalizado && (
+                                <button type="button" className="advisor-botao advisor-botao--secundario advisor-botao--pequeno" onClick={() => abrirModal("editar", etapa)}>
+                                  <Pencil size={13} />
+                                  Editar
+                                </button>
+                              )}
+                              {!concluida && !projetoFinalizado && (
+                                <button type="button" className="advisor-botao advisor-botao--perigo advisor-botao--pequeno" onClick={() => setModal({ tipo: "excluir", etapa })}>
+                                  <Trash size={13} />
+                                  Excluir
+                                </button>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  )
+                )}
+              </div>
             );
           })}
         </div>

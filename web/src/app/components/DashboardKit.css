@@ -1,0 +1,786 @@
+/* ============================================================
+   DashboardKit.css — Linguagem visual compartilhada pelos
+   painéis de aluno e orientador (referência: Figma CollabResearch)
+   ============================================================ */
+
+.dash {
+  --dash-canvas: var(--cor-fundo);
+  --dash-card: linear-gradient(145deg, #ffffff 0%, #ffffff 60%, #f4faf5 100%);
+  --dash-card-borda: #dfeae1;
+  /* Sem sombreamento nos cartões do painel — só a borda separa um cartão do
+     outro. */
+  --dash-card-sombra: none;
+  --dash-card-sombra-hover: none;
+  --dash-titulo: var(--cor-texto-forte);
+  --dash-texto: var(--cor-texto-medio);
+  --dash-mudo: var(--cor-texto-fraco);
+  --dash-divisor: rgba(16, 40, 28, 0.08);
+  --dash-realce: rgba(31, 122, 90, 0.06);
+
+  --dash-heroi: linear-gradient(118deg, #0d4a35 0%, #12654a 48%, #1d8560 100%);
+  --dash-heroi-texto: #ffffff;
+  --dash-heroi-mudo: rgba(246, 252, 248, 0.74);
+  --dash-heroi-nome: #b4e59a;
+  --dash-heroi-chip-bg: rgba(255, 255, 255, 0.16);
+  --dash-heroi-chip-texto: #d8f3c6;
+  --dash-heroi-botao-bg: rgba(10, 32, 24, 0.34);
+  --dash-heroi-botao-borda: rgba(255, 255, 255, 0.34);
+
+  /* Cor de chegada do gradiente do cartão, usada no fade do Calendário */
+  --dash-card-fade: #f4faf5;
+
+  /* Paleta dos selos de ícone, extraída do Figma */
+  --dash-azul: #42abfc;
+  --dash-verde: #4eb258;
+  --dash-vermelho: #fa4661;
+  --dash-laranja: #fa981c;
+  --dash-roxo: #8f73fb;
+  --dash-cinza: #6b7a72;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  margin: calc(var(--espaco-6) * -1);
+  margin-top: calc(var(--espaco-6) * -1);
+  padding: var(--espaco-6);
+  min-height: calc(100vh - var(--altura-topbar));
+  background: var(--dash-canvas);
+}
+
+.dark .dash {
+  --dash-canvas: var(--cor-fundo);
+  --dash-card: linear-gradient(145deg, #061c15 0%, #06251b 58%, #0a3c2a 100%);
+  --dash-card-fade: #0a3c2a;
+  --dash-card-borda: rgba(255, 255, 255, 0.09);
+  --dash-card-sombra: none;
+  --dash-card-sombra-hover: none;
+  --dash-titulo: #f4f8f5;
+  --dash-texto: rgba(244, 248, 245, 0.82);
+  --dash-mudo: rgba(244, 248, 245, 0.56);
+  --dash-divisor: rgba(255, 255, 255, 0.1);
+  --dash-realce: rgba(255, 255, 255, 0.05);
+
+  --dash-heroi: linear-gradient(118deg, #04170f 0%, #05211a 52%, #0a3828 100%);
+  --dash-heroi-mudo: rgba(244, 248, 245, 0.62);
+  --dash-heroi-chip-bg: rgba(78, 178, 88, 0.18);
+  --dash-heroi-botao-bg: rgba(255, 255, 255, 0.08);
+  --dash-heroi-botao-borda: rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 767px) {
+  .dash {
+    margin: calc(var(--espaco-4) * -1);
+    padding: var(--espaco-4);
+  }
+}
+
+/* ---- Grades ---- */
+.dash-grade {
+  display: grid;
+  gap: var(--espaco-3);
+  grid-template-columns: repeat(var(--dash-colunas, 3), minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .dash-grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .dash-grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Faixa principal: coluna larga + coluna lateral, como no Figma. */
+.dash-colunas {
+  display: grid;
+  gap: var(--espaco-3);
+  grid-template-columns: minmax(0, 1.95fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.dash-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .dash-colunas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Coluna que deve esticar até a altura da coluna irmã, sem sobrar vazio
+   embaixo — usada quando os cartões dentro dela também dividem o espaço
+   igualmente (ver .dash-card--preencher). */
+.dash-coluna--preencher {
+  align-self: stretch;
+}
+
+@media (max-width: 1100px) {
+  .dash-coluna--preencher {
+    align-self: auto;
+  }
+}
+
+/* ---- Cartão ---- */
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4);
+  border: 1px solid var(--dash-card-borda);
+  border-radius: var(--raio-grande);
+  background: var(--dash-card);
+  text-align: left;
+  min-width: 0;
+}
+
+/* Sombra interna (entalhada) reservada a cartões específicos — ver
+   .dash-card--sombra — os demais ficam sem sombra. */
+.dash-card--sombra {
+  box-shadow: var(--dash-card-sombra);
+}
+
+/* Cartão que cresce para preencher o espaço restante da coluna (ver
+   .dash-coluna--preencher), sem sobrar vazio embaixo, e rola por dentro se
+   o conteúdo ainda assim não couber. O Calendário (ver .dash-card--calendario)
+   fica de fora dessa divisão — tem altura própria e fixa — então este cartão
+   absorve sozinho o espaço que sobra ao lado dele. */
+.dash-card--preencher {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.dash-card--preencher .dash-card__corpo {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 1100px) {
+  /* Sem o estiramento da coluna (.dash-coluna--preencher acima) não há
+     altura extra para repartir — os cartões voltam ao fluxo natural, senão
+     colapsam a 0 (flex-basis 0 + min-height 0 num contêiner de altura
+     automática). */
+  .dash-card--preencher,
+  .dash-card--preencher .dash-card__corpo {
+    flex: initial;
+    min-height: 0;
+  }
+}
+
+/* Calendário: altura própria e fixa (não participa do flex-grow de
+   .dash-card--preencher) — mostra 3 prazos inteiros + o 4º cortado pela
+   metade, com fade; o rótulo "Ver mais" fica sobreposto a esse 4º item. */
+.dash-agenda-lista {
+  position: relative;
+  height: 12.18rem;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.dash-agenda-lista::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2.75rem;
+  background: linear-gradient(to bottom, transparent, var(--dash-card-fade));
+  pointer-events: none;
+}
+
+/* Mesmo recurso (corte + fade + "Ver mais") para listas de DashRow —
+   Inscrições pendentes, Projetos Ativos, Orientandos ativos — quando elas
+   excedem o limite exibido (ver DashListaCortada). */
+.dash-lista-fade {
+  position: relative;
+  height: 12.47rem;
+  overflow: hidden;
+}
+
+.dash-lista-fade::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2.75rem;
+  background: linear-gradient(to bottom, transparent, var(--dash-card-fade));
+  pointer-events: none;
+}
+
+.dash-lista-fade > .dash-linha:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* Apenas um rótulo clicável sobre o 4º item esmaecido — sem bloco/fundo
+   próprio, sem borda. */
+.dash-agenda-vermais {
+  position: absolute;
+  left: 50%;
+  bottom: 0.5rem;
+  z-index: 1;
+  transform: translateX(-50%);
+  padding: 0.2rem 0.4rem;
+  border: 0;
+  background: none;
+  color: var(--cor-primaria);
+  font-family: var(--fonte-principal);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.dash-agenda-vermais:hover {
+  text-decoration: underline;
+}
+
+.dash-agenda-vermais:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+  border-radius: var(--raio-pequeno);
+}
+
+.dash-card--acionavel {
+  cursor: pointer;
+  /* Travado no lugar: sem levantar no hover, só a sombra interna reage (quando houver). */
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.dash-card--acionavel.dash-card--sombra:hover {
+  box-shadow: var(--dash-card-sombra-hover);
+}
+
+.dash-card--acionavel:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 3px;
+}
+
+.dash-card__cabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.dash-card__cabecalho--acionavel {
+  cursor: pointer;
+}
+
+.dash-card__cabecalho--acionavel:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 4px;
+  border-radius: var(--raio-pequeno);
+}
+
+.dash-card__cabecalho--acionavel:hover .dash-card__titulo {
+  color: var(--cor-primaria);
+}
+
+.dark .dash-card__cabecalho--acionavel:hover .dash-card__titulo {
+  color: var(--dash-heroi-nome);
+}
+
+.dash-card__cabecalho--acionavel:hover .dash-card__seta {
+  transform: translateX(2px);
+}
+
+.dash-card__selo {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background: var(--dash-selo, var(--dash-verde));
+  color: #ffffff;
+}
+
+.dash-card__selo--azul { --dash-selo: var(--dash-azul); }
+.dash-card__selo--verde { --dash-selo: var(--dash-verde); }
+.dash-card__selo--vermelho { --dash-selo: var(--dash-vermelho); }
+.dash-card__selo--laranja { --dash-selo: var(--dash-laranja); }
+.dash-card__selo--roxo { --dash-selo: var(--dash-roxo); }
+.dash-card__selo--cinza { --dash-selo: var(--dash-cinza); }
+
+.dash-card__titulo {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  color: var(--dash-titulo);
+  font-size: var(--tamanho-grande);
+  font-weight: var(--peso-semi);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-card__seta {
+  flex: 0 0 auto;
+  color: var(--dash-mudo);
+  transition: transform 200ms var(--sidebar-curva);
+}
+
+.dash-card--acionavel:hover .dash-card__seta {
+  transform: translateX(2px);
+}
+
+.dash-card__legenda {
+  display: block;
+  margin: 0;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-medio);
+}
+
+.dash-card__corpo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---- Cartão de métrica (faixa superior) ---- */
+.dash-metrica__valor {
+  display: block;
+  margin: auto 0 0;
+  color: var(--dash-titulo);
+  font-family: var(--fonte-titulo);
+  font-size: 2.1rem;
+  font-weight: var(--peso-negrito);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+/* ---- Linha de lista ---- */
+.dash-linha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  width: 100%;
+  padding: 0.6rem 0;
+  border: 0;
+  border-top: 1px solid var(--dash-divisor);
+  background: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  min-width: 0;
+}
+
+.dash-card__corpo > .dash-linha:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.dash-linha--acionavel {
+  cursor: pointer;
+  border-radius: var(--raio-pequeno);
+  padding-inline: var(--espaco-2);
+  margin-inline: calc(var(--espaco-2) * -1);
+  transition: background-color 160ms ease;
+}
+
+.dash-linha--acionavel:hover {
+  background-color: var(--dash-realce);
+}
+
+.dash-linha--acionavel:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: -2px;
+}
+
+.dash-linha__info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dash-linha__titulo {
+  display: block;
+  margin: 0;
+  color: var(--dash-titulo);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-medio);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-linha__subtitulo {
+  display: block;
+  margin: 0.1rem 0 0;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-pequeno);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-linha__avatar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--raio-completo);
+  background: var(--cor-fundo-medio);
+  color: var(--cor-texto-medio);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  object-fit: cover;
+  overflow: hidden;
+}
+
+.dash-linha__horario {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-top: 0.1rem;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-xs);
+  white-space: nowrap;
+}
+
+/* ---- Agenda (próximos prazos) ---- */
+.dash-agenda {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dash-agenda__item {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--dash-divisor);
+  min-width: 0;
+}
+
+.dash-agenda__item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.dash-agenda__data {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: var(--raio-medio);
+  background: var(--dash-realce);
+  color: var(--dash-titulo);
+  line-height: 1;
+}
+
+.dash-agenda__data strong {
+  font-family: var(--fonte-titulo);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-negrito);
+}
+
+.dash-agenda__data small {
+  margin-top: 0.1rem;
+  color: var(--dash-mudo);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ---- Calendário em destaque (um único prazo, cartão de tamanho fixo) ---- */
+.dash-agenda-destaque {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+  min-width: 0;
+}
+
+.dash-agenda-destaque__data {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--raio-medio);
+  background: var(--dash-realce);
+  color: var(--dash-titulo);
+  line-height: 1;
+}
+
+.dash-agenda-destaque__data strong {
+  font-family: var(--fonte-titulo);
+  font-size: var(--tamanho-subtitulo);
+  font-weight: var(--peso-negrito);
+}
+
+.dash-agenda-destaque__data small {
+  margin-top: 0.15rem;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-agenda-destaque__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dash-agenda-destaque__titulo {
+  color: var(--dash-titulo);
+  font-size: var(--tamanho-grande);
+  font-weight: var(--peso-semi);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-agenda-destaque__subtitulo {
+  margin-top: 0.2rem;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-medio);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Barra de progresso ---- */
+.dash-progresso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.dash-progresso__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+}
+
+.dash-progresso__rotulo {
+  color: var(--dash-texto);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-medio);
+}
+
+.dash-progresso__trilho {
+  height: 0.5rem;
+  border-radius: var(--raio-completo);
+  background: var(--dash-divisor);
+  overflow: hidden;
+}
+
+.dash-progresso__preenchido {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--dash-verde);
+  transition: width 400ms var(--sidebar-curva);
+}
+
+.dash-progresso__legenda {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-pequeno);
+}
+
+.dash-progresso__legenda strong {
+  color: var(--dash-titulo);
+  font-weight: var(--peso-semi);
+}
+
+/* ---- Bloco promocional ---- */
+.dash-promo {
+  margin: 0;
+  padding: var(--espaco-2) 0;
+  color: var(--dash-texto);
+  font-size: var(--tamanho-medio);
+  line-height: 1.5;
+}
+
+.dash-promo strong {
+  color: var(--dash-titulo);
+  font-weight: var(--peso-semi);
+}
+
+/* ---- Projeto em destaque (recomendado) ---- */
+.dash-destaque {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.dash-destaque__area {
+  align-self: flex-start;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--raio-completo);
+  background: var(--dash-realce);
+  color: var(--dash-roxo);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-semi);
+}
+
+.dash-destaque__titulo {
+  margin: 0;
+  color: var(--dash-titulo);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-semi);
+}
+
+.dash-destaque__meta {
+  margin: 0;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-pequeno);
+}
+
+.dash-destaque__rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.3rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--dash-divisor);
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-pequeno);
+}
+
+/* ---- Notificação recente ---- */
+.dash-notif__grupo {
+  margin: 0 0 0.4rem;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-notif__titulo {
+  margin: 0;
+  color: var(--dash-titulo);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-semi);
+}
+
+.dash-notif__texto {
+  margin: 0.2rem 0 0;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-pequeno);
+}
+
+/* ---- Selo de estado ---- */
+.dash-selo {
+  flex: 0 0 auto;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--raio-completo);
+  background: var(--dash-selo-bg, var(--dash-cinza));
+  color: #ffffff;
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+}
+
+.dash-selo--verde { --dash-selo-bg: #2e9e5b; }
+.dash-selo--vermelho { --dash-selo-bg: var(--dash-vermelho); }
+.dash-selo--laranja { --dash-selo-bg: var(--dash-laranja); }
+.dash-selo--azul { --dash-selo-bg: var(--dash-azul); }
+.dash-selo--neutro { --dash-selo-bg: var(--dash-cinza); }
+
+/* ---- Estado vazio ---- */
+.dash-vazio {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3) 0;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-medio);
+}
+
+/* ---- Cabeçalho de seção ---- */
+.dash-secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.dash-secao__titulo {
+  margin: 0;
+  color: var(--dash-titulo);
+  font-family: var(--fonte-titulo);
+  font-size: var(--tamanho-subtitulo);
+  font-weight: var(--peso-negrito);
+  letter-spacing: -0.02em;
+}
+
+.dash-secao__descricao {
+  margin: 0.15rem 0 0;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-medio);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-card--acionavel,
+  .dash-card__seta {
+    transition: none;
+  }
+
+  .dash-card--acionavel:hover {
+    transform: none;
+  }
+}
+
+/* ---- Wrapper que recebe a escala de encaixe ---- */
+.dash__ajuste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  width: 100%;
+  min-width: 0;
+}
+
+/* ============================================================
+   Encaixe na tela — em telas largas o painel inteiro cabe na
+   viewport SEM rolagem: o conteúdo é apenas reduzido o quanto
+   for preciso (escala automática). Telas menores mantêm o
+   fluxo natural (empilhado, com rolagem quando necessário).
+   ============================================================ */
+@media (min-width: 1024px) {
+  /* só o painel real (com conteúdo) trava a altura; o skeleton rola se preciso.
+     A topbar flutua com margem --espaco-4 no topo (ver Topbar.css), por isso
+     entra aqui também — senão o painel ultrapassaria a tela nesse tanto. */
+  .dash:has(.dash__ajuste) {
+    height: calc(100vh - var(--altura-topbar) - var(--espaco-4));
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .dash__ajuste {
+    gap: var(--espaco-2);
+  }
+
+  .dash__ajuste .dash-colunas,
+  .dash__ajuste .dash-coluna {
+    gap: var(--espaco-2);
+  }
+}

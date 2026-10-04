@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "framer-motion";
-import { ArrowLeft, Mail, Hash, BookOpen, ChevronRight, Clock, CheckCircle2, FolderOpen } from "lucide-react";
+import { ArrowLeft, Envelope, Hash, BookOpen, CaretRight, Clock, CheckCircle, FolderOpen } from "@phosphor-icons/react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { mapOrientandoDetalhe } from "../utils/adapters";
@@ -132,7 +132,7 @@ export default function AdvisorAdviseeDetailPage() {
             <div className="advisor-perfil-cartao__info">
               {data.email && (
                 <div className="advisor-perfil-cartao__info-item">
-                  <Mail size={14} className="advisor-perfil-cartao__info-icone" />
+                  <Envelope size={14} className="advisor-perfil-cartao__info-icone" />
                   {data.email}
                 </div>
               )}
@@ -176,7 +176,7 @@ export default function AdvisorAdviseeDetailPage() {
                     }}
                   >
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.projetoTitulo}</span>
-                    <ChevronRight size={14} />
+                    <CaretRight size={14} />
                   </button>
                 ))}
               </div>
@@ -229,7 +229,7 @@ export default function AdvisorAdviseeDetailPage() {
                     )}
                     {etapa.concluidaEm && (
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <CheckCircle2 size={12} /> Concluída em {formatDate(etapa.concluidaEm)}
+                        <CheckCircle size={12} /> Concluída em {formatDate(etapa.concluidaEm)}
                         {etapa.concluidaPorNome ? ` por ${etapa.concluidaPorNome}` : ""}
                       </span>
                     )}

@@ -1,14 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Bell,
-  CheckCircle,
-  AlertCircle,
-  XCircle,
-  Info,
-  Check,
-  Trash2,
-  CheckCheck,
-} from "lucide-react";
+import { Bell, CheckCircle, WarningCircle, XCircle, Info, Check, Trash, Checks } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useNotifications } from "../providers/NotificationsProvider";
@@ -21,7 +12,7 @@ const typeConfig = {
   INSCRICAO_APROVADA: { icon: CheckCircle, iconeAreaClass: "notificacao-item__icone-area--sucesso", iconColor: "var(--cor-sucesso)" },
   INSCRICAO_RECEBIDA: { icon: Info, iconeAreaClass: "notificacao-item__icone-area--info", iconColor: "var(--cor-primaria)" },
   MENSAGEM_RECEBIDA: { icon: Bell, iconeAreaClass: "notificacao-item__icone-area--info", iconColor: "var(--cor-primaria)" },
-  PROGRESSO_REGISTRADO: { icon: AlertCircle, iconeAreaClass: "notificacao-item__icone-area--atencao", iconColor: "var(--cor-laranja)" },
+  PROGRESSO_REGISTRADO: { icon: WarningCircle, iconeAreaClass: "notificacao-item__icone-area--atencao", iconColor: "var(--cor-laranja)" },
   INSCRICAO_REJEITADA: { icon: XCircle, iconeAreaClass: "notificacao-item__icone-area--erro", iconColor: "var(--cor-erro)" },
 };
 
@@ -245,11 +236,11 @@ export default function NotificationsPage() {
         <div className="pagina-notificacoes__botoes-acao">
           {unreadCount > 0 && (
             <button onClick={markAllAsRead} className="pagina-notificacoes__botao-marcar-lidas">
-              <CheckCheck size={14} /> Marcar todas como lidas
+              <Checks size={14} /> Marcar todas como lidas
             </button>
           )}
           <button onClick={clearAll} className="pagina-notificacoes__botao-limpar">
-            <Trash2 size={14} /> Limpar vista local
+            <Trash size={14} /> Limpar vista local
           </button>
         </div>
       </div>
@@ -329,7 +320,7 @@ export default function NotificationsPage() {
                     className="notificacao-item__botao-acao notificacao-item__botao-acao--excluir"
                     title="Ocultar da lista"
                   >
-                    <Trash2 size={14} />
+                    <Trash size={14} />
                   </button>
                 </div>
               </div>

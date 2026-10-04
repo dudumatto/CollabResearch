@@ -1,16 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import {
-  FileText,
-  Clock,
-  CheckCircle,
-  XCircle,
-  ChevronRight,
-  MessageSquare,
-  Calendar,
-  ExternalLink,
-  Loader2,
-} from "lucide-react";
+import { FileText, Clock, CheckCircle, XCircle, CaretRight, ChatCircleText, Calendar, ArrowSquareOut, CircleNotch } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { applicationService } from "../services/applicationService";
@@ -243,7 +233,7 @@ export default function ApplicationsPage() {
                         </span>
                       </div>
                     </div>
-                    <ChevronRight
+                    <CaretRight
                       size={16}
                       className={`inscricao-card__icone-expansao ${isExpanded ? "inscricao-card__icone-expansao--expandido" : ""}`}
                     />
@@ -276,10 +266,10 @@ export default function ApplicationsPage() {
                           disabled={projectId == null}
                           className="inscricao-card__botao inscricao-card__botao--neutro"
                         >
-                          <ExternalLink size={13} /> Ver projeto
+                          <ArrowSquareOut size={13} /> Ver projeto
                         </button>
                         <button type="button" onClick={() => navigate("/app/chat")} className="inscricao-card__botao inscricao-card__botao--mensagem">
-                          <MessageSquare size={13} /> Enviar mensagem
+                          <ChatCircleText size={13} /> Enviar mensagem
                         </button>
                         {application.status === "PENDENTE" && (
                           <button
@@ -326,7 +316,7 @@ export default function ApplicationsPage() {
                 disabled={cancelSubmitting}
                 className="modal-confirmacao__botao-confirmar"
               >
-                {cancelSubmitting ? <Loader2 size={15} className="girando" /> : "Confirmar cancelamento"}
+                {cancelSubmitting ? <CircleNotch size={15} className="girando" /> : "Confirmar cancelamento"}
               </button>
             </div>
           </div>

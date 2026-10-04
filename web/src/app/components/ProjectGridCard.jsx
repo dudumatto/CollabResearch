@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight, Clock, FolderOpen, Users } from "lucide-react";
+import { CaretRight, Clock, FolderOpen, Users } from "@phosphor-icons/react";
 import { getProjectSlotsUsage } from "../utils/adapters";
 import { formatProjectStatus } from "../utils/formatters";
 import { AdvisorAvatar } from "./ProjectGridCardAvatar";
@@ -60,7 +60,7 @@ function ProjectGridCard({ project, index, onOpen }) {
               {project.advisor?.name ? `${project.advisor.name} (orientador)` : "Sem orientador"}
             </span>
           </div>
-          <ChevronRight size={14} className="projeto-card__seta-acesso" />
+          <CaretRight size={14} className="projeto-card__seta-acesso" />
         </div>
       </div>
     </motion.div>

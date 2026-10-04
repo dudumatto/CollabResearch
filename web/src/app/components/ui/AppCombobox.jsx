@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown } from "lucide-react";
+import { CaretDown } from "@phosphor-icons/react";
 import "./AppCombobox.css";
 
 export function AppCombobox({
@@ -160,7 +160,7 @@ export function AppCombobox({
         onKeyDown={handleKeyDown}
       >
         <span className="app-combobox__label">{label}</span>
-        <ChevronDown size={16} aria-hidden="true" />
+        <CaretDown size={16} aria-hidden="true" />
       </button>
       {dropdown}
     </>

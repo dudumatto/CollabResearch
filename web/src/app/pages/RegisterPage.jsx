@@ -1,46 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router";
-import {
-  FlaskConical,
-  GraduationCap,
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  User,
-  Building2,
-  ArrowRight,
-  Hash,
-} from "lucide-react";
+import { Flask, GraduationCap, Eye, EyeSlash, Envelope, Lock, User, Buildings, ArrowRight, Hash } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import "./RegisterPage.css";
 import { AppCombobox } from "../components/ui/AppCombobox";
-
-const institutions = [
-  "Universidade de Sao Paulo (USP)",
-  "Universidade Estadual de Sao Paulo (UNESP)",
-  "Universidade Estadual de Campinas (UNICAMP)",
-  "Universidade Federal de Sao Paulo (UNIFESP)",
-  "Universidade Federal de Minas Gerais (UFMG)",
-  "Universidade Federal do Rio de Janeiro (UFRJ)",
-  "Universidade Federal do Rio Grande do Sul (UFRGS)",
-  "Universidade Federal de Santa Catarina (UFSC)",
-  "Universidade Federal do Parana (UFPR)",
-  "Universidade Federal de Pernambuco (UFPE)",
-  "Universidade Federal da Bahia (UFBA)",
-  "Universidade de Brasilia (UnB)",
-  "Universidade Federal de Sao Carlos (UFSCar)",
-  "Universidade Federal do ABC (UFABC)",
-  "Pontificia Universidade Catolica de Sao Paulo (PUC-SP)",
-  "Pontificia Universidade Catolica do Rio de Janeiro (PUC-Rio)",
-  "Pontificia Universidade Catolica de Minas Gerais (PUC Minas)",
-  "Universidade Presbiteriana Mackenzie",
-  "Fundacao Getulio Vargas (FGV)",
-  "Instituto Federal de Sao Paulo (IFSP)",
-  "Instituto Federal do Rio de Janeiro (IFRJ)",
-  "Centro Universitario Senac",
-  "Outra",
-];
+import { INSTITUICOES as institutions, TITULACOES, DEPARTAMENTOS } from "../constants/academicOptions";
 
 const legalContent = {
   terms: {
@@ -211,7 +175,7 @@ export default function RegisterPage() {
                       className={`cadastro-tipo__opcao ${userType === type ? "cadastro-tipo__opcao--selecionado" : "cadastro-tipo__opcao--disponivel"}`}
                     >
                       <span className="cadastro-tipo__icone" aria-hidden="true">
-                        {type === "student" ? <GraduationCap size={20} /> : <FlaskConical size={20} />}
+                        {type === "student" ? <GraduationCap size={20} /> : <Flask size={20} />}
                       </span>
                       <span className={`cadastro-tipo__nome ${userType === type ? "cadastro-tipo__nome--selecionado" : "cadastro-tipo__nome--disponivel"}`}>
                         {type === "student" ? "Aluno" : "Orientador"}
@@ -253,7 +217,7 @@ export default function RegisterPage() {
                   <div className="campo-cadastro">
                     <label className="campo-cadastro__label">E-mail institucional</label>
                     <div className="campo-cadastro__wrapper">
-                      <Mail size={16} className="campo-cadastro__icone-esquerda" />
+                      <Envelope size={16} className="campo-cadastro__icone-esquerda" />
                       <input
                         type="email"
                         value={form.email}
@@ -306,7 +270,7 @@ export default function RegisterPage() {
                         aria-invalid={Boolean(fieldErrors.password)}
                       />
                       <button type="button" onClick={() => setShowPassword(!showPassword)} className="campo-cadastro__botao-senha">
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        {showPassword ? <EyeSlash size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
                     {fieldErrors.password ? <p className="campo-cadastro__erro">{fieldErrors.password}</p> : null}
@@ -355,7 +319,7 @@ export default function RegisterPage() {
                   <div className="campo-cadastro">
                     <label className="campo-cadastro__label">Instituição de ensino</label>
                     <div className="campo-cadastro__wrapper">
-                      <Building2 size={16} className="campo-cadastro__icone-esquerda" />
+                      <Buildings size={16} className="campo-cadastro__icone-esquerda" />
                       <AppCombobox
                         ariaLabel="Selecionar instituição de ensino"
                         className={`campo-cadastro__select app-combobox--with-leading-icon ${fieldErrors.institution ? "campo-cadastro__input--erro" : ""}`}
@@ -375,17 +339,17 @@ export default function RegisterPage() {
                     <>
                       <div className="campo-cadastro">
                         <label className="campo-cadastro__label">Departamento</label>
-                        <div className="campo-cadastro__wrapper">
-                          <Building2 size={16} className="campo-cadastro__icone-esquerda" />
-                          <input
-                            type="text"
-                            value={form.department}
-                            onChange={(e) => update("department", e.target.value)}
-                            className={`campo-cadastro__input ${fieldErrors.department ? "campo-cadastro__input--erro" : ""}`}
-                            placeholder="Ex: Computação"
-                            aria-invalid={Boolean(fieldErrors.department)}
-                          />
-                        </div>
+                        <AppCombobox
+                          ariaLabel="Selecionar departamento"
+                          className={`campo-cadastro__select--sem-icone ${fieldErrors.department ? "campo-cadastro__input--erro" : ""}`}
+                          value={form.department}
+                          placeholder="Selecione o departamento"
+                          onChange={(nextValue) => update("department", nextValue)}
+                          options={[
+                            { value: "", label: "Selecione o departamento", disabled: true },
+                            ...DEPARTAMENTOS.map((department) => ({ value: department, label: department })),
+                          ]}
+                        />
                         {fieldErrors.department ? <p className="campo-cadastro__erro">{fieldErrors.department}</p> : null}
                       </div>
 
@@ -399,7 +363,7 @@ export default function RegisterPage() {
                           onChange={(nextValue) => update("academicTitle", nextValue)}
                           options={[
                             { value: "", label: "Selecione a titulacao", disabled: true },
-                            ...["Especialista", "Mestre", "Doutor", "Pos-doutor"].map((title) => ({ value: title, label: title })),
+                            ...TITULACOES.map((title) => ({ value: title, label: title })),
                           ]}
                         />
                         {fieldErrors.academicTitle ? <p className="campo-cadastro__erro">{fieldErrors.academicTitle}</p> : null}

@@ -19,6 +19,14 @@
   --sidebar-avatar-texto: var(--cor-primaria-texto);
   --sidebar-contador-bg: var(--cor-primaria);
   --sidebar-contador-texto: var(--cor-branco);
+
+  /* Trilho vertical dos icones: o centro da sidebar recolhida. Todo icone é
+     ancorado nele nos dois estados, por isso nenhum icone se desloca ao
+     recolher — apenas a largura da sidebar e o texto animam. */
+  --sidebar-nav-pad: var(--espaco-3);
+  --sidebar-trilho: calc(var(--largura-sidebar-recolhida-interna) / 2);
+  --sidebar-pad-item: calc(var(--sidebar-trilho) - var(--sidebar-nav-pad) - 0.5625rem);
+  --sidebar-pad-perfil: calc(var(--sidebar-trilho) - var(--sidebar-nav-pad) - 1rem);
 }
 
 .dark .barra-lateral,
@@ -63,7 +71,8 @@
   z-index: 100;
   width: var(--largura-sidebar-interna);
   --altura-sidebar-cabecalho: 3.25rem;
-  transition: width 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width var(--sidebar-duracao) var(--sidebar-curva);
+  will-change: width;
   overflow: visible;
 }
 
@@ -93,17 +102,35 @@
   box-shadow: var(--sombra-pequena);
   cursor: pointer;
   z-index: 110;
-  transition: var(--transicao-normal);
+  padding: 0;
+  transform: scale(1);
+  transition: background-color 180ms ease, box-shadow 180ms ease,
+    transform 220ms var(--sidebar-curva);
 }
 
 .barra-lateral__botao-recolher:hover {
   box-shadow: var(--sombra-media);
   background-color: var(--sidebar-ativo-bg);
+  transform: scale(1.1);
+}
+
+.barra-lateral__botao-recolher:active {
+  transform: scale(0.92);
+  transition-duration: 90ms;
+}
+
+.barra-lateral__botao-recolher:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
 }
 
 .barra-lateral__icone-recolher {
   color: var(--sidebar-texto-fraco);
-  transition: transform 0.3s ease;
+  transition: transform var(--sidebar-duracao) var(--sidebar-curva);
+}
+
+.barra-lateral__botao-recolher:hover .barra-lateral__icone-recolher {
+  color: var(--sidebar-ativo-texto);
 }
 
 .barra-lateral__icone-recolher--invertido {
@@ -121,14 +148,21 @@
   box-sizing: border-box;
 }
 
-.barra-lateral__cabecalho--centralizado {
-  justify-content: center;
+/* Ancora a marca no mesmo trilho dos icones de navegacao: recolhida, o icone
+   de 1.5rem cai exatamente no centro da sidebar sem precisar reposicionar. */
+.barra-lateral .barra-lateral__cabecalho {
+  padding-inline: calc(var(--sidebar-trilho) - 0.75rem);
 }
 
+/* As duas marcas ficam sobrepostas no mesmo ponto e fazem cross-fade, em vez
+   de alternar com display, que cortava a troca no meio da animacao. */
 .barra-lateral__marca {
-  display: block;
-  flex: 0 0 auto;
+  position: absolute;
+  left: 0;
+  top: 50%;
   object-fit: contain;
+  transform: translateY(-50%);
+  transition: opacity 160ms ease;
 }
 
 .dark .barra-lateral__marca {
@@ -136,23 +170,24 @@
 }
 
 .barra-lateral__marca--icone {
-  display: none;
   width: 1.5rem;
   height: 1.5rem;
+  opacity: 0;
 }
 
 .barra-lateral--recolhida .barra-lateral__marca--icone {
-  display: block;
+  opacity: 1;
+  transition-delay: 150ms;
 }
 
 .barra-lateral__marca-lockup {
+  position: relative;
   width: 6.6rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
+  height: 1.5rem;
+  display: block;
   overflow: hidden;
   flex: 0 0 auto;
-  transition: width 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: width var(--sidebar-duracao) var(--sidebar-curva);
 }
 
 .barra-lateral--recolhida .barra-lateral__marca-lockup {
@@ -160,13 +195,15 @@
 }
 
 .barra-lateral--recolhida .barra-lateral__marca--completa {
-  display: none;
+  opacity: 0;
+  transition-delay: 0ms;
 }
 
 .barra-lateral__marca--completa {
   width: 6.55rem;
   height: auto;
   max-width: none;
+  transition-delay: 150ms;
 }
 
 /* ---- Divisores ---- */
@@ -180,11 +217,17 @@
   margin: var(--espaco-1) var(--espaco-3);
 }
 
+/* Divisória entre categorias dentro da navegação. Fica visível mesmo com a
+   barra recolhida, servindo de separador quando o rótulo da seção some. */
+.barra-lateral__divisor--secao {
+  margin: var(--espaco-2) var(--espaco-2) var(--espaco-1);
+}
+
 /* ---- Navegação ---- */
 .barra-lateral__navegacao {
   flex: 1 1 auto;
   min-height: 0;
-  padding: var(--espaco-3);
+  padding: var(--sidebar-nav-pad);
   display: flex;
   flex-direction: column;
   gap: var(--espaco-1);
@@ -204,16 +247,47 @@
   border-radius: var(--raio-completo);
 }
 
+/* Cada categoria: divisória (menos a primeira) + rótulo + itens. */
+.barra-lateral__setor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
 .barra-lateral__setor-itens {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-1);
 }
 
-.barra-lateral--recolhida .barra-lateral__navegacao,
-.barra-lateral--recolhida .barra-lateral__setor-itens,
-.barra-lateral--recolhida .barra-lateral__rodape {
-  align-items: center;
+/* Rótulo da categoria (ex.: "PESQUISA"). Alinha com o texto dos itens e, ao
+   recolher, desaparece junto encolhendo a altura — sem deixar vão vazio. */
+.barra-lateral__setor-rotulo {
+  display: block;
+  height: 1rem;
+  padding-inline: var(--sidebar-pad-item);
+  color: var(--sidebar-texto-mudo);
+  font-size: var(--tamanho-minimo);
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.08em;
+  line-height: 1rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 200ms ease 150ms,
+    height var(--sidebar-duracao) var(--sidebar-curva),
+    margin var(--sidebar-duracao) var(--sidebar-curva);
+}
+
+.barra-lateral--recolhida .barra-lateral__setor-rotulo {
+  height: 0;
+  margin-top: calc(var(--espaco-1) * -1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease,
+    height var(--sidebar-duracao) var(--sidebar-curva),
+    margin var(--sidebar-duracao) var(--sidebar-curva);
 }
 
 .barra-lateral__item-nav {
@@ -221,9 +295,9 @@
   align-items: center;
   justify-content: flex-start;
   gap: var(--espaco-3);
-  padding: 0.6rem var(--espaco-2);
+  padding: 0.6rem var(--sidebar-pad-item);
   border-radius: var(--raio-medio);
-  transition: background-color 160ms ease, color 160ms ease, justify-content 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background-color 160ms ease, color 160ms ease;
   color: var(--sidebar-texto-fraco);
   font-size: var(--tamanho-medio);
   font-weight: var(--peso-normal);
@@ -245,14 +319,6 @@
   color: var(--sidebar-ativo-texto);
 }
 
-.barra-lateral__item-nav--centralizado {
-  justify-content: center;
-  gap: 0;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0;
-}
-
 .barra-lateral__icone-nav {
   width: 18px;
   height: 18px;
@@ -265,23 +331,24 @@
   color: var(--sidebar-ativo-texto);
 }
 
+/* O rotulo nao anima largura: ele encolhe junto com o item (min-width: 0) e é
+   recortado pelo overflow do pai. Animar max-width fazia o texto "engasgar". */
 .barra-lateral__rotulo-nav {
   flex: 1 1 auto;
   min-width: 0;
-  max-width: 10rem;
   overflow: hidden;
   white-space: nowrap;
   font-size: var(--tamanho-medio);
   opacity: 1;
   transform: translateX(0);
-  transition: max-width 190ms cubic-bezier(0.22, 1, 0.36, 1), opacity 150ms ease, transform 190ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: var(--sidebar-conteudo-entra);
 }
 
 .barra-lateral--recolhida .barra-lateral__rotulo-nav {
-  max-width: 0;
   opacity: 0;
-  transform: translateX(-0.35rem);
+  transform: translateX(-0.4rem);
   pointer-events: none;
+  transition: var(--sidebar-conteudo-sai);
 }
 
 .barra-lateral__rotulo-nav--ativo {
@@ -301,6 +368,8 @@
   flex: 0 0 1.25rem;
   font-size: var(--tamanho-xs);
   font-weight: var(--peso-negrito);
+  transform: scale(1);
+  transition: var(--sidebar-conteudo-entra);
 }
 
 .barra-lateral--recolhida .barra-lateral__contador {
@@ -309,12 +378,14 @@
   flex-basis: 0;
   opacity: 0;
   overflow: hidden;
+  transform: scale(0.6);
+  transition: opacity 120ms ease, transform 160ms ease, width 160ms ease, flex-basis 160ms ease;
 }
 
 /* ---- Rodapé ---- */
 .barra-lateral__rodape {
   flex: 0 0 auto;
-  padding: var(--espaco-3);
+  padding: var(--sidebar-nav-pad);
   display: flex;
   flex-direction: column;
   gap: var(--espaco-1);
@@ -325,7 +396,7 @@
   display: flex;
   align-items: center;
   gap: var(--espaco-2);
-  padding: var(--espaco-1) var(--espaco-2);
+  padding: var(--espaco-1) var(--sidebar-pad-perfil);
   border-radius: var(--raio-medio);
   text-decoration: none;
   transition: background-color 160ms ease;
@@ -336,11 +407,6 @@
 
 .barra-lateral__perfil:hover {
   background-color: var(--sidebar-hover-bg);
-}
-
-.barra-lateral__perfil--centralizado {
-  justify-content: center;
-  padding: var(--espaco-1);
 }
 
 .barra-lateral__perfil-avatar {
@@ -366,15 +432,19 @@
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
-  max-width: 9rem;
-  transition: max-width 190ms cubic-bezier(0.22, 1, 0.36, 1), opacity 150ms ease;
+  opacity: 1;
+  transform: translateX(0);
+  transition: var(--sidebar-conteudo-entra);
 }
 
 .barra-lateral--recolhida .barra-lateral__perfil-info {
-  max-width: 0;
   opacity: 0;
+  transform: translateX(-0.4rem);
+  pointer-events: none;
+  transition: var(--sidebar-conteudo-sai);
 }
 
 .barra-lateral__perfil-nome {
@@ -392,6 +462,45 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ---- Linha de conta (perfil + sair) ---- */
+.barra-lateral__rodape-conta {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-1);
+}
+
+.barra-lateral__rodape-conta .barra-lateral__perfil {
+  flex: 1 1 auto;
+}
+
+.barra-lateral__sair {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: var(--raio-medio);
+  background: none;
+  color: var(--sidebar-texto-fraco);
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.barra-lateral__sair:hover,
+.barra-lateral__sair:focus-visible {
+  background-color: var(--cor-erro-clara, var(--sidebar-hover-bg));
+  color: var(--cor-erro, var(--sidebar-texto));
+  outline: none;
+}
+
+/* Recolhida, a coluna fica estreita demais para o par perfil+sair lado a
+   lado; o botão de sair some e o avatar do perfil ocupa o espaço sozinho. */
+.barra-lateral--recolhida .barra-lateral__sair {
+  display: none;
 }
 
 /* ---- Overlay mobile ---- */
@@ -423,7 +532,7 @@
 }
 
 .barra-lateral-mobile--entrando {
-  animation: sidebar-mobile-in 220ms ease-out both;
+  animation: sidebar-mobile-in var(--sidebar-duracao) var(--sidebar-curva) both;
 }
 
 @keyframes sidebar-overlay-in {
@@ -443,26 +552,19 @@
   }
 }
 
-.barra-lateral--recolhida .barra-lateral__perfil {
-  justify-content: center;
-}
-
 @media (max-height: 640px) {
   .barra-lateral-mobile .barra-lateral__cabecalho {
     min-height: 3.5rem;
-    padding: var(--espaco-3) var(--espaco-4);
+    padding-block: var(--espaco-3);
   }
 
-  .barra-lateral-mobile .barra-lateral__navegacao {
-    padding: var(--espaco-2) var(--espaco-3);
+  .barra-lateral-mobile .barra-lateral__navegacao,
+  .barra-lateral-mobile .barra-lateral__rodape {
+    padding-block: var(--espaco-2);
   }
 
   .barra-lateral-mobile .barra-lateral__item-nav {
     padding-block: 0.5rem;
-  }
-
-  .barra-lateral-mobile .barra-lateral__rodape {
-    padding: var(--espaco-2) var(--espaco-3);
   }
 }
 
@@ -475,12 +577,16 @@
 
 @media (prefers-reduced-motion: reduce) {
   .barra-lateral,
+  .barra-lateral__marca,
   .barra-lateral__marca-lockup,
   .barra-lateral__rotulo-nav,
+  .barra-lateral__setor-rotulo,
   .barra-lateral__contador,
   .barra-lateral__perfil-info,
+  .barra-lateral__botao-recolher,
   .barra-lateral__icone-recolher {
     transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
   }
 }
 
@@ -490,11 +596,11 @@
   }
 
   .barra-lateral__cabecalho {
-    padding: var(--espaco-2) var(--espaco-3);
+    padding-block: var(--espaco-2);
   }
 
   .barra-lateral__navegacao {
-    padding: var(--espaco-2) var(--espaco-3);
+    padding-block: var(--espaco-2);
     gap: 0.1rem;
   }
 
@@ -505,6 +611,6 @@
   }
 
   .barra-lateral__rodape {
-    padding: var(--espaco-2) var(--espaco-3);
+    padding-block: var(--espaco-2);
   }
 }

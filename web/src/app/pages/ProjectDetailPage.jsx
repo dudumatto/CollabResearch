@@ -1,12 +1,7 @@
 import { conversationService } from "../services/conversationService";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
-import {
-  ArrowLeft, Users, Clock, BookOpen, Send, Mail, MessageSquare,
-  BarChart2, CheckCircle, Pencil, Trash2,
-  UserPlus, UserMinus, Loader2, AlertTriangle,
-  UserRound, XCircle,
-} from "lucide-react";
+import { ArrowLeft, Users, Clock, BookOpen, PaperPlaneTilt, Envelope, ChatCircleText, ChartBar, CheckCircle, Pencil, Trash, UserPlus, UserMinus, CircleNotch, Warning, User, XCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useAuth } from "../hooks/useAuth";
@@ -163,7 +158,7 @@ function ConfirmationDialog({
       >
         <div className="modal-confirmacao__conteudo">
           <div className="modal-confirmacao__icone" aria-hidden="true">
-            <AlertTriangle size={32} />
+            <Warning size={32} />
           </div>
           <h3 id={titleId} className="modal-inscricao__titulo">{title}</h3>
           <p id={descriptionId} className="modal-confirmacao__texto">{description}</p>
@@ -185,8 +180,8 @@ function ConfirmationDialog({
             className="modal-confirmacao__botao-confirmar"
           >
             {loading
-              ? <><Loader2 size={15} className="girando" /> {loadingLabel}</>
-              : <><Trash2 size={15} /> {confirmLabel}</>}
+              ? <><CircleNotch size={15} className="girando" /> {loadingLabel}</>
+              : <><Trash size={15} /> {confirmLabel}</>}
           </button>
         </div>
       </div>
@@ -575,7 +570,7 @@ export default function ProjectDetailPage() {
                 }}
                 className="pagina-detalhe-projeto__botao-excluir"
               >
-                <Trash2 size={15} /> Excluir
+                <Trash size={15} /> Excluir
               </button>
             )}
           </div>
@@ -609,7 +604,7 @@ export default function ProjectDetailPage() {
                     className="detalhe-card__orientacao-botao detalhe-card__orientacao-botao--recusar"
                     disabled={orientationActionLoading != null}
                   >
-                    {orientationActionLoading === "reject" ? <Loader2 size={15} className="girando" /> : <><XCircle size={15} /> Recusar</>}
+                    {orientationActionLoading === "reject" ? <CircleNotch size={15} className="girando" /> : <><XCircle size={15} /> Recusar</>}
                   </button>
                   <button
                     type="button"
@@ -617,14 +612,14 @@ export default function ProjectDetailPage() {
                     className="detalhe-card__orientacao-botao detalhe-card__orientacao-botao--aceitar"
                     disabled={orientationActionLoading != null}
                   >
-                    {orientationActionLoading === "accept" ? <Loader2 size={15} className="girando" /> : <><CheckCircle size={15} /> Aceitar</>}
+                    {orientationActionLoading === "accept" ? <CircleNotch size={15} className="girando" /> : <><CheckCircle size={15} /> Aceitar</>}
                   </button>
                 </div>
               </div>
             )}
 
             <div className="detalhe-card__estatisticas">
-              <div className="detalhe-card__stat-item"><BarChart2 size={14} />{data.progress.length} atualizações</div>
+              <div className="detalhe-card__stat-item"><ChartBar size={14} />{data.progress.length} atualizações</div>
               <div className="detalhe-card__stat-item">
                 <Clock size={14} />
                 Publicado em {project.createdAt ? new Date(project.createdAt).toLocaleDateString("pt-BR") : "-"}
@@ -727,7 +722,7 @@ export default function ProjectDetailPage() {
                             className="detalhe-colaboradores__botao-perfil"
                             onClick={() => navigate(`/app/users/${getInscricaoUserId(insc)}`)}
                           >
-                            <UserRound size={14} />
+                            <User size={14} />
                             Ver perfil do aluno
                           </button>
                         )}
@@ -738,7 +733,7 @@ export default function ProjectDetailPage() {
                           className="detalhe-colaboradores__botao-recrutar"
                         >
                           {recrutandoId === insc.id
-                            ? <Loader2 size={14} className="girando" />
+                            ? <CircleNotch size={14} className="girando" />
                             : <><UserPlus size={14} /> Recrutar</>}
                         </button>
                       </div>
@@ -781,7 +776,7 @@ export default function ProjectDetailPage() {
               </div>
             ) : project.status === "ABERTO" && canApply && slots.remaining > 0 ? (
               <button onClick={() => setShowModal(true)} className="card-inscricao__botao-inscrever">
-                <Send size={16} /> Inscrever-se
+                <PaperPlaneTilt size={16} /> Inscrever-se
               </button>
             ) : (
               canApply && (
@@ -796,7 +791,7 @@ export default function ProjectDetailPage() {
               className="card-inscricao__botao-perguntar"
               disabled={!project.advisor?.id}
             >
-              <MessageSquare size={15} /> Perguntar ao orientador
+              <ChatCircleText size={15} /> Perguntar ao orientador
             </button>
           </div>
 
@@ -842,7 +837,7 @@ export default function ProjectDetailPage() {
               className="card-orientador__botao-mensagem"
               disabled={!project.advisor?.id}
             >
-              <Mail size={14} /> Enviar mensagem
+              <Envelope size={14} /> Enviar mensagem
             </button>
           </div>
 
@@ -893,7 +888,7 @@ export default function ProjectDetailPage() {
                         aria-label={`Remover ${getCollaboratorName(c)}`}
                       >
                         {removingId === getCollaboratorId(c)
-                          ? <Loader2 size={12} className="girando" />
+                          ? <CircleNotch size={12} className="girando" />
                           : <UserMinus size={13} />}
                       </button>
                     )}
@@ -913,7 +908,7 @@ export default function ProjectDetailPage() {
                 onClick={() => openConversation("group")}
                 className="card-colaboradores__botao-grupo"
               >
-                <MessageSquare size={14} /> Mensagem do grupo
+                <ChatCircleText size={14} /> Mensagem do grupo
               </button>
             )}
           </div>
@@ -952,7 +947,7 @@ export default function ProjectDetailPage() {
                 Cancelar
               </button>
               <button type="button" onClick={handleApply} disabled={loadingApply} className="modal-inscricao__botao-enviar">
-                {loadingApply ? <div className="modal-inscricao__spinner" /> : <><Send size={15} /> Enviar inscrição</>}
+                {loadingApply ? <div className="modal-inscricao__spinner" /> : <><PaperPlaneTilt size={15} /> Enviar inscrição</>}
               </button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Inbox, Check, X, FileText, ChevronRight, UserRound } from "lucide-react";
+import { Tray, Check, X, FileText, CaretRight, User } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
@@ -81,7 +81,7 @@ function EstadoVazio({ titulo, descricao }) {
   return (
     <div className="advisor-estado-vazio">
       <div className="advisor-estado-vazio__icone">
-        <Inbox size={22} />
+        <Tray size={22} />
       </div>
       <h3 className="advisor-estado-vazio__titulo">{titulo}</h3>
       <p className="advisor-estado-vazio__descricao">{descricao}</p>
@@ -272,7 +272,7 @@ export default function AdvisorApplicationsPage() {
                       className="advisor-botao advisor-botao--secundario advisor-linha-card__perfil-aluno"
                       onClick={() => openStudentProfile(app)}
                     >
-                      <UserRound size={14} />
+                      <User size={14} />
                       Ver perfil do aluno
                     </button>
                   )}
@@ -310,7 +310,7 @@ export default function AdvisorApplicationsPage() {
                       onClick={() => navigate(`/app/projects/${app.projetoId}`)}
                     >
                       Projeto
-                      <ChevronRight size={14} />
+                      <CaretRight size={14} />
                     </button>
                   )}
                 </div>
@@ -338,7 +338,7 @@ export default function AdvisorApplicationsPage() {
                       className="advisor-botao advisor-botao--secundario advisor-modal__perfil-aluno"
                       onClick={() => openStudentProfile(modal.app)}
                     >
-                      <UserRound size={14} />
+                      <User size={14} />
                       Ver perfil do aluno
                     </button>
                   )}

@@ -1,17 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import {
-  FolderOpen,
-  Search,
-  X,
-  ChevronRight,
-  UserCheck,
-  UserX,
-  Inbox,
-  Compass,
-  Plus,
-} from "lucide-react";
+import { FolderOpen, MagnifyingGlass, X, CaretRight, UserCheck, UserCircleMinus, Tray, Compass, Plus } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
@@ -115,7 +105,7 @@ function ProjetoLinha({ project, tab, acaoLoading, onAbrir, onAceitar, onRecusar
                   className="advisor-botao advisor-botao--perigo"
                   onClick={() => onRecusar(project)}
                 >
-                  <UserX size={16} />
+                  <UserCircleMinus size={16} />
                   Recusar
                 </button>
               </>
@@ -125,7 +115,7 @@ function ProjetoLinha({ project, tab, acaoLoading, onAbrir, onAceitar, onRecusar
 
         <button type="button" className="advisor-botao advisor-botao--secundario" onClick={() => onAbrir(project)}>
           Abrir
-          <ChevronRight size={14} />
+          <CaretRight size={14} />
         </button>
       </div>
     </motion.div>
@@ -281,7 +271,7 @@ export default function AdvisorProjectsPage() {
 
       <div className="advisor-toolbar">
         <div className="advisor-busca">
-          <Search size={16} className="advisor-busca__icone" />
+          <MagnifyingGlass size={16} className="advisor-busca__icone" />
           <input
             type="text"
             value={busca}
@@ -332,7 +322,7 @@ export default function AdvisorProjectsPage() {
 
       {!loading && !normError && projetosFiltrados.length === 0 && (
         <EstadoVazio
-          icone={isExplorar ? Compass : Inbox}
+          icone={isExplorar ? Compass : Tray}
           titulo={isExplorar ? "Nenhum projeto publicado encontrado" : "Nada por aqui ainda"}
           descricao={
             isExplorar

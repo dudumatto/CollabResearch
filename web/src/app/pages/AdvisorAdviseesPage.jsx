@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Search, X, GraduationCap, Users, ChevronRight, AlertTriangle, FolderOpen } from "lucide-react";
+import { MagnifyingGlass, X, GraduationCap, Users, CaretRight, Warning, FolderOpen } from "@phosphor-icons/react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { mapOrientando } from "../utils/adapters";
@@ -123,7 +123,7 @@ export default function AdvisorAdviseesPage() {
 
       <div className="advisor-toolbar">
         <div className="advisor-busca">
-          <Search size={16} className="advisor-busca__icone" />
+          <MagnifyingGlass size={16} className="advisor-busca__icone" />
           <input
             type="text"
             value={busca}
@@ -212,7 +212,7 @@ export default function AdvisorAdviseesPage() {
                   </span>
                   {orientando.pendencias > 0 && (
                     <span className="advisor-etiqueta advisor-etiqueta--vermelho">
-                      <AlertTriangle size={12} style={{ marginRight: 4 }} />
+                      <Warning size={12} style={{ marginRight: 4 }} />
                       {orientando.pendencias} pendência{orientando.pendencias > 1 ? "s" : ""}
                     </span>
                   )}
@@ -242,7 +242,7 @@ export default function AdvisorAdviseesPage() {
                   <GraduationCap size={12} style={{ marginRight: 4 }} />
                   {orientando.projetos.length} vínculo{orientando.projetos.length === 1 ? "" : "s"}
                 </span>
-                <ChevronRight size={16} style={{ color: "var(--cor-texto-mudo)" }} />
+                <CaretRight size={16} style={{ color: "var(--cor-texto-mudo)" }} />
               </div>
             </motion.div>
           ))}

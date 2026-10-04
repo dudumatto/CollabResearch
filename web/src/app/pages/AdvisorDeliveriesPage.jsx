@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocation, useParams } from "react-router";
-import { FolderOpen, ChevronDown, ChevronRight, Download, FileArchive, CheckCircle2, Undo2, X } from "lucide-react";
+import { FolderOpen, CaretDown, CaretRight, Download, FileArchive, CheckCircle, ArrowUUpLeft, X } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
@@ -401,7 +401,7 @@ export default function AdvisorDeliveriesPage() {
 
                 <div className="advisor-etapa__acoes">
                   <button type="button" className="advisor-etapa__botao-link" onClick={() => toggleExpandir(entrega)}>
-                    {expandida ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+                    {expandida ? <CaretDown size={15} /> : <CaretRight size={15} />}
                     {expandida ? "Ocultar versões" : "Ver versões"}
                   </button>
                   {podeRevisar && (
@@ -410,7 +410,7 @@ export default function AdvisorDeliveriesPage() {
                       className="advisor-botao advisor-botao--primario"
                       onClick={() => abrirRevisao(entrega, ultima)}
                     >
-                      <CheckCircle2 size={15} />
+                      <CheckCircle size={15} />
                       Revisar
                     </button>
                   )}
@@ -485,7 +485,7 @@ export default function AdvisorDeliveriesPage() {
                     className={`advisor-botao ${decisao === "APPROVED" ? "advisor-botao--sucesso" : "advisor-botao--secundario"}`}
                     onClick={() => setDecisao("APPROVED")}
                   >
-                    <CheckCircle2 size={15} />
+                    <CheckCircle size={15} />
                     Aprovar
                   </button>
                   <button
@@ -493,7 +493,7 @@ export default function AdvisorDeliveriesPage() {
                     className={`advisor-botao ${decisao === "CHANGES_REQUESTED" ? "advisor-botao--perigo" : "advisor-botao--secundario"}`}
                     onClick={() => setDecisao("CHANGES_REQUESTED")}
                   >
-                    <Undo2 size={15} />
+                    <ArrowUUpLeft size={15} />
                     Solicitar ajustes
                   </button>
                 </div>

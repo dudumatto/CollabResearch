@@ -16,11 +16,25 @@
   flex-direction: column;
   min-height: 100vh;
   min-width: 0;
-  transition: margin-left 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: margin-left var(--sidebar-duracao) var(--sidebar-curva);
+}
+
+@media (min-width: 768px) {
+  /* A topbar flutua com margem --espaco-4 à direita (e à esquerda, enquanto
+     a sidebar ainda não reserva esse respiro abaixo de 1024px) — ver
+     Topbar.css. Este respiro alinha a borda do conteúdo (onde o .dash
+     sangra) com a borda da topbar, em vez de ir até a ponta da tela. */
+  .pagina-app__principal {
+    padding-left: var(--espaco-4);
+    padding-right: var(--espaco-4);
+  }
 }
 
 @media (min-width: 1024px) {
   .pagina-app__principal {
+    /* a partir daqui o respiro à esquerda já vem embutido em
+       --largura-sidebar (sidebar + seu próprio gap) */
+    padding-left: 0;
     margin-left: var(--largura-sidebar);
   }
 
@@ -39,8 +53,10 @@
 }
 
 @media (min-width: 768px) {
+  /* A partir daqui a topbar flutua com margem --espaco-4 no topo
+     (ver Topbar.css); some esse deslocamento ao respiro de conteúdo. */
   .pagina-app__conteudo {
-    padding: calc(var(--altura-topbar) + var(--espaco-6)) var(--espaco-6) var(--espaco-6);
+    padding: calc(var(--altura-topbar) + var(--espaco-4) + var(--espaco-6)) var(--espaco-6) var(--espaco-6);
   }
 }
 
@@ -50,6 +66,12 @@
   max-width: none;
   min-width: 0;
   overflow-x: hidden;
+}
+
+/* O painel pinta o próprio fundo de ponta a ponta com margens negativas;
+   o recorte aqui cancelaria essa sangria (o conteúdo externo já tem clip). */
+.pagina-app__pagina:has(> .dash) {
+  overflow-x: visible;
 }
 
 .pagina-app__pagina--transicao {
