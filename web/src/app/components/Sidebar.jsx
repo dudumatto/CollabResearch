@@ -182,6 +182,15 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             )}
           </NavLink>
 
+          <button
+            type="button"
+            className="barra-lateral__item-nav barra-lateral__item-nav--sair"
+            onClick={() => setLogoutConfirmOpen(true)}
+          >
+            <SignOut size={18} className="barra-lateral__icone-nav" />
+            <span className="barra-lateral__rotulo-nav">Logout</span>
+          </button>
+
           <div className="barra-lateral__divisor barra-lateral__divisor--rodape" aria-hidden="true" />
 
           <div className="barra-lateral__rodape-conta">
@@ -206,16 +215,6 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
                 <span className="barra-lateral__perfil-papel">{isAdvisor ? "Orientador(a)" : "Aluno(a)"}</span>
               </span>
             </NavLink>
-
-            <button
-              type="button"
-              className="barra-lateral__sair"
-              onClick={() => setLogoutConfirmOpen(true)}
-              aria-label="Sair da conta"
-              title="Sair da conta"
-            >
-              <SignOut size={18} />
-            </button>
           </div>
         </div>
       </div>

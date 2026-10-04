@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { FolderOpen, Plus, X, CheckCircle, Pencil, Trash, Calendar, Play, Flag, CaretDown, WarningCircle } from "@phosphor-icons/react";
+import { FolderOpen, Plus, X, CheckCircle, Pencil, Trash, Calendar, Play, Flag, CaretDown, WarningCircle, ArrowLeft } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
@@ -344,6 +344,17 @@ export default function AdvisorProgressPage() {
       transition={{ duration: 0.3 }}
       className="advisor-pagina advisor-pagina--progresso"
     >
+      {projetosAtivos.length > 1 && (
+        <button
+          type="button"
+          className="advisor-voltar"
+          onClick={() => setSelectedProjectId(null)}
+        >
+          <ArrowLeft size={16} />
+          Voltar para projetos
+        </button>
+      )}
+
       <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
         <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
           Organize etapas e prazos

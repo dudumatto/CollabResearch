@@ -161,21 +161,21 @@
      para sidebar, topbar, conteudo e overlays, senao os blocos dessincronizam.
      Curva ease-in-out suave (parte e chega devagar) em vez de um ease-out
      abrupto, para o movimento inteiro parecer uma coisa so. */
-  --sidebar-duracao: 380ms;
+  --sidebar-duracao: 220ms;
   --sidebar-curva: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Entrada/saida do conteudo que some ao recolher (rotulos, contador, perfil).
      Sai rapido e logo no inicio, para nunca aparecer texto cortado pela metade;
      entra uma vez que a largura ja abriu espaco. Todos usam o mesmo par, assim
      o conteudo aparece e some como um bloco, sem cascata. */
-  --sidebar-conteudo-entra: opacity 200ms ease 150ms, transform 240ms cubic-bezier(0.4, 0, 0.2, 1) 150ms;
+  --sidebar-conteudo-entra: opacity 160ms ease 80ms, transform 200ms cubic-bezier(0.4, 0, 0.2, 1) 80ms;
   --sidebar-conteudo-sai: opacity 120ms ease, transform 160ms ease;
 
   /* ------------------------------------------
      Layout — largura da barra lateral
   ------------------------------------------ */
   --largura-sidebar-interna:           13rem;
-  --largura-sidebar-recolhida-interna: 4.5rem;
+  --largura-sidebar-recolhida-interna: 4rem;
   --largura-sidebar:          calc(var(--largura-sidebar-interna) + 2rem);
   --largura-sidebar-recolhida: calc(var(--largura-sidebar-recolhida-interna) + 2rem);
   --altura-topbar:             4rem;  /*  64px / h-16 */

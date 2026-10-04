@@ -1503,6 +1503,34 @@
   outline-offset: 2px;
 }
 
+.advisor-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  align-self: flex-start;
+  margin-bottom: var(--espaco-3);
+  padding: 0.4rem 0.75rem 0.4rem 0.5rem;
+  border: none;
+  background: transparent;
+  border-radius: var(--raio-medio);
+  color: var(--cor-texto-fraco);
+  font-family: var(--fonte-principal);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.advisor-voltar:hover {
+  background: var(--cor-superficie-brand);
+  color: var(--cor-texto);
+}
+
+.advisor-voltar:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
 .advisor-botao--primario {
   background-color: var(--cor-primaria);
   color: #f6f8f5;

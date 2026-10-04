@@ -43,7 +43,7 @@
   gap: var(--espaco-3);
   margin: calc(var(--espaco-6) * -1);
   margin-top: calc(var(--espaco-6) * -1);
-  padding: var(--espaco-6);
+  padding: var(--espaco-5);
   min-height: calc(100vh - var(--altura-topbar));
   background: var(--dash-canvas);
 }
@@ -629,16 +629,16 @@
 .dash-destaque {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.25rem;
   min-width: 0;
 }
 
 .dash-destaque__area {
   align-self: flex-start;
-  padding: 0.2rem 0.55rem;
+  padding: 0.15rem 0.5rem;
   border-radius: var(--raio-completo);
   background: var(--dash-realce);
-  color: var(--dash-roxo);
+  color: var(--cor-primaria);
   font-size: var(--tamanho-xs);
   font-weight: var(--peso-semi);
 }
@@ -660,8 +660,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 0.3rem;
-  padding-top: 0.55rem;
+  margin-top: 0.15rem;
+  padding-top: 0.45rem;
   border-top: 1px solid var(--dash-divisor);
   color: var(--dash-mudo);
   font-size: var(--tamanho-pequeno);

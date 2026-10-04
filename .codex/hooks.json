@@ -6,9 +6,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'CAVEMAN LITE MODE ACTIVE. Keep technical substance exact. Remove filler, pleasantries, repetition, and unnecessary narration. Keep full sentences and normal grammar. Code, commands, errors, security warnings, destructive confirmations, documentation, and user-requested detail stay clear and complete. User can say stop caveman or normal mode to deactivate for this conversation; $caveman lite or /caveman lite reactivates.'",
+            "command": "echo 'CAVEMAN ULTRA MODE ACTIVE. Maximum token compression. Keep technical substance exact. Remove filler, pleasantries, repetition, and unnecessary narration. Fragments OK. Code, commands, errors, security warnings, destructive confirmations, documentation, and user-requested detail stay clear and complete. User can say stop caveman or normal mode to deactivate for this conversation; $caveman ultra or /caveman ultra reactivates.'",
             "timeout": 5,
-            "statusMessage": "Loading Caveman lite"
+            "statusMessage": "Loading Caveman ultra"
           }
         ]
       }

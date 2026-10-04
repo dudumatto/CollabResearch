@@ -9,8 +9,8 @@
 
 ## Defaults
 
-- Keep Ponytail enabled in `lite` mode. Prefer existing code, standard-library or platform features, and the smallest complete implementation. Preserve validation, security, error handling, tests, and accessibility.
-- Follow the repository's Caveman `lite` guidance in `AGENTS.md`: concise Portuguese responses, no filler, and no loss of technical details.
+- Keep Ponytail enabled in `full` mode. Prefer existing code, standard-library or platform features, and the smallest complete implementation. Preserve validation, security, error handling, tests, and accessibility.
+- Follow the repository's Caveman `ultra` guidance in `AGENTS.md`: concise Portuguese responses, maximum token compression, no filler, and no loss of technical details.
 - Use RTK for shell commands when available (`rtk git status`, `rtk git diff`, `rtk test`, and related wrappers) so command output stays compact.
 
 ## Review gate

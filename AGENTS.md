@@ -26,9 +26,9 @@ Monorepo da plataforma de gerenciamento de TCC.
 - Detalhes de roteamento e checklist: `.codex/AGENTS.md`.
 
 <!-- caveman-begin -->
-## Caveman default: lite
+## Caveman default: ultra
 
-Caveman `lite` é o padrão neste repositório: remova filler, bajulação e narração desnecessária; mantenha gramática normal e todos os detalhes técnicos exatos (código, comandos, caminhos, números, erros). Use prosa clara em avisos de segurança, ações irreversíveis e procedimentos complexos. Responda no idioma do usuário. `stop caveman` / `normal mode` desativa; `$caveman lite` reativa.
+Caveman `ultra` é o padrão neste repositório: compressão máxima de tokens; remova filler, bajulação e narração desnecessária; mantenha todos os detalhes técnicos exatos (código, comandos, caminhos, números, erros). Use prosa clara em avisos de segurança, ações irreversíveis e procedimentos complexos. Responda no idioma do usuário. `stop caveman` / `normal mode` desativa; `$caveman ultra` reativa.
 
-Skill instalada em `.agents/skills/caveman/`. Não exija nem escreva configuração global do Caveman.
+Skill instalada em `.agents/skills/caveman/` e como plugin do Claude Code (`caveman@caveman`, escopo user).
 <!-- caveman-end -->

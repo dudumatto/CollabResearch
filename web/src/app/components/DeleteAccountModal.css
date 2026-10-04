@@ -1,0 +1,47 @@
+.excluir-conta__modal {
+  max-width: 24rem;
+  width: min(100%, 24rem);
+}
+
+.excluir-conta__campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-5);
+  text-align: left;
+  width: 100%;
+}
+
+.excluir-conta__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.excluir-conta__rotulo {
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+}
+
+.excluir-conta__input {
+  background: var(--cor-fundo);
+  border: 1px solid var(--cor-separador-suave);
+  border-radius: var(--raio-medio);
+  color: var(--cor-texto);
+  font-family: var(--fonte-principal);
+  font-size: var(--tamanho-base);
+  min-height: 2.75rem;
+  padding: 0.6rem 0.75rem;
+  width: 100%;
+}
+
+.excluir-conta__input:focus-visible {
+  border-color: var(--cor-erro);
+  outline: none;
+}
+
+.logout-confirm__confirm:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

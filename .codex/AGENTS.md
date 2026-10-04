@@ -32,7 +32,7 @@ Use o agente mais específico; para mudanças que cruzam contratos, comece pelo 
 - `supabase-postgres-best-practices` — queries, schema e performance Postgres.
 - `design-taste-frontend` — direção de design para landing/login/cadastro/institucional e redesigns.
 - `redesign-existing-projects` — elevar qualidade visual de telas existentes sem quebrar funcionalidade.
-- `caveman` — modo de resposta conciso (lite é o padrão via `.codex/hooks.json`).
+- `caveman` — modo de resposta conciso (ultra é o padrão via `.codex/hooks.json`).
 
 Carregue um agente e skills por necessidade, não por hábito. Nunca carregue árvores inteiras de referências; leia somente os arquivos relevantes. Para dashboard e componentes existentes, respeite primeiro o design system do próprio módulo.
 
