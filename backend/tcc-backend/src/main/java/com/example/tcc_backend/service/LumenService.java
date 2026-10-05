@@ -51,7 +51,7 @@ public class LumenService {
                          ObjectMapper objectMapper,
                          @Value("${lumen.api.key:}") String apiKey,
                          @Value("${lumen.api.url:https://openrouter.ai/api/v1/chat/completions}") String apiUrl,
-                         @Value("${lumen.model:nvidia/llama-3.1-nemotron-ultra-253b:free}") String model,
+                         @Value("${lumen.model:nvidia/nemotron-3-ultra-550b-a55b:free}") String model,
                          @Value("${lumen.timeout-ms:15000}") long timeoutMs) {
         this.inscricaoRepository = inscricaoRepository;
         this.projetoRepository = projetoRepository;
