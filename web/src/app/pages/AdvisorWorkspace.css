@@ -1585,26 +1585,12 @@
   position: fixed;
   inset: 0;
   background-color: var(--cor-sobreposicao);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--espaco-4);
-  z-index: 60;
-}
-
-.advisor-modal-overlay--conteudo {
-  backdrop-filter: blur(6px);
-  transition: left var(--sidebar-duracao) var(--sidebar-curva);
-}
-
-@media (min-width: 1024px) {
-  .advisor-modal-overlay--conteudo {
-    left: var(--largura-sidebar);
-  }
-
-  .advisor-modal-overlay--conteudo-recolhida {
-    left: var(--largura-sidebar-recolhida);
-  }
+  z-index: 200;
 }
 
 .advisor-modal {

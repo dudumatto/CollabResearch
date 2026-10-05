@@ -11,7 +11,6 @@ import { mapProject, mapEtapa, mapOrientando, mapAvaliacaoAcademica } from "../u
 import { formatAvaliacaoNota, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
-import { useSidebarContext } from "../layouts/DashboardLayout";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
@@ -129,7 +128,6 @@ function StarPicker({ value, onChange }) {
 }
 
 export default function AdvisorEvaluationsPage() {
-  const { collapsed } = useSidebarContext();
   const [projectId, setProjectId] = useState(null);
   const [modal, setModal] = useState(null);
   const [campos, setCampos] = useState(null);
@@ -406,7 +404,7 @@ export default function AdvisorEvaluationsPage() {
       )}
 
       {modal && createPortal((
-        <div className={`advisor-modal-overlay advisor-modal-overlay--conteudo ${collapsed ? "advisor-modal-overlay--conteudo-recolhida" : ""}`} role="dialog" aria-modal="true" aria-label="Avaliação acadêmica">
+        <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Avaliação acadêmica">
           <div className="advisor-modal" style={{ maxWidth: "40rem" }}>
             <div className="advisor-modal__cabecalho">
               <div>

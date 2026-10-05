@@ -9,6 +9,12 @@
   margin: 0 auto;
 }
 
+@media (min-width: 1024px) {
+  .pagina-configuracoes {
+    max-width: 880px;
+  }
+}
+
 /* ── Page header ──────────────────────────────────────── */
 .cfg-page-header {
   margin-bottom: 20px;
@@ -879,4 +885,39 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 4px;
+}
+
+/* ── Desktop: seção inline (no fluxo), não overlay em tela cheia ─────── */
+@media (min-width: 1024px) {
+  /* Ao abrir uma seção, ela toma o lugar da lista na mesma página. */
+  .pagina-configuracoes--painel-aberto > .cfg-profile-card,
+  .pagina-configuracoes--painel-aberto > .cfg-section {
+    display: none;
+  }
+
+  .cfg-panel {
+    position: static;
+    inset: auto;
+    left: auto;
+    z-index: auto;
+    overflow-y: visible;
+    background: transparent;
+  }
+
+  .cfg-panel__header {
+    position: static;
+    height: auto;
+    margin: 0 0 var(--espaco-4);
+    padding: 0 0 var(--espaco-3);
+    border: 0;
+    border-bottom: 1px solid var(--cor-separador-suave);
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .cfg-panel__body {
+    max-width: none;
+    padding: 0;
+  }
 }

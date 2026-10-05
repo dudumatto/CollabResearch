@@ -185,12 +185,22 @@
   flex: 0 0 auto;
 }
 
-.dash-agenda-lista::after {
+/* O fade mora no próprio cartão (não na lista) para cobrir também o padding
+   e alcançar toda a borda inferior, de ponta a ponta e com os cantos
+   arredondados. O "Ver mais" fica acima dele via z-index. */
+.dash-card--calendario {
+  position: relative;
+}
+
+.dash-card--calendario::after {
   content: "";
   position: absolute;
-  inset: auto 0 0 0;
-  height: 2.75rem;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--espaco-4) + 2.75rem);
   background: linear-gradient(to bottom, transparent, var(--dash-card-fade));
+  border-radius: 0 0 var(--raio-grande) var(--raio-grande);
   pointer-events: none;
 }
 
@@ -207,7 +217,7 @@
   content: "";
   position: absolute;
   inset: auto 0 0 0;
-  height: 2.75rem;
+  height: 5.5rem;
   background: linear-gradient(to bottom, transparent, var(--dash-card-fade));
   pointer-events: none;
 }
@@ -222,7 +232,7 @@
 .dash-agenda-vermais {
   position: absolute;
   left: 50%;
-  bottom: 0.5rem;
+  bottom: 0;
   z-index: 1;
   transform: translateX(-50%);
   padding: 0.2rem 0.4rem;
