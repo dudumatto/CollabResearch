@@ -5,15 +5,15 @@ import "./DeleteAccountModal.css";
 
 const normalize = (value) => String(value ?? "").trim().toLowerCase();
 
-export function DeleteAccountModal({ open, expectedName, expectedEmail, onConfirm, onCancel }) {
-  const [nome, setNome] = useState("");
+export function DeleteAccountModal({ open, expectedEmail, onConfirm, onCancel }) {
   const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!open) {
-      setNome("");
       setEmail("");
+      setSenha("");
       setDeleting(false);
       return undefined;
     }
@@ -26,15 +26,13 @@ export function DeleteAccountModal({ open, expectedName, expectedEmail, onConfir
 
   if (!open) return null;
 
-  const matches =
-    normalize(nome) === normalize(expectedName) &&
-    normalize(email) === normalize(expectedEmail);
+  const matches = normalize(email) === normalize(expectedEmail) && senha.length > 0;
 
   const handleConfirm = async () => {
     if (!matches || deleting) return;
     setDeleting(true);
     try {
-      await onConfirm();
+      await onConfirm(senha);
     } finally {
       setDeleting(false);
     }
@@ -63,21 +61,10 @@ export function DeleteAccountModal({ open, expectedName, expectedEmail, onConfir
         </div>
         <h2 id="excluir-conta-title" className="logout-confirm__title">Excluir sua conta?</h2>
         <p id="excluir-conta-description" className="logout-confirm__desc">
-          Esta ação é permanente. Para confirmar, digite seu nome completo e e-mail exatamente
-          como estão cadastrados.
+          Esta ação é permanente. Para confirmar, digite seu e-mail e senha.
         </p>
 
         <div className="excluir-conta__campos">
-          <label className="excluir-conta__grupo">
-            <span className="excluir-conta__rotulo">Nome completo</span>
-            <input
-              className="excluir-conta__input"
-              type="text"
-              value={nome}
-              autoComplete="off"
-              onChange={(event) => setNome(event.target.value)}
-            />
-          </label>
           <label className="excluir-conta__grupo">
             <span className="excluir-conta__rotulo">E-mail</span>
             <input
@@ -86,6 +73,16 @@ export function DeleteAccountModal({ open, expectedName, expectedEmail, onConfir
               value={email}
               autoComplete="off"
               onChange={(event) => setEmail(event.target.value)}
+            />
+          </label>
+          <label className="excluir-conta__grupo">
+            <span className="excluir-conta__rotulo">Senha</span>
+            <input
+              className="excluir-conta__input"
+              type="password"
+              value={senha}
+              autoComplete="current-password"
+              onChange={(event) => setSenha(event.target.value)}
             />
           </label>
         </div>

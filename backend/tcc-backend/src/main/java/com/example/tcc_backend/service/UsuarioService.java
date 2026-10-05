@@ -1,5 +1,6 @@
 package com.example.tcc_backend.service;
 
+import com.example.tcc_backend.dto.request.DeleteAccountRequest;
 import com.example.tcc_backend.dto.request.UsuarioPreferenciasRequest;
 import com.example.tcc_backend.dto.request.UsuarioRequest;
 import com.example.tcc_backend.dto.response.UsuarioProfileResponse;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,6 +53,7 @@ public class UsuarioService {
     private final AuthHelper authHelper;
     private final SupabaseStorageService supabaseStorageService;
     private final ConversaRepository conversaRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public UsuarioService(UsuarioRepository usuarioRepository,
@@ -61,7 +64,8 @@ public class UsuarioService {
                           InscricaoRepository inscricaoRepository,
                           AuthHelper authHelper,
                           SupabaseStorageService supabaseStorageService,
-                          ConversaRepository conversaRepository) {
+                          ConversaRepository conversaRepository,
+                          PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.alunoRepository = alunoRepository;
         this.orientadorRepository = orientadorRepository;
@@ -71,6 +75,7 @@ public class UsuarioService {
         this.authHelper = authHelper;
         this.supabaseStorageService = supabaseStorageService;
         this.conversaRepository = conversaRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UsuarioService(UsuarioRepository usuarioRepository,
@@ -217,14 +222,18 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void delete(Integer id) {
+    public void delete(Integer id, DeleteAccountRequest req) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
 
         if (!usuarioLogado.getId().equals(id)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode remover outro usuario");
         }
 
-        findById(id); // valida existência
+        if (usuarioLogado.getSenha() != null && !passwordEncoder.matches(req.getSenha(), usuarioLogado.getSenha())) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Senha incorreta");
+        }
+
+        findById(id);
         usuarioRepository.deleteById(id);
     }
 

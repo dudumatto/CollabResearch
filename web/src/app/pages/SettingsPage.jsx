@@ -265,10 +265,10 @@ export default function SettingsPage() {
     }
   };
 
-  const deleteAccount = async () => {
+  const deleteAccount = async (senha) => {
     if (!user?.id) return;
     try {
-      await userService.remove(user.id);
+      await userService.remove(user.id, { senha });
       setDeleteModalOpen(false);
       toast.success("Conta excluída. Sentiremos sua falta.");
       await logout();
@@ -330,7 +330,9 @@ export default function SettingsPage() {
               <span className="cfg-nav-item__title cfg-nav-item__title--danger">Sair da conta</span>
             </span>
           </button>
-          {!loading && tipoPerfil === "ALUNO" && (
+          {loading ? (
+            <div style={{ padding: "0.75rem 1rem" }}><Sk w={180} h={14} /></div>
+          ) : tipoPerfil === "ALUNO" ? (
             <button className="cfg-nav-item cfg-nav-item--danger" onClick={() => setDeleteModalOpen(true)}>
               <span className="cfg-nav-item__icon icon-red"><Trash size={18} /></span>
               <span className="cfg-nav-item__text">
@@ -338,7 +340,7 @@ export default function SettingsPage() {
                 <span className="cfg-nav-item__sub">Remove permanentemente sua conta</span>
               </span>
             </button>
-          )}
+          ) : null}
         </SectionGroup>
       </div>
 
@@ -402,7 +404,6 @@ export default function SettingsPage() {
 
       <DeleteAccountModal
         open={deleteModalOpen}
-        expectedName={form.nome}
         expectedEmail={form.email}
         onConfirm={deleteAccount}
         onCancel={() => setDeleteModalOpen(false)}

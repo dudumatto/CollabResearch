@@ -1,5 +1,6 @@
 package com.example.tcc_backend.controller;
 
+import com.example.tcc_backend.dto.request.DeleteAccountRequest;
 import com.example.tcc_backend.dto.request.UsuarioPreferenciasRequest;
 import com.example.tcc_backend.dto.request.UsuarioRequest;
 import com.example.tcc_backend.dto.response.DocumentoResponse;
@@ -199,8 +200,9 @@ public class UsuarioController {
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        usuarioService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Integer id,
+                                       @org.springframework.web.bind.annotation.RequestBody DeleteAccountRequest body) {
+        usuarioService.delete(id, body);
         return ResponseEntity.noContent().build();
     }
 
