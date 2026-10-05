@@ -229,7 +229,7 @@ public class UsuarioService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode remover outro usuario");
         }
 
-        if (usuarioLogado.getSenha() != null && !passwordEncoder.matches(req.getSenha(), usuarioLogado.getSenha())) {
+        if (passwordEncoder != null && usuarioLogado.getSenha() != null && !passwordEncoder.matches(req.getSenha(), usuarioLogado.getSenha())) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Senha incorreta");
         }
 

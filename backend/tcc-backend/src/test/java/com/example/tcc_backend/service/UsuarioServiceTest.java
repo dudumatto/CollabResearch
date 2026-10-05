@@ -252,7 +252,9 @@ class UsuarioServiceTest {
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuario));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        usuarioService.delete(1);
+        com.example.tcc_backend.dto.request.DeleteAccountRequest req = new com.example.tcc_backend.dto.request.DeleteAccountRequest();
+        req.setSenha("qualquer");
+        usuarioService.delete(1, req);
 
         ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
         verify(usuarioRepository).save(captor.capture());

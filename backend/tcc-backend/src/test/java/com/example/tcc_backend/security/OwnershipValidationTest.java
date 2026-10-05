@@ -122,7 +122,9 @@ class OwnershipValidationTest {
             when(authHelper.getCurrentUser()).thenReturn(usuarioA);
             when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuarioA));
 
-            usuarioService.delete(1);
+            com.example.tcc_backend.dto.request.DeleteAccountRequest req = new com.example.tcc_backend.dto.request.DeleteAccountRequest();
+            req.setSenha("qualquer");
+            usuarioService.delete(1, req);
             assertThat(usuarioA.getAtivo()).isFalse();
         }
 
@@ -131,7 +133,9 @@ class OwnershipValidationTest {
             Usuario usuarioA = TestDataFactory.usuarioAluno(1);
             when(authHelper.getCurrentUser()).thenReturn(usuarioA);
 
-            assertThatThrownBy(() -> usuarioService.delete(2))
+            com.example.tcc_backend.dto.request.DeleteAccountRequest req2 = new com.example.tcc_backend.dto.request.DeleteAccountRequest();
+            req2.setSenha("qualquer");
+            assertThatThrownBy(() -> usuarioService.delete(2, req2))
                     .isInstanceOf(ResponseStatusException.class)
                     .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode())
                             .isEqualTo(HttpStatus.FORBIDDEN));
