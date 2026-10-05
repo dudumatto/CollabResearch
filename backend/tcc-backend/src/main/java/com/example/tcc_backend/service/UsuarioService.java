@@ -86,7 +86,7 @@ public class UsuarioService {
                           InscricaoRepository inscricaoRepository,
                           AuthHelper authHelper) {
         this(usuarioRepository, alunoRepository, orientadorRepository, cursoRepository,
-                projetoRepository, inscricaoRepository, authHelper, null, null);
+                projetoRepository, inscricaoRepository, authHelper, null, null, null);
     }
 
     public List<Usuario> findAll() {
