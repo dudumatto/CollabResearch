@@ -145,6 +145,13 @@
   color: var(--cor-texto);
   font-family: inherit;
   font-size: var(--tamanho-medio);
+  -webkit-appearance: textfield;
+  appearance: textfield;
+}
+
+.barra-topo__busca-campo:focus-visible {
+  outline: none;
+  border-radius: 0;
 }
 
 .barra-topo__busca-campo::placeholder {
