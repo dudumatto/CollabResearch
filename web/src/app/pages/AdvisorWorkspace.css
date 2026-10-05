@@ -2200,7 +2200,7 @@
 /* ---- Calendario de prazos ---- */
 .calendario-pagina {
   width: 100%;
-  max-width: 68rem;
+  max-width: 112rem;
   margin-inline: auto;
   height: auto;
   display: flex;
@@ -2295,17 +2295,9 @@
 
 @media (min-width: 1280px) {
   .calendario-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+    grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(14rem, 1fr));
     justify-content: start;
     align-items: stretch;
-  }
-
-  .calendario-lateral {
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    align-self: stretch;
-    height: auto;
-    min-height: 0;
-    overflow: hidden;
   }
 }
 
@@ -2617,6 +2609,17 @@
   height: auto;
   min-height: auto;
   overflow: visible;
+}
+
+@media (min-width: 1280px) {
+  .calendario-lateral {
+    display: contents;
+  }
+
+  .calendario-card--lateral {
+    height: 100%;
+    overflow: hidden;
+  }
 }
 
 .calendario-lista--rolagem {
