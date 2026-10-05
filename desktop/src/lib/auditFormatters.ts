@@ -43,12 +43,12 @@ const statusLabels: Record<string, string> = {
   VERIFICADO: 'Verificado',
 }
 
-function normalize(value: string) {
-  return value.trim().toUpperCase()
+function normalize(value: string | null | undefined) {
+  return (value ?? '').trim().toUpperCase()
 }
 
-function humanize(value: string) {
-  const lower = value.replace(/_/g, ' ').trim().toLowerCase()
+function humanize(value: string | null | undefined) {
+  const lower = (value ?? '').replace(/_/g, ' ').trim().toLowerCase()
   return lower.charAt(0).toUpperCase() + lower.slice(1)
 }
 
