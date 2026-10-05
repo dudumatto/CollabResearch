@@ -20,7 +20,7 @@ export const userService = {
     return api.put(`/api/usuarios/${id}`, payload);
   },
   remove(id, body) {
-    return api.delete(`/api/usuarios/${id}`, { data: body });
+    return api.delete(`/api/usuarios/${id}`, body);
   },
   updatePreferencias(payload) {
     return api.put("/api/usuarios/me/preferencias", payload);

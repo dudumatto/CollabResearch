@@ -156,9 +156,10 @@ export const api = {
       body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body),
       ...options,
     }),
-  delete: (path) =>
+  delete: (path, body) =>
     request(path, {
       method: "DELETE",
+      body: body === undefined ? undefined : JSON.stringify(body),
     }),
   getBlob: (path) =>
     fetch(buildRequestUrl(path), {
