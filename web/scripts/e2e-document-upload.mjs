@@ -51,7 +51,7 @@ function jdbcToPgConfig(jdbcUrl, user, password, sslMode) {
     database: parsed[3],
     user,
     password,
-    ssl: sslRequired ? { rejectUnauthorized: false } : undefined,
+    ssl: sslRequired ? { rejectUnauthorized: true } : undefined,
   };
 }
 

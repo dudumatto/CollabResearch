@@ -28,7 +28,7 @@ export class EditProjectPage {
   }
 
   async expectRedirectedToDetail(projectId: number): Promise<void> {
-    await expect(this.page).toHaveURL(new RegExp(`/app/projects/${projectId}$`));
+    await expect(this.page).toHaveURL(`/app/projects/${projectId}`);
   }
 
   async expectValidationError(): Promise<void> {

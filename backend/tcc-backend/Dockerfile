@@ -21,4 +21,7 @@ EXPOSE 8080
 # The wildcard keeps the Dockerfile stable if the project version changes.
 COPY --from=build /app/target/*.jar app.jar
 
+RUN addgroup -S app && adduser -S app -G app
+USER app
+
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
