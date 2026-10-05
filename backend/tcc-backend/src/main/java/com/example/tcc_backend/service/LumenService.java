@@ -51,7 +51,7 @@ public class LumenService {
                          ObjectMapper objectMapper,
                          @Value("${lumen.api.key:}") String apiKey,
                          @Value("${lumen.api.url:https://openrouter.ai/api/v1/chat/completions}") String apiUrl,
-                         @Value("${lumen.model:deepseek/deepseek-chat-v3-0324:free}") String model,
+                         @Value("${lumen.model:deepseek/deepseek-r1:free}") String model,
                          @Value("${lumen.timeout-ms:15000}") long timeoutMs) {
         this.inscricaoRepository = inscricaoRepository;
         this.projetoRepository = projetoRepository;
