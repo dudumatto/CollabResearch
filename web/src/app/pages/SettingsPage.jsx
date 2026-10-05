@@ -1,4 +1,3 @@
-import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,37 +57,29 @@ function SectionGroup({ children }) {
   return <div className="cfg-section-group">{children}</div>;
 }
 
-function PanelPortal({ children }) {
-  const el = document.querySelector(".pagina-app__principal");
-  if (!el) return null;
-  return createPortal(children, el);
-}
-
 function Panel({ panelId, activePanel, title, onBack, children, collapsed }) {
   const open = activePanel === panelId;
   return (
-    <PanelPortal>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className={`cfg-panel ${collapsed ? "cfg-panel--recolhida" : ""}`}
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
-          >
-            <div className="cfg-panel__header">
-              <button className="cfg-panel__back" onClick={onBack} aria-label="Voltar para configurações">
-                <span className="cfg-panel__back-icon"><ArrowLeft size={16} /></span>
-                <span className="cfg-panel__back-text">Voltar</span>
-              </button>
-              <span className="cfg-panel__title">{title}</span>
-            </div>
-            <div className="cfg-panel__body">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </PanelPortal>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className={`cfg-panel ${collapsed ? "cfg-panel--recolhida" : ""}`}
+          initial={{ x: "100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "100%" }}
+          transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
+        >
+          <div className="cfg-panel__header">
+            <button className="cfg-panel__back" onClick={onBack} aria-label="Voltar para configurações">
+              <span className="cfg-panel__back-icon"><ArrowLeft size={16} /></span>
+              <span className="cfg-panel__back-text">Voltar</span>
+            </button>
+            <span className="cfg-panel__title">{title}</span>
+          </div>
+          <div className="cfg-panel__body">{children}</div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -211,7 +202,10 @@ export default function SettingsPage() {
   }, [user]);
 
   useEffect(() => {
-    if (!activePanel) {
+    // Trava o scroll da página só quando o painel é overlay em tela cheia
+    // (mobile/tablet). No desktop ele é inline, então o scroll normal fica.
+    const overlayMode = window.matchMedia("(max-width: 1023px)").matches;
+    if (!activePanel || !overlayMode) {
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
       return;
@@ -290,7 +284,7 @@ export default function SettingsPage() {
   const panelProps = { activePanel, onBack: close, collapsed };
 
   return (
-    <div className="pagina-configuracoes">
+    <div className={`pagina-configuracoes ${activePanel ? "pagina-configuracoes--painel-aberto" : ""}`}>
 
       <div className="cfg-profile-card">
         <div className="cfg-profile-card__body">
