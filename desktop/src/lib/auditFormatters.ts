@@ -67,8 +67,8 @@ export function formatAuditTitle(action: string, resource: string) {
   return `${formatAuditAction(action)} ${article} ${formatAuditResource(resource)}`
 }
 
-export function formatAuditDescription(description: string) {
-  const trimmed = description.trim()
+export function formatAuditDescription(description: string | null | undefined) {
+  const trimmed = (description ?? '').trim()
   if (!trimmed) return 'Sem descricao'
 
   return trimmed
