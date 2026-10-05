@@ -20,6 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class AdminUserService {
@@ -32,6 +36,7 @@ public class AdminUserService {
     private final AdminAccessService accessService;
     private final AdminAuditService auditService;
 
+    @Transactional(readOnly = true)
     public PageResponse<UsuarioProfileResponse> list(TipoUsuario tipo, String busca, int page, int size) {
         accessService.requireAdmin();
         validatePage(page, size);
@@ -46,11 +51,17 @@ public class AdminUserService {
                     cb.like(cb.lower(root.get("email")), term)
             ));
         }
-        Page<UsuarioProfileResponse> result = usuarioRepository.findAll(
+        Page<Usuario> pageResult = usuarioRepository.findAll(
                 spec,
                 PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "dataCadastro"))
-        ).map(this::profile);
-        return PageResponse.from(result);
+        );
+        List<Integer> ids = pageResult.stream().map(Usuario::getId).toList();
+        Map<Integer, Aluno> alunos = alunoRepository.findByUsuarioIdIn(ids)
+                .stream().collect(Collectors.toMap(a -> a.getUsuario().getId(), a -> a));
+        Map<Integer, Orientador> orientadores = orientadorRepository.findByUsuarioIdIn(ids)
+                .stream().collect(Collectors.toMap(o -> o.getUsuario().getId(), o -> o));
+        return PageResponse.from(pageResult.map(u ->
+                UsuarioProfileResponse.from(u, alunos.get(u.getId()), orientadores.get(u.getId()))));
     }
 
     public UsuarioProfileResponse find(Integer id) {
@@ -123,6 +134,17 @@ public class AdminUserService {
         usuarioRepository.save(usuario);
         auditService.record("ALTERAR_STATUS", "USUARIO", id, Boolean.TRUE.equals(dto.getAtivo()) ? "ativo" : "inativo");
         return profile(usuario);
+    }
+
+    @Transactional
+    public void delete(Integer id) {
+        Usuario admin = accessService.requireAdmin();
+        if (admin.getId().equals(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Administrador nao pode excluir a propria conta");
+        }
+        getUsuario(id); // valida existência
+        auditService.record("EXCLUIR", "USUARIO", id, null);
+        usuarioRepository.deleteById(id);
     }
 
     private void saveRoleDetails(Usuario usuario, AdminUsuarioRequest dto, boolean novo) {

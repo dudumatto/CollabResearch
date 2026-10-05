@@ -152,26 +152,11 @@ public class AdminContentService {
         auditService.record("REMOVER", "INSCRICAO", id, inscricao.getProjeto().getTitulo());
     }
 
-    public PageResponse<DocumentoResponse> listDocumentos(StatusDocumento status, int page, int size) {
+    public PageResponse<DocumentoResponse> listDocumentos(int page, int size) {
         accessService.requireAdmin();
         validatePage(page, size);
         var pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "dataEnvio"));
-        Page<Documento> result = status == null
-                ? documentoRepository.findAll(pageable)
-                : documentoRepository.findByStatus(status, pageable);
-        return PageResponse.from(result.map(DocumentoResponse::fromEntity));
-    }
-
-    @Transactional
-    public DocumentoResponse setDocumentoStatus(Integer id, AdminDocumentoStatusRequest dto) {
-        accessService.requireAdmin();
-        Documento documento = documentoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Documento nao encontrado"));
-        documento.setStatus(dto.getStatus());
-        documento.setObservacaoStatus(text(dto.getObservacao()));
-        documentoRepository.save(documento);
-        auditService.record("ALTERAR_STATUS", "DOCUMENTO", id, dto.getStatus().name());
-        return DocumentoResponse.fromEntity(documento);
+        return PageResponse.from(documentoRepository.findAll(pageable).map(DocumentoResponse::fromEntity));
     }
 
     @Transactional

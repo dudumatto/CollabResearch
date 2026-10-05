@@ -443,9 +443,9 @@ button { min-height: 44px; }
 .chart-card-header-left { align-items: center; display: flex; gap: 10px; }
 .chart-card-icon {
   align-items: center;
-  background: #eef2ff;
+  background: var(--green-bg);
   border-radius: 8px;
-  color: #3b82f6;
+  color: var(--green);
   display: flex;
   height: 32px;
   justify-content: center;
@@ -458,7 +458,7 @@ button { min-height: 44px; }
 .chart-bar-label { color: #5a6b5e; font-size: .84rem; font-weight: 450; }
 .chart-bar-track { background: #f0f3ee; border-radius: 20px; height: 8px; overflow: hidden; }
 .chart-bar-fill {
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  background: linear-gradient(90deg, #238a64, #35a878);
   border-radius: inherit;
   height: 100%;
   transition: width .6s ease;
@@ -517,14 +517,16 @@ button { min-height: 44px; }
   font-weight: 600;
   justify-content: center;
   padding: 0 18px;
-  transition: background .18s ease, border-color .18s ease;
+  transition: background .18s ease, border-color .18s ease, transform .12s ease;
 }
 .button:disabled { cursor: not-allowed; opacity: .58; }
+.button:active:not(:disabled) { transform: scale(0.97); }
 .button-primary { background: linear-gradient(135deg, #1a5e46, #238a64); color: white; }
 .button-primary:hover:not(:disabled) { background: linear-gradient(135deg, #15503a, #1d7856); }
 .button-secondary { background: white; border-color: var(--slate-300); color: var(--navy-900); }
 .button-secondary:hover:not(:disabled), .button-ghost:hover:not(:disabled) { background: var(--slate-100); }
 .button-danger { background: var(--red); color: white; }
+.button-danger:hover:not(:disabled) { background: #a42d43; }
 .button-ghost { background: transparent; color: var(--blue-700); min-height: 38px; padding: 0 9px; }
 .field { color: var(--slate-700); display: flex; flex: 1 1 180px; flex-direction: column; font-size: .84rem; font-weight: 600; gap: 7px; min-width: 0; }
 .field input, .field select, .field textarea {
@@ -534,7 +536,9 @@ button { min-height: 44px; }
   color: var(--navy-950);
   min-height: 44px;
   padding: 0 13px;
+  transition: border-color .15s ease;
 }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--green); outline: none; }
 .field textarea { min-height: 88px; padding: 12px 13px; resize: vertical; }
 .field input::placeholder { color: #8996ad; }
 .field .invalid { border-color: var(--red); }

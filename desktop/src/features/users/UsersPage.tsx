@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { ErrorState } from '../../components/ui/ErrorState'
 import { Input } from '../../components/ui/Input'
@@ -23,6 +24,7 @@ export function UsersPage({ lockedRole, title = 'Usuarios' }: { lockedRole?: Use
   const [error, setError] = useState('')
   const [detail, setDetail] = useState<UserProfile>()
   const [editing, setEditing] = useState<UserProfile | null | undefined>()
+  const [deleting, setDeleting] = useState<UserProfile>()
   const { notify } = useToast()
 
   const load = async () => {
@@ -35,6 +37,17 @@ export function UsersPage({ lockedRole, title = 'Usuarios' }: { lockedRole?: Use
     }
   }
   useEffect(() => { void load() }, [lockedRole, role])
+
+  const confirmDelete = async (user: UserProfile) => {
+    try {
+      await usersService.delete(user.id)
+      notify(`Usuario ${user.nome} excluido permanentemente.`)
+      setDeleting(undefined)
+      await load()
+    } catch (caught) {
+      notify(errorMessage(caught), 'error')
+    }
+  }
 
   const toggle = async (user: UserProfile) => {
     try {
@@ -67,7 +80,7 @@ export function UsersPage({ lockedRole, title = 'Usuarios' }: { lockedRole?: Use
               <tr key={user.id}>
                 <td><strong>{user.nome}</strong></td><td>{user.email}</td><td>{user.tipo}</td>
                 <td><Badge tone={user.ativo ? 'success' : 'danger'}>{user.ativo ? 'Ativo' : 'Inativo'}</Badge></td>
-                <td className="actions"><Button variant="ghost" onClick={() => setDetail(user)}>Ver</Button><Button variant="ghost" onClick={() => setEditing(user)}>Editar</Button><Button variant="ghost" onClick={() => void toggle(user)}>{user.ativo ? 'Desativar' : 'Ativar'}</Button></td>
+                <td className="actions"><Button variant="ghost" onClick={() => setDetail(user)}>Ver</Button><Button variant="ghost" onClick={() => setEditing(user)}>Editar</Button><Button variant="ghost" onClick={() => void toggle(user)}>{user.ativo ? 'Desativar' : 'Ativar'}</Button><Button variant="ghost" onClick={() => setDeleting(user)}>Excluir</Button></td>
               </tr>
             ))}</tbody>
           </Table>
@@ -75,6 +88,7 @@ export function UsersPage({ lockedRole, title = 'Usuarios' }: { lockedRole?: Use
       </Card>
       {detail && <UserDetailsModal user={detail} onClose={() => setDetail(undefined)} />}
       {editing !== undefined && <UserFormModal user={editing ?? undefined} initialRole={lockedRole} onClose={() => setEditing(undefined)} onSaved={() => { setEditing(undefined); notify('Cadastro salvo com sucesso.'); void load() }} />}
+      {deleting && <ConfirmDialog title="Excluir usuario" message={`Excluir ${deleting.nome} permanentemente? Remove todos os dados associados.`} onClose={() => setDeleting(undefined)} onConfirm={() => void confirmDelete(deleting)} />}
     </div>
   )
 }

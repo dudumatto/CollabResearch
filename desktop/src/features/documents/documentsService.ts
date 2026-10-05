@@ -1,6 +1,6 @@
 import { apiClient } from '../../lib/apiClient'
 import type { PageResponse } from '../../lib/apiTypes'
-import type { DocumentItem, DocumentStatus } from './documentsTypes'
+import type { DocumentItem } from './documentsTypes'
 
 const apiPath = (url: string | undefined, fallback: string) => {
   if (!url) return fallback
@@ -8,9 +8,7 @@ const apiPath = (url: string | undefined, fallback: string) => {
 }
 
 export const documentsService = {
-  list: (status?: DocumentStatus) => apiClient.get<PageResponse<DocumentItem>>(`/admin/documentos?size=50${status ? `&status=${status}` : ''}`),
-  setStatus: (id: number, status: DocumentStatus, observacao?: string) =>
-    apiClient.patch<DocumentItem>(`/admin/documentos/${id}/status`, { status, observacao }),
+  list: () => apiClient.get<PageResponse<DocumentItem>>('/admin/documentos?size=50'),
   remove: (id: number) => apiClient.delete(`/admin/documentos/${id}`),
   previewUrl: (_document: DocumentItem) => undefined,
   preview: (document: DocumentItem) => apiClient.blob(apiPath(document.previewUrl, `/documentos/${document.id}/preview`)),

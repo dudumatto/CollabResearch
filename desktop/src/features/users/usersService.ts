@@ -14,4 +14,5 @@ export const usersService = {
   create: (payload: UserPayload) => apiClient.post<UserProfile>('/admin/usuarios', payload),
   update: (id: number, payload: UserPayload) => apiClient.put<UserProfile>(`/admin/usuarios/${id}`, payload),
   setActive: (id: number, ativo: boolean) => apiClient.patch<UserProfile>(`/admin/usuarios/${id}/ativo`, { ativo }),
+  delete: (id: number) => apiClient.delete<void>(`/admin/usuarios/${id}`),
 }

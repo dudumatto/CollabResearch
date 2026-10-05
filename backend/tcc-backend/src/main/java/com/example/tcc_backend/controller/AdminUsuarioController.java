@@ -45,6 +45,12 @@ public class AdminUsuarioController {
         return ResponseEntity.ok(service.update(id, request));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}/ativo")
     public ResponseEntity<UsuarioProfileResponse> setAtivo(
             @PathVariable Integer id,

@@ -2,7 +2,6 @@ package com.example.tcc_backend.controller;
 
 import com.example.tcc_backend.dto.request.*;
 import com.example.tcc_backend.dto.response.*;
-import com.example.tcc_backend.model.StatusDocumento;
 import com.example.tcc_backend.model.StatusInscricao;
 import com.example.tcc_backend.model.StatusProjeto;
 import com.example.tcc_backend.service.AdminContentService;
@@ -75,17 +74,9 @@ public class AdminContentController {
 
     @GetMapping("/documentos")
     public ResponseEntity<PageResponse<DocumentoResponse>> documentos(
-            @RequestParam(required = false) StatusDocumento status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(service.listDocumentos(status, page, size));
-    }
-
-    @PatchMapping("/documentos/{id}/status")
-    public ResponseEntity<DocumentoResponse> setDocumentoStatus(
-            @PathVariable Integer id,
-            @RequestBody @Valid AdminDocumentoStatusRequest request) {
-        return ResponseEntity.ok(service.setDocumentoStatus(id, request));
+        return ResponseEntity.ok(service.listDocumentos(page, size));
     }
 
     @DeleteMapping("/documentos/{id}")

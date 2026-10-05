@@ -181,7 +181,8 @@ export default function ProjectsPage() {
   const counts = useMemo(
     () => ({
       total: visibleProjects.length,
-      active: visibleProjects.filter((project) => project.status !== "FINALIZADO").length,
+      open: visibleProjects.filter((project) => project.status === "ABERTO").length,
+      active: visibleProjects.filter((project) => project.status === "EM_ANDAMENTO").length,
       finished: visibleProjects.filter((project) => project.status === "FINALIZADO").length,
     }),
     [visibleProjects],
@@ -235,6 +236,7 @@ export default function ProjectsPage() {
       <div className="pagina-projetos__resumo-historico">
         {[
           ["Todos", "Todos", counts.total],
+          ["ABERTO", "Abertos", counts.open],
           ["EM_ANDAMENTO", "Em andamento", counts.active],
           ["FINALIZADO", "Finalizados", counts.finished],
         ].map(([status, label, count]) => (

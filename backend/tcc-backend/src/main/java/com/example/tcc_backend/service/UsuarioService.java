@@ -7,6 +7,7 @@ import com.example.tcc_backend.model.Aluno;
 import com.example.tcc_backend.model.Curso;
 import com.example.tcc_backend.model.Inscricao;
 import com.example.tcc_backend.model.Orientador;
+import com.example.tcc_backend.model.StatusInscricao;
 import com.example.tcc_backend.model.Projeto;
 import com.example.tcc_backend.model.TipoUsuario;
 import com.example.tcc_backend.model.Usuario;
@@ -215,6 +216,7 @@ public class UsuarioService {
         return montarPerfil(usuario);
     }
 
+    @Transactional
     public void delete(Integer id) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
 
@@ -222,16 +224,15 @@ public class UsuarioService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode remover outro usuario");
         }
 
-        Usuario usuario = findById(id);
-        usuario.setAtivo(false);
-        usuarioRepository.save(usuario);
+        findById(id); // valida existência
+        usuarioRepository.deleteById(id);
     }
 
     public List<Projeto> findProjetosByUsuario(Integer id) {
         Usuario usuario = findById(id);
         if (usuario.getTipo() == TipoUsuario.ALUNO) {
             Set<Projeto> projetos = new LinkedHashSet<>(projetoRepository.findByOrientadorUsuarioIdOrAlunoCriadorUsuarioId(id, id));
-            inscricaoRepository.findByAlunoUsuarioId(id).stream()
+            inscricaoRepository.findByAlunoUsuarioIdAndStatus(id, StatusInscricao.APROVADO).stream()
                     .map(Inscricao::getProjeto)
                     .forEach(projetos::add);
             return new ArrayList<>(projetos);
