@@ -136,7 +136,6 @@ public class LumenService {
                     .body(body)
                     .retrieve()
                     .body(String.class);
-            log.info("Lumen AI raw response: {}", raw);
             response = raw != null ? objectMapper.readTree(raw) : null;
         } catch (Exception ex) {
             log.warn("Falha ao chamar Lumen AI (OpenRouter): {}", ex.getMessage());
