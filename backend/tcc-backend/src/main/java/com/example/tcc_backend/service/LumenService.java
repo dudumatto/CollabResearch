@@ -130,12 +130,13 @@ public class LumenService {
 
         JsonNode response;
         try {
-            response = restClient.post()
+            String raw = restClient.post()
                     .contentType(MediaType.APPLICATION_JSON)
                     .header("Authorization", "Bearer " + apiKey)
                     .body(body)
                     .retrieve()
-                    .body(JsonNode.class);
+                    .body(String.class);
+            response = raw != null ? objectMapper.readTree(raw) : null;
         } catch (Exception ex) {
             log.warn("Falha ao chamar Lumen AI (OpenRouter): {}", ex.getMessage());
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI indisponivel no momento");
