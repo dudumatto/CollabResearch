@@ -136,7 +136,7 @@ public class LumenService {
                     .body(body)
                     .retrieve()
                     .body(JsonNode.class);
-        } catch (RestClientException ex) {
+        } catch (Exception ex) {
             log.warn("Falha ao chamar Lumen AI (OpenRouter): {}", ex.getMessage());
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI indisponivel no momento");
         }
