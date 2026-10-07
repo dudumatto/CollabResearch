@@ -25,7 +25,6 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
   AdvisorDashboard? advisorSummary;
   AdviseeDetail? selectedAdvisee;
   User? selectedUser;
-  List<User> userSearchResults = [];
   bool isLoading = false;
   String? errorMessage;
   int _pendingOperations = 0;
@@ -340,12 +339,6 @@ class AcademicWorkspaceProvider extends ChangeNotifier {
         documents
           ..clear()
           ..addAll(await _service.documents(userId));
-      });
-
-  Future<void> searchUsers(String q) => _run(() async {
-        userSearchResults
-          ..clear()
-          ..addAll(q.trim().isEmpty ? [] : await _service.searchUsers(q));
       });
 
   Future<void> loadUserProfile(String userId) {

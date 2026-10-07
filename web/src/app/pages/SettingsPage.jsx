@@ -166,7 +166,7 @@ export default function SettingsPage() {
     nome: "", email: "", fotoPerfilUrl: "",
     senhaAtual: "", senhaNova: "", confirmarSenha: "",
   });
-  const [tipoPerfil, setTipoPerfil] = useState(user?.tipo ?? "ALUNO");
+  const [tipoPerfil, setTipoPerfil] = useState("ALUNO");
   const [matricula, setMatricula] = useState("");
 
   useEffect(() => {
@@ -330,7 +330,7 @@ export default function SettingsPage() {
               <span className="cfg-nav-item__title cfg-nav-item__title--danger">Sair da conta</span>
             </span>
           </button>
-          {loading && user?.tipo !== "ORIENTADOR" ? (
+          {loading ? (
             <div style={{ padding: "0.75rem 1rem" }}><Sk w={180} h={14} /></div>
           ) : tipoPerfil === "ALUNO" ? (
             <button className="cfg-nav-item cfg-nav-item--danger" onClick={() => setDeleteModalOpen(true)}>

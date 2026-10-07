@@ -105,11 +105,6 @@ public class UsuarioService {
         return usuarioRepository.findAll(pageable);
     }
 
-    public Page<Usuario> buscar(String q, Pageable pageable) {
-        authHelper.getCurrentUser();
-        return usuarioRepository.findByNomeContainingIgnoreCaseAndAtivoTrue(q.trim(), pageable);
-    }
-
     public List<Usuario> findOrientadoresAtivos() {
         authHelper.getCurrentUser();
         return usuarioRepository.findByTipoAndAtivoTrueOrderByNomeAsc(TipoUsuario.ORIENTADOR);

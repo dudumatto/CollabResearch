@@ -19,7 +19,6 @@ import '../screens/landing/landing_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/profile/user_profile_screen.dart';
-import '../screens/search/search_users_screen.dart';
 import '../screens/projects/create_project_screen.dart';
 import '../screens/projects/edit_project_screen.dart';
 import '../screens/projects/project_detail_screen.dart';
@@ -295,11 +294,6 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         path: '/documents',
         pageBuilder: (context, state) =>
             _slidePage(context, state, const DocumentsScreen()),
-      ),
-      GoRoute(
-        path: '/search/users',
-        pageBuilder: (context, state) =>
-            _slidePage(context, state, const SearchUsersScreen()),
       ),
       GoRoute(
         path: '/users/:id',

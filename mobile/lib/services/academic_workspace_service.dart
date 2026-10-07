@@ -262,12 +262,6 @@ class AcademicWorkspaceService {
     return parseListPayload(response.data).map(Project.fromJson).toList();
   }
 
-  Future<List<User>> searchUsers(String q) async {
-    final response =
-        await _dio.get<dynamic>(ApiEndpoints.searchUsers(q));
-    return parseListPayload(response.data).map(User.fromJson).toList();
-  }
-
   Future<Conversation> openProjectConversation(String projectId) async {
     final response =
         await _dio.post<dynamic>(ApiEndpoints.projectConversation(projectId));

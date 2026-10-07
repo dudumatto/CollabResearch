@@ -161,7 +161,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   : 'Resumo dos seus projetos, conversas e alertas.',
                               unreadCount: notificationProvider.unreadCount,
                               onOpenAlerts: () => context.go('/notifications'),
-                              onOpenSearch: () => context.push('/search/users'),
                             ),
                             const SizedBox(height: AppSpacing.xl),
                             _StatsGrid(
@@ -398,7 +397,6 @@ class _DashboardHeader extends StatelessWidget {
     required this.subtitle,
     required this.unreadCount,
     required this.onOpenAlerts,
-    required this.onOpenSearch,
     this.avatarUrl,
   });
 
@@ -407,7 +405,6 @@ class _DashboardHeader extends StatelessWidget {
   final String subtitle;
   final int unreadCount;
   final VoidCallback onOpenAlerts;
-  final VoidCallback onOpenSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -438,13 +435,6 @@ class _DashboardHeader extends StatelessWidget {
                       ),
                 ),
               ),
-              _HeaderIconButton(
-                icon: Icons.search_rounded,
-                tooltip: 'Buscar perfis',
-                onPressed: onOpenSearch,
-                count: 0,
-              ),
-              const SizedBox(width: 6),
               _HeaderIconButton(
                 icon: Icons.notifications_none_outlined,
                 tooltip: 'Abrir alertas',

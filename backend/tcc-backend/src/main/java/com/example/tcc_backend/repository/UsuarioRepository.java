@@ -1,8 +1,6 @@
 package com.example.tcc_backend.repository;
 
 import com.example.tcc_backend.model.Usuario;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -16,5 +14,4 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer>, JpaS
     boolean existsByEmail(String email);
     long countByTipo(com.example.tcc_backend.model.TipoUsuario tipo);
     long countByAtivoTrue();
-    Page<Usuario> findByNomeContainingIgnoreCaseAndAtivoTrue(String nome, Pageable pageable);
 }
