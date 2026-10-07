@@ -75,6 +75,8 @@ class ApiEndpoints {
   static String notification(String id) => '$notifications/$id';
   static String readNotification(String id) => '${notification(id)}/ler';
   static String readAllNotifications() => '$notifications/ler-todas';
+  static String searchUsers(String q) =>
+      '$users/buscar?q=${Uri.encodeQueryComponent(q)}';
   static String user(String id) => '/api/usuarios/$id';
   static String userProjects(String id) => '${user(id)}/projetos';
   static String userPreferences() => '$me/preferencias';

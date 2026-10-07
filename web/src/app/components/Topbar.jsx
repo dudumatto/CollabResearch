@@ -66,7 +66,7 @@ export function Topbar({ onMenuClick, title, subtitle }) {
           className="barra-topo__botao-notificacoes"
           aria-label="Notificações"
         >
-          <Bell size={22} className="barra-topo__icone-notificacoes" />
+          <Bell size={20} className="barra-topo__icone-notificacoes" />
           {unreadCount > 0 && (
             <span className="barra-topo__contador-notificacoes">{unreadCount}</span>
           )}

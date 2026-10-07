@@ -441,6 +441,8 @@
   background-color: var(--cor-fundo);
   border: 1px solid var(--cor-borda);
   color: var(--cor-texto);
+  max-height: 8rem;
+  overflow-y: auto;
 }
 
 .campo-perfil__bio--editando:focus {

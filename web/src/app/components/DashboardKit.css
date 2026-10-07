@@ -670,6 +670,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--espaco-2);
   margin-top: 0.15rem;
   padding-top: 0.45rem;
   border-top: 1px solid var(--dash-divisor);

@@ -81,6 +81,20 @@ public class UsuarioController {
             @ApiResponse(responseCode = "200", description = "Lista paginada retornada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Parâmetros inválidos")
     })
+    @Operation(summary = "Buscar usuários por nome")
+    @GetMapping("/buscar")
+    public ResponseEntity<PageResponse<UsuarioResponse>> buscar(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(
+                PageResponse.from(
+                        usuarioService.buscar(q, PageRequest.of(page, size, Sort.by("nome")))
+                                .map(this::usuarioResponse)
+                )
+        );
+    }
+
     @GetMapping("/pagina")
     public ResponseEntity<PageResponse<UsuarioResponse>> findAllPaginado(
             @RequestParam(defaultValue = "0") int page,
