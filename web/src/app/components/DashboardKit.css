@@ -210,19 +210,37 @@
 .dash-lista-fade {
   position: relative;
   height: 12.47rem;
+  /* Sangra até as bordas laterais do cartão (compensa o padding) para que o
+     fade alcance toda a largura, como no Calendário. O recorte das linhas fica
+     no .dash-lista-fade__clip, deixando o fade escapar por baixo até a base. */
+  margin-inline: calc(-1 * var(--espaco-4));
+}
+
+.dash-lista-fade__clip {
+  height: 100%;
   overflow: hidden;
+  padding-inline: var(--espaco-4);
 }
 
 .dash-lista-fade::after {
   content: "";
   position: absolute;
-  inset: auto 0 0 0;
-  height: 5.5rem;
+  left: 0;
+  right: 0;
+  bottom: calc(-1 * var(--espaco-4));
+  height: calc(5.5rem + var(--espaco-4));
   background: linear-gradient(to bottom, transparent, var(--dash-card-fade));
+  border-radius: 0 0 var(--raio-grande) var(--raio-grande);
   pointer-events: none;
 }
 
-.dash-lista-fade > .dash-linha:first-child {
+/* O corpo não pode recortar a sangria do fade (largura/base). */
+.dash-card__corpo:has(> .dash-lista-fade),
+.dash-card--preencher .dash-card__corpo:has(> .dash-lista-fade) {
+  overflow: visible;
+}
+
+.dash-lista-fade__clip > .dash-linha:first-child {
   border-top: 0;
   padding-top: 0;
 }
@@ -670,11 +688,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--espaco-3);
   margin-top: 0.15rem;
   padding-top: 0.45rem;
   border-top: 1px solid var(--dash-divisor);
   color: var(--dash-mudo);
   font-size: var(--tamanho-pequeno);
+}
+
+.dash-destaque__curso {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dash-destaque__vagas {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 /* ---- Notificação recente ---- */

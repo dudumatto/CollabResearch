@@ -330,9 +330,7 @@ export default function SettingsPage() {
               <span className="cfg-nav-item__title cfg-nav-item__title--danger">Sair da conta</span>
             </span>
           </button>
-          {loading ? (
-            <div style={{ padding: "0.75rem 1rem" }}><Sk w={180} h={14} /></div>
-          ) : tipoPerfil === "ALUNO" ? (
+          {tipoPerfil === "ALUNO" && (
             <button className="cfg-nav-item cfg-nav-item--danger" onClick={() => setDeleteModalOpen(true)}>
               <span className="cfg-nav-item__icon icon-red"><Trash size={18} /></span>
               <span className="cfg-nav-item__text">
@@ -340,7 +338,7 @@ export default function SettingsPage() {
                 <span className="cfg-nav-item__sub">Remove permanentemente sua conta</span>
               </span>
             </button>
-          ) : null}
+          )}
         </SectionGroup>
       </div>
 

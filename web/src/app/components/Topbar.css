@@ -114,6 +114,31 @@
 }
 
 /* ---- Campo de busca (modelo da topbar) ---- */
+.barra-topo__busca-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Botão-ícone que substitui a barra em telas estreitas. */
+.barra-topo__busca-botao {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: var(--raio-medio);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cor-texto-fraco);
+  transition: var(--transicao-normal);
+}
+
+.barra-topo__busca-botao:hover {
+  background-color: var(--cor-superficie-brand);
+}
+
 .barra-topo__busca {
   display: flex;
   align-items: center;
@@ -178,6 +203,23 @@
   letter-spacing: 0.02em;
 }
 
+.barra-topo__busca-fechar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 0.2rem;
+  border: none;
+  background: none;
+  color: var(--cor-texto-fraco);
+  cursor: pointer;
+  border-radius: var(--raio-pequeno);
+}
+
+.barra-topo__busca-fechar:hover {
+  color: var(--cor-texto);
+}
+
 .barra-topo__divisor-acoes {
   flex: 0 0 auto;
   width: 1px;
@@ -185,12 +227,128 @@
   background-color: var(--cor-separador-suave);
 }
 
-/* Em telas estreitas a busca encolhe para só o ícone/placeholder curto. */
+/* ---- Dropdown de resultados da busca de perfis ---- */
+.barra-topo__resultados {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: min(22rem, calc(100vw - 2rem));
+  max-height: 22rem;
+  overflow-y: auto;
+  padding: var(--espaco-2);
+  background-color: var(--cor-superficie);
+  border: 1px solid var(--cor-separador-suave);
+  border-radius: var(--raio-grande);
+  box-shadow: var(--sombra-media);
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.barra-topo__resultado-vazio {
+  margin: 0;
+  padding: var(--espaco-3);
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-pequeno);
+  text-align: center;
+}
+
+.barra-topo__resultado {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  width: 100%;
+  padding: var(--espaco-2);
+  border: none;
+  background: none;
+  border-radius: var(--raio-medio);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 140ms ease;
+}
+
+.barra-topo__resultado:hover {
+  background-color: var(--cor-superficie-brand);
+}
+
+.barra-topo__resultado-avatar {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--raio-completo);
+  object-fit: cover;
+  background-color: var(--cor-primaria-clara);
+}
+
+.barra-topo__resultado-avatar--iniciais {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cor-primaria-texto, var(--cor-primaria));
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-semi);
+}
+
+.barra-topo__resultado-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.barra-topo__resultado-nome {
+  color: var(--cor-texto);
+  font-size: var(--tamanho-medio);
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barra-topo__resultado-papel {
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-xs);
+}
+
+/* Em telas estreitas a busca vira só um ícone; expande como overlay ao abrir. */
 @media (max-width: 520px) {
-  .barra-topo__busca {
-    width: auto;
-    flex: 1 1 auto;
+  .barra-topo__busca-botao {
+    display: flex;
   }
+
+  .barra-topo__busca-wrap .barra-topo__busca {
+    display: none;
+  }
+
+  .barra-topo__busca-wrap--aberta .barra-topo__busca-botao {
+    display: none;
+  }
+
+  /* Com a busca aberta: ela ocupa o centro da topbar e o sininho some. */
+  .barra-topo--busca-aberta .barra-topo__secao-esquerda {
+    display: none;
+  }
+
+  .barra-topo--busca-aberta .barra-topo__divisor-acoes,
+  .barra-topo--busca-aberta .barra-topo__botao-notificacoes {
+    display: none;
+  }
+
+  .barra-topo--busca-aberta .barra-topo__secao-direita {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .barra-topo__busca-wrap--aberta {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .barra-topo__busca-wrap--aberta .barra-topo__busca {
+    display: flex;
+    width: 100%;
+  }
+
   .barra-topo__busca-atalho {
     display: none;
   }

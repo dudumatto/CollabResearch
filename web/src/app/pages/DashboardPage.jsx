@@ -307,8 +307,8 @@ export default function DashboardPage() {
                     Orientado por {featured.advisor?.name ?? "Orientador a definir"}
                   </span>
                   <span className="dash-destaque__rodape">
-                    <span>{featured.courses?.[0] ?? featured.area ?? "Pesquisa"}</span>
-                    <span>{featured.slotsRemaining} vagas</span>
+                    <span className="dash-destaque__curso">{featured.courses?.[0] ?? featured.area ?? "Pesquisa"}</span>
+                    <span className="dash-destaque__vagas">{featured.slotsRemaining} vagas</span>
                   </span>
                 </span>
               </button>

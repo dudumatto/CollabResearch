@@ -1709,6 +1709,8 @@
   font-size: var(--tamanho-base);
   width: 100%;
   transition: var(--transicao-normal);
+  resize: vertical;
+  max-height: 16rem;
 }
 
 .advisor-campo__input:focus {

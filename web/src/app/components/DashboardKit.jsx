@@ -164,7 +164,7 @@ export function DashListaCortada({ children, excedeLimite, onVerMais }) {
 
   return (
     <div className="dash-lista-fade">
-      {children}
+      <div className="dash-lista-fade__clip">{children}</div>
       <button type="button" className="dash-agenda-vermais" onClick={onVerMais}>
         Ver mais
       </button>

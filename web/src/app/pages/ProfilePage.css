@@ -29,6 +29,7 @@
   border-radius: var(--raio-grande);
   border: 1px solid var(--cor-borda-clara);
   overflow: hidden;
+  min-width: 0;
 }
 
 .cartao-perfil__capa {
@@ -229,6 +230,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-5);
+  min-width: 0;
 }
 
 /* Seção de edição */
@@ -237,6 +239,8 @@
   border-radius: var(--raio-grande);
   border: 1px solid var(--cor-borda-clara);
   padding: var(--espaco-5);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .secao-perfil__cabecalho {
@@ -546,6 +550,7 @@
 .historico-item__info {
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
 .historico-item__titulo {

@@ -174,7 +174,7 @@
   /* ------------------------------------------
      Layout — largura da barra lateral
   ------------------------------------------ */
-  --largura-sidebar-interna:           13rem;
+  --largura-sidebar-interna:           11rem;
   --largura-sidebar-recolhida-interna: 4rem;
   --largura-sidebar:          calc(var(--largura-sidebar-interna) + 2rem);
   --largura-sidebar-recolhida: calc(var(--largura-sidebar-recolhida-interna) + 2rem);

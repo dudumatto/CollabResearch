@@ -131,8 +131,8 @@
   }
 
   .banner-boas-vindas__enfeite {
-    background-position: right -4rem bottom -7rem;
-    background-size: clamp(14rem, 70vw, 18rem);
+    background-position: right bottom;
+    background-size: clamp(10rem, 48vw, 14rem);
   }
 
   .banner-boas-vindas__acoes {

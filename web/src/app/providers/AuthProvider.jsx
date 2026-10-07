@@ -6,6 +6,14 @@ import { decodeJwt } from "../utils/token";
 
 export const AuthContext = createContext(null);
 
+// Contas de administrador são exclusivas do app desktop: não têm acesso ao web.
+const MENSAGEM_ADMIN_BLOQUEADO =
+  "Contas de administrador não têm acesso ao app web. Use o aplicativo desktop.";
+
+function isAdminTipo(tipo) {
+  return String(tipo ?? "").toUpperCase() === "ADMIN";
+}
+
 function buildIdentity(token) {
   const payload = decodeJwt(token);
   if (!payload) return null;
@@ -70,6 +78,13 @@ export function AuthProvider({ children }) {
       setLoading(false);
       return;
     }
+    // Sessão de administrador não é válida no web (ex.: token persistido).
+    if (isAdminTipo(nextIdentity.tipo)) {
+      clearStoredToken();
+      setToken(null);
+      setLoading(false);
+      return;
+    }
     setIdentity(nextIdentity);
     setUser(buildUserFromIdentity(nextIdentity));
     setLoading(false);
@@ -88,6 +103,9 @@ export function AuthProvider({ children }) {
 
   const login = async (payload) => {
     const response = await authService.login(payload);
+    if (isAdminTipo(buildIdentity(response.token)?.tipo)) {
+      throw new Error(MENSAGEM_ADMIN_BLOQUEADO);
+    }
     setStoredToken(response.token);
     setToken(response.token);
     return response;
@@ -95,6 +113,9 @@ export function AuthProvider({ children }) {
 
   const googleLogin = async (payload) => {
     const response = await authService.googleLogin(payload);
+    if (isAdminTipo(buildIdentity(response.token)?.tipo)) {
+      throw new Error(MENSAGEM_ADMIN_BLOQUEADO);
+    }
     setStoredToken(response.token);
     setToken(response.token);
     return response;

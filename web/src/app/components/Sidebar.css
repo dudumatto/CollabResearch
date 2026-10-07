@@ -154,10 +154,15 @@
   padding-inline: calc(var(--sidebar-trilho) - 0.75rem);
 }
 
-/* Expandida, a marca encosta mais à esquerda (referência Figma); recolhida
-   mantém o padding do trilho acima, que centra o ícone. */
+/* Expandida, a marca fica centralizada; recolhida mantém o padding do trilho
+   acima, que centra o ícone. */
 .barra-lateral:not(.barra-lateral--recolhida) .barra-lateral__cabecalho {
-  padding-left: var(--espaco-4);
+  justify-content: center;
+}
+
+/* No drawer mobile a marca também fica centralizada. */
+.barra-lateral-mobile .barra-lateral__cabecalho {
+  justify-content: center;
 }
 
 /* As duas marcas ficam sobrepostas no mesmo ponto e fazem cross-fade, em vez
@@ -509,7 +514,7 @@
   background: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-borda);
   z-index: 50;
-  width: min(18rem, calc(100vw - 1rem));
+  width: min(15rem, calc(100vw - 1rem));
   max-width: 100vw;
   display: flex;
   flex-direction: column;
@@ -519,6 +524,11 @@
 
 .barra-lateral-mobile--entrando {
   animation: sidebar-mobile-in var(--sidebar-duracao) var(--sidebar-curva) both;
+}
+
+/* Afasta o primeiro item do topo (marca/topbar) no drawer mobile. */
+.barra-lateral-mobile .barra-lateral__navegacao {
+  padding-top: var(--espaco-7);
 }
 
 @keyframes sidebar-overlay-in {
