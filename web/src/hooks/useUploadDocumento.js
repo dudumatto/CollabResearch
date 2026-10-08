@@ -2,15 +2,14 @@ import { useState } from "react";
 import { api } from "../app/services/api";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
-const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
+const ALLOWED_EXTENSIONS = ["pdf", "doc", "docx", "txt"];
 
 function validateFile(file) {
   if (!file) throw new Error("Selecione um arquivo para enviar.");
 
   const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-  if (!ALLOWED_TYPES.includes(file.type) || !ALLOWED_EXTENSIONS.includes(extension)) {
-    throw new Error("Tipo de arquivo não suportado. Use PDF, JPG ou PNG.");
+  if (!ALLOWED_EXTENSIONS.includes(extension)) {
+    throw new Error("Tipo de arquivo não suportado. Use PDF, DOC, DOCX ou TXT.");
   }
   if (file.size > MAX_FILE_SIZE_BYTES) {
     throw new Error("Arquivo muito grande. O limite é 5 MB.");

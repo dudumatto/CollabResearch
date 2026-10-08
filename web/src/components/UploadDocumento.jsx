@@ -43,7 +43,7 @@ function UploadDocumento({ candidatoId, usuarioId, tipo }) {
             Upload de {label}
           </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Formatos aceitos: PDF, JPG, PNG (Max. 5MB)
+            Formatos aceitos: PDF, DOC, DOCX, TXT (Max. 5MB)
           </p>
         </div>
 
@@ -56,7 +56,7 @@ function UploadDocumento({ candidatoId, usuarioId, tipo }) {
             type="file"
             onChange={handleFileChange}
             disabled={uploading}
-            accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+            accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
             className="block w-full text-sm text-slate-500
               file:mr-4 file:py-2.5 file:px-4
               file:rounded-lg file:border-0

@@ -90,7 +90,7 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+              accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
               onChange={handleUpload}
               disabled={busy}
               className="perfil-documentos__input"

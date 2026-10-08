@@ -285,7 +285,7 @@ export default function DocumentsPage() {
           ref={fileInputRef}
           type="file"
           multiple={false}
-          accept=".pdf,.jpg,.jpeg,.png"
+          accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
           style={{ display: "none" }}
           onChange={(event) => handleUpload(event.target.files)}
         />
@@ -308,7 +308,7 @@ export default function DocumentsPage() {
             <p className="pagina-documentos__upload-titulo">
               {dragging ? "Solte o arquivo aqui" : "Clique ou arraste seu arquivo aqui"}
             </p>
-            <p className="pagina-documentos__upload-subtitulo">Formatos aceitos: PDF, JPG, PNG</p>
+            <p className="pagina-documentos__upload-subtitulo">Formatos aceitos: PDF, DOC, DOCX, TXT</p>
           </>
         )}
       </div>

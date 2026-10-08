@@ -33,8 +33,9 @@ public class DocumentoService {
 
     private static final Map<String, List<String>> EXTENSOES_PERMITIDAS = Map.of(
             "application/pdf", List.of(".pdf"),
-            "image/jpeg", List.of(".jpg", ".jpeg"),
-            "image/png", List.of(".png")
+            "application/msword", List.of(".doc"),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", List.of(".docx"),
+            "text/plain", List.of(".txt")
     );
 
     private static final long MAX_FILE_BYTES = 5L * 1024 * 1024;
@@ -313,17 +314,12 @@ public class DocumentoService {
             return;
         }
 
-        if ("image/jpeg".equals(contentType)) {
-            if (read < 3 || (header[0] & 0xFF) != 0xFF || (header[1] & 0xFF) != 0xD8 || (header[2] & 0xFF) != 0xFF) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arquivo invalido");
-            }
-            return;
-        }
-
-        if ("image/png".equals(contentType)) {
-            byte[] png = new byte[]{(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
-            if (read < png.length || !Arrays.equals(header, png)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arquivo invalido");
+        if ("text/plain".equals(contentType)) {
+            // TXT nao tem assinatura; rejeita binarios (byte nulo no inicio).
+            for (int i = 0; i < read; i++) {
+                if (header[i] == 0) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arquivo invalido");
+                }
             }
         }
     }
