@@ -10,6 +10,7 @@ import { progressService } from "../services/progressService";
 import { getProjectSlotsUsage, mapProject } from "../utils/adapters";
 import { formatDate, formatProjectStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import { ProgressDonut } from "../components/progress/ProgressDonut";
 import { StepperVertical } from "../components/progress/StepperVertical";
@@ -185,6 +186,8 @@ export default function ProgressPage() {
   const targetStageId = queryParams.get("stageId");
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [editingUpdate, setEditingUpdate] = useState(null);
+  const [updateToDelete, setUpdateToDelete] = useState(null);
   const [stepDisplayOrder, setStepDisplayOrder] = useState([]);
 
   const { data, loading, error } = useAsyncData(
@@ -246,6 +249,8 @@ export default function ProgressPage() {
     error: progressError,
     advanceStep,
     createUpdate,
+    deleteUpdate,
+    editUpdate,
   } = useProjectProgress(selectedProject?.id, { initialProgress: data?.initialProgress });
 
   const stepOrderStorageKey = selectedProject?.id && user?.id
@@ -336,12 +341,43 @@ export default function ProgressPage() {
     }
 
     try {
-      await createUpdate(payload);
-      toast.success("Atualização publicada com sucesso.");
-      setShowUpdateForm(false);
+      if (editingUpdate) {
+        await editUpdate(editingUpdate.id, payload);
+        toast.success("Atualização salva com sucesso.");
+        setEditingUpdate(null);
+        setShowUpdateForm(false);
+      } else {
+        await createUpdate(payload);
+        toast.success("Atualização publicada com sucesso.");
+        setShowUpdateForm(false);
+      }
     } catch (err) {
-      toast.error(err.message || "Não foi possível publicar a atualização.");
+      toast.error(err.message || "Não foi possível salvar a atualização.");
       throw err;
+    }
+  };
+
+  const handleEditUpdate = (update) => {
+    setEditingUpdate(update);
+    setShowUpdateForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUpdate(null);
+    setShowUpdateForm(false);
+  };
+
+  const handleDeleteUpdate = (update) => setUpdateToDelete(update);
+
+  const confirmDeleteUpdate = async () => {
+    const update = updateToDelete;
+    setUpdateToDelete(null);
+    if (!update) return;
+    try {
+      await deleteUpdate(update.id);
+      toast.success("Atualização excluída.");
+    } catch (err) {
+      toast.error(err.message || "Não foi possível excluir a atualização.");
     }
   };
 
@@ -469,7 +505,14 @@ export default function ProgressPage() {
               <button
                 type="button"
                 className="progress-page__toggle-form"
-                onClick={() => setShowUpdateForm((current) => !current)}
+                onClick={() => {
+                  if (showUpdateForm) {
+                    setEditingUpdate(null);
+                    setShowUpdateForm(false);
+                  } else {
+                    setShowUpdateForm(true);
+                  }
+                }}
               >
                 <Plus size={15} />
                 {showUpdateForm ? "Ocultar" : "Nova atualização"}
@@ -478,7 +521,12 @@ export default function ProgressPage() {
           </div>
 
           {isProjectFinished ? null : showUpdateForm ? (
-            <UpdateForm steps={updateFormSteps} onSubmit={handleCreateUpdate} />
+            <UpdateForm
+              steps={updateFormSteps}
+              onSubmit={handleCreateUpdate}
+              onCancel={editingUpdate ? handleCancelEdit : undefined}
+              initialValues={editingUpdate}
+            />
           ) : (
             <div className="progress-page__collapsed-form">
               <p>O formulário está recolhido. Use o botão acima para publicar uma atualização.</p>
@@ -487,10 +535,23 @@ export default function ProgressPage() {
 
           <div className="progress-page__updates">
             <h3>Atualizações recentes</h3>
-            <UpdateFeed updates={updates} />
+            <UpdateFeed
+              updates={updates}
+              currentUserId={user?.id}
+              onEdit={handleEditUpdate}
+              onDelete={handleDeleteUpdate}
+            />
           </div>
         </div>
       </section>
+      <ConfirmDeleteModal
+        open={Boolean(updateToDelete)}
+        title="Excluir atualização?"
+        description={`A atualização "${updateToDelete?.title ?? ""}" será removida permanentemente. Esta ação não pode ser desfeita.`}
+        confirmLabel="Confirmar exclusão"
+        onConfirm={confirmDeleteUpdate}
+        onCancel={() => setUpdateToDelete(null)}
+      />
     </div>
   );
 }

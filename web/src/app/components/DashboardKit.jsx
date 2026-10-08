@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { CaretRight, CheckCircle } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, CheckCircle } from "@phosphor-icons/react";
 import "./DashboardKit.css";
 
 /* Em telas largas, encolhe o conteúdo do painel apenas o necessário para caber
@@ -27,14 +27,25 @@ function useFitScale() {
       const cs = getComputedStyle(dash);
       const padY = parseFloat(cs.paddingTop || "0") + parseFloat(cs.paddingBottom || "0");
       const available = dash.clientHeight - padY;
+
+      // Mede a altura natural sem a sobrescrita de largura para evitar loop de
+      // feedback: width:N/scale% muda o scrollHeight, que recalcularia o scale.
+      // Dentro do rAF a alteração inline não é pintada antes de ser revertida.
+      const prevTransform = el.style.transform;
+      const prevWidth = el.style.width;
+      el.style.transform = "none";
+      el.style.width = "";
       const natural = el.scrollHeight;
+      el.style.transform = prevTransform;
+      el.style.width = prevWidth;
+
       if (available <= 0 || natural <= 0) {
         setScale(1);
         return;
       }
       const next = Math.min(1, (available - 1) / natural);
       // histerese: ignora micro-variações para não oscilar quando a largura muda
-      setScale((prev) => (Math.abs(prev - next) < 0.01 ? prev : next));
+      setScale((prev) => (Math.abs(prev - next) < 0.005 ? prev : next));
     };
 
     const schedule = () => {
@@ -242,6 +253,71 @@ export function DashPromo({ children }) {
 export function DashAvatar({ src, initials }) {
   if (src) return <img className="dash-linha__avatar" src={src} alt="" />;
   return <span className="dash-linha__avatar">{initials}</span>;
+}
+
+const formatNota = (value) =>
+  Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function formatDataAvaliacao(value) {
+  const date = value ? new Date(value) : null;
+  return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("pt-BR") : "";
+}
+
+/* Carrossel de avaliações acadêmicas: mostra uma por vez e, havendo mais de
+   uma, setas para alternar. A altura do corpo é fixa para o cartão não mudar. */
+export function DashEvaluations({ items = [] }) {
+  const [index, setIndex] = useState(0);
+  if (items.length === 0) return <DashEmpty>Suas avaliações aparecerão aqui.</DashEmpty>;
+
+  const current = items[Math.min(index, items.length - 1)];
+  const go = (step) => setIndex((i) => (i + step + items.length) % items.length);
+  const data = formatDataAvaliacao(current.criadaEm);
+  const notas = [
+    ["Participação", current.participacao],
+    ["Qualidade técnica", current.qualidadeTecnica],
+    ["Cumprimento de prazos", current.cumprimentoDePrazos],
+    ["Comunicação", current.comunicacao],
+  ];
+
+  return (
+    <div className="dash-aval">
+      <div className="dash-aval__quem">
+        <div className="dash-aval__nome">
+          <strong>{current.alunoNome || current.orientadorNome || "Avaliação"}</strong>
+          <span>{[current.etapaTitulo, data].filter(Boolean).join(" - ")}</span>
+        </div>
+        <span className="dash-aval__media">Média {formatNota(current.media)}</span>
+      </div>
+      <div className="dash-aval__direita">
+        <div className="dash-aval__notas">
+          {notas.map(([label, value]) => (
+            <div className="dash-aval__nota" key={label}>
+              <span>{label}</span>
+              <strong>{formatNota(value)}</strong>
+            </div>
+          ))}
+        </div>
+        <div className="dash-aval__rodape">
+          {current.comentarioOrientador && (
+            <q className="dash-aval__comentario" title={current.comentarioOrientador}>
+              {current.comentarioOrientador}
+            </q>
+          )}
+          {items.length > 1 && (
+            <div className="dash-aval__nav">
+              <button type="button" onClick={() => go(-1)} aria-label="Avaliação anterior">
+                <CaretLeft size={14} />
+              </button>
+              <span aria-live="polite">{Math.min(index, items.length - 1) + 1}/{items.length}</span>
+              <button type="button" onClick={() => go(1)} aria-label="Próxima avaliação">
+                <CaretRight size={14} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function DashEmpty({ children = "Nada pendente por aqui." }) {

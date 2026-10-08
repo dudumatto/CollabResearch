@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { Tray, Check, X, FileText, CaretRight, User, Sparkle } from "@phosphor-icons/react";
@@ -10,6 +11,7 @@ import { mapAdvisorApplication } from "../utils/adapters";
 import { formatApplicationStatus, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
 const FILTROS = [
@@ -104,8 +106,8 @@ export default function AdvisorApplicationsPage() {
   const [acaoLoadingId, setAcaoLoadingId] = useState(null);
   const [projetoFiltrado, setProjetoFiltrado] = useState("");
   const [lumenLoading, setLumenLoading] = useState(false);
-  const [lumenResultado, setLumenResultado] = useState(null);
   const [lumenModalAberto, setLumenModalAberto] = useState(false);
+  const [lumenFoco, setLumenFoco] = useState(null);
 
   const { data, loading, error, setData } = useAsyncData(
     async () => {
@@ -135,9 +137,19 @@ export default function AdvisorApplicationsPage() {
 
   const rankingMap = useMemo(() => {
     const mapa = new Map();
-    (lumenResultado?.ranking ?? []).forEach((c) => mapa.set(c.inscricaoId, c));
+    // Avaliações da Lumen salvas no servidor junto com cada inscrição.
+    inscricoes.forEach((app) => {
+      if (app.lumenPontuacao != null) {
+        mapa.set(app.id, {
+          inscricaoId: app.id,
+          nomeAluno: app.alunoNome,
+          pontuacao: app.lumenPontuacao,
+          justificativa: app.lumenJustificativa,
+        });
+      }
+    });
     return mapa;
-  }, [lumenResultado]);
+  }, [inscricoes]);
 
   const filtradas = useMemo(() => {
     const base = projetoFiltrado
@@ -150,6 +162,11 @@ export default function AdvisorApplicationsPage() {
       return pb - pa;
     });
   }, [filtradasPorStatus, projetoFiltrado, rankingMap]);
+
+  const lumenRanking = useMemo(
+    () => filtradas.filter((app) => rankingMap.has(app.id)).map((app) => rankingMap.get(app.id)),
+    [filtradas, rankingMap],
+  );
 
   const counts = useMemo(
     () => ({
@@ -166,12 +183,19 @@ export default function AdvisorApplicationsPage() {
   const analisarComLumen = async () => {
     if (!projetoFiltrado) return;
     setLumenLoading(true);
-    setLumenResultado(null);
     try {
       const resultado = await advisorService.ranquearComLumen(projetoFiltrado);
-      setLumenResultado(resultado);
-      setLumenModalAberto(true);
-      if (!resultado?.ranking?.length) {
+      const novas = new Map((resultado?.ranking ?? []).map((c) => [c.inscricaoId, c]));
+      // Guarda as novas avaliações nas inscrições (o servidor também já as salvou).
+      setData((prev) => (Array.isArray(prev)
+        ? prev.map((app) => (novas.has(app.id)
+          ? { ...app, lumenPontuacao: novas.get(app.id).pontuacao, lumenJustificativa: novas.get(app.id).justificativa }
+          : app))
+        : prev));
+      setLumenFoco(null);
+      if (novas.size > 0) {
+        setLumenModalAberto(true);
+      } else {
         toast.info(resultado?.aviso || "A Lumen não retornou sugestões.");
       }
     } catch (err) {
@@ -256,7 +280,6 @@ export default function AdvisorApplicationsPage() {
             aria-selected={filtro === item.key}
             onClick={() => {
               setFiltro(item.key);
-              setLumenResultado(null);
             }}
             className={`advisor-abas__botao ${filtro === item.key ? "advisor-abas__botao--ativo" : ""}`}
           >
@@ -267,22 +290,18 @@ export default function AdvisorApplicationsPage() {
 
       {projetos.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: "var(--espaco-3)" }}>
-          <select
+          <AppCombobox
+            ariaLabel="Filtrar por projeto"
             className="advisor-select"
             value={projetoFiltrado}
-            onChange={(e) => {
-              setProjetoFiltrado(e.target.value);
-              setLumenResultado(null);
+            onChange={(value) => {
+              setProjetoFiltrado(value);
             }}
-            aria-label="Filtrar por projeto"
-          >
-            <option value="">Todos os projetos</option>
-            {projetos.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.titulo}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: "Todos os projetos" },
+              ...projetos.map((p) => ({ value: p.id, label: p.titulo })),
+            ]}
+          />
 
           {mostrarBotaoLumen && (
             <button
@@ -292,15 +311,20 @@ export default function AdvisorApplicationsPage() {
               disabled={lumenLoading}
             >
               <Sparkle size={16} />
-              {lumenLoading ? "Analisando..." : "Analisar com Lumen"}
+              {lumenLoading
+                ? "Analisando..."
+                : filtradas.some((app) => rankingMap.has(app.id)) ? "Avaliar novos com Lumen" : "Analisar com Lumen"}
             </button>
           )}
 
-          {lumenResultado?.ranking?.length > 0 && (
+          {lumenRanking.length > 0 && (
             <button
               type="button"
               className="advisor-botao advisor-botao--secundario"
-              onClick={() => setLumenModalAberto(true)}
+              onClick={() => {
+                setLumenFoco(null);
+                setLumenModalAberto(true);
+              }}
             >
               Ver justificativas da Lumen
             </button>
@@ -347,13 +371,19 @@ export default function AdvisorApplicationsPage() {
                       {formatApplicationStatus(app.status)}
                     </span>
                     {rankingMap.has(app.id) && (
-                      <span
+                      <button
+                        type="button"
                         className={`advisor-etiqueta ${corPontuacao(rankingMap.get(app.id).pontuacao)}`}
-                        title="Pontuação de compatibilidade sugerida pela Lumen"
+                        style={{ cursor: "pointer", border: "none" }}
+                        title="Ver a avaliação da Lumen para este candidato"
+                        onClick={() => {
+                          setLumenFoco(app.id);
+                          setLumenModalAberto(true);
+                        }}
                       >
                         <Sparkle size={12} style={{ marginRight: 4, verticalAlign: "-1px" }} />
                         Lumen: {rankingMap.get(app.id).pontuacao}/10
-                      </span>
+                      </button>
                     )}
                     {app.motivacao && (
                       <button
@@ -495,14 +525,14 @@ export default function AdvisorApplicationsPage() {
         </div>
       )}
 
-      {lumenModalAberto && lumenResultado && (
+      {lumenModalAberto && lumenRanking.length > 0 && createPortal((
         <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Resultado da análise Lumen">
           <div className="advisor-modal">
             <div className="advisor-modal__cabecalho">
               <div className="advisor-modal__cabecalho-conteudo">
                 <h3 className="advisor-modal__titulo">
                   <Sparkle size={18} style={{ marginRight: 6, verticalAlign: "-3px" }} />
-                  Sugestão da Lumen
+                  {lumenFoco != null ? "Avaliação da Lumen" : "Sugestão da Lumen"}
                 </h3>
               </div>
               <button
@@ -516,11 +546,11 @@ export default function AdvisorApplicationsPage() {
             </div>
 
             <div className="advisor-modal__corpo">
-              {lumenResultado.ranking.length === 0 ? (
-                <p className="advisor-hero__subtitulo">{lumenResultado.aviso}</p>
+              {lumenRanking.length === 0 ? (
+                <p className="advisor-hero__subtitulo">Nenhuma avaliação da Lumen disponível.</p>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {lumenResultado.ranking.map((c, i) => (
+                  {lumenRanking.map((c, i) => (lumenFoco == null || c.inscricaoId === lumenFoco) && (
                     <div
                       key={c.inscricaoId}
                       style={{
@@ -552,7 +582,7 @@ export default function AdvisorApplicationsPage() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </motion.div>
   );
 }

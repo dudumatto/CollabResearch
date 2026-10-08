@@ -290,6 +290,8 @@ export function mapAdvisorApplication(application) {
     parecerOrientador: application?.parecerOrientador ?? "",
     appliedAt: application?.dataInscricao ?? null,
     updatedAt: application?.dataAtualizacao ?? null,
+    lumenPontuacao: application?.lumenPontuacao ?? null,
+    lumenJustificativa: application?.lumenJustificativa ?? "",
     projetoId: application?.projetoId ?? project?.id ?? null,
     projetoTitulo: application?.projetoTitulo ?? project?.title ?? "Projeto",
     alunoId: application?.alunoId ?? null,

@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { FolderOpen, FileText, GraduationCap, ClipboardText, Warning, Users, CalendarCheck, TrendUp } from "@phosphor-icons/react";
+import { FolderOpen, FileText, ClipboardText, Warning, Users, CalendarCheck, TrendUp, ChatCircleText } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { etapaService } from "../services/etapaService";
-import { mapOrientadorDashboard, mapDeadlineAgenda } from "../utils/adapters";
+import { conversationService } from "../services/conversationService";
+import { mapOrientadorDashboard, mapDeadlineAgenda, getUserId } from "../utils/adapters";
 import {
   formatProjectStatus,
   formatApplicationStatus,
@@ -27,13 +28,26 @@ import {
 import "../components/DashboardKit.css";
 
 const DASHBOARD_PREVIEW_LIMIT = 3;
-// Calendário e Orientandos ativos dividem a coluna lateral em partes
+const MESSAGES_PREVIEW_LIMIT = 2;
+// Calendário e Mensagens dividem a coluna lateral em partes
 // desiguais (ver .dash-coluna--preencher / .dash-card--preencher).
 const RIGHT_COLUMN_LIMIT = 6;
 // Calendário mostra só os 3 prazos mais próximos inteiros; o 4º aparece
 // cortado pela metade com fade (ver .dash-agenda-lista), convidando a
 // clicar em "Ver mais" em vez de rolar a lista.
 const CALENDAR_PREVIEW_LIMIT = 3;
+
+function formatTime(value) {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  const now = new Date();
+  const diff = now - date;
+  if (diff < 60_000) return "agora";
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}min`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h`;
+  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
+}
 
 const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
   <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
@@ -93,20 +107,23 @@ const projectTone = {
 export default function AdvisorDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const userId = getUserId(user);
 
   const { data, loading, error } = useAsyncData(
     async () => {
-      const [dashboard, prazos] = await Promise.all([
+      const [dashboard, prazos, conversas] = await Promise.all([
         advisorService.dashboard(),
         etapaService.listMine().catch(() => []),
+        userId != null ? conversationService.listByUser(userId).catch(() => []) : Promise.resolve([]),
       ]);
 
       return {
         ...mapOrientadorDashboard(dashboard),
         agenda: mapDeadlineAgenda(prazos, RIGHT_COLUMN_LIMIT),
+        conversations: Array.isArray(conversas) ? conversas : [],
       };
     },
-    [],
+    [userId],
     {
       initialData: {
         metricas: {
@@ -116,6 +133,7 @@ export default function AdvisorDashboardPage() {
         },
         filas: {},
         agenda: [],
+        conversations: [],
       },
     },
   );
@@ -147,9 +165,7 @@ export default function AdvisorDashboardPage() {
   const projetosExcede = projetosTotal.length > DASHBOARD_PREVIEW_LIMIT;
   const projetosAtivos = projetosTotal.slice(0, DASHBOARD_PREVIEW_LIMIT + (projetosExcede ? 1 : 0));
 
-  const orientandosTotal = filas.orientandosAtivos ?? [];
-  const orientandosExcede = orientandosTotal.length > RIGHT_COLUMN_LIMIT;
-  const orientandosAtivos = orientandosTotal.slice(0, RIGHT_COLUMN_LIMIT + (orientandosExcede ? 1 : 0));
+  const conversations = (data?.conversations ?? []).slice(0, MESSAGES_PREVIEW_LIMIT);
 
   const pendingTotal =
     (metricas.inscricoesPendentes ?? 0) +
@@ -323,27 +339,32 @@ export default function AdvisorDashboardPage() {
           </DashCard>
 
           <DashCard
-            icon={GraduationCap}
+            icon={ChatCircleText}
             tone="verde"
-            title="Orientandos ativos"
-            onOpen={() => go("/app/advisees")}
+            title="Mensagens"
+            caption="Últimas mensagens recebidas"
+            onOpen={() => go("/app/chat")}
             className="dash-card--preencher"
           >
-            {orientandosAtivos.length === 0 ? (
-              <DashEmpty>Nenhum orientando ativo.</DashEmpty>
+            {conversations.length === 0 ? (
+              <DashEmpty>Suas conversas aparecerão aqui.</DashEmpty>
             ) : (
-              <DashListaCortada excedeLimite={orientandosExcede} onVerMais={() => go("/app/advisees")}>
-                {orientandosAtivos.map((item, index) => (
-                  <DashRow
-                    key={`${item.id}-${index}`}
-                    title={item.titulo}
-                    subtitle={item.subtitulo}
-                    avatar={<DashAvatar initials={getInitials(item.titulo)} />}
-                    onOpen={item.destino ? () => go(item.destino) : undefined}
-                    openLabel={item.titulo}
-                  />
-                ))}
-              </DashListaCortada>
+              conversations.map((conversa) => (
+                <DashRow
+                  key={conversa.id}
+                  title={conversa.titulo ?? "Conversa"}
+                  subtitle={conversa.ultimaMensagem ?? "Nenhuma mensagem ainda"}
+                  avatar={
+                    <DashAvatar
+                      src={conversa.fotoPerfilUrl || undefined}
+                      initials={getInitials(conversa.titulo)}
+                    />
+                  }
+                  trailing={formatTime(conversa.ultimaMensagemHorario)}
+                  onOpen={() => go("/app/chat")}
+                  openLabel={`Abrir conversa ${conversa.titulo ?? ""}`}
+                />
+              ))
             )}
           </DashCard>
         </div>

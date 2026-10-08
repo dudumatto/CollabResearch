@@ -575,7 +575,6 @@
 
 .campo-formulario__input--erro {
   border-color: var(--cor-erro);
-  box-shadow: 0 0 0 2px var(--cor-erro-leve);
 }
 
 .campo-formulario__erro,
@@ -584,10 +583,7 @@
   font-size: var(--tamanho-pequeno);
   line-height: 1.25;
   margin-top: 0.25rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  background-color: var(--cor-erro-leve);
-  border-left: 3px solid var(--cor-erro);
+  padding: 0.25rem 0;
   animation: slideIn 0.3s ease-out;
 }
 

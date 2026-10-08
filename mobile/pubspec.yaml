@@ -23,7 +23,7 @@ dependencies:
   cached_network_image: ^3.3.0
   fl_chart: ^0.68.0
   flutter_form_builder: ^10.3.0+2
-  intl: 0.20.2
+  intl: ^0.20.3
   timeago: ^3.6.0
   shared_preferences: ^2.2.0
   flutter_dotenv: ^5.1.0

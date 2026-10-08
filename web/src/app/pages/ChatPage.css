@@ -548,6 +548,17 @@
   z-index: 20;
 }
 
+/* Ponte invisível que cobre o vão entre o botão e o menu, mantendo
+   o :hover ativo enquanto o cursor se desloca entre os dois. */
+.mensagem-acoes__menu::before {
+  content: '';
+  height: 8px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: -8px;
+}
+
 .mensagem-acoes:hover .mensagem-acoes__menu,
 .mensagem-acoes:focus-within .mensagem-acoes__menu {
   opacity: 1;

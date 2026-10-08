@@ -48,22 +48,21 @@ function etapaAtrasada(etapa) {
 }
 
 function agruparEtapas(etapas) {
-  const atrasadasPendentes = [];
+  const atrasadas = [];
+  const pendentes = [];
   const emAndamento = [];
   const concluidas = [];
 
   etapas.forEach((etapa) => {
-    if (etapa.status === "DONE") {
-      concluidas.push(etapa);
-    } else if (etapa.status === "ACTIVE" && !etapaAtrasada(etapa)) {
-      emAndamento.push(etapa);
-    } else {
-      atrasadasPendentes.push(etapa);
-    }
+    if (etapa.status === "DONE") concluidas.push(etapa);
+    else if (etapaAtrasada(etapa)) atrasadas.push(etapa);
+    else if (etapa.status === "ACTIVE") emAndamento.push(etapa);
+    else pendentes.push(etapa);
   });
 
   return [
-    { key: "atrasadasPendentes", titulo: "Atrasadas e pendentes", classe: "advisor-etapas-grupo__titulo--atrasada", itens: atrasadasPendentes },
+    { key: "atrasadas", titulo: "Atrasadas", classe: "advisor-etapas-grupo__titulo--atrasada", itens: atrasadas },
+    { key: "pendentes", titulo: "Pendentes / futuras", classe: "advisor-etapas-grupo__titulo--pendente", itens: pendentes },
     { key: "emAndamento", titulo: "Em andamento", classe: "advisor-etapas-grupo__titulo--andamento", itens: emAndamento },
     { key: "concluidas", titulo: "Concluídas", classe: "advisor-etapas-grupo__titulo--concluida", itens: concluidas },
   ];

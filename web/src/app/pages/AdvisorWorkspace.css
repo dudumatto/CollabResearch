@@ -1590,7 +1590,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--espaco-4);
-  z-index: 200;
+  z-index: 300;
 }
 
 .advisor-modal {
@@ -1909,6 +1909,7 @@
 }
 
 .advisor-etapas-grupo__titulo--atrasada  { color: var(--cor-erro); }
+.advisor-etapas-grupo__titulo--pendente  { color: var(--cor-texto-mudo); }
 .advisor-etapas-grupo__titulo--andamento { color: var(--cor-atencao); }
 .advisor-etapas-grupo__titulo--concluida { color: var(--cor-sucesso); }
 

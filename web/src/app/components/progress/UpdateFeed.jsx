@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CaretDown, CaretUp, Clock, UserCircle } from "@phosphor-icons/react";
+import { CaretDown, CaretUp, Clock, Pencil, Trash, UserCircle } from "@phosphor-icons/react";
 import { CategoryBadge } from "./CategoryBadge";
 import { formatUserType } from "../../utils/formatters";
 
@@ -11,7 +11,7 @@ function formatDate(value) {
   });
 }
 
-export function UpdateFeed({ updates = [] }) {
+export function UpdateFeed({ updates = [], onEdit, onDelete, currentUserId }) {
   const [expandedIds, setExpandedIds] = useState([]);
 
   const toggle = (id) => {
@@ -51,6 +51,28 @@ export function UpdateFeed({ updates = [] }) {
                   <span>{formatUserType(update.createdBy?.tipo)}</span>
                 </div>
               </div>
+              {currentUserId && String(update.createdBy?.id) === String(currentUserId) && (
+                <div className="update-feed__acoes">
+                  <button
+                    type="button"
+                    className="update-feed__acao-btn"
+                    title="Editar atualização"
+                    aria-label="Editar atualização"
+                    onClick={() => onEdit?.(update)}
+                  >
+                    <Pencil size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    className="update-feed__acao-btn update-feed__acao-btn--excluir"
+                    title="Excluir atualização"
+                    aria-label="Excluir atualização"
+                    onClick={() => onDelete?.(update)}
+                  >
+                    <Trash size={15} />
+                  </button>
+                </div>
+              )}
               <CategoryBadge category={update.category} />
             </div>
 

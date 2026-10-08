@@ -175,7 +175,7 @@ public class OrientadorService {
                 .filter(i -> filtroProjeto == null || i.getProjeto().getId().equals(filtroProjeto))
                 .sorted(Comparator.comparing(Inscricao::getDataInscricao,
                         Comparator.nullsLast(Comparator.reverseOrder())))
-                .map(InscricaoResponse::fromEntity)
+                .map(InscricaoResponse::fromEntityParaOrientador)
                 .toList();
     }
 

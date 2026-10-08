@@ -24,8 +24,10 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -82,13 +84,36 @@ public class LumenService {
             return new LumenRankingResponse(List.of(), "Nenhuma inscricao pendente para analisar.");
         }
 
+        // Candidatos ja avaliados mantem a nota salva; so os novos sao enviados a IA.
+        List<Inscricao> novos = pendentes.stream().filter(i -> i.getLumenPontuacao() == null).toList();
+        if (novos.isEmpty()) {
+            return new LumenRankingResponse(List.of(), "Todos os candidatos pendentes ja foram avaliados pela Lumen.");
+        }
+
         if (!StringUtils.hasText(apiKey)) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI nao configurada (LUMEN_API_KEY ausente)");
         }
 
-        String prompt = buildPrompt(projeto, pendentes);
+        String prompt = buildPrompt(projeto, novos);
         String content = callOpenRouter(prompt);
-        return parseResponse(content);
+        LumenRankingResponse resposta = parseResponse(content, novos);
+        salvarAvaliacoes(novos, resposta);
+        return resposta;
+    }
+
+    private void salvarAvaliacoes(List<Inscricao> pendentes, LumenRankingResponse resposta) {
+        Map<Integer, CandidatoRanking> porInscricao = resposta.ranking().stream()
+                .filter(c -> c.inscricaoId() != null)
+                .collect(Collectors.toMap(CandidatoRanking::inscricaoId, c -> c, (a, b) -> a));
+        List<Inscricao> atualizadas = pendentes.stream()
+                .filter(i -> porInscricao.containsKey(i.getId()))
+                .peek(i -> {
+                    CandidatoRanking c = porInscricao.get(i.getId());
+                    i.setLumenPontuacao(c.pontuacao());
+                    i.setLumenJustificativa(c.justificativa());
+                })
+                .toList();
+        inscricaoRepository.saveAll(atualizadas);
     }
 
     private String buildPrompt(Projeto projeto, List<Inscricao> pendentes) {
@@ -116,16 +141,28 @@ public class LumenService {
                     .append("   Motivacao: ").append(nullToVazio(inscricao.getMotivacao())).append('\n');
         }
 
-        sb.append("\nRanqueie os candidatos do mais ao menos compativel com o projeto acima.\n");
+        sb.append("\nAvalie CADA candidato de forma independente e absoluta (sem compara-lo com os demais), ")
+                .append("usando SOMENTE os dados fornecidos acima. Nao invente informacoes; dado ausente ")
+                .append("deve reduzir apenas o criterio correspondente.\n");
+        sb.append("Atribua uma nota inteira de 0 a 10 para cada criterio:\n");
+        sb.append("- requisitos: aderencia aos requisitos e tecnologias do projeto (0 = nenhuma evidencia, 10 = atende plenamente)\n");
+        sb.append("- area: afinidade do curso e dos interesses com a area do projeto\n");
+        sb.append("- motivacao: clareza, especificidade e coerencia da motivacao com o projeto (textos genericos ficam abaixo de 5)\n");
+        sb.append("- maturidade: semestre cursado e preparo academico para o escopo do projeto\n");
         sb.append("Responda SOMENTE com um array JSON valido, sem texto adicional, nesse formato exato:\n");
-        sb.append("[{\"inscricaoId\":1,\"nomeAluno\":\"...\",\"pontuacao\":8,\"justificativa\":\"...\"}]");
+        sb.append("[{\"inscricaoId\":1,\"nomeAluno\":\"...\",\"criterios\":{\"requisitos\":0,\"area\":0,\"motivacao\":0,\"maturidade\":0},")
+                .append("\"justificativa\":\"2 a 3 frases objetivas citando as evidencias usadas\"}]");
         return sb.toString();
     }
 
     private String callOpenRouter(String prompt) {
         Map<String, Object> body = Map.of(
                 "model", model,
-                "messages", List.of(Map.of("role", "user", "content", prompt))
+                "messages", List.of(Map.of("role", "user", "content", prompt)),
+                // Modelos de raciocinio gastam tokens "pensando"; sem folga o content volta vazio.
+                "max_tokens", 4000,
+                "temperature", 0,
+                "seed", 42
         );
 
         JsonNode response;
@@ -142,30 +179,59 @@ public class LumenService {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI indisponivel no momento");
         }
 
-        JsonNode content = response == null
-                ? null
-                : response.path("choices").path(0).path("message").path("content");
-        if (content == null || content.isMissingNode() || !StringUtils.hasText(content.asText())) {
+        JsonNode message = response == null ? null : response.path("choices").path(0).path("message");
+        String texto = textoOuNull(message, "content");
+        if (texto == null || !texto.contains("[")) {
+            // Alguns modelos gratuitos entregam a resposta apenas no campo de raciocinio.
+            String raciocinio = firstNonBlank(textoOuNull(message, "reasoning"), textoOuNull(message, "reasoning_content"));
+            if (raciocinio != null && raciocinio.contains("[")) texto = raciocinio;
+        }
+        if (!StringUtils.hasText(texto)) {
+            log.warn("Lumen AI retornou resposta vazia. Corpo recebido: {}", response);
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI retornou resposta vazia");
         }
-        return content.asText();
+        return texto;
     }
 
-    private LumenRankingResponse parseResponse(String content) {
+    private static String textoOuNull(JsonNode node, String campo) {
+        if (node == null) return null;
+        JsonNode valor = node.path(campo);
+        return valor.isTextual() && StringUtils.hasText(valor.asText()) ? valor.asText() : null;
+    }
+
+    private static String firstNonBlank(String a, String b) {
+        return a != null ? a : b;
+    }
+
+    private LumenRankingResponse parseResponse(String content, List<Inscricao> novos) {
         String json = extractJsonArray(content);
         try {
-            List<CandidatoRanking> ranking = objectMapper.readValue(json,
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, CandidatoRanking.class));
-            List<CandidatoRanking> ordenado = ranking.stream()
-                    .sorted((a, b) -> Integer.compare(b.pontuacao(), a.pontuacao()))
-                    .collect(Collectors.toList());
-            return new LumenRankingResponse(ordenado,
+            Set<Integer> idsValidos = novos.stream().map(Inscricao::getId).collect(Collectors.toSet());
+            List<CandidatoRanking> ranking = new ArrayList<>();
+            for (JsonNode item : objectMapper.readTree(json)) {
+                int inscricaoId = item.path("inscricaoId").asInt(-1);
+                if (!idsValidos.contains(inscricaoId)) continue;
+                JsonNode c = item.path("criterios");
+                // Nota calculada aqui (media ponderada dos criterios), nao "chutada" pelo modelo.
+                double nota = 0.35 * criterio(c, "requisitos")
+                        + 0.25 * criterio(c, "area")
+                        + 0.25 * criterio(c, "motivacao")
+                        + 0.15 * criterio(c, "maturidade");
+                ranking.add(new CandidatoRanking(inscricaoId, item.path("nomeAluno").asText(""),
+                        (int) Math.round(nota), item.path("justificativa").asText("")));
+            }
+            ranking.sort((x, y) -> Integer.compare(y.pontuacao(), x.pontuacao()));
+            return new LumenRankingResponse(ranking,
                     "Sugestao gerada por IA. A decisao final e sempre do orientador.");
         } catch (Exception ex) {
             log.warn("Falha ao interpretar resposta da Lumen AI: {}", ex.getMessage());
             return new LumenRankingResponse(List.of(),
                     "Nao foi possivel interpretar a resposta da IA. Tente novamente.");
         }
+    }
+
+    private static int criterio(JsonNode criterios, String nome) {
+        return Math.max(0, Math.min(10, criterios.path(nome).asInt(0)));
     }
 
     private static String extractJsonArray(String content) {

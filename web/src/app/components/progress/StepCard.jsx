@@ -3,17 +3,10 @@ import { formatUserType } from "../../utils/formatters";
 
 function canCompleteStep(step, currentUserRole) {
   const role = String(currentUserRole ?? "").toUpperCase();
-  const order = Number(step.stepOrder ?? 0);
+  const responsible = String(step.responsible ?? "AMBOS").toUpperCase();
 
-  if (role === "ORIENTADOR") {
-    return [1, 5, 6].includes(order);
-  }
-
-  if (role === "ALUNO") {
-    return [2, 3, 4, 6].includes(order);
-  }
-
-  return false;
+  if (role !== "ALUNO" && role !== "ORIENTADOR") return false;
+  return responsible === "AMBOS" || responsible === role;
 }
 
 export function StepCard({
@@ -33,7 +26,7 @@ export function StepCard({
   const isDone = step.status === "DONE";
   const isActive = step.status === "ACTIVE";
   const canAdvance = isActive && canCompleteStep(step, currentUserRole);
-  const responsibleLabel = formatUserType(step.responsible ?? currentUserRole) || "participante";
+  const responsibleLabel = step.responsible === "AMBOS" ? "aluno e orientador" : formatUserType(step.responsible ?? currentUserRole) || "participante";
 
   return (
     <article

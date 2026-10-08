@@ -10,6 +10,8 @@ import { applicationService } from "../services/applicationService";
 import { etapaService } from "../services/etapaService";
 import { conversationService } from "../services/conversationService";
 import { progressService } from "../services/progressService";
+import { userService } from "../services/userService";
+import { evaluationService } from "../services/evaluationService";
 import { StatusView } from "../components/StatusView";
 import { WelcomeBanner } from "../components/WelcomeBanner";
 import {
@@ -22,8 +24,10 @@ import {
   DashProgress,
   DashPromo,
   DashFit,
+  DashEvaluations,
 } from "../components/DashboardKit";
 import {
+  mapAvaliacaoAcademica,
   mapApplication,
   mapProject,
   mapDeadlineAgenda,
@@ -110,6 +114,20 @@ function notificationGroup(value) {
     : date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
 }
 
+async function loadEvaluations(userId) {
+  const projects = await userService.getProjects(userId).catch(() => []);
+  const ids = (Array.isArray(projects) ? projects.map(mapProject) : [])
+    .map((project) => project.id)
+    .filter((id) => id != null);
+  const lists = await Promise.all(
+    ids.map((id) => evaluationService.list(id).catch(() => [])),
+  );
+  return lists
+    .flatMap((items) => (Array.isArray(items) ? items.map(mapAvaliacaoAcademica) : []))
+    .filter(Boolean)
+    .sort((a, b) => String(b.criadaEm ?? "").localeCompare(String(a.criadaEm ?? "")));
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -124,6 +142,7 @@ export default function DashboardPage() {
       userId != null ? conversationService.listByUser(userId).catch(() => []) : Promise.resolve([]),
     ]);
 
+    const evaluations = userId != null ? await loadEvaluations(userId) : [];
     const mappedProjects = Array.isArray(projectPage?.content) ? projectPage.content.map(mapProject) : [];
     const mappedApplications = Array.isArray(applications) ? applications.map(mapApplication) : [];
 
@@ -141,10 +160,11 @@ export default function DashboardPage() {
       applications: mappedApplications,
       agenda: mapDeadlineAgenda(prazos),
       conversations: Array.isArray(conversas) ? conversas : [],
+      evaluations,
       progress,
     };
   }, [userId], {
-    initialData: { projects: [], applications: [], agenda: [], conversations: [], progress: null },
+    initialData: { projects: [], applications: [], agenda: [], conversations: [], evaluations: [], progress: null },
   });
 
   const derived = useMemo(() => {
@@ -171,8 +191,6 @@ export default function DashboardPage() {
   if (error) {
     return <StatusView title="Falha ao carregar" description={error.message} />;
   }
-
-  const featured = derived.recentProjects[0] ?? null;
 
   return (
     <motion.div
@@ -290,31 +308,10 @@ export default function DashboardPage() {
           <DashCard
             icon={Star}
             tone="laranja"
-            title="Projetos recomendados para você"
-            onOpen={() => navigate("/app/projects")}
+            title="Avaliações"
+            onOpen={() => navigate("/app/avaliacoes")}
           >
-            {featured ? (
-              <button
-                type="button"
-                className="dash-linha dash-linha--acionavel"
-                onClick={() => navigate(`/app/projects/${featured.id}`)}
-                aria-label={`Abrir projeto ${featured.title}`}
-              >
-                <span className="dash-destaque">
-                  {featured.area && <span className="dash-destaque__area">{featured.area}</span>}
-                  <span className="dash-destaque__titulo">{featured.title}</span>
-                  <span className="dash-destaque__meta">
-                    Orientado por {featured.advisor?.name ?? "Orientador a definir"}
-                  </span>
-                  <span className="dash-destaque__rodape">
-                    <span className="dash-destaque__curso">{featured.courses?.[0] ?? featured.area ?? "Pesquisa"}</span>
-                    <span className="dash-destaque__vagas">{featured.slotsRemaining} vagas</span>
-                  </span>
-                </span>
-              </button>
-            ) : (
-              <DashEmpty>Sem recomendações por enquanto.</DashEmpty>
-            )}
+            <DashEvaluations items={data?.evaluations ?? []} />
           </DashCard>
         </div>
 

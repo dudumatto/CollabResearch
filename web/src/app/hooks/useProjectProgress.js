@@ -130,6 +130,27 @@ export function useProjectProgress(projectId, options = {}) {
     [projectId],
   );
 
+  const deleteUpdate = useCallback(
+    async (updateId) => {
+      if (!projectId) return;
+      await progressService.deleteUpdate(projectId, updateId);
+      setUpdates((currentUpdates) => currentUpdates.filter((u) => String(u.id) !== String(updateId)));
+    },
+    [projectId],
+  );
+
+  const editUpdate = useCallback(
+    async (updateId, payload) => {
+      if (!projectId) return null;
+      const updated = await progressService.editUpdate(projectId, updateId, payload);
+      setUpdates((currentUpdates) =>
+        currentUpdates.map((u) => (String(u.id) === String(updateId) ? updated : u)),
+      );
+      return updated;
+    },
+    [projectId],
+  );
+
   return {
     steps,
     updates,
@@ -139,5 +160,7 @@ export function useProjectProgress(projectId, options = {}) {
     reload,
     advanceStep,
     createUpdate,
+    deleteUpdate,
+    editUpdate,
   };
 }

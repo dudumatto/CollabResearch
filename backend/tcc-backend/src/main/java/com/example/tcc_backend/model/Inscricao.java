@@ -48,6 +48,12 @@ public class Inscricao {
     @Column(name = "parecer_orientador", columnDefinition = "TEXT")
     private String parecerOrientador;
 
+    @Column(name = "lumen_pontuacao")
+    private Integer lumenPontuacao;
+
+    @Column(name = "lumen_justificativa", columnDefinition = "TEXT")
+    private String lumenJustificativa;
+
     @Column(name = "data_inscricao")
     private LocalDateTime dataInscricao;
 

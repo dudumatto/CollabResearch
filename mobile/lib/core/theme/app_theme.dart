@@ -33,7 +33,6 @@ abstract final class AppTheme {
     );
 
     return base.copyWith(
-      fontFamily: 'Nunito',
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.background,
       // O menu suspenso do DropdownButton usa canvasColor quando nenhuma cor
@@ -304,7 +303,6 @@ abstract final class AppTheme {
     );
 
     return base.copyWith(
-      fontFamily: 'Nunito',
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
       // Ver a nota do tema claro: sem canvasColor o menu suspenso ignora a

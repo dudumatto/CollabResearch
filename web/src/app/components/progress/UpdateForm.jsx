@@ -10,7 +10,9 @@ const CATEGORY_OPTIONS = [
   { value: "milestone", label: "Marco" },
 ];
 
-export function UpdateForm({ steps = [], onSubmit }) {
+export function UpdateForm({ steps = [], onSubmit, onCancel, initialValues = null }) {
+  const isEditing = Boolean(initialValues);
+
   const {
     register,
     handleSubmit,
@@ -29,6 +31,31 @@ export function UpdateForm({ steps = [], onSubmit }) {
       descricao: "",
     },
   });
+
+  useEffect(() => {
+    if (!initialValues) {
+      reset({
+        titulo: "",
+        categoria: "progress",
+        dataRegistro: new Date().toISOString().slice(0, 10),
+        semData: false,
+        etapaId: "",
+        descricao: "",
+      });
+      return;
+    }
+    const dateStr = initialValues.createdAt
+      ? new Date(initialValues.createdAt).toISOString().slice(0, 10)
+      : "";
+    reset({
+      titulo: initialValues.title ?? "",
+      categoria: initialValues.category ?? "progress",
+      dataRegistro: dateStr,
+      semData: !dateStr,
+      etapaId: initialValues.stepId ? String(initialValues.stepId) : "",
+      descricao: initialValues.description ?? "",
+    });
+  }, [initialValues, reset]);
 
   const selectedCategory = watch("categoria");
   const selectedStepId = watch("etapaId");
@@ -53,7 +80,7 @@ export function UpdateForm({ steps = [], onSubmit }) {
     };
 
     await onSubmit?.(payload);
-    reset();
+    if (!isEditing) reset();
   };
 
   return (
@@ -124,8 +151,13 @@ export function UpdateForm({ steps = [], onSubmit }) {
       </div>
 
       <div className="update-form__actions">
+        {isEditing && (
+          <button type="button" className="update-form__cancel" onClick={onCancel} disabled={isSubmitting}>
+            Cancelar
+          </button>
+        )}
         <button type="submit" className="update-form__submit" disabled={isSubmitting}>
-          {isSubmitting ? "Publicando..." : "Publicar"}
+          {isSubmitting ? (isEditing ? "Salvando..." : "Publicando...") : isEditing ? "Salvar" : "Publicar"}
         </button>
       </div>
     </form>

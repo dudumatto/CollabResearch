@@ -379,6 +379,10 @@ export default function ProjectDetailPage() {
       : "detalhe-card__badge-status--aberto";
 
   const openConversation = async (kind) => {
+    if (kind === "private" && !project.advisor?.id) {
+      toast.error("Este projeto não possui orientador vinculado. Aguarde a atribuição de um orientador para enviar mensagens.");
+      return;
+    }
     if (kind === "private" && Number(user?.id) === Number(project.advisor?.id)) {
       toast.error("Você é o orientador deste projeto e não pode enviar uma mensagem para si mesmo. Use a conversa do grupo.");
       return;

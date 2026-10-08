@@ -168,6 +168,57 @@ export const progressService = {
     }
   },
 
+  async deleteUpdate(projectId, updateId) {
+    try {
+      await api.delete(`/api/projects/${projectId}/updates/${updateId}`);
+    } catch {
+      await api.delete(`/api/projetos/${projectId}/progresso/${updateId}`);
+    }
+  },
+
+  async editUpdate(projectId, updateId, payload) {
+    const requestPayload = {
+      titulo: payload?.titulo,
+      descricao: payload?.descricao,
+      categoria: payload?.categoria ?? payload?.category,
+      etapaId: payload?.etapaId ?? payload?.stepId ?? null,
+      etapaContribuicao: payload?.etapaContribuicao,
+      dataRegistro: payload?.dataRegistro,
+      semData: payload?.semData,
+    };
+    try {
+      const response = await api.put(`/api/projects/${projectId}/updates/${updateId}`, requestPayload);
+      return normalizeUpdate(response);
+    } catch {
+      const stepId = payload?.stepId ?? payload?.etapaId ?? null;
+      const stepTitle = payload?.stepName ?? payload?.stepTitle ?? payload?.etapaTitulo ?? null;
+      const category = payload?.category ?? payload?.categoria ?? "progress";
+      const legacyPayload = {
+        titulo: payload?.titulo,
+        descricao: payload?.descricao,
+        tipo: category === "milestone" ? "MARCO" : category === "problem" ? "BLOQUEIO" : "ATUALIZACAO",
+        fase: stepTitle || (stepId ? "Etapa vinculada" : null),
+        metadataJson: JSON.stringify({
+          ...(stepId ? { stepId } : {}),
+          ...(stepTitle ? { stepTitle } : {}),
+          ...(payload?.dataRegistro ? { dataRegistro: payload.dataRegistro } : {}),
+        }),
+      };
+      const response = await api.put(`/api/projetos/${projectId}/progresso/${updateId}`, legacyPayload);
+      return normalizeUpdate({
+        id: response?.id ?? updateId,
+        title: response?.titulo ?? payload?.titulo,
+        description: response?.descricao ?? payload?.descricao,
+        category,
+        stepId,
+        stepTitle,
+        createdBy: response?.autor ?? response?.usuario ?? null,
+        createdAt: response?.dataRegistro ?? payload?.dataRegistro,
+        metadataJson: response?.metadataJson,
+      });
+    }
+  },
+
   async createUpdate(projectId, payload) {
     try {
       const requestPayload = {
