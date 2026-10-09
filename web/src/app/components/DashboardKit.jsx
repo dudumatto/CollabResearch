@@ -2,85 +2,94 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { CaretLeft, CaretRight, CheckCircle } from "@phosphor-icons/react";
 import "./DashboardKit.css";
 
-/* Em telas largas, encolhe o conteúdo do painel apenas o necessário para caber
-   na altura da viewport — sem rolagem. Em telas menores, mantém escala 1 e deixa
-   o fluxo natural (responsivo). O transform não altera o scrollHeight medido,
-   então não há laço de realimentação. */
-function useFitScale() {
+/* Encaixa o painel na altura da viewport sem rolagem. Usa CSS `zoom` (não
+   `transform`): o navegador re-renderiza o texto na escala final, então fica
+   nítido, e o layout refaz o fluxo mantendo proporção e responsividade.
+   Se nem MIN_ZOOM couber (ou sem suporte a zoom), fluxo natural com rolagem. */
+const MIN_ZOOM = 0.5;
+
+function useFitZoom() {
   const ref = useRef(null);
-  const [scale, setScale] = useState(1);
 
   useLayoutEffect(() => {
     const el = ref.current;
     const dash = el?.parentElement;
-    if (!el || !dash) return undefined;
+    if (!el || !dash || !window.CSS?.supports?.("zoom", "1")) return undefined;
 
-    const mq = window.matchMedia("(min-width: 1024px)");
+    const mq = window.matchMedia("(min-width: 640px)");
     let frame = 0;
 
-    const measure = () => {
+    const metrics = () => {
+      const cs = getComputedStyle(dash);
+      return dash.clientHeight - parseFloat(cs.paddingTop || "0") - parseFloat(cs.paddingBottom || "0");
+    };
+    const height = () => el.getBoundingClientRect().height;
+
+    // Solução determinística: sempre parte de zoom 1, então o mesmo tamanho de
+    // viewport dá o mesmo zoom (sem biestabilidade entre dois layouts).
+    const solve = () => {
       frame = 0;
       if (!mq.matches) {
-        setScale(1);
+        el.style.zoom = "";
+        dash.style.overflowY = "";
         return;
       }
-      const cs = getComputedStyle(dash);
-      const padY = parseFloat(cs.paddingTop || "0") + parseFloat(cs.paddingBottom || "0");
-      const available = dash.clientHeight - padY;
-
-      // Mede a altura natural sem a sobrescrita de largura para evitar loop de
-      // feedback: width:N/scale% muda o scrollHeight, que recalcularia o scale.
-      // Dentro do rAF a alteração inline não é pintada antes de ser revertida.
-      const prevTransform = el.style.transform;
-      const prevWidth = el.style.width;
-      el.style.transform = "none";
-      el.style.width = "";
-      const natural = el.scrollHeight;
-      el.style.transform = prevTransform;
-      el.style.width = prevWidth;
-
-      if (available <= 0 || natural <= 0) {
-        setScale(1);
-        return;
+      const available = metrics();
+      if (available <= 0) return;
+      const at = (z) => {
+        el.style.zoom = String(z);
+        return height();
+      };
+      // maior zoom que cabe: busca binária (a altura cresce com o zoom, mas dá saltos
+      // nos breakpoints, então iterar por proporção oscila; a busca sempre converge)
+      let z = 1;
+      if (at(1) > available) {
+        if (at(MIN_ZOOM) > available) {
+          z = 1; // nem o zoom mínimo cabe: tamanho legível + rolagem
+        } else {
+          let lo = MIN_ZOOM;
+          let hi = 1;
+          while (hi - lo > 0.005) {
+            const mid = (lo + hi) / 2;
+            if (at(mid) <= available) lo = mid;
+            else hi = mid;
+          }
+          z = lo;
+        }
       }
-      const next = Math.min(1, (available - 1) / natural);
-      // histerese: ignora micro-variações para não oscilar quando a largura muda
-      setScale((prev) => (Math.abs(prev - next) < 0.005 ? prev : next));
+      at(z);
+      dash.style.overflowY = height() > available ? "auto" : "hidden";
     };
-
     const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(measure);
+      if (!frame) frame = requestAnimationFrame(solve);
+    };
+    // mudança só do conteúdo: re-resolve apenas se deixou de caber (nunca "sobe" o zoom)
+    const onContent = () => {
+      if (!mq.matches || frame) return;
+      const available = metrics();
+      if (height() > available && (parseFloat(el.style.zoom) || 1) > MIN_ZOOM) schedule();
     };
 
-    measure();
-    const ro = new ResizeObserver(schedule);
-    ro.observe(dash);
-    ro.observe(el);
-    window.addEventListener("resize", schedule);
+    solve();
+    const roDash = new ResizeObserver(schedule);
+    const roEl = new ResizeObserver(onContent);
+    roDash.observe(dash);
+    roEl.observe(el);
     mq.addEventListener?.("change", schedule);
-
     return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", schedule);
+      roDash.disconnect();
+      roEl.disconnect();
       mq.removeEventListener?.("change", schedule);
       if (frame) cancelAnimationFrame(frame);
     };
   }, []);
 
-  const style = scale < 1
-    ? { transform: `scale(${scale})`, transformOrigin: "top left", width: `${100 / scale}%` }
-    : undefined;
-
-  return { ref, style };
+  return ref;
 }
 
 export function DashFit({ children }) {
-  const { ref, style } = useFitScale();
-  return (
-    <div className="dash__ajuste" ref={ref} style={style}>
-      {children}
-    </div>
-  );
+  const ref = useFitZoom();
+  return <div className="dash__ajuste" ref={ref}>{children}</div>;
 }
 
 function CardHeader({ icon: Icon, tone, title, trailing }) {

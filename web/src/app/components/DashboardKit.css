@@ -12,8 +12,8 @@
   --dash-card-sombra: none;
   --dash-card-sombra-hover: none;
   --dash-titulo: var(--cor-texto-forte);
-  --dash-texto: var(--cor-texto-medio);
-  --dash-mudo: var(--cor-texto-fraco);
+  --dash-texto: var(--cor-texto-secundario);
+  --dash-mudo: var(--cor-texto-medio);
   --dash-divisor: rgba(16, 40, 28, 0.08);
   --dash-realce: rgba(31, 122, 90, 0.06);
 
@@ -931,39 +931,24 @@
   }
 }
 
-/* ---- Wrapper que recebe a escala de encaixe ---- */
+/* ---- Wrapper do painel (fluxo natural, sem escala) ---- */
 .dash__ajuste {
+  /* o zoom é medido na hora: qualquer transition (inclusive a global de
+     reduced-motion) faria o valor calculado ficar defasado um frame */
+  transition: none !important;
   display: flex;
   flex-direction: column;
   gap: var(--espaco-3);
   width: 100%;
   min-width: 0;
-  transition: transform 0.2s ease;
-  will-change: transform;
 }
 
-/* ============================================================
-   Encaixe na tela — em telas largas o painel inteiro cabe na
-   viewport SEM rolagem: o conteúdo é apenas reduzido o quanto
-   for preciso (escala automática). Telas menores mantêm o
-   fluxo natural (empilhado, com rolagem quando necessário).
-   ============================================================ */
-@media (min-width: 1024px) {
-  /* só o painel real (com conteúdo) trava a altura; o skeleton rola se preciso.
-     A topbar flutua com margem --espaco-4 no topo (ver Topbar.css), por isso
-     entra aqui também — senão o painel ultrapassaria a tela nesse tanto. */
+/* Em telas >= 640px o painel ocupa exatamente a viewport; DashFit aplica `zoom`
+   para o conteúdo caber. Abaixo do zoom mínimo, rola. */
+@media (min-width: 640px) {
   .dash:has(.dash__ajuste) {
     height: calc(100vh - var(--altura-topbar) - var(--espaco-4));
     min-height: 0;
-    overflow: hidden;
-  }
-
-  .dash__ajuste {
-    gap: var(--espaco-2);
-  }
-
-  .dash__ajuste .dash-colunas,
-  .dash__ajuste .dash-coluna {
-    gap: var(--espaco-2);
+    overflow: hidden; /* DashFit libera a rolagem só se nem o zoom mínimo couber */
   }
 }
