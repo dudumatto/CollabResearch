@@ -310,6 +310,7 @@ export default function DashboardPage() {
             tone="laranja"
             title="Avaliações"
             onOpen={() => navigate("/app/avaliacoes")}
+            className="dash-card--igual"
           >
             <DashEvaluations items={data?.evaluations ?? []} />
           </DashCard>
@@ -343,6 +344,7 @@ export default function DashboardPage() {
             title="Mensagens"
             caption="Últimas mensagens recebidas"
             onOpen={() => navigate("/app/chat")}
+            className="dash-card--igual"
           >
             {derived.conversations.length === 0 ? (
               <DashEmpty>Suas conversas aparecerão aqui.</DashEmpty>

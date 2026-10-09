@@ -18,8 +18,8 @@ export const advisorService = {
     return api.get(`/api/orientador/inscricoes${buildQs({ status, projetoId })}`);
   },
 
-  ranquearComLumen(projetoId) {
-    return api.post(`/api/lumen/ranquear/${projetoId}`);
+  ranquearComLumen(projetoId, inscricaoIds) {
+    return api.post(`/api/lumen/ranquear/${projetoId}`, inscricaoIds?.length ? { inscricaoIds } : undefined);
   },
 
   orientandos({ busca, situacao, projetoId } = {}) {

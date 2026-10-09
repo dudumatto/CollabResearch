@@ -108,6 +108,8 @@ export default function AdvisorApplicationsPage() {
   const [lumenLoading, setLumenLoading] = useState(false);
   const [lumenModalAberto, setLumenModalAberto] = useState(false);
   const [lumenFoco, setLumenFoco] = useState(null);
+  const [selecionando, setSelecionando] = useState(false);
+  const [selecionados, setSelecionados] = useState(() => new Set());
 
   const { data, loading, error, setData } = useAsyncData(
     async () => {
@@ -180,11 +182,11 @@ export default function AdvisorApplicationsPage() {
 
   const mostrarBotaoLumen = Boolean(projetoFiltrado) && filtro === "PENDENTE" && filtradas.length > 0;
 
-  const analisarComLumen = async () => {
-    if (!projetoFiltrado) return;
+  const analisarComLumen = async (projetoId = projetoFiltrado, ids = []) => {
+    if (!projetoId) return;
     setLumenLoading(true);
     try {
-      const resultado = await advisorService.ranquearComLumen(projetoFiltrado);
+      const resultado = await advisorService.ranquearComLumen(projetoId, ids);
       const novas = new Map((resultado?.ranking ?? []).map((c) => [c.inscricaoId, c]));
       // Guarda as novas avaliações nas inscrições (o servidor também já as salvou).
       setData((prev) => (Array.isArray(prev)
@@ -192,7 +194,9 @@ export default function AdvisorApplicationsPage() {
           ? { ...app, lumenPontuacao: novas.get(app.id).pontuacao, lumenJustificativa: novas.get(app.id).justificativa }
           : app))
         : prev));
-      setLumenFoco(null);
+      setLumenFoco(ids.length === 1 ? ids[0] : null);
+      setSelecionando(false);
+      setSelecionados(new Set());
       if (novas.size > 0) {
         setLumenModalAberto(true);
       } else {
@@ -203,6 +207,17 @@ export default function AdvisorApplicationsPage() {
     } finally {
       setLumenLoading(false);
     }
+  };
+
+  const appEmFoco = lumenFoco != null ? inscricoes.find((app) => app.id === lumenFoco) : null;
+
+  const toggleSelecionado = (id) => {
+    setSelecionados((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
   const toggleMotivacao = (id) => {
@@ -307,7 +322,7 @@ export default function AdvisorApplicationsPage() {
             <button
               type="button"
               className="advisor-botao advisor-botao--primario"
-              onClick={analisarComLumen}
+              onClick={() => analisarComLumen()}
               disabled={lumenLoading}
             >
               <Sparkle size={16} />
@@ -315,6 +330,41 @@ export default function AdvisorApplicationsPage() {
                 ? "Analisando..."
                 : filtradas.some((app) => rankingMap.has(app.id)) ? "Avaliar novos com Lumen" : "Analisar com Lumen"}
             </button>
+          )}
+
+          {mostrarBotaoLumen && (
+            selecionando ? (
+              <>
+                <button
+                  type="button"
+                  className="advisor-botao advisor-botao--primario"
+                  onClick={() => analisarComLumen(projetoFiltrado, [...selecionados])}
+                  disabled={lumenLoading || selecionados.size === 0}
+                >
+                  <Sparkle size={16} />
+                  Reavaliar selecionados ({selecionados.size})
+                </button>
+                <button
+                  type="button"
+                  className="advisor-botao advisor-botao--secundario"
+                  onClick={() => {
+                    setSelecionando(false);
+                    setSelecionados(new Set());
+                  }}
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="advisor-botao advisor-botao--secundario"
+                onClick={() => setSelecionando(true)}
+                disabled={lumenLoading}
+              >
+                Selecionar para reavaliar
+              </button>
+            )
           )}
 
           {lumenRanking.length > 0 && (
@@ -358,6 +408,15 @@ export default function AdvisorApplicationsPage() {
                 transition={{ duration: 0.25, delay: index * 0.03 }}
                 className="advisor-linha-card"
               >
+                {selecionando && app.status === "PENDENTE" && (
+                  <input
+                    type="checkbox"
+                    checked={selecionados.has(app.id)}
+                    onChange={() => toggleSelecionado(app.id)}
+                    aria-label={`Selecionar ${app.alunoNome} para reavaliar`}
+                    style={{ width: 18, height: 18, accentColor: "var(--cor-primaria)", flex: "0 0 auto" }}
+                  />
+                )}
                 <AvatarAluno nome={app.alunoNome} src={app.alunoFotoPerfilUrl} />
 
                 <div className="advisor-linha-card__conteudo">
@@ -383,6 +442,17 @@ export default function AdvisorApplicationsPage() {
                       >
                         <Sparkle size={12} style={{ marginRight: 4, verticalAlign: "-1px" }} />
                         Lumen: {rankingMap.get(app.id).pontuacao}/10
+                      </button>
+                    )}
+                    {app.status === "PENDENTE" && app.projetoId != null && (
+                      <button
+                        type="button"
+                        className="advisor-etapa__botao-link"
+                        disabled={lumenLoading}
+                        onClick={() => analisarComLumen(app.projetoId, [app.id])}
+                      >
+                        <Sparkle size={12} />
+                        {rankingMap.has(app.id) ? "Reavaliar" : "Avaliar"}
                       </button>
                     )}
                     {app.motivacao && (
@@ -576,6 +646,17 @@ export default function AdvisorApplicationsPage() {
               <p style={{ fontSize: "var(--tamanho-pequeno)", color: "var(--cor-texto-mudo)", margin: 0 }}>
                 ⚠ Sugestão gerada por IA. A decisão final é sempre do orientador.
               </p>
+              {appEmFoco?.status === "PENDENTE" && appEmFoco.projetoId != null && (
+                <button
+                  type="button"
+                  className="advisor-botao advisor-botao--primario"
+                  disabled={lumenLoading}
+                  onClick={() => analisarComLumen(appEmFoco.projetoId, [appEmFoco.id])}
+                >
+                  <Sparkle size={16} />
+                  {lumenLoading ? "Reavaliando..." : "Reavaliar"}
+                </button>
+              )}
               <button type="button" className="advisor-botao advisor-botao--secundario" onClick={() => setLumenModalAberto(false)}>
                 Fechar
               </button>

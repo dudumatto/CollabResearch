@@ -73,7 +73,7 @@ public class LumenService {
                 .build();
     }
 
-    public LumenRankingResponse ranquear(Integer projetoId, Usuario usuario) {
+    public LumenRankingResponse ranquear(Integer projetoId, Usuario usuario, List<Integer> inscricaoIds) {
         Projeto projeto = projetoRepository.findById(projetoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
 
@@ -85,9 +85,15 @@ public class LumenService {
         }
 
         // Candidatos ja avaliados mantem a nota salva; so os novos sao enviados a IA.
-        List<Inscricao> novos = pendentes.stream().filter(i -> i.getLumenPontuacao() == null).toList();
+        // Com inscricaoIds, reavalia exatamente esses candidatos (mesmo ja avaliados).
+        boolean reavaliacao = inscricaoIds != null && !inscricaoIds.isEmpty();
+        List<Inscricao> novos = pendentes.stream()
+                .filter(i -> reavaliacao ? inscricaoIds.contains(i.getId()) : i.getLumenPontuacao() == null)
+                .toList();
         if (novos.isEmpty()) {
-            return new LumenRankingResponse(List.of(), "Todos os candidatos pendentes ja foram avaliados pela Lumen.");
+            return new LumenRankingResponse(List.of(), reavaliacao
+                    ? "Nenhum dos candidatos selecionados esta pendente neste projeto."
+                    : "Todos os candidatos pendentes ja foram avaliados pela Lumen.");
         }
 
         if (!StringUtils.hasText(apiKey)) {

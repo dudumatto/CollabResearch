@@ -98,7 +98,9 @@
 .dash-colunas {
   display: grid;
   gap: var(--espaco-3);
-  grid-template-columns: minmax(0, 1.95fr) minmax(0, 1fr);
+  /* Alinha às 3 colunas iguais de .dash-grade: a coluna larga ocupa 2 delas
+     (duas colunas + um espaço) e a lateral, 1 — mesma largura do cartão do topo. */
+  grid-template-columns: calc((200% - var(--espaco-3)) / 3) minmax(0, 1fr);
   align-items: start;
 }
 
@@ -708,6 +710,16 @@
   white-space: nowrap;
 }
 
+/* Cartões de Mensagens e Avaliações com a mesma altura, em colunas diferentes. */
+.dash-card--igual {
+  height: 12.5rem;
+}
+
+.dash-card--igual .dash-card__corpo {
+  min-height: 0;
+  overflow-y: auto;
+}
+
 /* ---- Avaliações (carrossel) ---- */
 .dash-aval {
   display: grid;
@@ -729,12 +741,12 @@
   flex-direction: column;
   min-width: 0;
   color: var(--dash-mudo);
-  font-size: 1.1rem;
+  font-size: 0.9rem;
 }
 
 .dash-aval__nome strong {
   color: var(--dash-titulo);
-  font-size: 1.35rem;
+  font-size: 1.05rem;
   font-weight: var(--peso-semi);
 }
 
@@ -747,7 +759,7 @@
 
 .dash-aval__media {
   color: var(--cor-primaria);
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: var(--peso-semi);
 }
 
@@ -799,7 +811,7 @@
   justify-content: flex-end;
   gap: var(--espaco-3);
   min-width: 0;
-  font-size: var(--tamanho-medio);
+  font-size: var(--tamanho-pequeno);
 }
 
 .dash-aval__comentario {

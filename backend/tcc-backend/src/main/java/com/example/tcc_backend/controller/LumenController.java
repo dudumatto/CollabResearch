@@ -1,5 +1,6 @@
 package com.example.tcc_backend.controller;
 
+import com.example.tcc_backend.dto.request.LumenRankingRequest;
 import com.example.tcc_backend.dto.response.LumenRankingResponse;
 import com.example.tcc_backend.model.Usuario;
 import com.example.tcc_backend.security.AuthHelper;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,8 +37,9 @@ public class LumenController {
             @ApiResponse(responseCode = "503", description = "Lumen AI indisponivel ou nao configurada")
     })
     @PostMapping("/ranquear/{projetoId}")
-    public ResponseEntity<LumenRankingResponse> ranquear(@PathVariable Integer projetoId) {
+    public ResponseEntity<LumenRankingResponse> ranquear(@PathVariable Integer projetoId,
+                                                         @RequestBody(required = false) LumenRankingRequest request) {
         Usuario usuario = authHelper.getCurrentUser();
-        return ResponseEntity.ok(lumenService.ranquear(projetoId, usuario));
+        return ResponseEntity.ok(lumenService.ranquear(projetoId, usuario, request == null ? null : request.inscricaoIds()));
     }
 }
