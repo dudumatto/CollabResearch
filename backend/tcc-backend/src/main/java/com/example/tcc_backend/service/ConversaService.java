@@ -242,6 +242,31 @@ public class ConversaService {
         validarParticipacao(conversa, usuarioId);
     }
 
+    public void marcarComoLidas(Integer conversaId) {
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        validarParticipacao(conversaId, usuarioLogado.getId());
+
+        List<Mensagem> pendentes = mensagemRepository
+                .findByConversaIdAndRemetenteIdNotAndDataLeituraIsNull(conversaId, usuarioLogado.getId());
+        if (pendentes.isEmpty()) return;
+
+        OffsetDateTime agora = OffsetDateTime.now();
+        pendentes.forEach(m -> m.setDataLeitura(agora));
+        mensagemRepository.saveAll(pendentes);
+        chatRealtimeService.publicarMensagensLidas(conversaId, pendentes.stream().map(Mensagem::getId).toList());
+    }
+
+    private void exigirUltimaMensagem(Mensagem mensagem, String acao) {
+        if (mensagem.getConversa() == null) return;
+        boolean ultima = mensagemRepository
+                .findFirstByConversaIdOrderByDataEnvioDescIdDesc(mensagem.getConversa().getId())
+                .map(u -> u.getId().equals(mensagem.getId()))
+                .orElse(false);
+        if (!ultima) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Apenas a ultima mensagem da conversa pode ser " + acao);
+        }
+    }
+
     public MensagemResponse editarMensagem(Integer mensagemId, String novoConteudo) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
 
@@ -255,6 +280,8 @@ public class ConversaService {
         if (!mensagem.getRemetente().getId().equals(usuarioLogado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode editar a mensagem de outro usuario");
         }
+
+        exigirUltimaMensagem(mensagem, "editada");
 
         if (novoConteudo == null || novoConteudo.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Conteudo nao pode ser vazio");
@@ -286,6 +313,8 @@ public class ConversaService {
         if (!mensagem.getRemetente().getId().equals(usuarioLogado.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode excluir a mensagem de outro usuario");
         }
+
+        exigirUltimaMensagem(mensagem, "excluida");
 
         Integer conversaId = mensagem.getConversa() != null ? mensagem.getConversa().getId() : null;
         mensagemRepository.delete(mensagem);

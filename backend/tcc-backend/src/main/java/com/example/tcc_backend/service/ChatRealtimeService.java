@@ -27,6 +27,10 @@ public class ChatRealtimeService {
         publicar(conversaId, ChatMessageEvent.excluida(conversaId, mensagemId));
     }
 
+    public void publicarMensagensLidas(Integer conversaId, java.util.List<Integer> mensagemIds) {
+        publicar(conversaId, ChatMessageEvent.lidas(conversaId, mensagemIds));
+    }
+
     private void publicar(Integer conversaId, ChatMessageEvent event) {
         if (conversaId == null) return;
         messagingTemplate.convertAndSend("/topic/conversa/" + conversaId, event);

@@ -46,6 +46,9 @@ public class Mensagem {
     @Column(name = "data_edicao")
     private OffsetDateTime dataEdicao;
 
+    @Column(name = "data_leitura")
+    private OffsetDateTime dataLeitura;
+
     @PrePersist
     public void prePersist() {
         this.dataEnvio = OffsetDateTime.now();

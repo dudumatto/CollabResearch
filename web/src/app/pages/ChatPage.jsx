@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, MagnifyingGlass, Pencil, Trash, ArrowLeft, DotsThreeVertical, ChatCircleText } from "@phosphor-icons/react";
+import { ArrowUp, MagnifyingGlass, Pencil, Trash, ArrowLeft, DotsThreeVertical, ChatCircleText, Check, Checks } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { conversationService } from "../services/conversationService";
@@ -222,12 +222,24 @@ function formatarDia(data) {
   });
 }
 
-const MessageRow = memo(function MessageRow({ message, showDate, highlighted, mine, loadingPrivate, user, conversation, onEdit, onDelete, onOpenProfile }) {
+function ReadReceipt({ message }) {
+  if (message._temporaria) return null;
+  const read = Boolean(message.lida);
+  const Icon = read ? Checks : Check;
+  const label = read ? "Lida" : "Enviada";
+  return (
+    <span className={`mensagem-status ${read ? "mensagem-status--lida" : ""}`} role="img" aria-label={label} title={label}>
+      <Icon size={14} weight="bold" />
+    </span>
+  );
+}
+
+const MessageRow = memo(function MessageRow({ message, showDate, highlighted, mine, isLast, loadingPrivate, user, conversation, onEdit, onDelete, onOpenProfile }) {
   return (
     <div className={highlighted ? "mensagem-alvo" : undefined}>
       {showDate && <div className="chat-data-divider"><span>{formatarDia(message.dataEnvio)}</span></div>}
       <div className={`mensagem-linha ${mine ? "mensagem-linha--usuario" : "mensagem-linha--contato"} ${message._temporaria ? "mensagem-linha--temporaria" : ""}`}>
-        {mine && !message._temporaria && <div className="mensagem-acoes">
+        {mine && isLast && !message._temporaria && <div className="mensagem-acoes">
           <button type="button" className="mensagem-acoes__gatilho" aria-label="Ações da mensagem" title="Ações da mensagem"><DotsThreeVertical size={18} /></button>
           <div className="mensagem-acoes__menu" role="menu" aria-label="Ações da mensagem">
             <button type="button" className="mensagem-acao-btn" onClick={() => onEdit(message)} title="Editar mensagem" aria-label="Editar mensagem" role="menuitem"><Pencil size={20} /></button>
@@ -238,7 +250,7 @@ const MessageRow = memo(function MessageRow({ message, showDate, highlighted, mi
         <div className="bolha-mensagem">
           {!mine && <button className={`mensagem-nome mensagem-nome--clicavel ${loadingPrivate ? "mensagem-nome--carregando" : ""}`} onClick={() => onOpenProfile(message?.remetenteId)} title={`Enviar mensagem para ${message?.remetenteNome}`} disabled={loadingPrivate}>{message?.remetenteNome}</button>}
           <div className="mensagem-texto">{message?.conteudo}</div>
-          <div className="mensagem-rodape">{message?.editada && <span className="mensagem-editada">editada</span>}<div className="mensagem-hora">{formatarHora(message?.dataEnvio)}</div></div>
+          <div className="mensagem-rodape">{message?.editada && <span className="mensagem-editada">editada</span>}<div className="mensagem-hora">{formatarHora(message?.dataEnvio)}</div>{mine && <ReadReceipt message={message} />}</div>
         </div>
         {mine && <ChatAvatar name={user?.nome} src={getMessagePhotoUrl(message, user, mine, conversation)} className="mensagem-avatar mensagem-avatar--usuario" />}
       </div>
@@ -275,6 +287,7 @@ const VirtualMessageRow = memo(function VirtualMessageRow({
         showDate={showDate}
         highlighted={String(message?.id) === String(targetMessageId)}
         mine={mine}
+        isLast={absoluteIndex === allMessages.length - 1}
         loadingPrivate={loadingPrivateId === message?.remetenteId}
         user={user}
         conversation={conversation}
@@ -520,6 +533,21 @@ export default function ChatPage() {
     return () => { cancelled = true; };
   }, [selectedConversation?.id, targetMessageId]);
 
+  useEffect(() => {
+    const conversationId = selectedConversation?.id;
+    if (!conversationId || loadingMessages || showMobileList) return;
+    const hasUnreadIncoming = messages.some((message) =>
+      !message._temporaria && !message.lida && Number(message.remetenteId) !== Number(user?.id),
+    );
+    if (!hasUnreadIncoming) return;
+    conversationService.markAsRead(conversationId).catch(() => {});
+    setMessages((prev) => prev.map((message) =>
+      !message._temporaria && Number(message.remetenteId) !== Number(user?.id)
+        ? { ...message, lida: true }
+        : message,
+    ));
+  }, [messages, selectedConversation?.id, loadingMessages, showMobileList, user?.id]);
+
   const conversationIdsKey = useMemo(
     () => conversations.map((conversation) => conversation.id).filter(Boolean).sort((a, b) => Number(a) - Number(b)).join(","),
     [conversations],
@@ -551,6 +579,11 @@ export default function ChatPage() {
         } else if (event.tipo === "MENSAGEM_EDITADA" && event.mensagem) {
           setMessages((prev) => prev.map((message) =>
             Number(message.id) === Number(event.mensagem.id) ? event.mensagem : message,
+          ));
+        } else if (event.tipo === "MENSAGENS_LIDAS" && Array.isArray(event.mensagemIds)) {
+          const readIds = new Set(event.mensagemIds.map(Number));
+          setMessages((prev) => prev.map((message) =>
+            readIds.has(Number(message.id)) ? { ...message, lida: true } : message,
           ));
         } else if (event.tipo === "MENSAGEM_EXCLUIDA") {
           setMessages((prev) => prev.filter(

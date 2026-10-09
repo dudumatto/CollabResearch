@@ -170,6 +170,13 @@ public class ConversaController {
                 ));
     }
 
+    @Operation(summary = "Marcar mensagens da conversa como lidas")
+    @PostMapping({"/{id}/lidas", "/{id}/read"})
+    public ResponseEntity<Void> marcarComoLidas(@PathVariable Integer id) {
+        conversaService.marcarComoLidas(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Editar mensagem", description = "Edita o conteúdo de uma mensagem. Apenas o remetente pode editar.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Mensagem editada com sucesso"),

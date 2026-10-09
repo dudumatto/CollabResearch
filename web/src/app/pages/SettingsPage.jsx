@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -57,9 +58,24 @@ function SectionGroup({ children }) {
   return <div className="cfg-section-group">{children}</div>;
 }
 
+const OVERLAY_QUERY = "(max-width: 1023px)";
+
+function useOverlayMode() {
+  const [overlay, setOverlay] = useState(() => window.matchMedia(OVERLAY_QUERY).matches);
+  useEffect(() => {
+    const mql = window.matchMedia(OVERLAY_QUERY);
+    const onChange = (event) => setOverlay(event.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return overlay;
+}
+
 function Panel({ panelId, activePanel, title, onBack, children, collapsed }) {
   const open = activePanel === panelId;
-  return (
+  const overlay = useOverlayMode();
+
+  const content = (
     <AnimatePresence>
       {open && (
         <motion.div
@@ -81,6 +97,11 @@ function Panel({ panelId, activePanel, title, onBack, children, collapsed }) {
       )}
     </AnimatePresence>
   );
+
+  // Em telas pequenas o painel é fixed; um ancestral com transform (animação
+  // de entrada da página) o prenderia ao contêiner e esconderia o "Voltar"
+  // atrás da topbar. O portal o ancora na viewport.
+  return overlay ? createPortal(content, document.body) : content;
 }
 
 function FormGroup({ label, children }) {
@@ -285,6 +306,16 @@ export default function SettingsPage() {
 
   return (
     <div className={`pagina-configuracoes ${activePanel ? "pagina-configuracoes--painel-aberto" : ""}`}>
+
+      <button
+        type="button"
+        className="cfg-panel__back cfg-page-back"
+        onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/app"))}
+        aria-label="Voltar para a página anterior"
+      >
+        <span className="cfg-panel__back-icon"><ArrowLeft size={16} /></span>
+        <span className="cfg-panel__back-text">Voltar</span>
+      </button>
 
       <div className="cfg-profile-card">
         <div className="cfg-profile-card__body">

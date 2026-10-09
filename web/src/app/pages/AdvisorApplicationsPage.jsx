@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Tray, Check, X, FileText, CaretRight, User, Sparkle } from "@phosphor-icons/react";
+import { Tray, Check, X, FileText, CaretRight, User, Sparkle, Warning } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
@@ -12,6 +12,8 @@ import { formatApplicationStatus, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
+import { LumenAIButton } from "../components/ui/LumenAIButton";
+import { LumenLoadingModal } from "../components/LumenLoadingModal";
 import "./AdvisorWorkspace.css";
 
 const FILTROS = [
@@ -106,6 +108,7 @@ export default function AdvisorApplicationsPage() {
   const [acaoLoadingId, setAcaoLoadingId] = useState(null);
   const [projetoFiltrado, setProjetoFiltrado] = useState("");
   const [lumenLoading, setLumenLoading] = useState(false);
+  const [lumenCount, setLumenCount] = useState(0);
   const [lumenModalAberto, setLumenModalAberto] = useState(false);
   const [lumenFoco, setLumenFoco] = useState(null);
   const [selecionando, setSelecionando] = useState(false);
@@ -184,6 +187,7 @@ export default function AdvisorApplicationsPage() {
 
   const analisarComLumen = async (projetoId = projetoFiltrado, ids = []) => {
     if (!projetoId) return;
+    setLumenCount(ids.length);
     setLumenLoading(true);
     try {
       const resultado = await advisorService.ranquearComLumen(projetoId, ids);
@@ -319,31 +323,22 @@ export default function AdvisorApplicationsPage() {
           />
 
           {mostrarBotaoLumen && (
-            <button
-              type="button"
-              className="advisor-botao advisor-botao--primario"
-              onClick={() => analisarComLumen()}
-              disabled={lumenLoading}
-            >
-              <Sparkle size={16} />
+            <LumenAIButton onClick={() => analisarComLumen()} disabled={lumenLoading}>
               {lumenLoading
                 ? "Analisando..."
                 : filtradas.some((app) => rankingMap.has(app.id)) ? "Avaliar novos com Lumen" : "Analisar com Lumen"}
-            </button>
+            </LumenAIButton>
           )}
 
           {mostrarBotaoLumen && (
             selecionando ? (
               <>
-                <button
-                  type="button"
-                  className="advisor-botao advisor-botao--primario"
+                <LumenAIButton
                   onClick={() => analisarComLumen(projetoFiltrado, [...selecionados])}
                   disabled={lumenLoading || selecionados.size === 0}
                 >
-                  <Sparkle size={16} />
                   Reavaliar selecionados ({selecionados.size})
-                </button>
+                </LumenAIButton>
                 <button
                   type="button"
                   className="advisor-botao advisor-botao--secundario"
@@ -376,7 +371,7 @@ export default function AdvisorApplicationsPage() {
                 setLumenModalAberto(true);
               }}
             >
-              Ver justificativas da Lumen
+              Ver últimas avaliações da Lumen
             </button>
           )}
         </div>
@@ -597,13 +592,16 @@ export default function AdvisorApplicationsPage() {
 
       {lumenModalAberto && lumenRanking.length > 0 && createPortal((
         <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Resultado da análise Lumen">
-          <div className="advisor-modal">
+          <div className="advisor-modal advisor-lumen">
             <div className="advisor-modal__cabecalho">
+              <div className="advisor-lumen__icone" aria-hidden="true">
+                <Sparkle size={22} weight="fill" />
+              </div>
               <div className="advisor-modal__cabecalho-conteudo">
                 <h3 className="advisor-modal__titulo">
-                  <Sparkle size={18} style={{ marginRight: 6, verticalAlign: "-3px" }} />
                   {lumenFoco != null ? "Avaliação da Lumen" : "Sugestão da Lumen"}
                 </h3>
+                <p className="advisor-lumen__subtitulo">Análise de compatibilidade com o projeto</p>
               </div>
               <button
                 type="button"
@@ -619,51 +617,44 @@ export default function AdvisorApplicationsPage() {
               {lumenRanking.length === 0 ? (
                 <p className="advisor-hero__subtitulo">Nenhuma avaliação da Lumen disponível.</p>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div className="advisor-lumen__lista">
                   {lumenRanking.map((c, i) => (lumenFoco == null || c.inscricaoId === lumenFoco) && (
-                    <div
-                      key={c.inscricaoId}
-                      style={{
-                        border: "1px solid var(--cor-borda-clara)",
-                        borderRadius: "var(--raio-grande)",
-                        padding: "var(--espaco-3)",
-                      }}
-                    >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                        <strong>{i + 1}º · {c.nomeAluno}</strong>
+                    <div key={c.inscricaoId} className="advisor-lumen__card">
+                      <div className="advisor-lumen__card-topo">
+                        <span className="advisor-lumen__posicao">{i + 1}º</span>
+                        <strong className="advisor-lumen__nome">{c.nomeAluno}</strong>
                         <span className={`advisor-etiqueta ${corPontuacao(c.pontuacao)}`}>{c.pontuacao}/10</span>
                       </div>
-                      <p style={{ marginTop: 6, fontSize: "var(--tamanho-base)", color: "var(--cor-texto-fraco)" }}>
-                        {c.justificativa}
-                      </p>
+                      <p className="advisor-lumen__texto">{c.justificativa}</p>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="advisor-modal__rodape">
-              <p style={{ fontSize: "var(--tamanho-pequeno)", color: "var(--cor-texto-mudo)", margin: 0 }}>
-                ⚠ Sugestão gerada por IA. A decisão final é sempre do orientador.
-              </p>
-              {appEmFoco?.status === "PENDENTE" && appEmFoco.projetoId != null && (
-                <button
-                  type="button"
-                  className="advisor-botao advisor-botao--primario"
-                  disabled={lumenLoading}
-                  onClick={() => analisarComLumen(appEmFoco.projetoId, [appEmFoco.id])}
-                >
-                  <Sparkle size={16} />
-                  {lumenLoading ? "Reavaliando..." : "Reavaliar"}
-                </button>
-              )}
+            <p className="advisor-lumen__aviso">
+              <Warning size={14} weight="fill" />
+              Sugestão gerada por IA. A decisão final é sempre do orientador.
+            </p>
+
+            <div className="advisor-lumen__acoes">
               <button type="button" className="advisor-botao advisor-botao--secundario" onClick={() => setLumenModalAberto(false)}>
                 Fechar
               </button>
+              {appEmFoco?.status === "PENDENTE" && appEmFoco.projetoId != null && (
+                <LumenAIButton
+                  disabled={lumenLoading}
+                  onClick={() => analisarComLumen(appEmFoco.projetoId, [appEmFoco.id])}
+                >
+                  {lumenLoading ? "Reavaliando..." : "Reavaliar"}
+                </LumenAIButton>
+              )}
             </div>
           </div>
         </div>
       ), document.body)}
+
+      <LumenLoadingModal open={lumenLoading} count={lumenCount} />
     </motion.div>
   );
 }

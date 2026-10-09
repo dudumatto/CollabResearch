@@ -1216,3 +1216,14 @@
 
 
 
+
+.mensagem-status {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.6;
+}
+
+.mensagem-status--lida {
+  color: #7fe0ff;
+  opacity: 1;
+}

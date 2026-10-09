@@ -1,5 +1,6 @@
 import { conversationService } from "../services/conversationService";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router";
 import { ArrowLeft, Users, Clock, BookOpen, PaperPlaneTilt, Envelope, ChatCircleText, ChartBar, CheckCircle, Pencil, Trash, UserPlus, UserMinus, CircleNotch, Warning, User, XCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
@@ -921,7 +922,7 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* ── Modal inscrição ── */}
-      {showModal && (
+      {showModal && createPortal(
         <div
           className="modal-inscricao__sobreposicao"
           role="presentation"
@@ -956,7 +957,7 @@ export default function ProjectDetailPage() {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
       {collaboratorToRemove && (
         <ConfirmationDialog
           title="Remover colaborador"

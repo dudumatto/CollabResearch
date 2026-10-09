@@ -192,6 +192,7 @@ class ConversaServiceTest {
         when(authHelper.getCurrentUser()).thenReturn(remetente);
         when(mensagemRepository.findById(8)).thenReturn(Optional.of(mensagem));
         when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+        when(mensagemRepository.findFirstByConversaIdOrderByDataEnvioDescIdDesc(5)).thenReturn(Optional.of(mensagem));
         when(mensagemRepository.save(any(Mensagem.class))).thenReturn(mensagem);
 
         com.example.tcc_backend.dto.response.MensagemResponse response =
@@ -229,6 +230,7 @@ class ConversaServiceTest {
         when(authHelper.getCurrentUser()).thenReturn(remetente);
         when(mensagemRepository.findById(8)).thenReturn(Optional.of(mensagem));
         when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+        when(mensagemRepository.findFirstByConversaIdOrderByDataEnvioDescIdDesc(5)).thenReturn(Optional.of(mensagem));
 
         conversaService.excluirMensagem(8);
 
@@ -252,6 +254,48 @@ class ConversaServiceTest {
                 .isInstanceOf(ResponseStatusException.class)
                 .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
                 .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void editarEExcluirDevemNegarMensagemQueNaoEhAUltima() {
+        Usuario remetente = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, remetente));
+        Conversa conversa = TestDataFactory.conversa(5, projeto);
+        Mensagem antiga = TestDataFactory.mensagem(8, conversa, remetente);
+        Mensagem recente = TestDataFactory.mensagem(9, conversa, remetente);
+
+        when(authHelper.getCurrentUser()).thenReturn(remetente);
+        when(mensagemRepository.findById(8)).thenReturn(Optional.of(antiga));
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+        when(mensagemRepository.findFirstByConversaIdOrderByDataEnvioDescIdDesc(5)).thenReturn(Optional.of(recente));
+
+        assertThatThrownBy(() -> conversaService.editarMensagem(8, "Novo"))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.CONFLICT);
+        assertThatThrownBy(() -> conversaService.excluirMensagem(8))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void marcarComoLidasDeveMarcarMensagensDeOutrosEPublicarEvento() {
+        Usuario leitor = TestDataFactory.usuarioAluno(1);
+        Usuario outro = TestDataFactory.usuarioAluno(2);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, leitor));
+        Conversa conversa = TestDataFactory.conversa(5, projeto);
+        Mensagem recebida = TestDataFactory.mensagem(8, conversa, outro);
+
+        when(authHelper.getCurrentUser()).thenReturn(leitor);
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+        when(mensagemRepository.findByConversaIdAndRemetenteIdNotAndDataLeituraIsNull(5, 1))
+                .thenReturn(List.of(recebida));
+
+        conversaService.marcarComoLidas(5);
+
+        assertThat(recebida.getDataLeitura()).isNotNull();
+        verify(chatRealtimeService).publicarMensagensLidas(5, List.of(8));
     }
 
     @Test

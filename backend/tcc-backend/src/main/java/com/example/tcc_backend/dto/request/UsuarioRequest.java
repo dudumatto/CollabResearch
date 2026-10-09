@@ -23,7 +23,7 @@ public class UsuarioRequest {
     @Size(max = 150, message = "Instituicao deve ter no maximo 150 caracteres")
     private String instituicao;
 
-    @Size(max = 2000, message = "Bio deve ter no maximo 2000 caracteres")
+    @Size(max = 500, message = "Bio deve ter no maximo 500 caracteres")
     private String bio;
 
     @Size(max = 500, message = "Foto de perfil deve ter no maximo 500 caracteres")

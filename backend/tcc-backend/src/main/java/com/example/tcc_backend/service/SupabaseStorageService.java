@@ -211,6 +211,40 @@ public class SupabaseStorageService {
         }
     }
 
+    /** Baixa o objeto do bucket de documentos (uso interno); retorna null se falhar ou exceder maxBytes. */
+    public byte[] downloadUserDocument(String documentReference, int maxBytes) {
+        StorageObjectRef ref = parseUserDocumentReference(documentReference);
+        if (ref == null || !ref.bucket().equals(userDocumentsBucket) || !isConfigured()) {
+            return null;
+        }
+        String encodedPath = java.util.Arrays.stream(ref.path().split("/"))
+                .map(segment -> URLEncoder.encode(segment, StandardCharsets.UTF_8).replace("+", "%20"))
+                .collect(java.util.stream.Collectors.joining("/"));
+        String endpoint = "/storage/v1/object/" + URLEncoder.encode(ref.bucket(), StandardCharsets.UTF_8) + "/" + encodedPath;
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(normalizedUrl() + endpoint))
+                    .timeout(Duration.ofSeconds(30))
+                    .header("apikey", supabaseServiceRoleKey)
+                    .header("Authorization", "Bearer " + supabaseServiceRoleKey)
+                    .GET()
+                    .build();
+            HttpResponse<java.io.InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            try (java.io.InputStream in = response.body()) {
+                if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                    return null;
+                }
+                byte[] data = in.readNBytes(maxBytes + 1);
+                return data.length > maxBytes ? null : data;
+            }
+        } catch (IOException ex) {
+            return null;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
+    }
+
     private String createSignedUrl(String bucket, String caminho) {
         if (!isConfigured() || isBlank(bucket) || caminho == null || caminho.isBlank()) {
             return null;

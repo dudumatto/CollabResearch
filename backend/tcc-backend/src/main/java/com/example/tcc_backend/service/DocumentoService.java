@@ -157,7 +157,8 @@ public class DocumentoService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nao autenticado");
         }
 
-        if (!usuarioLogado.getId().equals(usuarioId) && usuarioLogado.getTipo() != TipoUsuario.ADMIN) {
+        if (!usuarioLogado.getId().equals(usuarioId) && usuarioLogado.getTipo() != TipoUsuario.ADMIN
+                && !(usuarioLogado.getTipo() == TipoUsuario.ORIENTADOR && isAluno(usuarioRepository.findById(usuarioId).orElse(null)))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para listar documentos deste usuario");
         }
 
@@ -190,10 +191,15 @@ public class DocumentoService {
         Documento documento = documentoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Documento nao encontrado"));
         boolean isDono = documento.getUsuario() != null && documento.getUsuario().getId().equals(usuarioLogado.getId());
-        if (!isDono && usuarioLogado.getTipo() != TipoUsuario.ADMIN) {
+        boolean orientadorVendoAluno = usuarioLogado.getTipo() == TipoUsuario.ORIENTADOR && isAluno(documento.getUsuario());
+        if (!isDono && usuarioLogado.getTipo() != TipoUsuario.ADMIN && !orientadorVendoAluno) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para acessar este documento");
         }
         return documento;
+    }
+
+    private static boolean isAluno(Usuario usuario) {
+        return usuario != null && usuario.getTipo() == TipoUsuario.ALUNO;
     }
 
     private Documento buscarDocumentoParaEdicao(Integer id) {

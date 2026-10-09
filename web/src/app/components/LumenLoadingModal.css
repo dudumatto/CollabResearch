@@ -1,0 +1,31 @@
+.lumen-loading__icon {
+  align-items: center;
+  background-color: color-mix(in srgb, var(--cor-primaria) 15%, transparent);
+  border-radius: 999px;
+  color: var(--cor-primaria);
+  display: flex;
+  height: 4rem;
+  justify-content: center;
+  margin-bottom: var(--espaco-4);
+  position: relative;
+  width: 4rem;
+}
+
+.lumen-loading__spinner {
+  animation: lumen-loading-spin 1s linear infinite;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  border-top-color: var(--cor-primaria);
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes lumen-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lumen-loading__spinner {
+    animation-duration: 2.4s;
+  }
+}

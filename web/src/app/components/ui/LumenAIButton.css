@@ -1,0 +1,85 @@
+.lumen-ai-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+  padding: 0 1.5rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--cor-primaria);
+  font-family: var(--fonte-principal);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.lumen-ai-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.lumen-ai-btn:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+.lumen-ai-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.lumen-ai-btn__border {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: var(--cor-borda, #d9ded6);
+}
+
+.lumen-ai-btn__spin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10rem;
+  height: 10rem;
+  margin: -5rem 0 0 -5rem;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 20%,
+    #ef4444 30%,
+    #facc15 45%,
+    #3b82f6 60%,
+    transparent 70%,
+    transparent 100%
+  );
+  animation: lumen-ai-spin 2.5s linear infinite;
+}
+
+.lumen-ai-btn__fill {
+  position: absolute;
+  inset: 2px;
+  border-radius: 9999px;
+  background: var(--cor-fundo, #fff);
+}
+
+.lumen-ai-btn__content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@keyframes lumen-ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lumen-ai-btn__spin { animation: none; }
+}

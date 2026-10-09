@@ -1725,6 +1725,19 @@
   color: var(--cor-texto-mudo);
 }
 
+.advisor-campo__bio {
+  resize: none;
+  overflow: hidden;
+  max-height: none;
+  field-sizing: content;
+}
+
+.advisor-campo__contador {
+  align-self: flex-end;
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-mudo);
+}
+
 .advisor-campo__input--erro {
   border-color: var(--cor-erro);
 }
@@ -3013,4 +3026,95 @@
 
 @keyframes girar-perfil {
   to { transform: rotate(360deg); }
+}
+
+/* ---- Modal de avaliação da Lumen ---- */
+.advisor-lumen {
+  max-width: 32rem;
+}
+
+.advisor-lumen__icone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--raio-medio);
+  background-color: var(--cor-superficie-brand);
+  color: var(--cor-primaria);
+}
+
+.advisor-lumen__subtitulo {
+  margin: 2px 0 0;
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-mudo);
+}
+
+.advisor-lumen__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.advisor-lumen__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  padding: var(--espaco-4);
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-grande);
+  background-color: var(--cor-fundo-leve);
+}
+
+.advisor-lumen__card-topo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.advisor-lumen__posicao {
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background-color: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  color: var(--cor-texto-medio);
+}
+
+.advisor-lumen__nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--cor-texto);
+}
+
+.advisor-lumen__texto {
+  margin: 0;
+  line-height: 1.6;
+  font-size: var(--tamanho-base);
+  color: var(--cor-texto-fraco);
+}
+
+.advisor-lumen__aviso {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-mudo);
+}
+
+.advisor-lumen__acoes {
+  display: flex;
+  gap: var(--espaco-2);
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--cor-borda-clara);
+}
+
+.advisor-lumen__acoes > .advisor-botao,
+.advisor-lumen__acoes > .lumen-ai-btn {
+  flex: 1;
 }

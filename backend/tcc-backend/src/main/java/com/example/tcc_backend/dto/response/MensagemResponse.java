@@ -25,6 +25,8 @@ public class MensagemResponse {
     private String remetenteAvatarUrl;
     private Boolean editada;
     private OffsetDateTime dataEdicao;
+    private Boolean lida;
+    private OffsetDateTime dataLeitura;
 
     public static MensagemResponse fromEntity(Mensagem mensagem) {
         return fromEntity(mensagem, Function.identity());
@@ -45,6 +47,8 @@ public class MensagemResponse {
                 .remetenteAvatarUrl(fotoExibicao)
                 .editada(mensagem.getEditada())
                 .dataEdicao(mensagem.getDataEdicao())
+                .lida(mensagem.getDataLeitura() != null)
+                .dataLeitura(mensagem.getDataLeitura())
                 .build();
     }
 }

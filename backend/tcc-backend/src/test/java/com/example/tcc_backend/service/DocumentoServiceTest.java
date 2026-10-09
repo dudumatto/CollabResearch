@@ -214,6 +214,26 @@ class DocumentoServiceTest {
     }
 
     @Test
+    void listarPorUsuarioDevePermitirOrientadorVerDocumentosDeAluno() {
+        when(authHelper.getCurrentUser()).thenReturn(TestDataFactory.usuarioOrientador(9));
+        when(usuarioRepository.findById(2)).thenReturn(java.util.Optional.of(TestDataFactory.usuarioAluno(2)));
+        when(documentoRepository.findByUsuarioId(2)).thenReturn(java.util.List.of());
+
+        assertThat(documentoService.listarPorUsuario(2)).isEmpty();
+    }
+
+    @Test
+    void listarPorUsuarioDeveNegarOrientadorVerDocumentosDeOutroOrientador() {
+        when(authHelper.getCurrentUser()).thenReturn(TestDataFactory.usuarioOrientador(9));
+        when(usuarioRepository.findById(2)).thenReturn(java.util.Optional.of(TestDataFactory.usuarioOrientador(2)));
+
+        assertThatThrownBy(() -> documentoService.listarPorUsuario(2))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
     void listarPorUsuarioDevePermitirAdministrador() {
         when(authHelper.getCurrentUser()).thenReturn(TestDataFactory.usuarioAdmin(9));
         when(documentoRepository.findByUsuarioId(2)).thenReturn(java.util.List.of());

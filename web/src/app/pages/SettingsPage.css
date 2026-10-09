@@ -921,3 +921,15 @@
     padding: 0;
   }
 }
+
+/* Voltar da lista de configurações: só em telas pequenas/tablet (no desktop há sidebar). */
+.cfg-page-back {
+  align-self: flex-start;
+  margin-bottom: var(--espaco-4);
+}
+
+@media (min-width: 1024px) {
+  .cfg-page-back {
+    display: none;
+  }
+}

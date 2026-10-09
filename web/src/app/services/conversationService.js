@@ -42,6 +42,10 @@ export const conversationService = {
     return api.post(`/api/conversas/${conversationId}/mensagem`, { conteudo });
   },
 
+  markAsRead(conversationId) {
+    return api.post(`/api/conversas/${conversationId}/lidas`);
+  },
+
   editMessage(mensagemId, conteudo) {
     return api.put(`/api/conversas/mensagem/${mensagemId}`, { conteudo });
   },

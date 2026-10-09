@@ -53,6 +53,8 @@ function PerfilSkeleton() {
   );
 }
 
+const BIO_MAX = 500;
+
 export default function AdvisorProfilePage() {
   const { user, refreshUser } = useAuth();
   const avatarInputRef = useRef(null);
@@ -64,6 +66,13 @@ export default function AdvisorProfilePage() {
   );
 
   const [form, setForm] = useState(null);
+  const bioRef = useRef(null);
+  useEffect(() => {
+    const el = bioRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [form?.bio, editing]);
   const [editing, setEditing] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
@@ -347,11 +356,13 @@ export default function AdvisorProfilePage() {
                   value={form.bio}
                   onChange={(e) => setForm({ ...form, bio: e.target.value })}
                   disabled={!editing}
-                  rows={5}
-                  maxLength={2000}
-                  className="advisor-campo__input"
+                  ref={bioRef}
+                  rows={3}
+                  maxLength={BIO_MAX}
+                  className="advisor-campo__input advisor-campo__bio"
                   placeholder="Conte sobre sua trajetória, áreas de pesquisa e interesses..."
                 />
+                {editing && <span className="advisor-campo__contador">{form.bio.length}/{BIO_MAX}</span>}
               </div>
 
               {editing && (

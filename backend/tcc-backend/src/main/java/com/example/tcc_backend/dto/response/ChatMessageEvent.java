@@ -15,6 +15,7 @@ public class ChatMessageEvent {
     private Integer conversaId;
     private Integer mensagemId;
     private MensagemResponse mensagem;
+    private java.util.List<Integer> mensagemIds;
 
     public static ChatMessageEvent criada(MensagemResponse mensagem) {
         return ChatMessageEvent.builder()
@@ -31,6 +32,14 @@ public class ChatMessageEvent {
                 .conversaId(mensagem.getConversaId())
                 .mensagemId(mensagem.getId())
                 .mensagem(mensagem)
+                .build();
+    }
+
+    public static ChatMessageEvent lidas(Integer conversaId, java.util.List<Integer> mensagemIds) {
+        return ChatMessageEvent.builder()
+                .tipo("MENSAGENS_LIDAS")
+                .conversaId(conversaId)
+                .mensagemIds(mensagemIds)
                 .build();
     }
 
