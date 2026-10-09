@@ -83,6 +83,7 @@ public class LumenService {
             - Historico e documentos podem ELEVAR a nota, nunca reduzi-la.
             - Ausencia de historico ou documentos NAO penaliza.
             - Se um documento contradiz o perfil (ex.: curriculo diz curso diferente), sinalize na justificativa mas mantenha a nota base.
+            - Se o campo "periodo" do perfil contradiz a biografia ou a motivacao (ex.: periodo 1 e biografia diz 3o semestre), NAO use o periodo como criterio eliminatorio nem como motivo para D. Cite a divergencia na justificativa e avalie pelo restante do conteudo.
 
             ## Classificacao
             - A (Destaque): perfil forte + biografia clara e motivada + experiencia previa em IC, publicacoes ou producao relevante comprovada em documentos; alinhamento claro com o projeto.

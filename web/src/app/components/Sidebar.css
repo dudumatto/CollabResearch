@@ -242,20 +242,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--espaco-1);
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--sidebar-scrollbar) transparent;
-}
-
-.barra-lateral__navegacao::-webkit-scrollbar {
-  width: 0.35rem;
-}
-
-.barra-lateral__navegacao::-webkit-scrollbar-thumb {
-  background: var(--sidebar-scrollbar);
-  border-radius: var(--raio-completo);
+  overflow: hidden;
 }
 
 /* Cada categoria: divisória (menos a primeira) + rótulo + itens. */
@@ -306,7 +293,9 @@
   align-items: center;
   justify-content: flex-start;
   gap: var(--espaco-3);
-  padding: 0.6rem var(--sidebar-pad-item);
+  /* Altura acompanha a tela: todos os itens cabem sem rolagem. */
+  min-height: clamp(1.75rem, 4.6vh, 2.4rem);
+  padding: 0 var(--sidebar-pad-item);
   border-radius: var(--raio-medio);
   transition: background-color 160ms ease, color 160ms ease;
   color: var(--sidebar-texto-fraco);
@@ -559,9 +548,6 @@
     padding-block: var(--espaco-2);
   }
 
-  .barra-lateral-mobile .barra-lateral__item-nav {
-    padding-block: 0.5rem;
-  }
 }
 
 @media (min-width: 1024px) {
@@ -598,12 +584,6 @@
   .barra-lateral__navegacao {
     padding-block: var(--espaco-2);
     gap: 0.1rem;
-  }
-
-  .barra-lateral__item-nav {
-    min-height: 2.3rem;
-    padding-top: 0.45rem;
-    padding-bottom: 0.45rem;
   }
 
   .barra-lateral__rodape {
