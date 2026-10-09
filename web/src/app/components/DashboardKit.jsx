@@ -6,7 +6,7 @@ import "./DashboardKit.css";
    `transform`): o navegador re-renderiza o texto na escala final, então fica
    nítido, e o layout refaz o fluxo mantendo proporção e responsividade.
    Se nem MIN_ZOOM couber (ou sem suporte a zoom), fluxo natural com rolagem. */
-const MIN_ZOOM = 0.5;
+const MIN_ZOOM = 0.7;
 
 function useFitZoom() {
   const ref = useRef(null);

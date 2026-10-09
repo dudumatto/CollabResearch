@@ -80,6 +80,11 @@
   to { transform: rotate(360deg); }
 }
 
+/* Reduced motion: o reset global (animations.css) zera a duracao com !important
+   e o anel parava. Mantem o giro, so mais lento. */
 @media (prefers-reduced-motion: reduce) {
-  .lumen-ai-btn__spin { animation: none; }
+  .lumen-ai-btn__spin {
+    animation-duration: 6s !important;
+    animation-iteration-count: infinite !important;
+  }
 }
