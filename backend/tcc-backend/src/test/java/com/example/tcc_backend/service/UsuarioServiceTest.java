@@ -5,6 +5,7 @@ import com.example.tcc_backend.dto.request.UsuarioPreferenciasRequest;
 import com.example.tcc_backend.dto.response.UsuarioProfileResponse;
 import com.example.tcc_backend.model.Curso;
 import com.example.tcc_backend.model.Inscricao;
+import com.example.tcc_backend.model.TipoUsuario;
 import com.example.tcc_backend.model.Usuario;
 import com.example.tcc_backend.repository.AlunoRepository;
 import com.example.tcc_backend.repository.ConversaRepository;
@@ -71,13 +72,13 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void findAllDeveNegarAluno() {
+    void findAllDevePermitirAlunoSemExibirAdmins() {
         when(authHelper.getCurrentUser()).thenReturn(TestDataFactory.usuarioAluno(1));
+        Usuario admin = TestDataFactory.usuarioAluno(2);
+        admin.setTipo(TipoUsuario.ADMIN);
+        when(usuarioRepository.findAll()).thenReturn(List.of(TestDataFactory.usuarioAluno(1), admin));
 
-        assertThatThrownBy(() -> usuarioService.findAll())
-                .isInstanceOf(ResponseStatusException.class)
-                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
-                .isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(usuarioService.findAll()).extracting(Usuario::getId).containsExactly(1);
     }
 
     @Test
@@ -215,7 +216,6 @@ class UsuarioServiceTest {
 
         when(authHelper.getCurrentUser()).thenReturn(aluno);
         when(usuarioRepository.findById(2)).thenReturn(Optional.of(orientador));
-        when(projetoRepository.existsProjetoCompartilhado(1, 2)).thenReturn(true);
         when(alunoRepository.findByUsuarioId(2)).thenReturn(Optional.empty());
         when(orientadorRepository.findByUsuarioId(2)).thenReturn(Optional.empty());
 

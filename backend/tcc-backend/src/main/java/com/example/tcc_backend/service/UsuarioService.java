@@ -91,10 +91,12 @@ public class UsuarioService {
 
     public List<Usuario> findAll() {
         Usuario usuarioLogado = authHelper.getCurrentUser();
-        if (usuarioLogado.getTipo() != TipoUsuario.ORIENTADOR) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas orientadores podem listar usuarios");
+        if (usuarioLogado.getTipo() == TipoUsuario.ADMIN) {
+            return usuarioRepository.findAll();
         }
-        return usuarioRepository.findAll();
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getTipo() != TipoUsuario.ADMIN)
+                .toList();
     }
 
     public Page<Usuario> findAll(Pageable pageable) {
@@ -125,7 +127,10 @@ public class UsuarioService {
     public UsuarioProfileResponse findProfileById(Integer id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario nao encontrado"));
-        validarAcessoAoUsuario(usuario, true);
+        // Perfil publico de alunos/orientadores e visivel a qualquer usuario autenticado (busca da Topbar).
+        if (usuario.getTipo() == TipoUsuario.ADMIN) {
+            validarAcessoAoUsuario(usuario, true);
+        }
 
         Usuario usuarioLogado = authHelper.getCurrentUser();
         boolean proprioUsuario = usuarioLogado.getId().equals(usuario.getId());

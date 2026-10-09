@@ -159,16 +159,13 @@ class OwnershipValidationTest {
         }
 
         @Test
-        void deveBloquearAlunoBuscarPerfilDeOutroAluno() {
+        void devePermitirAlunoBuscarPerfilPublicoDeOutroAluno() {
             Usuario usuarioA = TestDataFactory.usuarioAluno(1);
             Usuario usuarioB = TestDataFactory.usuarioAluno(2);
             when(authHelper.getCurrentUser()).thenReturn(usuarioA);
             when(usuarioRepository.findById(2)).thenReturn(Optional.of(usuarioB));
 
-            assertThatThrownBy(() -> usuarioService.findProfileById(2))
-                    .isInstanceOf(ResponseStatusException.class)
-                    .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode())
-                            .isEqualTo(HttpStatus.FORBIDDEN));
+            assertThat(usuarioService.findProfileById(2).getRa()).isNull();
         }
 
         @Test

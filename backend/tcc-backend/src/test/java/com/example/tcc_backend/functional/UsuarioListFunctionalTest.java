@@ -87,13 +87,22 @@ class UsuarioListFunctionalTest extends FunctionalTestSupport {
     }
 
     @Test
-    void alunoNaoDeveBuscarPerfilDeOutroAluno() throws Exception {
+    void alunoDeveBuscarPerfilPublicoDeOutroAluno() throws Exception {
         TestUser alunoA = registerAluno("profile-a");
         TestUser alunoB = registerAluno("profile-b");
 
         mockMvc.perform(get("/api/usuarios/" + alunoB.userId() + "/perfil")
                         .header("Authorization", authHeader(alunoA.token())))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void alunoDeveListarUsuariosParaBusca() throws Exception {
+        TestUser aluno = registerAluno("list-a");
+
+        mockMvc.perform(get("/api/usuarios")
+                        .header("Authorization", authHeader(aluno.token())))
+                .andExpect(status().isOk());
     }
 
     @Test
