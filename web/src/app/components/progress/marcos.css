@@ -1,0 +1,692 @@
+/* ============================================================
+   Marcos com checklist — compartilhado entre aluno e orientador.
+   Usa só tokens globais (--cor-*), que já trocam no modo escuro.
+   Dentro de .progress-page herda --progress-* quando existirem.
+   ============================================================ */
+
+.marco-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Chips ---- */
+.marco-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--raio-completo);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.marco-chip--ok { background: var(--cor-sucesso-clara); color: var(--cor-sucesso-escura); }
+.marco-chip--info { background: var(--cor-primaria-leve); color: var(--cor-primaria-texto); }
+.marco-chip--warn { background: var(--cor-atencao-clara); color: var(--cor-atencao-escura); }
+.marco-chip--danger { background: var(--cor-erro-clara); color: var(--cor-erro-escura); }
+.marco-chip--muted { background: var(--cor-fundo-leve); color: var(--cor-texto-fraco); }
+
+.marco-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--tamanho-pequeno);
+  color: var(--progress-text-muted, var(--cor-texto-mudo));
+}
+
+.marco-meta--alerta {
+  color: var(--cor-erro);
+  font-weight: var(--peso-semi);
+}
+
+/* ---- Barra de progresso ---- */
+.marco-progresso {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.marco-progresso__linha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: var(--tamanho-medio);
+  color: var(--progress-text, var(--cor-texto-medio));
+}
+
+.marco-progresso__linha strong {
+  color: var(--progress-text-strong, var(--cor-texto-forte));
+  font-variant-numeric: tabular-nums;
+}
+
+.marco-progresso__barra {
+  height: 0.5rem;
+  border-radius: var(--raio-completo);
+  background: var(--progress-donut-track, var(--cor-borda-media));
+  overflow: hidden;
+}
+
+.marco-progresso__barra > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(to right, var(--cor-sucesso), var(--cor-sucesso-media));
+  transition: width 0.3s ease;
+}
+
+/* ---- Botões e campos ---- */
+.marco-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--progress-border-input, var(--cor-borda-media));
+  border-radius: var(--raio-medio);
+  background: transparent;
+  color: var(--progress-text-strong, var(--cor-texto-medio));
+  font: inherit;
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.marco-btn:hover:not(:disabled) {
+  background: var(--cor-fundo-leve);
+}
+
+.marco-btn:focus-visible,
+.marco-card__alternar:focus-visible,
+.marco-input:focus-visible,
+.marco-tarefa input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+.marco-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.marco-btn--icone {
+  min-width: 2rem;
+  padding: 0.3rem;
+}
+
+.marco-btn--primario {
+  background: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  color: #f6f8f5;
+}
+
+.marco-btn--primario:hover:not(:disabled) {
+  background: var(--cor-primaria-escura);
+}
+
+.marco-btn--sucesso {
+  background: var(--cor-sucesso-escura);
+  border-color: var(--cor-sucesso-escura);
+  color: #f6f8f5;
+}
+
+.marco-btn--sucesso:hover:not(:disabled) {
+  background: var(--cor-sucesso);
+}
+
+.marco-btn--perigo {
+  color: var(--cor-erro);
+  border-color: var(--cor-erro-borda);
+}
+
+.marco-btn--perigo:hover:not(:disabled) {
+  background: var(--cor-erro-clara);
+}
+
+.marco-btn--perigo-forte {
+  background: var(--cor-erro-escura);
+  border-color: var(--cor-erro-escura);
+  color: #fff;
+}
+
+.marco-btn--perigo-forte:hover:not(:disabled) {
+  background: var(--cor-erro);
+}
+
+.marco-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--progress-border-input, var(--cor-borda-media));
+  border-radius: var(--raio-medio);
+  background: var(--progress-surface-strong, var(--cor-branco));
+  color: var(--progress-text-strong, var(--cor-texto));
+  font: inherit;
+  font-size: var(--tamanho-medio);
+}
+
+.marco-input[aria-invalid="true"] {
+  border-color: var(--cor-erro);
+}
+
+.marco-input--area {
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+.marco-erro {
+  margin: 0;
+  color: var(--cor-erro);
+  font-size: var(--tamanho-pequeno);
+}
+
+/* ---- Avisos ---- */
+.marco-aviso {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.4rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--raio-medio);
+  border: 1px solid transparent;
+  font-size: var(--tamanho-medio);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.marco-aviso--info { background: var(--cor-primaria-clara); border-color: var(--cor-primaria-borda); color: var(--cor-primaria-texto); }
+.marco-aviso--ok { background: var(--cor-sucesso-clara); border-color: var(--cor-sucesso-borda); color: var(--cor-sucesso-escura); }
+.marco-aviso--danger { background: var(--cor-erro-clara); border-color: var(--cor-erro-borda); color: var(--cor-erro-escura); }
+
+/* ---- Cartão do marco ---- */
+.marco-card {
+  --marco-faixa: var(--cor-borda-media);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1rem 1.1rem 1rem 1.25rem;
+  border: 1px solid var(--progress-border-soft, var(--cor-borda));
+  border-radius: 22px;
+  background: var(--progress-surface, var(--cor-fundo-leve));
+  box-shadow: inset 4px 0 0 var(--marco-faixa);
+}
+
+.marco-card--pendente { --marco-faixa: var(--cor-borda-media); }
+.marco-card--andamento { --marco-faixa: var(--cor-atencao); }
+.marco-card--revisao { --marco-faixa: var(--cor-primaria); }
+.marco-card--aprovado { --marco-faixa: var(--cor-sucesso); }
+.marco-card--devolvido { --marco-faixa: var(--cor-erro); }
+
+.marco-card--atencao {
+  border-color: var(--cor-erro-borda);
+}
+
+.marco-card--atencao:not(.marco-card--devolvido) { --marco-faixa: var(--cor-erro); }
+
+.marco-card__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+.marco-card__titulo-bloco {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.marco-card__eyebrow {
+  margin: 0;
+  color: var(--progress-text-muted, var(--cor-texto-mudo));
+  font-size: var(--tamanho-pequeno);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.marco-card__titulo {
+  margin: 0.15rem 0 0;
+  font-size: 1rem;
+}
+
+.marco-card__alternar {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--progress-text-strong, var(--cor-texto-forte));
+  font: inherit;
+  font-weight: var(--peso-negrito);
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.marco-card__alternar[aria-expanded="true"] .marco-card__seta {
+  transform: rotate(90deg);
+}
+
+.marco-card__seta {
+  flex-shrink: 0;
+  margin-top: 0.3rem;
+  transition: transform 0.15s ease;
+}
+
+.marco-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.marco-card__mover {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+}
+
+.marco-card__alca {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2rem;
+  padding: 0 0.55rem;
+  border: 1px solid var(--progress-border-input, var(--cor-borda-media));
+  border-radius: 12px;
+  background: var(--progress-surface-strong, var(--cor-branco));
+  color: var(--progress-text-muted, var(--cor-texto-mudo));
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-negrito);
+  cursor: grab;
+}
+
+.marco-card__alca:hover {
+  color: var(--progress-accent, var(--cor-primaria));
+}
+
+.marco-card__ferramentas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.marco-card__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--progress-border-soft, var(--cor-borda));
+}
+
+.marco-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+
+.marco-card__descricao {
+  margin: 0;
+  color: var(--progress-text-soft, var(--cor-texto-fraco));
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.marco-card__rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+}
+
+.marco-card__rodape .marco-secao__dica {
+  flex: 1 1 12rem;
+}
+
+/* ---- Seções do checklist ---- */
+.marco-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.marco-secao__cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.marco-secao__cabecalho h5 {
+  margin: 0;
+  color: var(--progress-text-strong, var(--cor-texto-forte));
+  font-size: var(--tamanho-medio);
+}
+
+.marco-secao__cabecalho span {
+  color: var(--progress-text-muted, var(--cor-texto-mudo));
+  font-size: var(--tamanho-pequeno);
+}
+
+.marco-secao__dica,
+.marco-secao__vazio {
+  margin: 0;
+  color: var(--progress-text-muted, var(--cor-texto-mudo));
+  font-size: var(--tamanho-pequeno);
+  line-height: 1.45;
+}
+
+.marco-secao__vazio {
+  font-style: italic;
+}
+
+.marco-tarefas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.marco-tarefa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.4rem 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--progress-border-soft, var(--cor-borda));
+  border-radius: 14px;
+  background: var(--progress-panel, var(--cor-superficie));
+}
+
+/* Tarefa do orientador: faixa sólida. Pessoal: borda tracejada. */
+.marco-tarefa--orientador {
+  box-shadow: inset 3px 0 0 var(--cor-primaria);
+}
+
+.marco-tarefa--pessoal {
+  border-style: dashed;
+}
+
+.marco-tarefa__rotulo {
+  display: flex;
+  flex: 1 1 12rem;
+  align-items: flex-start;
+  gap: 0.6rem;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.marco-tarefa input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0.15rem 0 0;
+  accent-color: var(--cor-primaria);
+}
+
+.marco-tarefa input[type="checkbox"]:disabled {
+  cursor: default;
+}
+
+.marco-tarefa__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.marco-tarefa__titulo {
+  color: var(--progress-text-strong, var(--cor-texto-forte));
+  font-size: var(--tamanho-medio);
+  overflow-wrap: anywhere;
+}
+
+.marco-tarefa--feita .marco-tarefa__titulo {
+  color: var(--progress-text-muted, var(--cor-texto-mudo));
+  text-decoration: line-through;
+}
+
+.marco-tarefa__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  color: var(--progress-text-muted, var(--cor-texto-mudo));
+  font-size: var(--tamanho-pequeno);
+}
+
+.marco-tarefa__acoes {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.marco-tarefa__obrigatoria {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--progress-text, var(--cor-texto-medio));
+  font-size: var(--tamanho-pequeno);
+  cursor: pointer;
+}
+
+.marco-tarefa__obrigatoria input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--cor-primaria);
+}
+
+.marco-tarefa__trava {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem;
+  color: var(--progress-text-muted, var(--cor-texto-mudo));
+}
+
+.marco-tarefa__edicao {
+  display: flex;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.marco-tarefa__edicao .marco-input {
+  flex: 1 1 12rem;
+}
+
+.marco-tarefa__edicao .marco-erro {
+  flex-basis: 100%;
+}
+
+.marco-nova-tarefa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.marco-nova-tarefa__linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.marco-nova-tarefa__linha .marco-input {
+  flex: 1 1 12rem;
+}
+
+/* ---- Revisão e histórico ---- */
+.marco-revisao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--cor-primaria-borda);
+  border-radius: 16px;
+  background: var(--cor-primaria-clara);
+}
+
+.marco-revisao h5 {
+  margin: 0;
+  color: var(--cor-primaria-texto);
+  font-size: var(--tamanho-normal);
+}
+
+.marco-revisao__rotulo {
+  color: var(--progress-text, var(--cor-texto-medio));
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-medio);
+}
+
+.marco-revisao__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.marco-historico-bloco {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.marco-historico-bloco > div {
+  width: 100%;
+}
+
+.marco-historico {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: 100%;
+}
+
+.marco-historico__item {
+  padding: 0.55rem 0.75rem;
+  border-left: 3px solid var(--cor-borda-media);
+  background: var(--progress-panel, var(--cor-superficie));
+  border-radius: 0 12px 12px 0;
+}
+
+.marco-historico__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.6rem;
+}
+
+.marco-historico__item p {
+  margin: 0.35rem 0 0;
+  color: var(--progress-text, var(--cor-texto-medio));
+  font-size: var(--tamanho-medio);
+  overflow-wrap: anywhere;
+}
+
+/* ---- Filtros ---- */
+.marco-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+}
+
+.marco-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--progress-border-input, var(--cor-borda-media));
+  border-radius: var(--raio-completo);
+  background: transparent;
+  color: var(--progress-text, var(--cor-texto-medio));
+  font: inherit;
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-medio);
+  cursor: pointer;
+}
+
+.marco-filtro:hover {
+  background: var(--cor-fundo-leve);
+}
+
+.marco-filtro:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+.marco-filtro[aria-pressed="true"] {
+  background: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  color: #f6f8f5;
+}
+
+.marco-filtro__contador {
+  min-width: 1.25rem;
+  padding: 0 0.35rem;
+  border-radius: var(--raio-completo);
+  background: var(--cor-fundo-medio);
+  color: var(--cor-texto-medio);
+  font-size: var(--tamanho-pequeno);
+  text-align: center;
+}
+
+.marco-filtro[aria-pressed="true"] .marco-filtro__contador {
+  background: rgba(255, 255, 255, 0.25);
+  color: inherit;
+}
+
+.marco-filtro__contador--alerta {
+  background: var(--cor-erro-leve);
+  color: var(--cor-erro-escura);
+}
+
+.marco-lista-vazia {
+  padding: 2rem 1rem;
+  color: var(--progress-text-muted, var(--cor-texto-mudo));
+  font-size: var(--tamanho-medio);
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .marco-card {
+    padding: 0.9rem 0.85rem 0.9rem 1rem;
+    border-radius: 18px;
+  }
+
+  .marco-card__chips {
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marco-progresso__barra > span,
+  .marco-card__seta,
+  .marco-btn {
+    transition: none;
+  }
+}

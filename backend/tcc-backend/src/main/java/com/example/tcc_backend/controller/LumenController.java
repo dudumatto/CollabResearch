@@ -2,6 +2,7 @@ package com.example.tcc_backend.controller;
 
 import com.example.tcc_backend.dto.request.LumenRankingRequest;
 import com.example.tcc_backend.dto.response.LumenRankingResponse;
+import com.example.tcc_backend.dto.response.LumenRecomendacaoResponse;
 import com.example.tcc_backend.model.Usuario;
 import com.example.tcc_backend.security.AuthHelper;
 import com.example.tcc_backend.service.LumenService;
@@ -41,5 +42,17 @@ public class LumenController {
                                                          @RequestBody(required = false) LumenRankingRequest request) {
         Usuario usuario = authHelper.getCurrentUser();
         return ResponseEntity.ok(lumenService.ranquear(projetoId, usuario, request == null ? null : request.inscricaoIds()));
+    }
+
+    @Operation(summary = "Recomendar projetos ao aluno",
+            description = "Usa IA para comparar o perfil do aluno autenticado com os projetos abertos e sugerir os 3 mais aderentes, com justificativa.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Recomendacoes geradas com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Apenas alunos"),
+            @ApiResponse(responseCode = "503", description = "Lumen AI indisponivel ou nao configurada")
+    })
+    @PostMapping("/recomendar-projetos")
+    public ResponseEntity<LumenRecomendacaoResponse> recomendarProjetos() {
+        return ResponseEntity.ok(lumenService.recomendarProjetos(authHelper.getCurrentUser()));
     }
 }

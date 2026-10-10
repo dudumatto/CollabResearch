@@ -3,6 +3,7 @@ package com.example.tcc_backend.service;
 import com.example.tcc_backend.dto.request.AdvanceProgressStepRequest;
 import com.example.tcc_backend.dto.request.CreateProjectProgressUpdateRequest;
 import com.example.tcc_backend.dto.request.EtapaRequest;
+import com.example.tcc_backend.dto.request.OrdemRequest;
 import com.example.tcc_backend.dto.response.AdvanceProgressStepResponse;
 import com.example.tcc_backend.dto.response.EtapaResponse;
 import com.example.tcc_backend.dto.response.EtapaCalendarioResponse;
@@ -23,30 +24,36 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class EtapaProgressoService {
 
     private static final List<DefaultStep> DEFAULT_STEPS = List.of(
-            new DefaultStep("Proposta aprovada", 10, EtapaResponsavel.ORIENTADOR),
-            new DefaultStep("Revisao bibliografica", 15, EtapaResponsavel.ALUNO),
-            new DefaultStep("Metodologia definida", 15, EtapaResponsavel.ALUNO),
-            new DefaultStep("Desenvolvimento", 30, EtapaResponsavel.ALUNO),
-            new DefaultStep("Revisao do orientador", 20, EtapaResponsavel.ORIENTADOR),
-            new DefaultStep("Entrega final", 10, EtapaResponsavel.AMBOS)
+            new DefaultStep("Proposta aprovada", EtapaResponsavel.ORIENTADOR),
+            new DefaultStep("Revisao bibliografica", EtapaResponsavel.ALUNO),
+            new DefaultStep("Metodologia definida", EtapaResponsavel.ALUNO),
+            new DefaultStep("Desenvolvimento", EtapaResponsavel.ALUNO),
+            new DefaultStep("Revisao do orientador", EtapaResponsavel.ORIENTADOR),
+            new DefaultStep("Entrega final", EtapaResponsavel.AMBOS)
     );
 
     private final EtapaProgressoRepository etapaProgressoRepository;
     private final ProgressoRepository progressoRepository;
     private final ProjetoRepository projetoRepository;
     private final InscricaoRepository inscricaoRepository;
+    private final EtapaResponseAssembler assembler;
+    private final EtapaChecklistService checklistService;
     private final AuthHelper authHelper;
     private final ProjectAccessPolicy projectAccessPolicy;
 
@@ -56,11 +63,12 @@ public class EtapaProgressoService {
         Projeto projeto = carregarProjeto(projetoId);
         validarParticipacaoProjeto(projeto, usuarioLogado.getId());
 
-        List<EtapaProgresso> etapas = carregarOuCriarEtapas(projeto);
-        sincronizarEtapasAtivas(etapas);
+        List<EtapaProgresso> etapas = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId);
+        Map<Integer, List<EtapaTarefa>> tarefas = assembler.tarefasPorEtapa(etapas);
+        MarcoProgressoCalculator.Projeto calculo = MarcoProgressoCalculator.projeto(etapas, tarefas, OffsetDateTime.now());
 
         List<ProgressStepResponse> steps = etapas.stream()
-                .map(ProgressStepResponse::fromEntity)
+                .map(e -> ProgressStepResponse.fromEntity(e, tarefas.get(e.getId())))
                 .toList();
         List<ProjectProgressUpdateResponse> updates = progressoRepository.findByProjetoIdOrderByDataRegistroDesc(projetoId)
                 .stream()
@@ -69,14 +77,43 @@ public class EtapaProgressoService {
 
         return ProjectProgressResponse.builder()
                 .projectId(projetoId)
-                .overallPercent(calcularPercentualGeral(etapas))
+                .overallPercent(calculo.percentualGeral())
+                .percentualGeral(calculo.percentualGeral())
+                .itensConcluidos(calculo.itensConcluidos())
+                .itensTotal(calculo.itensTotal())
+                .marcosTotal(calculo.marcosTotal())
+                .marcosConcluidos(calculo.marcosConcluidos())
+                .marcosEmRevisao(calculo.marcosEmRevisao())
+                .marcosComAtencao(calculo.marcosComAtencao())
+                .atualizacoesTotal(updates.size())
                 .steps(steps)
+                .marcos(assembler.montar(etapas, tarefas))
                 .updates(updates)
                 .build();
     }
 
+    /**
+     * Conclusao legada (PATCH .../steps/{id} e PATCH .../etapas/{id}): equivale a aprovar o marco,
+     * portanto so o orientador responsavel; alunos devem enviar o marco para revisao.
+     */
     @Transactional
     public AdvanceProgressStepResponse avancarEtapa(Integer projetoId, Integer etapaId, AdvanceProgressStepRequest request) {
+        EtapaProgresso etapa = aprovarDiretamente(projetoId, etapaId, request);
+        List<EtapaProgresso> etapas = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId);
+        Map<Integer, List<EtapaTarefa>> tarefas = assembler.tarefasPorEtapa(etapas);
+
+        return AdvanceProgressStepResponse.builder()
+                .step(ProgressStepResponse.fromEntity(etapa, tarefas.get(etapa.getId())))
+                .overallPercent(MarcoProgressoCalculator.projeto(etapas, tarefas, OffsetDateTime.now()).percentualGeral())
+                .build();
+    }
+
+    @Transactional
+    public EtapaResponse concluirEtapa(Integer projetoId, Integer etapaId, AdvanceProgressStepRequest request) {
+        return assembler.montar(aprovarDiretamente(projetoId, etapaId, request));
+    }
+
+    private EtapaProgresso aprovarDiretamente(Integer projetoId, Integer etapaId, AdvanceProgressStepRequest request) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
         validarParticipacaoProjeto(projeto, usuarioLogado.getId());
@@ -86,25 +123,15 @@ public class EtapaProgressoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status invalido");
         }
 
-        List<EtapaProgresso> etapas = carregarOuCriarEtapas(projeto);
         EtapaProgresso etapa = etapaProgressoRepository.findByProjetoIdAndId(projetoId, etapaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Etapa nao encontrada"));
 
-        validarPermissaoConclusao(etapa, usuarioLogado);
+        projectAccessPolicy.requireResponsibleAdvisor(projeto, usuarioLogado);
 
         if (etapa.getStatus() != EtapaProgressoStatus.DONE) {
-            etapa.setStatus(EtapaProgressoStatus.DONE);
-            etapa.setConcluidaEm(LocalDateTime.now());
-            etapa.setConcluidaPor(usuarioLogado);
-            etapaProgressoRepository.save(etapa);
+            checklistService.aprovar(etapa, usuarioLogado, null);
         }
-
-        sincronizarEtapasAtivas(etapas);
-
-        return AdvanceProgressStepResponse.builder()
-                .step(ProgressStepResponse.fromEntity(etapa))
-                .overallPercent(calcularPercentualGeral(etapas))
-                .build();
+        return etapa;
     }
 
     @Transactional
@@ -112,11 +139,7 @@ public class EtapaProgressoService {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
         projectAccessPolicy.requireCanViewTeam(projeto, usuarioLogado);
-        List<EtapaProgresso> etapas = carregarOuCriarEtapas(projeto);
-        sincronizarEtapasAtivas(etapas);
-        return etapas.stream()
-                .map(EtapaResponse::fromEntity)
-                .toList();
+        return assembler.montar(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId));
     }
 
     @Transactional
@@ -134,29 +157,8 @@ public class EtapaProgressoService {
         Map<Integer, List<EtapaProgresso>> etapasPorProjeto = new LinkedHashMap<>();
         projetos.forEach(projeto -> etapasPorProjeto.put(projeto.getId(), new ArrayList<>()));
         List<Integer> projetoIds = new ArrayList<>(etapasPorProjeto.keySet());
-        List<EtapaProgresso> etapas = etapaProgressoRepository.findAllForCalendarioByProjetoIds(projetoIds);
-        for (EtapaProgresso etapa : etapas) {
+        for (EtapaProgresso etapa : etapaProgressoRepository.findAllForCalendarioByProjetoIds(projetoIds)) {
             etapasPorProjeto.get(etapa.getProjeto().getId()).add(etapa);
-        }
-
-        List<EtapaProgresso> novasEtapas = new ArrayList<>();
-        for (Projeto projeto : projetos) {
-            if (etapasPorProjeto.get(projeto.getId()).isEmpty()) {
-                List<EtapaProgresso> padrao = criarEtapasPadrao(projeto);
-                etapasPorProjeto.get(projeto.getId()).addAll(padrao);
-                novasEtapas.addAll(padrao);
-            }
-        }
-        if (!novasEtapas.isEmpty()) {
-            etapaProgressoRepository.saveAll(novasEtapas);
-        }
-
-        boolean precisaSalvar = false;
-        for (List<EtapaProgresso> etapasProjeto : etapasPorProjeto.values()) {
-            precisaSalvar |= sincronizarEtapasAtivasSemPersistir(etapasProjeto);
-        }
-        if (precisaSalvar) {
-            etapaProgressoRepository.saveAll(etapas);
         }
 
         return projetos.stream()
@@ -191,11 +193,7 @@ public class EtapaProgressoService {
                 .obrigatoria(request.getObrigatoria() != null ? request.getObrigatoria() : true)
                 .build();
 
-        EtapaProgresso salva = etapaProgressoRepository.save(etapa);
-        List<EtapaProgresso> etapas = new ArrayList<>(etapasExistentes);
-        etapas.add(salva);
-        sincronizarEtapasAtivas(etapas);
-        return EtapaResponse.fromEntity(salva);
+        return assembler.montar(etapaProgressoRepository.save(etapa));
     }
 
     @Transactional
@@ -220,7 +218,7 @@ public class EtapaProgressoService {
         etapa.setPrazo(request.getPrazo());
         etapa.setObrigatoria(request.getObrigatoria() != null ? request.getObrigatoria() : etapa.getObrigatoria());
 
-        return EtapaResponse.fromEntity(etapaProgressoRepository.save(etapa));
+        return assembler.montar(etapaProgressoRepository.save(etapa));
     }
 
     @Transactional
@@ -237,39 +235,45 @@ public class EtapaProgressoService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Etapa concluida nao pode ser removida");
         }
 
+        // tarefas e historico de revisoes saem por ON DELETE CASCADE
         etapaProgressoRepository.delete(etapa);
-        List<EtapaProgresso> restantes = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId).stream()
-                .filter(e -> !e.getId().equals(etapaId))
-                .toList();
-        sincronizarEtapasAtivas(restantes);
+        etapaProgressoRepository.flush();
+        renumerar(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId));
     }
 
+    /** Reordena os marcos; {@code ids} deve conter exatamente todos os marcos do projeto, sem repeticao. */
     @Transactional
-    public EtapaResponse concluirEtapa(Integer projetoId, Integer etapaId, AdvanceProgressStepRequest request) {
+    public List<EtapaResponse> reordenarEtapas(Integer projetoId, OrdemRequest request) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Projeto projeto = carregarProjeto(projetoId);
-        validarParticipacaoProjeto(projeto, usuarioLogado.getId());
+        projectAccessPolicy.requireResponsibleAdvisor(projeto, usuarioLogado);
         validarProjetoEditavel(projeto);
 
-        if (request == null || request.getStatus() == null || !"done".equalsIgnoreCase(request.getStatus().trim())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status invalido");
+        List<EtapaProgresso> etapas = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projetoId);
+        List<Integer> ids = request == null ? null : request.getIds();
+        Set<Integer> esperados = etapas.stream().map(EtapaProgresso::getId).collect(Collectors.toSet());
+        if (ids == null || ids.size() != esperados.size() || !esperados.equals(new HashSet<>(ids))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "A lista de ids deve conter exatamente todos os marcos do projeto, sem repeticao");
         }
-
-        EtapaProgresso etapa = etapaProgressoRepository.findByProjetoIdAndId(projetoId, etapaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Etapa nao encontrada"));
-
-        validarPermissaoConclusao(etapa, usuarioLogado);
-
-        if (etapa.getStatus() != EtapaProgressoStatus.DONE) {
-            etapa.setStatus(EtapaProgressoStatus.DONE);
-            etapa.setConcluidaEm(LocalDateTime.now());
-            etapa.setConcluidaPor(usuarioLogado);
-            etapaProgressoRepository.save(etapa);
-        }
-
-        return EtapaResponse.fromEntity(etapa);
+        Map<Integer, EtapaProgresso> porId = etapas.stream().collect(Collectors.toMap(EtapaProgresso::getId, e -> e));
+        List<EtapaProgresso> novaOrdem = ids.stream().map(porId::get).toList();
+        renumerar(novaOrdem);
+        return assembler.montar(novaOrdem);
     }
 
+    private void renumerar(List<EtapaProgresso> etapasNaOrdem) {
+        int ordem = 1;
+        for (EtapaProgresso etapa : etapasNaOrdem) {
+            if (!Integer.valueOf(ordem).equals(etapa.getOrdem())) {
+                etapa.setOrdem(ordem);
+                etapaProgressoRepository.save(etapa);
+            }
+            ordem++;
+        }
+    }
+
+    /** Atualizacoes narrativas sao independentes do checklist: nao concluem nem reabrem tarefas. */
     @Transactional
     public ProjectProgressUpdateResponse criarAtualizacao(Integer projetoId, CreateProjectProgressUpdateRequest request) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
@@ -338,9 +342,9 @@ public class EtapaProgressoService {
             etapas.add(EtapaProgresso.builder()
                     .projeto(projeto)
                     .titulo(def.title())
-                    .peso(def.weight())
+                    .peso(0)
                     .ordem(index + 1)
-                    .status(index == 0 ? EtapaProgressoStatus.ACTIVE : EtapaProgressoStatus.PENDING)
+                    .status(EtapaProgressoStatus.PENDING)
                     .responsavel(def.responsavel())
                     .build());
         }
@@ -351,53 +355,6 @@ public class EtapaProgressoService {
     private Projeto carregarProjeto(Integer projetoId) {
         return projetoRepository.findById(projetoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
-    }
-
-    private List<EtapaProgresso> carregarOuCriarEtapas(Projeto projeto) {
-        List<EtapaProgresso> etapas = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projeto.getId());
-        if (!etapas.isEmpty()) {
-            return etapas;
-        }
-
-        garantirEtapasPadrao(projeto);
-        return etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projeto.getId());
-    }
-
-    private void sincronizarEtapasAtivas(List<EtapaProgresso> etapas) {
-        if (sincronizarEtapasAtivasSemPersistir(etapas)) {
-            etapaProgressoRepository.saveAll(etapas);
-        }
-    }
-
-    private boolean sincronizarEtapasAtivasSemPersistir(List<EtapaProgresso> etapas) {
-        boolean precisaSalvar = false;
-        boolean encontrouAtiva = false;
-
-        for (EtapaProgresso etapa : etapas) {
-            if (etapa.getStatus() == EtapaProgressoStatus.DONE || etapa.getStatus() == EtapaProgressoStatus.REJECTED) {
-                continue;
-            }
-
-            if (!encontrouAtiva) {
-                if (etapa.getStatus() != EtapaProgressoStatus.ACTIVE) {
-                    etapa.setStatus(EtapaProgressoStatus.ACTIVE);
-                    precisaSalvar = true;
-                }
-                encontrouAtiva = true;
-            } else if (etapa.getStatus() != EtapaProgressoStatus.PENDING) {
-                etapa.setStatus(EtapaProgressoStatus.PENDING);
-                precisaSalvar = true;
-            }
-        }
-
-        return precisaSalvar;
-    }
-
-    private Integer calcularPercentualGeral(List<EtapaProgresso> etapas) {
-        return etapas.stream()
-                .filter(etapa -> etapa.getStatus() == EtapaProgressoStatus.DONE)
-                .mapToInt(etapa -> Optional.ofNullable(etapa.getPeso()).orElse(0))
-                .sum();
     }
 
     private void validarParticipacaoProjeto(Projeto projeto, Integer usuarioId) {
@@ -414,55 +371,15 @@ public class EtapaProgressoService {
         }
     }
 
-    private void validarPermissaoConclusao(EtapaProgresso etapa, Usuario usuario) {
-        if (etapa.getResponsavel() == null) {
-            validarPermissaoConclusaoLegada(etapa, usuario);
-            return;
-        }
-
-        ProjectAccessPolicy.Relationship relacao = projectAccessPolicy.relationship(etapa.getProjeto(), usuario);
-        boolean podeConcluir = switch (etapa.getResponsavel()) {
-            case ORIENTADOR -> relacao == ProjectAccessPolicy.Relationship.RESPONSIBLE_ADVISOR;
-            case ALUNO -> relacao == ProjectAccessPolicy.Relationship.STUDENT_CREATOR
-                    || relacao == ProjectAccessPolicy.Relationship.APPROVED_MEMBER;
-            case AMBOS -> relacao == ProjectAccessPolicy.Relationship.RESPONSIBLE_ADVISOR
-                    || relacao == ProjectAccessPolicy.Relationship.STUDENT_CREATOR
-                    || relacao == ProjectAccessPolicy.Relationship.APPROVED_MEMBER;
-        };
-
-        if (!podeConcluir) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para concluir esta etapa");
-        }
-    }
-
-    private void validarPermissaoConclusaoLegada(EtapaProgresso etapa, Usuario usuario) {
-        TipoUsuario tipo = usuario.getTipo();
-        boolean podeConcluir = switch (etapa.getOrdem()) {
-            case 1, 5 -> tipo == TipoUsuario.ORIENTADOR;
-            case 2, 3, 4 -> tipo == TipoUsuario.ALUNO;
-            case 6 -> tipo == TipoUsuario.ALUNO || tipo == TipoUsuario.ORIENTADOR;
-            default -> tipo == TipoUsuario.ALUNO || tipo == TipoUsuario.ORIENTADOR;
-        };
-
-        if (!podeConcluir) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para concluir esta etapa");
-        }
-    }
-
     private void validarProjetoEditavel(Projeto projeto) {
         if (projeto.getStatus() == StatusProjeto.FINALIZADO) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Projeto finalizado nao permite alteracoes de progresso");
         }
     }
+
     private void validarDadosEtapa(EtapaRequest request) {
         if (request.getPeso() != null && (request.getPeso() < 0 || request.getPeso() > 100)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Peso deve estar entre 0 e 100");
-        }
-        if (request.getResponsavel() != null
-                && request.getResponsavel() != EtapaResponsavel.ALUNO
-                && request.getResponsavel() != EtapaResponsavel.ORIENTADOR
-                && request.getResponsavel() != EtapaResponsavel.AMBOS) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Responsavel invalido");
         }
     }
 
@@ -492,6 +409,6 @@ public class EtapaProgressoService {
         };
     }
 
-    private record DefaultStep(String title, int weight, EtapaResponsavel responsavel) {
+    private record DefaultStep(String title, EtapaResponsavel responsavel) {
     }
 }

@@ -60,6 +60,10 @@ public class EtapaProgresso {
     @Column(name = "required", nullable = false)
     private Boolean obrigatoria;
 
+    /** Quando o aluno enviou o marco para revisao; nulo se nao ha revisao pendente. */
+    @Column(name = "submitted_at")
+    private LocalDateTime enviadaEm;
+
     @Column(name = "created_at")
     private LocalDateTime criadaEm;
 
@@ -70,6 +74,9 @@ public class EtapaProgresso {
         }
         if (this.obrigatoria == null) {
             this.obrigatoria = true;
+        }
+        if (this.peso == null) {
+            this.peso = 0;
         }
         if (this.status == null) {
             this.status = EtapaProgressoStatus.PENDING;

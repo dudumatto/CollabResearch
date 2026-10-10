@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AdvisorStepDeadlineFlowTest extends FunctionalTestSupport {
 
     @Test
-    void orientadorGerenciaEtapasEAlunoConcluiEtapaDoAluno() throws Exception {
+    void orientadorGerenciaEtapasEAprovaEnquantoAlunoNaoConclui() throws Exception {
         TestUser orientador = registerOrientador("etapa-orient");
         TestUser aluno = registerAluno("etapa-aluno");
 
@@ -50,22 +50,23 @@ class AdvisorStepDeadlineFlowTest extends FunctionalTestSupport {
                         .content(objectMapper.writeValueAsString(novaEtapa)))
                 .andExpect(status().isForbidden());
 
+        // aprovar e decisao do orientador: o aluno nao conclui o marco diretamente
         mockMvc.perform(patch("/api/projetos/" + projetoId + "/etapas/" + etapaId)
-                        .header("Authorization", authHeader(orientador.token()))
+                        .header("Authorization", authHeader(aluno.token()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", "done"))))
                 .andExpect(status().isForbidden());
 
         JsonNode etapaConcluida = objectMapper.readTree(
                 mockMvc.perform(patch("/api/projetos/" + projetoId + "/etapas/" + etapaId)
-                                .header("Authorization", authHeader(aluno.token()))
+                                .header("Authorization", authHeader(orientador.token()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(Map.of("status", "done"))))
                         .andExpect(status().isOk())
                         .andReturn().getResponse().getContentAsString()
         );
         assertThat(etapaConcluida.get("status").asText()).isEqualTo("DONE");
-        assertThat(etapaConcluida.get("concluidaPorId").asInt()).isEqualTo(aluno.userId());
+        assertThat(etapaConcluida.get("concluidaPorId").asInt()).isEqualTo(orientador.userId());
 
         mockMvc.perform(put("/api/projetos/" + projetoId + "/etapas/" + etapaId)
                         .header("Authorization", authHeader(orientador.token()))

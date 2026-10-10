@@ -1,31 +1,25 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "framer-motion";
-import { ArrowLeft, Envelope, Hash, BookOpen, CaretRight, Clock, CheckCircle, FolderOpen } from "@phosphor-icons/react";
+import { ArrowLeft, Envelope, Hash, BookOpen, CaretRight, FolderOpen } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { mapOrientandoDetalhe } from "../utils/adapters";
-import {
-  formatProjectStatus,
-  formatEtapaStatus,
-  formatEtapaResponsavel,
-  formatDate,
-} from "../utils/formatters";
+import { formatProjectStatus, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { AdvisorMarcoCard } from "../components/progress/AdvisorMarcoCard";
+import { FiltrosMarco } from "../components/progress/MarcoPartes";
+import { marcosApi } from "../components/progress/marcosApi";
+import { useMarcos } from "../components/progress/useMarcos";
+import { contarFiltros, filtrarMarcos, mensagemDeErro } from "../components/progress/marcoUtils";
 import "./AdvisorWorkspace.css";
 
 function situacaoPillClass(situacao) {
   if (situacao === "EM_ANDAMENTO") return "advisor-etiqueta--amarelo";
   if (situacao === "ABERTO") return "advisor-etiqueta--verde";
   if (situacao === "FINALIZADO") return "advisor-etiqueta--vermelho";
-  return "advisor-etiqueta--vermelho";
-}
-
-function statusEtapaClass(status) {
-  if (status === "DONE") return "advisor-etiqueta--verde";
-  if (status === "ACTIVE") return "advisor-etiqueta--amarelo";
-  if (status === "REJECTED") return "advisor-etiqueta--vermelho";
   return "advisor-etiqueta--vermelho";
 }
 
@@ -49,6 +43,71 @@ function AvatarPerfil({ nome, src }) {
     </div>
   );
 }
+// Marcos do projeto do orientando: checklist (inclusive tarefas pessoais) somente leitura
+// e revisão (aprovar/devolver). A edição de marcos e tarefas fica em /app/progress.
+function MarcosDoOrientando({ projetoId, finalizado, onGerenciar }) {
+  const { marcos, loading, error, recarregar, executar } = useMarcos(projetoId);
+  const [filtro, setFiltro] = useState("todos");
+  const contagem = useMemo(() => contarFiltros(marcos), [marcos]);
+  const filtrados = useMemo(() => filtrarMarcos(marcos, filtro), [marcos, filtro]);
+
+  const acoes = useMemo(() => {
+    const historico = (marco) => marcosApi.listRevisoes(projetoId, marco.id);
+    if (finalizado) return { historico };
+    return {
+      historico,
+      revisar: async (marco, dados) => {
+        await executar(() => marcosApi.reviewMarco(projetoId, marco.id, dados));
+        toast.success(dados.acao === "APROVAR" ? "Marco aprovado." : "Marco devolvido ao aluno.");
+      },
+    };
+  }, [executar, finalizado, projetoId]);
+
+  return (
+    <div className="advisor-card-conteudo">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>
+          Marcos {marcos.length > 0 && `(${marcos.length})`}
+        </p>
+        {projetoId ? (
+          <button type="button" className="advisor-botao advisor-botao--secundario advisor-botao--pequeno" onClick={onGerenciar}>
+            Gerenciar marcos e tarefas
+          </button>
+        ) : null}
+      </div>
+
+      {marcos.length > 0 && <FiltrosMarco valor={filtro} onChange={setFiltro} contagens={contagem} />}
+
+      {loading && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }} aria-busy="true" aria-label="Carregando marcos">
+          {[1, 2].map((i) => (
+            <div key={i} className="skeleton" style={{ width: "100%", height: 96, borderRadius: "var(--raio-medio)" }} />
+          ))}
+        </div>
+      )}
+      {!loading && error && (
+        <p className="advisor-campo__erro" role="alert">
+          {mensagemDeErro(error, "Não foi possível carregar os marcos.")}{" "}
+          <button type="button" className="advisor-etapa__botao-link" onClick={() => recarregar()}>Tentar novamente</button>
+        </p>
+      )}
+      {!loading && !error && marcos.length === 0 && (
+        <p className="advisor-linha-card__meta">Nenhum marco definido para este projeto ainda.</p>
+      )}
+      {!loading && !error && marcos.length > 0 && filtrados.length === 0 && (
+        <p className="advisor-linha-card__meta">Nenhum marco neste filtro.</p>
+      )}
+      {!loading && !error && filtrados.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
+          {filtrados.map((marco) => (
+            <AdvisorMarcoCard key={marco.id} marco={marco} indice={marcos.indexOf(marco) + 1} acoes={acoes} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DetalheSkeleton() {
   return (
     <div className="advisor-pagina">
@@ -203,37 +262,28 @@ export default function AdvisorAdviseeDetailPage() {
             </p>
           </div>
 
+          <MarcosDoOrientando
+            key={projetoAtivoId}
+            projetoId={projetoAtivoId}
+            finalizado={(data.projetoSelecionado?.status ?? data.projetos.find((p) => p.projetoId === projetoAtivoId)?.status) === "FINALIZADO"}
+            onGerenciar={() => navigate(`/app/progress?projectId=${projetoAtivoId}`)}
+          />
+
           <div className="advisor-card-conteudo">
             <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>
-              Etapas {data.etapas.length > 0 && `(${data.etapas.length})`}
+              Atualizações do aluno {data.historico.length > 0 && `(${data.historico.length})`}
             </p>
-            {data.etapas.length === 0 && (
-              <p className="advisor-linha-card__meta">Nenhuma etapa definida para este projeto ainda.</p>
+            {data.historico.length === 0 && (
+              <p className="advisor-linha-card__meta">O aluno ainda não registrou atualizações neste projeto.</p>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
-              {data.etapas.map((etapa) => (
-                <div key={etapa.id ?? etapa.titulo} className="advisor-etapa">
+              {data.historico.slice(0, 10).map((item) => (
+                <div key={item.id ?? item.titulo} className="advisor-etapa">
                   <div className="advisor-etapa__cabecalho">
-                    <p className="advisor-etapa__titulo">{etapa.titulo}</p>
-                    <span className={`advisor-etiqueta ${statusEtapaClass(etapa.status)}`}>
-                      {formatEtapaStatus(etapa.status)}
-                    </span>
+                    <p className="advisor-etapa__titulo">{item.titulo}</p>
+                    {item.dataRegistro && <span className="advisor-etapa__meta">{formatDate(item.dataRegistro)}</span>}
                   </div>
-                  {etapa.descricao && <p className="advisor-etapa__descricao">{etapa.descricao}</p>}
-                  <div className="advisor-etapa__meta">
-                    <span>Responsável: {formatEtapaResponsavel(etapa.responsavel)}</span>
-                    {etapa.prazo && (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <Clock size={12} /> Prazo: {formatDate(etapa.prazo)}
-                      </span>
-                    )}
-                    {etapa.concluidaEm && (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <CheckCircle size={12} /> Concluída em {formatDate(etapa.concluidaEm)}
-                        {etapa.concluidaPorNome ? ` por ${etapa.concluidaPorNome}` : ""}
-                      </span>
-                    )}
-                  </div>
+                  {item.descricao && <p className="advisor-etapa__descricao">{item.descricao}</p>}
                 </div>
               ))}
             </div>

@@ -3,12 +3,12 @@ import { Sparkle } from "@phosphor-icons/react";
 import "./LogoutConfirmModal.css";
 import "./LumenLoadingModal.css";
 
-export function LumenLoadingModal({ open, count = 0 }) {
+export function LumenLoadingModal({ open, count = 0, message }) {
   if (!open) return null;
 
-  const descricao = count === 1
+  const descricao = message ?? (count === 1
     ? "A Lumen está avaliando esta candidatura. Isso pode levar alguns segundos."
-    : "A Lumen está avaliando as candidaturas. Isso pode levar alguns segundos.";
+    : "A Lumen está avaliando as candidaturas. Isso pode levar alguns segundos.");
 
   return createPortal(
     <div className="logout-confirm__overlay" role="presentation" data-entering="true">

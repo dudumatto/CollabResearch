@@ -35,6 +35,8 @@ class OrientadorServiceTest {
     @Mock
     private EtapaProgressoRepository etapaProgressoRepository;
     @Mock
+    private EtapaTarefaRepository etapaTarefaRepository;
+    @Mock
     private ProjectDeliveryRepository projectDeliveryRepository;
     @Mock
     private DeliveryVersionRepository deliveryVersionRepository;
@@ -66,7 +68,7 @@ class OrientadorServiceTest {
     @BeforeEach
     void setUp() {
         orientadorService = new OrientadorService(
-                authHelper, projetoRepository, inscricaoRepository, etapaProgressoRepository,
+                authHelper, projetoRepository, inscricaoRepository, etapaProgressoRepository, etapaTarefaRepository,
                 projectDeliveryRepository, deliveryVersionRepository, academicEvaluationRepository, acknowledgementRepository,
                 alunoRepository, progressoRepository, orientadorRepository, usuarioRepository, usuarioService);
 
@@ -237,6 +239,10 @@ class OrientadorServiceTest {
                 .prazo(OffsetDateTime.now().minusDays(1)).build();
         when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(10)).thenReturn(List.of(concluida, atrasada));
         when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(11)).thenReturn(List.of());
+        // progresso vem dos itens (2 de 5 concluidos), nao do peso dos marcos
+        when(etapaTarefaRepository.findByEtapaIdInOrderByOrdemAscIdAsc(List.of(30, 31))).thenReturn(List.of(
+                tarefa(1, concluida, true), tarefa(2, concluida, true),
+                tarefa(3, atrasada, false), tarefa(4, atrasada, false), tarefa(5, atrasada, false)));
 
         OrientandoResponse orientando = orientadorService.orientandos(null, null, 10).get(0);
 
@@ -441,5 +447,10 @@ class OrientadorServiceTest {
                 .isInstanceOf(ResponseStatusException.class)
                 .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode())
                         .isEqualTo(HttpStatus.BAD_REQUEST));
+    }
+
+    private static EtapaTarefa tarefa(int id, EtapaProgresso etapa, boolean concluida) {
+        return EtapaTarefa.builder().id(id).etapa(etapa).titulo("Item " + id).origem(TarefaOrigem.ORIENTADOR)
+                .obrigatoria(false).concluida(concluida).ordem(id).build();
     }
 }

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { MagnifyingGlass, SlidersHorizontal, X, Plus } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useAuth } from "../hooks/useAuth";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
@@ -12,8 +13,12 @@ import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
 import ProjectGridCard from "../components/ProjectGridCard";
+import { LumenAIButton } from "../components/ui/LumenAIButton";
+import { LumenLoadingModal } from "../components/LumenLoadingModal";
+import { LumenRecommendationsModal } from "../components/LumenRecommendationsModal";
 import { getUserId, mapApplication, mapProject } from "../utils/adapters";
 import { formatProjectStatus } from "../utils/formatters";
+import { normalizeError, getErrorMessage } from "../utils/apiError";
 import "./ProjectsPage.css";
 
 function normalizeValue(value) {
@@ -67,6 +72,10 @@ export default function ProjectsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
+  const [lumenLoading, setLumenLoading] = useState(false);
+  const [lumenResultado, setLumenResultado] = useState(null);
+  const isAluno = String(user?.tipo ?? "").toUpperCase() === "ALUNO";
+  const closeLumen = useCallback(() => setLumenResultado(null), []);
   const filterKey = `${selectedCourse}|${selectedArea}|${selectedStatus}|${debouncedSearch}`;
   const filterKeyRef = useRef(filterKey);
   filterKeyRef.current = filterKey;
@@ -130,6 +139,23 @@ export default function ProjectsPage() {
     }
   }, [loadingMore, loading, data, filterKey, selectedCourse, selectedArea, selectedStatus, debouncedSearch, setData]);
 
+  const recomendarComLumen = async () => {
+    if (lumenLoading) return;
+    setLumenLoading(true);
+    try {
+      const resultado = await projectService.recomendarComLumen();
+      if (Array.isArray(resultado?.recomendacoes) && resultado.recomendacoes.length > 0) {
+        setLumenResultado(resultado);
+      } else {
+        toast.info(resultado?.aviso || "A Lumen não encontrou projetos para recomendar.");
+      }
+    } catch (err) {
+      toast.error(getErrorMessage(normalizeError(err), "Não foi possível analisar com a Lumen."));
+    } finally {
+      setLumenLoading(false);
+    }
+  };
+
   const { data: myApplications } = useAsyncData(
     async () => {
       if (String(user?.tipo ?? "").toUpperCase() !== "ALUNO") return [];
@@ -178,15 +204,30 @@ export default function ProjectsPage() {
     [visibleProjects, search],
   );
 
-  const counts = useMemo(
-    () => ({
-      total: visibleProjects.length,
-      open: visibleProjects.filter((project) => project.status === "ABERTO").length,
-      active: visibleProjects.filter((project) => project.status === "EM_ANDAMENTO").length,
-      finished: visibleProjects.filter((project) => project.status === "FINALIZADO").length,
-    }),
-    [visibleProjects],
+  // Contadores ignoram o filtro de status: trocar de card não zera os demais.
+  const { data: countSource, loading: countsLoading } = useAsyncData(
+    async ({ signal } = {}) => {
+      const result = await projectService.listPaged({
+        curso: selectedCourse === "Todos" ? "" : selectedCourse,
+        area: selectedArea === "Todas" ? "" : selectedArea,
+        busca: debouncedSearch,
+      }, { signal, page: 0, size: 100 });
+      return result.content.map(mapProject);
+    },
+    [selectedCourse, selectedArea, debouncedSearch],
+    { initialData: [] },
   );
+
+  const counts = useMemo(() => {
+    const countable = (Array.isArray(countSource) ? countSource : [])
+      .filter((project) => canShowProjectForUser(project, user, approvedProjectIds));
+    return {
+      total: countable.length,
+      open: countable.filter((project) => project.status === "ABERTO").length,
+      active: countable.filter((project) => project.status === "EM_ANDAMENTO").length,
+      finished: countable.filter((project) => project.status === "FINALIZADO").length,
+    };
+  }, [countSource, user, approvedProjectIds]);
 
   if (error) {
     return <StatusView title="Falha ao carregar projetos" description={error.message} />;
@@ -207,6 +248,15 @@ export default function ProjectsPage() {
           <p className="pagina-projetos__subtitulo">Explore projetos abertos, acompanhe vinculados e mantenha finalizados como histórico de consulta.</p>
         </div>
         <div className="pagina-projetos__acoes-cabecalho">
+          {isAluno && (
+            <LumenAIButton
+              onClick={recomendarComLumen}
+              disabled={lumenLoading}
+              title="Comparar seu perfil com os projetos abertos e sugerir os 3 mais compatíveis"
+            >
+              {lumenLoading ? "Analisando com Lumen..." : "Analisar projetos"}
+            </LumenAIButton>
+          )}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
@@ -246,7 +296,7 @@ export default function ProjectsPage() {
             onClick={() => setSelectedStatus(status)}
             className={`pagina-projetos__atalho-status ${selectedStatus === status ? "pagina-projetos__atalho-status--ativo" : ""}`}
           >
-            <span className="pagina-projetos__atalho-status-valor">{loading ? "–" : count}</span>
+            <span className="pagina-projetos__atalho-status-valor">{countsLoading ? "–" : count}</span>
             <span className="pagina-projetos__atalho-status-label">{label}</span>
           </button>
         ))}
@@ -379,6 +429,18 @@ export default function ProjectsPage() {
           {loadingMore ? "Carregando..." : loadMoreError ? "Tentar novamente" : "Carregar mais projetos"}
         </button>
       )}
+
+      <LumenRecommendationsModal
+        open={Boolean(lumenResultado)}
+        recomendacoes={lumenResultado?.recomendacoes ?? []}
+        aviso={lumenResultado?.aviso}
+        onClose={closeLumen}
+        onOpenProject={handleOpenProject}
+      />
+      <LumenLoadingModal
+        open={lumenLoading}
+        message="A Lumen está comparando seu perfil com os projetos abertos. Isso pode levar alguns segundos."
+      />
     </motion.div>
   );
 }

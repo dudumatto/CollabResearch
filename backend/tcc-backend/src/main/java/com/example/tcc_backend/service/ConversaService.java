@@ -20,6 +20,8 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class ConversaService {
 
+    private static final String TEXTO_MENSAGEM_APAGADA = "Mensagem apagada";
+
     private final ConversaRepository conversaRepository;
     private final MensagemRepository mensagemRepository;
     private final ProjetoRepository projetoRepository;
@@ -281,6 +283,12 @@ public class ConversaService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode editar a mensagem de outro usuario");
         }
 
+        if (Boolean.TRUE.equals(mensagem.getExcluida())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mensagem apagada nao pode ser editada");
+        }
+        if (mensagem.getDataLeitura() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mensagem ja visualizada nao pode ser editada");
+        }
         exigirUltimaMensagem(mensagem, "editada");
 
         if (novoConteudo == null || novoConteudo.isBlank()) {
@@ -314,10 +322,15 @@ public class ConversaService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Voce nao pode excluir a mensagem de outro usuario");
         }
 
-        exigirUltimaMensagem(mensagem, "excluida");
+        if (Boolean.TRUE.equals(mensagem.getExcluida())) return;
 
-        Integer conversaId = mensagem.getConversa() != null ? mensagem.getConversa().getId() : null;
-        mensagemRepository.delete(mensagem);
-        chatRealtimeService.publicarMensagemExcluida(conversaId, mensagemId);
+        mensagem.setConteudo(TEXTO_MENSAGEM_APAGADA);
+        mensagem.setEditada(false);
+        mensagem.setDataEdicao(null);
+        mensagem.setExcluida(true);
+        mensagem.setDataExclusao(OffsetDateTime.now());
+
+        MensagemResponse response = MensagemResponse.fromEntity(mensagemRepository.save(mensagem), fotoPerfilResolver());
+        chatRealtimeService.publicarMensagemExcluida(response);
     }
 }

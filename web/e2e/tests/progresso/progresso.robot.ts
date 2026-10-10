@@ -98,7 +98,7 @@ export async function publishUpdate(page: Page, payload: { title: string; catego
   }
 
   if (payload.stepName) {
-    await page.getByLabel("Etapa relacionada").selectOption({ label: payload.stepName });
+    await page.getByLabel("Marco relacionado").selectOption({ label: payload.stepName });
   }
 
   if (payload.description) {
@@ -109,10 +109,52 @@ export async function publishUpdate(page: Page, payload: { title: string; catego
   await expect(page.getByText(/formulário está recolhido/i)).toBeVisible();
 }
 
-export async function advanceActiveStep(page: Page) {
-  const button = page.getByRole("button", { name: /^concluir(?: etapa)?$/i }).first();
-  await expect(button).toBeVisible();
-  await button.click();
+// Fluxo de marcos com checklist pela API (a UI e coberta pelos testes mockados):
+// orientador cria a tarefa, aluno conclui e envia para revisao, orientador aprova.
+async function loginToken(request: APIRequestContext, user: { email: string; senha: string }) {
+  const login = await request.post(`${API_URL}/api/auth/login`, { data: { email: user.email, senha: user.senha } });
+  expect(login.ok()).toBeTruthy();
+  return (await login.json()).token as string;
+}
+
+export async function approveFirstMarcoViaReview(
+  request: APIRequestContext,
+  ctx: { projectId: number; orientador: { email: string; senha: string }; aluno: { email: string; senha: string } },
+) {
+  const orientadorToken = await loginToken(request, ctx.orientador);
+  const alunoToken = await loginToken(request, ctx.aluno);
+  const base = `${API_URL}/api/projetos/${ctx.projectId}/etapas`;
+  const authOrientador = { Authorization: `Bearer ${orientadorToken}` };
+  const authAluno = { Authorization: `Bearer ${alunoToken}` };
+
+  const marcos = await (await request.get(base, { headers: authOrientador })).json();
+  const marcoId = marcos[0].id as number;
+
+  const comTarefa = await request.post(`${base}/${marcoId}/tarefas`, {
+    headers: authOrientador,
+    data: { titulo: "Entregar revisao bibliografica", obrigatoria: true },
+  });
+  expect(comTarefa.status()).toBe(201);
+  const tarefa = (await comTarefa.json()).tarefas[0];
+  expect(tarefa.origem).toBe("ORIENTADOR");
+
+  // aluno nao envia sem concluir as obrigatorias, e nao aprova por conta propria
+  expect((await request.post(`${base}/${marcoId}/enviar-revisao`, { headers: authAluno })).status()).toBe(409);
+  const marcada = await request.patch(`${base}/${marcoId}/tarefas/${tarefa.id}`, { headers: authAluno, data: { concluida: true } });
+  expect(marcada.ok()).toBeTruthy();
+  const aposMarcar = await marcada.json();
+  expect(aposMarcar.percentual).toBe(100);
+  expect(aposMarcar.status).not.toBe("DONE");
+  expect((await request.post(`${base}/${marcoId}/revisao`, { headers: authAluno, data: { acao: "APROVAR" } })).status()).toBe(403);
+
+  expect((await request.post(`${base}/${marcoId}/enviar-revisao`, { headers: authAluno })).ok()).toBeTruthy();
+  const aprovado = await request.post(`${base}/${marcoId}/revisao`, {
+    headers: authOrientador,
+    data: { acao: "APROVAR", comentario: "Aprovado" },
+  });
+  expect(aprovado.ok()).toBeTruthy();
+  expect((await aprovado.json()).status).toBe("DONE");
+  return marcos[0].titulo as string;
 }
 
 export async function assertProgressApi(request: APIRequestContext, token: string, projectId: number, title: string) {

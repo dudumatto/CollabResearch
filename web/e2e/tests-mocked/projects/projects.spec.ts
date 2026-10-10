@@ -22,6 +22,17 @@ test.describe("projetos", () => {
     await runProjectsListAndApplyFlow(page);
   });
 
+  test("Lumen recomenda os 3 projetos mais compativeis com o perfil do aluno", async ({ page }) => {
+    await page.goto("/app/projects");
+    await page.getByRole("button", { name: "Analisar projetos" }).click();
+    const modal = page.getByRole("dialog", { name: "Projetos recomendados pela Lumen" });
+    await expect(modal).toBeVisible();
+    await expect(modal.locator(".advisor-lumen__card")).toHaveCount(3);
+    await expect(modal.getByText(/Seu perfil combina com/).first()).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(modal).toBeHidden();
+  });
+
   test("exibe participantes e oculta mensagem do grupo para aluno que nao integra o projeto", async ({ page }) => {
     await page.goto("/app/projects/4");
     await expect(page.getByRole("heading", { name: "Projeto E2E Nova Inscricao" })).toBeVisible();

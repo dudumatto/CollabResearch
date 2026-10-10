@@ -138,6 +138,7 @@ export async function runChatFlow(page: Page, browser: Browser) {
   await expect(page.getByText("Excluir mensagem")).toBeVisible();
   await page.locator(".modal").getByRole("button", { name: "Excluir" }).click();
   await expect(page.getByText("Mensagem editada E2E")).toBeHidden();
+  await expect(page.getByText("Mensagem apagada")).toBeVisible();
   const emptyContext = await browser.newContext();
   const emptyPage = await emptyContext.newPage();
   await setupApiMock(emptyPage, { empty: { conversations: true } });

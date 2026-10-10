@@ -674,7 +674,9 @@
 /* ==============================
    Nova pagina de progresso
 ============================== */
-.progress-page {
+/* O modal de atualização é renderizado em document.body (portal), por isso recebe as variáveis também. */
+.progress-page,
+.update-modal {
   --progress-bg: linear-gradient(180deg, #f6f8f5 0%, #eff5ec 100%);
   --progress-panel: #ffffff;
   --progress-surface: #f6f8f5;
@@ -704,7 +706,9 @@
   --progress-badge-blue-text: #185e46;
   --progress-badge-red-text: #b91c1c;
   --progress-badge-amber-text: #b45309;
+}
 
+.progress-page {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -712,7 +716,8 @@
   background: transparent;
 }
 
-.dark .progress-page {
+.dark .progress-page,
+.dark .update-modal {
   --progress-bg: linear-gradient(180deg, #101a14 0%, #17251d 100%);
   --progress-panel: #17251d;
   --progress-surface: #19271f;
@@ -945,12 +950,38 @@
   overflow: hidden;
 }
 
+/* Marcos com checklist crescem com o conteúdo; só o painel de atualizações rola por dentro. */
+.progress-page__grid > .progress-page__panel.progress-page__panel--feed {
+  height: auto;
+  overflow: visible;
+}
+
+.progress-page__panel--feed .stepper-vertical {
+  overflow: visible;
+}
+
 .progress-page__panel--updates .update-form {
   flex: 0 0 auto;
 }
 
 .progress-page__panel--updates .progress-page__updates {
   flex: 1 1 auto;
+}
+
+/* Em duas colunas, o bloco de atualizações acompanha a altura do bloco de progresso.
+   contain: size tira a altura intrínseca do feed da conta, então o feed rola por dentro
+   em vez de esticar a linha da grade. */
+@media (min-width: 1025px) {
+  .progress-page__grid {
+    align-items: stretch;
+  }
+
+  .progress-page__grid > .progress-page__panel.progress-page__panel--updates {
+    height: auto;
+    min-height: clamp(34rem, calc(100dvh - 14rem), 48rem);
+    align-self: stretch;
+    contain: size;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1013,6 +1044,16 @@
   margin-top: 1rem;
 }
 
+.progress-page__stats-grid--tres {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .progress-page__stats-grid--tres {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .progress-stat {
   display: flex;
   flex-direction: column;
@@ -1026,6 +1067,16 @@
 
 .progress-stat svg {
   color: var(--progress-accent);
+}
+
+.progress-stat--alerta {
+  border-color: var(--cor-erro-borda);
+  background: var(--cor-erro-clara);
+}
+
+.progress-stat--alerta svg,
+.progress-stat--alerta strong {
+  color: var(--cor-erro);
 }
 
 .progress-stat span {
@@ -1065,30 +1116,39 @@
   font-weight: 700;
 }
 
+/* Tamanho fixo: o rótulo nunca muda, então o botão não redimensiona ao clicar. */
 .progress-page__toggle-form {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
-  gap: 0.45rem;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.25rem;
+  padding: 0 0.9rem;
   border: 0;
-  border-radius: 14px;
-  padding: 0.8rem 1rem;
+  border-radius: 999px;
   background: var(--progress-action-bg);
   color: #fff;
+  font-size: 0.84rem;
   font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
   box-shadow: none;
+  transition: filter 0.15s ease, transform 0.15s ease;
 }
 
-.progress-page__collapsed-form {
-  margin-top: 0.8rem;
-  padding: 0.8rem 0.95rem;
-  border-radius: 16px;
-  border: 1px dashed var(--progress-border-input);
-  color: var(--progress-text-muted);
-  background: var(--progress-surface);
+.progress-page__toggle-form:hover {
+  filter: brightness(1.08);
 }
 
-.progress-page__collapsed-form p {
-  margin: 0;
+.progress-page__toggle-form:active {
+  transform: translateY(1px);
+}
+
+.progress-page__toggle-form:focus-visible {
+  outline: 2px solid var(--progress-accent);
+  outline-offset: 2px;
 }
 
 .progress-page__updates {
@@ -1173,192 +1233,18 @@
 }
 
 .step-card {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.9rem;
-  align-items: start;
-  padding: 1rem;
-  border-radius: 22px;
-  border: 1px solid var(--progress-border-soft);
-  background: var(--progress-surface);
   transition: border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
 }
 
-.step-card--reorderable {
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
-  cursor: grab;
-}
-
-.step-card--reorderable:active {
-  cursor: grabbing;
-}
-
-.step-card--dragging {
+.step-card.step-card--dragging {
   opacity: 0.62;
   border-color: var(--progress-accent);
-  box-shadow: none;
   transform: scale(0.992);
 }
 
-.step-card--done {
-  border-color: var(--cor-sucesso-borda);
-  background: var(--cor-sucesso-clara);
-}
-
-.step-card--active {
-  border-color: var(--cor-atencao-leve);
-  background: var(--cor-atencao-clara);
-  box-shadow: none;
-}
-
-.step-card--pending {
-  border-color: var(--cor-erro-borda);
-  background: var(--cor-erro-clara);
-}
-
-.step-card--highlighted {
+.step-card.step-card--highlighted {
   border-color: rgba(31, 122, 90, 0.56);
-  box-shadow: 0 0 0 3px rgba(31, 122, 90, 0.12);
-}
-
-.step-card__marker {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--progress-accent-soft);
-  color: var(--progress-accent);
-  font-weight: 800;
-}
-
-.step-card--done .step-card__marker {
-  background: var(--cor-sucesso-leve);
-  color: var(--cor-sucesso);
-}
-
-.step-card--active .step-card__marker {
-  background: var(--cor-atencao-leve);
-  color: var(--cor-atencao);
-}
-
-.step-card--pending .step-card__marker {
-  background: var(--cor-erro-leve);
-  color: var(--cor-erro);
-}
-
-.step-card__drag-handle {
-  width: auto;
-  min-width: 4.4rem;
-  min-height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  align-self: start;
-  border: 1px solid var(--progress-border-input);
-  border-radius: 12px;
-  background: var(--progress-surface-strong);
-  color: var(--progress-text-muted);
-  cursor: grab;
-  padding: 0 0.55rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.step-card__drag-handle:hover {
-  color: var(--progress-accent);
-  border-color: rgba(31, 122, 90, 0.26);
-  background: var(--progress-accent-soft);
-}
-
-.step-card__drag-handle span {
-  line-height: 1;
-}
-
-.step-card__content {
-  min-width: 0;
-}
-
-.step-card__header {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.step-card__eyebrow {
-  margin: 0;
-  color: var(--progress-text-muted);
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.step-card__title {
-  margin: 0.2rem 0 0;
-  color: var(--progress-text-strong);
-  font-size: 1rem;
-}
-
-
-.step-card__description {
-  margin: 0.6rem 0 0;
-  color: var(--progress-text-soft);
-  line-height: 1.55;
-}
-
-.step-card__footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.9rem;
-  margin-top: 0.75rem;
-  color: var(--progress-text-muted);
-  font-size: 0.84rem;
-}
-
-.step-card__status {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
-  background: var(--progress-chip-bg);
-  color: var(--progress-text);
-  font-weight: 700;
-}
-
-.step-card--done .step-card__status {
-  background: var(--cor-sucesso-leve);
-  color: var(--cor-sucesso-escura);
-}
-
-.step-card--active .step-card__status {
-  background: var(--cor-atencao-leve);
-  color: var(--cor-atencao-escura);
-}
-
-.step-card--pending .step-card__status {
-  background: var(--cor-erro-leve);
-  color: var(--cor-erro-escura);
-}
-
-.step-card__action {
-  align-self: center;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  border: 0;
-  border-radius: 14px;
-  padding: 0.8rem 1rem;
-  background: var(--progress-dark-action-bg);
-  color: var(--progress-dark-action-text);
-  font-weight: 700;
-}
-
-.step-card__action:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+  box-shadow: inset 4px 0 0 var(--marco-faixa, transparent), 0 0 0 3px rgba(31, 122, 90, 0.12);
 }
 
 .update-form {
@@ -1397,6 +1283,7 @@
 .update-form__field textarea {
   resize: vertical;
   min-height: 88px;
+  max-height: 11rem;
 }
 
 .update-form__field input:disabled {
@@ -1665,12 +1552,10 @@
   .update-form__grid {
     grid-template-columns: 1fr;
   }
-
   .progress-page__hero {
     flex-direction: column;
     align-items: stretch;
   }
-
   .progress-page__project-picker {
     min-width: 0;
   }
@@ -1680,49 +1565,14 @@
   .progress-page {
     padding-top: 0.5rem;
   }
-
   .progress-page__hero,
   .progress-page__panel {
     padding: 1rem;
     border-radius: 22px;
   }
-
-  .progress-page__panel-title-row,
-  .progress-page__panel-header,
-  .update-feed__header,
-  .step-card,
-  .step-card__header {
+  .progress-page__panel-title-row, .progress-page__panel-header, .update-feed__header {
     gap: 0.75rem;
   }
-
-  .step-card,
-  .step-card--reorderable {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .step-card__drag-handle {
-    grid-column: 1;
-    grid-row: 1;
-    width: fit-content;
-    min-width: 4.4rem;
-    justify-self: start;
-  }
-
-  .step-card--reorderable .step-card__marker {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  .step-card--reorderable .step-card__content {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-  }
-
-  .step-card__action {
-    grid-column: 1 / -1;
-    justify-content: center;
-  }
-
   .update-feed__meta {
     flex-direction: column;
   }

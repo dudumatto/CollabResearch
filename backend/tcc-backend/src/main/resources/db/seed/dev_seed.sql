@@ -132,6 +132,32 @@ INSERT INTO progress_steps (id, project_id, title, description, weight, step_ord
 INSERT INTO progress_steps (id, project_id, title, description, weight, step_order, status, completed_at, completed_by, created_at, due_at, responsible, required) VALUES (41, 14, 'Coleta de respostas', 'Aplicar questionario com estudantes e organizar base anonima.', 35, 2, 'PENDING', NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '16 days', '2026-09-22 18:00:00+00', 'ALUNO', TRUE);
 INSERT INTO progress_steps (id, project_id, title, description, weight, step_order, status, completed_at, completed_by, created_at, due_at, responsible, required) VALUES (42, 14, 'Analise dos resultados', 'Cruzar respostas com categorias de uso e qualidade da escrita academica.', 35, 3, 'PENDING', NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '14 days', '2026-10-18 18:00:00+00', 'ORIENTADOR', TRUE);
 
+-- Marcos com checklist (V12): 3 tarefas do orientador por marco; o progresso vem dos itens concluidos.
+-- DONE = todas concluidas; ACTIVE = parcial (marco 38 ja enviado para revisao); REJECTED = devolvido; PENDING = nenhuma.
+INSERT INTO progress_step_tasks (step_id, title, required, origin, completed, completed_at, completed_by, task_order, created_at)
+SELECT s.id, t.title, t.req, 'ORIENTADOR',
+       (s.status = 'DONE' OR (s.status = 'ACTIVE' AND t.ord <= CASE WHEN s.id = 38 THEN 3 ELSE 1 END) OR (s.status = 'REJECTED' AND t.ord <= 2)),
+       CASE WHEN (s.status = 'DONE' OR (s.status = 'ACTIVE' AND t.ord <= CASE WHEN s.id = 38 THEN 3 ELSE 1 END) OR (s.status = 'REJECTED' AND t.ord <= 2))
+            THEN COALESCE(s.completed_at, CURRENT_TIMESTAMP - INTERVAL '5 days') END,
+       CASE WHEN (s.status = 'DONE' OR (s.status = 'ACTIVE' AND t.ord <= CASE WHEN s.id = 38 THEN 3 ELSE 1 END) OR (s.status = 'REJECTED' AND t.ord <= 2))
+            THEN s.completed_by END,
+       t.ord, s.created_at
+FROM progress_steps s
+CROSS JOIN (VALUES (1, 'Definir escopo do marco', TRUE), (2, 'Produzir o material do marco', TRUE), (3, 'Revisar com o orientador', FALSE)) AS t(ord, title, req);
+
+-- Tarefa pessoal de aluno (visivel ao orientador, nunca obrigatoria).
+INSERT INTO progress_step_tasks (step_id, title, required, origin, completed, task_order, created_by, created_at)
+VALUES (11, 'Resumir os artigos lidos', FALSE, 'ALUNO', FALSE, 4, 7, CURRENT_TIMESTAMP - INTERVAL '3 days');
+
+-- Marco 38 enviado para revisao do orientador; marco 34 devolvido com comentario; marcos DONE ja aprovados.
+UPDATE progress_steps SET submitted_at = CURRENT_TIMESTAMP - INTERVAL '1 day' WHERE id = 38;
+INSERT INTO progress_step_reviews (step_id, action, comment, author_id, created_at)
+SELECT id, 'APROVADO', NULL, completed_by, completed_at FROM progress_steps WHERE status = 'DONE';
+INSERT INTO progress_step_reviews (step_id, action, comment, author_id, created_at) VALUES
+    (34, 'ENVIADO', NULL, 17, CURRENT_TIMESTAMP - INTERVAL '10 days'),
+    (34, 'DEVOLVIDO', 'Faltou aprofundar a revisao dos trabalhos relacionados; complete as referencias e reenvie.', 4, CURRENT_TIMESTAMP - INTERVAL '8 days'),
+    (38, 'ENVIADO', NULL, 14, CURRENT_TIMESTAMP - INTERVAL '1 day');
+
 INSERT INTO progresso (id_progresso, id_projeto, id_usuario_autor, titulo, tipo, fase, descricao, metadata_json, categoria, id_etapa, step_contribution, data_registro) VALUES (1, 4, 7, 'Levantamento concluido', 'MARCO', 'Revisao bibliografica', 'Foram selecionados 24 artigos e definidos criterios de inclusao.', '{"seed":"dev"}', 'research', 10, 30, '2026-07-11 09:00:00');
 INSERT INTO progresso (id_progresso, id_projeto, id_usuario_autor, titulo, tipo, fase, descricao, metadata_json, categoria, id_etapa, step_contribution, data_registro) VALUES (2, 4, 7, 'Experimento inicial', 'ATUALIZACAO', 'Modelo de recomendacao', 'Primeira matriz de similaridade gerada com resultados promissores.', '{"seed":"dev"}', 'progress', 11, 20, '2026-08-18 10:00:00');
 INSERT INTO progresso (id_progresso, id_projeto, id_usuario_autor, titulo, tipo, fase, descricao, metadata_json, categoria, id_etapa, step_contribution, data_registro) VALUES (3, 5, 11, 'Prototipo navegavel', 'MARCO', 'Aplicativo mobile', 'Fluxo offline validado com telas principais em Flutter.', '{"seed":"dev"}', 'progress', 13, 30, '2026-07-02 14:00:00');
@@ -294,6 +320,8 @@ SELECT setval(pg_get_serial_sequence('orientador', 'id_orientador'), (SELECT COA
 SELECT setval(pg_get_serial_sequence('projeto', 'id_projeto'), (SELECT COALESCE(MAX(id_projeto), 1) FROM projeto), TRUE);
 SELECT setval(pg_get_serial_sequence('inscricao', 'id_inscricao'), (SELECT COALESCE(MAX(id_inscricao), 1) FROM inscricao), TRUE);
 SELECT setval(pg_get_serial_sequence('progress_steps', 'id'), (SELECT COALESCE(MAX(id), 1) FROM progress_steps), TRUE);
+SELECT setval(pg_get_serial_sequence('progress_step_tasks', 'id'), (SELECT COALESCE(MAX(id), 1) FROM progress_step_tasks), TRUE);
+SELECT setval(pg_get_serial_sequence('progress_step_reviews', 'id'), (SELECT COALESCE(MAX(id), 1) FROM progress_step_reviews), TRUE);
 SELECT setval(pg_get_serial_sequence('progresso', 'id_progresso'), (SELECT COALESCE(MAX(id_progresso), 1) FROM progresso), TRUE);
 SELECT setval(pg_get_serial_sequence('documento', 'id_documento'), (SELECT COALESCE(MAX(id_documento), 1) FROM documento), TRUE);
 SELECT setval(pg_get_serial_sequence('feedback', 'id_feedback'), (SELECT COALESCE(MAX(id_feedback), 1) FROM feedback), TRUE);

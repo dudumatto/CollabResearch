@@ -27,4 +27,8 @@ public class OrientandoEtapaResponse {
     private OffsetDateTime prazo;
     private LocalDateTime concluidaEm;
     private String concluidaPorNome;
+    private Boolean emRevisao;
+    private Integer itensConcluidos;
+    private Integer itensTotal;
+    private Integer percentual;
 }

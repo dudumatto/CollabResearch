@@ -27,6 +27,7 @@ public class MensagemResponse {
     private OffsetDateTime dataEdicao;
     private Boolean lida;
     private OffsetDateTime dataLeitura;
+    private Boolean excluida;
 
     public static MensagemResponse fromEntity(Mensagem mensagem) {
         return fromEntity(mensagem, Function.identity());
@@ -49,6 +50,7 @@ public class MensagemResponse {
                 .dataEdicao(mensagem.getDataEdicao())
                 .lida(mensagem.getDataLeitura() != null)
                 .dataLeitura(mensagem.getDataLeitura())
+                .excluida(Boolean.TRUE.equals(mensagem.getExcluida()))
                 .build();
     }
 }

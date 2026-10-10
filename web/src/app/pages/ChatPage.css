@@ -539,7 +539,7 @@
   min-width: 52px;
   opacity: 0;
   overflow: hidden;
-  padding: 4px 0;
+  padding: 0;
   pointer-events: none;
   position: absolute;
   top: calc(100% + 4px);
@@ -640,6 +640,20 @@
   border: 1px solid var(--cor-input-borda);
   border-bottom-left-radius: 4px;
   color: var(--cor-texto);
+}
+
+.mensagem-linha .bolha-mensagem--apagada {
+  background: var(--cor-superficie-2, rgba(128, 128, 128, 0.08));
+  border: 1px dashed var(--cor-input-borda);
+  color: var(--cor-texto-fraco);
+}
+
+.mensagem-texto--apagada {
+  align-items: center;
+  display: flex;
+  font-style: italic;
+  gap: 6px;
+  opacity: 0.85;
 }
 
 .mensagem-nome--clicavel {

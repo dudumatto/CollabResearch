@@ -23,8 +23,8 @@ public class ChatRealtimeService {
         publicar(mensagem.getConversaId(), ChatMessageEvent.editada(mensagem));
     }
 
-    public void publicarMensagemExcluida(Integer conversaId, Integer mensagemId) {
-        publicar(conversaId, ChatMessageEvent.excluida(conversaId, mensagemId));
+    public void publicarMensagemExcluida(MensagemResponse mensagem) {
+        publicar(mensagem.getConversaId(), ChatMessageEvent.excluida(mensagem));
     }
 
     public void publicarMensagensLidas(Integer conversaId, java.util.List<Integer> mensagemIds) {

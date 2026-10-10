@@ -98,6 +98,69 @@ function delayFor(url: URL, options: MockOptions): number {
   });
   return match?.ms ?? 0;
 }
+type MockTarefa = {
+  id: number;
+  titulo: string;
+  obrigatoria: boolean;
+  origem: "ORIENTADOR" | "ALUNO";
+  concluida: boolean;
+  concluidaEm: string | null;
+  ordem: number;
+  criadaPorId?: number | null;
+  criadaPorNome?: string;
+};
+
+type MockRevisao = {
+  id: number;
+  acao: "ENVIADO" | "APROVADO" | "DEVOLVIDO";
+  comentario: string;
+  autorNome: string;
+  criadoEm: string;
+};
+
+const tarefaMock = (id: number, titulo: string, origem: "ORIENTADOR" | "ALUNO", concluida: boolean, obrigatoria = false): MockTarefa => ({
+  id,
+  titulo,
+  obrigatoria,
+  origem,
+  concluida,
+  concluidaEm: concluida ? "2026-08-05T12:00:00.000Z" : null,
+  ordem: id,
+});
+
+// Mesmas regras do backend (MarcoProgressoCalculator): percentual = itens concluidos / itens totais.
+function recalcularMarcoMock<T extends { tarefas?: MockTarefa[]; status?: string; emRevisao?: boolean }>(marco: T) {
+  const tarefas = marco.tarefas ?? [];
+  const itensConcluidos = tarefas.filter((item) => item.concluida).length;
+  const itensTotal = tarefas.length;
+  return Object.assign(marco, {
+    tarefas,
+    itensConcluidos,
+    itensTotal,
+    percentual: itensTotal ? Math.round((itensConcluidos / itensTotal) * 100) : 0,
+    semTarefas: itensTotal === 0,
+    emRevisao: Boolean(marco.emRevisao),
+  });
+}
+
+function resumoMarcosMock(marcos: Array<{ status?: string; emRevisao?: boolean; itensConcluidos?: number; itensTotal?: number; prazo?: string | null }>, atualizacoesTotal: number) {
+  const itensConcluidos = marcos.reduce((sum, marco) => sum + Number(marco.itensConcluidos ?? 0), 0);
+  const itensTotal = marcos.reduce((sum, marco) => sum + Number(marco.itensTotal ?? 0), 0);
+  const percentualGeral = itensTotal ? Math.round((itensConcluidos / itensTotal) * 100) : 0;
+  return {
+    percentualGeral,
+    overallPercent: percentualGeral,
+    itensConcluidos,
+    itensTotal,
+    marcosTotal: marcos.length,
+    marcosConcluidos: marcos.filter((marco) => marco.status === "DONE").length,
+    marcosEmRevisao: marcos.filter((marco) => marco.emRevisao).length,
+    marcosComAtencao: marcos.filter((marco) => marco.status === "REJECTED"
+      || (marco.status !== "DONE" && marco.prazo && new Date(marco.prazo) < new Date())).length,
+    atualizacoesTotal,
+  };
+}
+
 async function readJson(route: Route): Promise<Record<string, unknown>> {
   try {
     return (await route.request().postDataJSON()) as Record<string, unknown>;
@@ -343,6 +406,13 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
         prazo: "2026-08-15",
         obrigatoria: true,
         criadaEm: "2026-08-01T12:00:00.000Z",
+        emRevisao: false,
+        tarefas: [
+          tarefaMock(1, "Escrever introducao", "ORIENTADOR", true, true),
+          tarefaMock(2, "Revisar referencias", "ORIENTADOR", false, true),
+          tarefaMock(3, "Anotar duvidas para a reuniao", "ALUNO", false),
+        ],
+        ultimaRevisao: null as MockRevisao | null,
       },
       {
         id: 81,
@@ -356,6 +426,9 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
         prazo: "2026-08-28",
         obrigatoria: true,
         criadaEm: "2026-08-02T12:00:00.000Z",
+        emRevisao: false,
+        tarefas: [] as MockTarefa[],
+        ultimaRevisao: null as MockRevisao | null,
       },
       {
         id: 82,
@@ -369,9 +442,35 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
         prazo: null,
         obrigatoria: false,
         criadaEm: "2026-08-03T12:00:00.000Z",
+        emRevisao: false,
+        tarefas: [] as MockTarefa[],
+        ultimaRevisao: null as MockRevisao | null,
+      },
+      {
+        id: 83,
+        projetoId: 2,
+        titulo: "Proposta aprovada",
+        descricao: "Marco inicial do projeto de candidatura.",
+        peso: 0,
+        ordem: 1,
+        status: "DONE",
+        responsavel: "ORIENTADOR",
+        prazo: "2026-07-10",
+        obrigatoria: true,
+        criadaEm: "2026-07-01T12:00:00.000Z",
+        emRevisao: false,
+        tarefas: [tarefaMock(4, "Entregar a proposta", "ORIENTADOR", true, true)],
+        ultimaRevisao: {
+          id: 1,
+          acao: "APROVADO",
+          comentario: "Proposta aceita.",
+          autorNome: "Orientador E2E",
+          criadoEm: "2026-07-09T12:00:00.000Z",
+        } as MockRevisao | null,
       },
     ],
     removedCollaboratorIds: new Set<number>(),
+    marcoRevisoes: {} as Record<number, MockRevisao[]>,
   };
 
   if (state.applications[0] && state.projects[1]) state.applications[0].projeto = state.projects[1];
@@ -546,6 +645,21 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
       return;
     }
 
+    if (method === "POST" && path === "/api/lumen/recomendar-projetos") {
+      const recomendacoes = state.projects
+        .filter((project) => project.status === "ABERTO")
+        .slice(0, 3)
+        .map((project, index) => ({
+          projetoId: project.id,
+          titulo: project.titulo,
+          area: project.areaNome,
+          pontuacao: 9 - index * 2,
+          justificativa: `Seu perfil combina com ${project.titulo}.`,
+        }));
+      await fulfill(route, 200, { recomendacoes, aviso: "Sugestao gerada por IA com base no seu perfil." });
+      return;
+    }
+
     if (method === "POST" && path === "/api/projetos") {
       const body = await readJson(route);
       const project = {
@@ -613,8 +727,92 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
     const projectStagesMatch = path.match(/^\/api\/projetos\/(\d+)\/etapas$/);
     if (projectStagesMatch && method === "GET") {
       const projectId = Number(projectStagesMatch[1]);
-      await fulfill(route, 200, state.stages.filter((item) => item.projetoId === projectId));
+      await fulfill(route, 200, state.stages.filter((item) => item.projetoId === projectId).map((item) => recalcularMarcoMock(item)));
       return;
+    }
+
+    // Resumo estruturado (marcos com checklist): numeros calculados a partir dos itens dos marcos.
+    const structuredProgressMatch = path.match(/^\/api\/projects\/(\d+)\/progress$/);
+    if (structuredProgressMatch && method === "GET") {
+      const projectId = Number(structuredProgressMatch[1]);
+      const marcos = state.stages.filter((item) => item.projetoId === projectId).map((item) => recalcularMarcoMock(item));
+      await fulfill(route, 200, {
+        projectId,
+        ...resumoMarcosMock(marcos, state.progress.length),
+        steps: marcos.map((marco) => ({ ...marco, title: marco.titulo, stepOrder: marco.ordem })),
+        marcos,
+        updates: state.progress,
+      });
+      return;
+    }
+
+    const marcoActionMatch = path.match(/^\/api\/projetos\/(\d+)\/etapas\/(\d+)\/(tarefas|enviar-revisao|revisao|revisoes)(?:\/(\d+))?$/);
+    if (marcoActionMatch) {
+      const [, projectIdText, marcoIdText, action, tarefaIdText] = marcoActionMatch;
+      const marco = state.stages.find((item) => item.projetoId === Number(projectIdText) && item.id === Number(marcoIdText));
+      if (!marco) {
+        await fulfill(route, 404, { message: "Etapa nao encontrada" });
+        return;
+      }
+      const registrar = (acao: MockRevisao["acao"], comentario = "") => {
+        const revisao: MockRevisao = { id: Date.now(), acao, comentario, autorNome: state.currentUser.nome, criadoEm: new Date().toISOString() };
+        state.marcoRevisoes[marco.id] = [revisao, ...(state.marcoRevisoes[marco.id] ?? [])];
+        // ultima revisao = ultima decisao (aprovado/devolvido), como no backend
+        if (acao !== "ENVIADO") marco.ultimaRevisao = revisao;
+      };
+
+      if (action === "revisoes" && method === "GET") {
+        await fulfill(route, 200, state.marcoRevisoes[marco.id] ?? (marco.ultimaRevisao ? [marco.ultimaRevisao] : []));
+        return;
+      }
+      if (action === "tarefas" && method === "POST" && !tarefaIdText) {
+        const body = await readJson(route);
+        const isAdvisor = state.currentUser.tipo === "ORIENTADOR";
+        marco.tarefas.push({
+          ...tarefaMock(Math.max(0, ...state.stages.flatMap((item) => item.tarefas.map((tarefa) => tarefa.id))) + 1, String(body.titulo ?? ""), isAdvisor ? "ORIENTADOR" : "ALUNO", false, isAdvisor && Boolean(body.obrigatoria)),
+          ordem: marco.tarefas.length + 1,
+          criadaPorId: state.currentUser.id,
+        });
+        await fulfill(route, 201, recalcularMarcoMock(marco));
+        return;
+      }
+      if (action === "tarefas" && tarefaIdText && (method === "PATCH" || method === "DELETE")) {
+        const tarefa = marco.tarefas.find((item) => item.id === Number(tarefaIdText));
+        if (!tarefa) {
+          await fulfill(route, 404, { message: "Tarefa nao encontrada" });
+          return;
+        }
+        if (method === "DELETE") {
+          marco.tarefas = marco.tarefas.filter((item) => item.id !== tarefa.id);
+        } else {
+          const body = await readJson(route);
+          if (typeof body.titulo === "string") tarefa.titulo = body.titulo;
+          if (typeof body.concluida === "boolean") {
+            tarefa.concluida = body.concluida;
+            tarefa.concluidaEm = body.concluida ? new Date().toISOString() : null;
+            if (marco.status !== "DONE" && marco.status !== "REJECTED") {
+              marco.status = marco.tarefas.some((item) => item.concluida) ? "ACTIVE" : "PENDING";
+            }
+          }
+        }
+        await fulfill(route, 200, recalcularMarcoMock(marco));
+        return;
+      }
+      if (action === "enviar-revisao" && method === "POST") {
+        marco.emRevisao = true;
+        marco.status = "ACTIVE";
+        registrar("ENVIADO");
+        await fulfill(route, 200, recalcularMarcoMock(marco));
+        return;
+      }
+      if (action === "revisao" && method === "POST") {
+        const body = await readJson(route);
+        marco.emRevisao = false;
+        marco.status = body.acao === "APROVAR" ? "DONE" : "REJECTED";
+        registrar(body.acao === "APROVAR" ? "APROVADO" : "DEVOLVIDO", String(body.comentario ?? ""));
+        await fulfill(route, 200, recalcularMarcoMock(marco));
+        return;
+      }
     }
 
     if (projectProgressMatch && method === "POST") {

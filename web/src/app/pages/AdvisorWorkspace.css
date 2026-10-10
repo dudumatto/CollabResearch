@@ -2257,6 +2257,15 @@
   font-size: var(--tamanho-base);
 }
 
+.calendario-cabecalho__acoes {
+  margin-left: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: var(--espaco-3);
+  flex-wrap: wrap;
+}
+
 .calendario-cabecalho__filtro {
   width: min(18rem, 100%);
   min-width: min(18rem, 100%);
@@ -2724,6 +2733,40 @@
   font-weight: var(--peso-semi);
 }
 
+/* Desktop: calendário ocupa exatamente a área visível, sem rolagem da página.
+   Os dias deixam de ser quadrados e dividem a altura disponível em 6 linhas;
+   as listas laterais rolam internamente (.calendario-lista--rolagem). */
+@media (min-width: 1280px) and (min-height: 600px) {
+  .calendario-pagina {
+    height: calc(100dvh - var(--altura-topbar) - var(--espaco-4) - var(--espaco-6) * 2);
+    min-height: 0;
+  }
+
+  .calendario-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .calendario-card--principal {
+    min-height: 0;
+  }
+
+  .calendario-card--principal > .calendario-grade:not(.calendario-grade--semana) {
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+  }
+
+  .calendario-dia {
+    aspect-ratio: auto;
+  }
+
+  .calendario-dia__eventos {
+    min-height: 0;
+  }
+}
+
 @media (max-width: 1119px) {
   .calendario-pagina {
     height: auto;
@@ -2756,6 +2799,7 @@
     align-items: stretch;
   }
 
+  .calendario-cabecalho__acoes,
   .calendario-cabecalho__filtro,
   .calendario-cabecalho__resumo {
     width: 100%;

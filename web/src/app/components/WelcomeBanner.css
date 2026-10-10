@@ -15,6 +15,8 @@
   border: 1px solid var(--dash-card-borda);
   border-radius: var(--raio-grande);
   background: var(--dash-heroi);
+  -webkit-backdrop-filter: var(--dash-card-vidro);
+  backdrop-filter: var(--dash-card-vidro);
   color: var(--dash-heroi-texto);
   /* Respiro extra abaixo do banner — maior que o espaçamento padrão entre os
      demais cartões do painel. */
@@ -29,7 +31,7 @@
   pointer-events: none;
   background-image: url("/brand/banner-enfeite.svg");
   background-repeat: no-repeat;
-  background-position: right -7rem bottom -16rem;
+  background-position: right -2rem bottom -16rem;
   background-size: 34rem;
 }
 

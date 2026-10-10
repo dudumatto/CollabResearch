@@ -43,11 +43,12 @@ public class ChatMessageEvent {
                 .build();
     }
 
-    public static ChatMessageEvent excluida(Integer conversaId, Integer mensagemId) {
+    public static ChatMessageEvent excluida(MensagemResponse mensagem) {
         return ChatMessageEvent.builder()
                 .tipo("MENSAGEM_EXCLUIDA")
-                .conversaId(conversaId)
-                .mensagemId(mensagemId)
+                .conversaId(mensagem.getConversaId())
+                .mensagemId(mensagem.getId())
+                .mensagem(mensagem)
                 .build();
     }
 }

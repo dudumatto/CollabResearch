@@ -21,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -230,11 +231,56 @@ class ConversaServiceTest {
         when(authHelper.getCurrentUser()).thenReturn(remetente);
         when(mensagemRepository.findById(8)).thenReturn(Optional.of(mensagem));
         when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
-        when(mensagemRepository.findFirstByConversaIdOrderByDataEnvioDescIdDesc(5)).thenReturn(Optional.of(mensagem));
+        when(mensagemRepository.save(any(Mensagem.class))).thenReturn(mensagem);
 
         conversaService.excluirMensagem(8);
 
-        verify(mensagemRepository).delete(mensagem);
+        assertThat(mensagem.getExcluida()).isTrue();
+        assertThat(mensagem.getConteudo()).isEqualTo("Mensagem apagada");
+        assertThat(mensagem.getDataExclusao()).isNotNull();
+        verify(mensagemRepository, never()).delete(any(Mensagem.class));
+        verify(chatRealtimeService).publicarMensagemExcluida(any());
+    }
+
+    @Test
+    void excluirMensagemDevePermitirMensagemJaVisualizadaEQueNaoEhAUltima() {
+        Usuario remetente = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, remetente));
+        Conversa conversa = TestDataFactory.conversa(5, projeto);
+        Mensagem mensagem = TestDataFactory.mensagem(8, conversa, remetente);
+        mensagem.setDataLeitura(java.time.OffsetDateTime.now());
+
+        when(authHelper.getCurrentUser()).thenReturn(remetente);
+        when(mensagemRepository.findById(8)).thenReturn(Optional.of(mensagem));
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+        when(mensagemRepository.save(any(Mensagem.class))).thenReturn(mensagem);
+
+        conversaService.excluirMensagem(8);
+
+        assertThat(mensagem.getExcluida()).isTrue();
+    }
+
+    @Test
+    void editarMensagemDeveNegarMensagemJaVisualizadaOuApagada() {
+        Usuario remetente = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, remetente));
+        Conversa conversa = TestDataFactory.conversa(5, projeto);
+        Mensagem lida = TestDataFactory.mensagem(8, conversa, remetente);
+        lida.setDataLeitura(java.time.OffsetDateTime.now());
+        Mensagem apagada = TestDataFactory.mensagem(9, conversa, remetente);
+        apagada.setExcluida(true);
+
+        when(authHelper.getCurrentUser()).thenReturn(remetente);
+        when(mensagemRepository.findById(8)).thenReturn(Optional.of(lida));
+        when(mensagemRepository.findById(9)).thenReturn(Optional.of(apagada));
+        when(conversaRepository.findById(5)).thenReturn(Optional.of(conversa));
+
+        for (int id : new int[] {8, 9}) {
+            assertThatThrownBy(() -> conversaService.editarMensagem(id, "Novo"))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
+                    .isEqualTo(HttpStatus.CONFLICT);
+        }
     }
 
     @Test
@@ -257,7 +303,7 @@ class ConversaServiceTest {
     }
 
     @Test
-    void editarEExcluirDevemNegarMensagemQueNaoEhAUltima() {
+    void editarDeveNegarMensagemQueNaoEhAUltima() {
         Usuario remetente = TestDataFactory.usuarioAluno(1);
         Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, remetente));
         Conversa conversa = TestDataFactory.conversa(5, projeto);
@@ -270,10 +316,6 @@ class ConversaServiceTest {
         when(mensagemRepository.findFirstByConversaIdOrderByDataEnvioDescIdDesc(5)).thenReturn(Optional.of(recente));
 
         assertThatThrownBy(() -> conversaService.editarMensagem(8, "Novo"))
-                .isInstanceOf(ResponseStatusException.class)
-                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
-                .isEqualTo(HttpStatus.CONFLICT);
-        assertThatThrownBy(() -> conversaService.excluirMensagem(8))
                 .isInstanceOf(ResponseStatusException.class)
                 .extracting(ex -> ((ResponseStatusException) ex).getStatusCode())
                 .isEqualTo(HttpStatus.CONFLICT);

@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { mapMarco, mapRevisao } from "../utils/adapters";
 import { etapaService } from "./etapaService";
 import { projectService } from "./projectService";
 
@@ -26,6 +27,10 @@ function normalizeStep(step) {
     prazo: step.prazo ?? step.deadline ?? step.dataPrazo ?? null,
     completedAt: step.completedAt ?? step.concluidaEm ?? null,
     completedBy: step.completedBy ?? step.concluidaPor ?? null,
+    emRevisao: Boolean(step.emRevisao),
+    itensConcluidos: Number(step.itensConcluidos ?? 0),
+    itensTotal: Number(step.itensTotal ?? 0),
+    percentual: Number(step.percentual ?? 0),
   };
 }
 
@@ -68,7 +73,7 @@ function normalizeUpdate(update) {
 
   return {
     id: update.id,
-    title: update.title ?? update.titulo ?? "AtualizaÃ§Ã£o",
+    title: update.title ?? update.titulo ?? "Atualização",
     description: update.description ?? update.descricao ?? "",
     category: String(update.category ?? update.categoria ?? "progress").toLowerCase(),
     stepId,
@@ -81,8 +86,17 @@ function normalizeUpdate(update) {
 function normalizeSummary(payload) {
   return {
     projectId: payload?.projectId ?? payload?.projetoId ?? null,
-    overallPercent: Number(payload?.overallPercent ?? 0),
+    overallPercent: Number(payload?.overallPercent ?? payload?.percentualGeral ?? 0),
+    percentualGeral: Number(payload?.percentualGeral ?? payload?.overallPercent ?? 0),
+    itensConcluidos: Number(payload?.itensConcluidos ?? 0),
+    itensTotal: Number(payload?.itensTotal ?? 0),
+    marcosTotal: Number(payload?.marcosTotal ?? 0),
+    marcosConcluidos: Number(payload?.marcosConcluidos ?? 0),
+    marcosEmRevisao: Number(payload?.marcosEmRevisao ?? 0),
+    marcosComAtencao: Number(payload?.marcosComAtencao ?? 0),
+    atualizacoesTotal: Number(payload?.atualizacoesTotal ?? 0),
     steps: Array.isArray(payload?.steps) ? payload.steps.map(normalizeStep).filter(Boolean) : [],
+    marcos: Array.isArray(payload?.marcos) ? payload.marcos.map(mapMarco).filter(Boolean) : [],
     updates: Array.isArray(payload?.updates) ? payload.updates.map(normalizeUpdate).filter(Boolean) : [],
   };
 }
@@ -120,7 +134,102 @@ function calcOverallFromSteps(steps) {
     .reduce((sum, step) => sum + Number(step.weight ?? 0), 0);
 }
 
+// ---- Marcos com checklist (contrato: arquitetura/progresso-marcos-contrato.md) ----
+// Todos os cálculos (itens, percentual, status, emRevisao) vêm prontos do backend.
+// Mutações de marco/tarefa/revisão devolvem o marco atualizado, já normalizado.
+// A origem da tarefa (ORIENTADOR|ALUNO) é derivada do papel no backend; o front não envia.
+
+const etapasPath = (projectId) => `/api/projetos/${projectId}/etapas`;
+const marcoPath = (projectId, marcoId) => `${etapasPath(projectId)}/${marcoId}`;
+const tarefaPath = (projectId, marcoId, tarefaId) => `${marcoPath(projectId, marcoId)}/tarefas/${tarefaId}`;
+
+function pick(source, keys) {
+  const out = {};
+  for (const key of keys) {
+    if (source?.[key] !== undefined) out[key] = source[key];
+  }
+  return out;
+}
+
+const MARCO_FIELDS = ["titulo", "descricao", "responsavel", "prazo", "obrigatoria"];
+const mapMarcos = (payload) => (Array.isArray(payload) ? payload.map(mapMarco).filter(Boolean) : []);
+
+export async function getProgressSummary(projectId) {
+  return normalizeSummary(await api.get(`/api/projects/${projectId}/progress`));
+}
+
+export async function listMarcos(projectId, options = {}) {
+  return mapMarcos(await api.get(etapasPath(projectId), options));
+}
+
+export async function createMarco(projectId, payload) {
+  return mapMarco(await api.post(etapasPath(projectId), pick(payload, MARCO_FIELDS)));
+}
+
+export async function updateMarco(projectId, marcoId, payload) {
+  return mapMarco(await api.put(marcoPath(projectId, marcoId), pick(payload, MARCO_FIELDS)));
+}
+
+export async function deleteMarco(projectId, marcoId) {
+  await api.delete(marcoPath(projectId, marcoId));
+  return null;
+}
+
+export async function reorderMarcos(projectId, ids) {
+  return mapMarcos(await api.put(`${etapasPath(projectId)}/ordem`, { ids }));
+}
+
+export async function createTarefa(projectId, marcoId, { titulo, obrigatoria } = {}) {
+  return mapMarco(
+    await api.post(`${marcoPath(projectId, marcoId)}/tarefas`, { titulo, obrigatoria: Boolean(obrigatoria) }),
+  );
+}
+
+export async function updateTarefa(projectId, marcoId, tarefaId, patch) {
+  return mapMarco(await api.patch(tarefaPath(projectId, marcoId, tarefaId), pick(patch, ["titulo", "obrigatoria", "concluida"])));
+}
+
+export function toggleTarefa(projectId, marcoId, tarefaId, concluida) {
+  return updateTarefa(projectId, marcoId, tarefaId, { concluida: Boolean(concluida) });
+}
+
+export async function deleteTarefa(projectId, marcoId, tarefaId) {
+  return mapMarco(await api.delete(tarefaPath(projectId, marcoId, tarefaId)));
+}
+
+export async function reorderTarefas(projectId, marcoId, ids) {
+  return mapMarco(await api.put(`${marcoPath(projectId, marcoId)}/tarefas/ordem`, { ids }));
+}
+
+export async function submitMarcoForReview(projectId, marcoId) {
+  return mapMarco(await api.post(`${marcoPath(projectId, marcoId)}/enviar-revisao`, {}));
+}
+
+export async function reviewMarco(projectId, marcoId, { acao, comentario } = {}) {
+  return mapMarco(await api.post(`${marcoPath(projectId, marcoId)}/revisao`, { acao, comentario }));
+}
+
+export async function listRevisoes(projectId, marcoId) {
+  const payload = await api.get(`${marcoPath(projectId, marcoId)}/revisoes`);
+  return Array.isArray(payload) ? payload.map(mapRevisao).filter(Boolean) : [];
+}
+
 export const progressService = {
+  getProgressSummary,
+  listMarcos,
+  createMarco,
+  updateMarco,
+  deleteMarco,
+  reorderMarcos,
+  createTarefa,
+  updateTarefa,
+  toggleTarefa,
+  deleteTarefa,
+  reorderTarefas,
+  submitMarcoForReview,
+  reviewMarco,
+  listRevisoes,
+
   async getProgress(projectId) {
     try {
       const payload = await api.get(`/api/projects/${projectId}/progress`);
@@ -141,7 +250,16 @@ export const progressService = {
       return {
         projectId,
         overallPercent: calcOverallFromSteps(steps),
+        percentualGeral: calcOverallFromSteps(steps),
+        itensConcluidos: 0,
+        itensTotal: 0,
+        marcosTotal: steps.length,
+        marcosConcluidos: steps.filter((step) => step.status === "DONE").length,
+        marcosEmRevisao: 0,
+        marcosComAtencao: 0,
+        atualizacoesTotal: updates.length,
         steps,
+        marcos: [],
         updates,
         legacyMode: true,
         fallbackError: error,

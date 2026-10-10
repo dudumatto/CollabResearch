@@ -1,0 +1,84 @@
+/* Estende o modal de confirmação (LogoutConfirmModal.css) para um formulário. */
+.logout-confirm__modal.update-modal {
+  align-items: stretch;
+  gap: var(--espaco-4);
+  max-height: min(92dvh, 46rem);
+  max-width: 38rem;
+  overflow-y: auto;
+  padding: var(--espaco-5);
+  text-align: left;
+  width: min(100%, 38rem);
+}
+
+.update-modal__header {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--espaco-3);
+}
+
+.update-modal__icon {
+  align-items: center;
+  background-color: color-mix(in srgb, var(--cor-primaria) 14%, transparent);
+  border-radius: 999px;
+  color: var(--cor-primaria);
+  display: flex;
+  flex: 0 0 auto;
+  height: 2.75rem;
+  justify-content: center;
+  width: 2.75rem;
+}
+
+.update-modal__heading {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.update-modal__title {
+  color: var(--cor-texto);
+  font-size: var(--tamanho-normal);
+  font-weight: var(--peso-negrito);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.update-modal__desc {
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-pequeno);
+  line-height: 1.5;
+  margin: 0.2rem 0 0;
+}
+
+.update-modal__close {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--raio-medio);
+  color: var(--cor-texto-fraco);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 2rem;
+  justify-content: center;
+  transition: var(--transicao-normal);
+  width: 2rem;
+}
+
+.update-modal__close:hover,
+.update-modal__close:focus-visible {
+  background: var(--cor-superficie-brand);
+  color: var(--cor-texto);
+  outline: none;
+}
+
+.update-modal .update-form {
+  margin-top: 0;
+}
+
+.update-modal .update-form__actions {
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-4);
+}
+
+.update-modal .update-form__cancel {
+  margin-right: 0;
+}

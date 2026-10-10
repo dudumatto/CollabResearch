@@ -326,23 +326,25 @@ export default function StudentDeadlinesPage() {
             Acompanhe as datas de entrega cadastradas no progresso dos projetos.
           </p>
         </div>
-        <div className="calendario-cabecalho__filtro">
-          <span>Projeto</span>
-          <AppCombobox
-            ariaLabel="Filtrar calendário por projeto"
-            className="calendario-projeto-select"
-            value={selectedProjectId}
-            onChange={(value) => {
-              setSelectedProjectId(value);
-              setActiveTooltipKey(null);
-              setHoverTooltipKey(null);
-            }}
-            options={projectFilterOptions}
-          />
-        </div>
-        <div className="calendario-cabecalho__resumo">
-          <strong>{scheduled.length}</strong>
-          <span>itens no calendário</span>
+        <div className="calendario-cabecalho__acoes">
+          <div className="calendario-cabecalho__filtro">
+            <span>Projeto</span>
+            <AppCombobox
+              ariaLabel="Filtrar calendário por projeto"
+              className="calendario-projeto-select"
+              value={selectedProjectId}
+              onChange={(value) => {
+                setSelectedProjectId(value);
+                setActiveTooltipKey(null);
+                setHoverTooltipKey(null);
+              }}
+              options={projectFilterOptions}
+            />
+          </div>
+          <div className="calendario-cabecalho__resumo">
+            <strong>{scheduled.length}</strong>
+            <span>itens no calendário</span>
+          </div>
         </div>
       </header>
 

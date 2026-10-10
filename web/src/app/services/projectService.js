@@ -166,4 +166,8 @@ export const projectService = {
   getProgress(id) {
     return api.get(`/api/projetos/${id}/progresso`);
   },
+  // Lumen: top 3 projetos abertos mais aderentes ao perfil do aluno autenticado.
+  recomendarComLumen() {
+    return api.post("/api/lumen/recomendar-projetos");
+  },
 };

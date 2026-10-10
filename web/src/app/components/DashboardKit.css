@@ -4,9 +4,13 @@
    ============================================================ */
 
 .dash {
-  --dash-canvas: var(--cor-fundo);
-  --dash-card: linear-gradient(145deg, #ffffff 0%, #ffffff 60%, #f4faf5 100%);
-  --dash-card-borda: #dfeae1;
+  /* O fundo (cor sólida + imagem) mora em .pagina-app:has(.dash), no fim
+     deste arquivo, para cobrir também o entorno da sidebar e da topbar. */
+  --dash-canvas: transparent;
+  /* Glassmorphism: cartões a 75% de opacidade + desfoque. */
+  --dash-card: rgba(255, 255, 255, 0.75);
+  --dash-card-borda: rgba(200, 218, 205, 0.6);
+  --dash-card-vidro: blur(16px) saturate(140%);
   /* Sem sombreamento nos cartões do painel — só a borda separa um cartão do
      outro. */
   --dash-card-sombra: none;
@@ -17,7 +21,7 @@
   --dash-divisor: rgba(16, 40, 28, 0.08);
   --dash-realce: rgba(31, 122, 90, 0.06);
 
-  --dash-heroi: linear-gradient(118deg, #0d4a35 0%, #12654a 48%, #1d8560 100%);
+  --dash-heroi: linear-gradient(118deg, rgba(13, 74, 53, 0.75) 0%, rgba(18, 101, 74, 0.75) 48%, rgba(29, 133, 96, 0.75) 100%);
   --dash-heroi-texto: #ffffff;
   --dash-heroi-mudo: rgba(246, 252, 248, 0.74);
   --dash-heroi-nome: #b4e59a;
@@ -26,8 +30,8 @@
   --dash-heroi-botao-bg: rgba(10, 32, 24, 0.34);
   --dash-heroi-botao-borda: rgba(255, 255, 255, 0.34);
 
-  /* Cor de chegada do gradiente do cartão, usada no fade do Calendário */
-  --dash-card-fade: #f4faf5;
+  /* Cor de chegada do fade de corte (Calendário/listas): a mesma do vidro */
+  --dash-card-fade: rgba(255, 255, 255, 0.92);
 
   /* Paleta dos selos de ícone, extraída do Figma */
   --dash-azul: #42abfc;
@@ -49,10 +53,9 @@
 }
 
 .dark .dash {
-  --dash-canvas: var(--cor-fundo);
-  --dash-card: linear-gradient(145deg, #061c15 0%, #06251b 58%, #0a3c2a 100%);
-  --dash-card-fade: #0a3c2a;
-  --dash-card-borda: rgba(255, 255, 255, 0.09);
+  --dash-card: rgba(6, 28, 21, 0.75);
+  --dash-card-fade: rgba(6, 28, 21, 0.92);
+  --dash-card-borda: rgba(255, 255, 255, 0.1);
   --dash-card-sombra: none;
   --dash-card-sombra-hover: none;
   --dash-titulo: #f4f8f5;
@@ -61,7 +64,7 @@
   --dash-divisor: rgba(255, 255, 255, 0.1);
   --dash-realce: rgba(255, 255, 255, 0.05);
 
-  --dash-heroi: linear-gradient(118deg, #04170f 0%, #05211a 52%, #0a3828 100%);
+  --dash-heroi: linear-gradient(118deg, rgba(4, 23, 15, 0.75) 0%, rgba(5, 33, 26, 0.75) 52%, rgba(10, 56, 40, 0.75) 100%);
   --dash-heroi-mudo: rgba(244, 248, 245, 0.62);
   --dash-heroi-chip-bg: rgba(78, 178, 88, 0.18);
   --dash-heroi-botao-bg: rgba(255, 255, 255, 0.08);
@@ -139,6 +142,8 @@
   border: 1px solid var(--dash-card-borda);
   border-radius: var(--raio-grande);
   background: var(--dash-card);
+  -webkit-backdrop-filter: var(--dash-card-vidro);
+  backdrop-filter: var(--dash-card-vidro);
   text-align: left;
   min-width: 0;
 }
@@ -951,4 +956,81 @@
     min-height: 0;
     overflow: hidden; /* DashFit libera a rolagem só se nem o zoom mínimo couber */
   }
+}
+
+/* ---- Etapas pendentes ---- */
+.dash-pendentes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dash-pendentes__item {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.dash-pendentes__icone {
+  flex: none;
+  color: var(--dash-titulo);
+}
+
+.dash-pendentes__titulo {
+  display: block;
+  color: var(--dash-titulo);
+  font-size: var(--tamanho-grande, 1.125rem);
+  font-weight: var(--peso-semi);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Projeto em uma linha só, esmaecendo na borda direita (como no Figma). */
+.dash-pendentes__subtitulo {
+  display: block;
+  color: var(--dash-mudo);
+  font-size: var(--tamanho-pequeno);
+  overflow: hidden;
+  white-space: nowrap;
+  -webkit-mask-image: linear-gradient(to right, #000 75%, transparent);
+  mask-image: linear-gradient(to right, #000 75%, transparent);
+}
+
+/* ---- Fundo da página do dashboard ----
+   Cor sólida em toda a área (inclusive ao redor da sidebar e da topbar) e, por
+   cima dela, a imagem desfocada. O azul original é girado para o verde do
+   Figma com hue-rotate. */
+.pagina-app:has(.dash),
+.pagina-app--dashboard {
+  background-color: #f5faf7;
+  isolation: isolate;
+}
+
+.dark .pagina-app:has(.dash),
+.dark .pagina-app--dashboard {
+  background-color: #030c08;
+}
+
+.pagina-app:has(.dash)::before,
+.pagina-app--dashboard::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: url("/brand/dash-fundo-claro.jpg") center top / cover no-repeat;
+  /* scale evita a borda esmaecida que o blur cria nas margens da imagem */
+  filter: hue-rotate(-72deg) saturate(0.45) brightness(1.5) blur(36px);
+  transform: scale(1.15);
+}
+
+.dark .pagina-app:has(.dash)::before,
+.dark .pagina-app--dashboard::before {
+  background-image: url("/brand/dash-fundo-escuro.webp");
+  filter: hue-rotate(-72deg) saturate(0.95) brightness(0.85) blur(36px);
 }

@@ -93,7 +93,7 @@ export function UpdateFeed({ updates = [], onEdit, onDelete, currentUserId }) {
 
             <div className="update-feed__meta">
               {update.stepTitle ? (
-                <span className="update-feed__step">Etapa: {update.stepTitle}</span>
+                <span className="update-feed__step">Marco: {update.stepTitle}</span>
               ) : null}
               <span className="update-feed__date">
                 <Clock size={13} /> {formatDate(update.createdAt)}

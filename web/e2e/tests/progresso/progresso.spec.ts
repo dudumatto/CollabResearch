@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
-  advanceActiveStep,
+  approveFirstMarcoViaReview,
   assertProgressApi,
   loginAndOpenProgress,
   prepareProgressScenario,
@@ -32,11 +32,10 @@ test.describe("progresso estruturado", () => {
     if (adminToken) await cleanupTestData(request, adminToken);
   });
 
-  test("orientador conclui a etapa ativa e o percentual sobe", async ({ page, request }) => {
+  test("orientador aprova o marco enviado pelo aluno e o progresso reflete os itens", async ({ page, request }) => {
     const ctx = await prepareProgressScenario(request);
 
-    await loginAndOpenProgress(page, ctx.orientador);
-    await advanceActiveStep(page);
+    const marcoTitulo = await approveFirstMarcoViaReview(request, ctx);
 
     const login = await request.post(`${API_URL}/api/auth/login`, {
       data: { email: ctx.orientador.email, senha: ctx.orientador.senha },
@@ -47,21 +46,19 @@ test.describe("progresso estruturado", () => {
     });
     expect(progress.ok()).toBeTruthy();
     const payload = await progress.json();
-    expect(payload.overallPercent).toBeGreaterThanOrEqual(10);
-    await reloadProgressAndAssert(page, "Revisao bibliografica");
+    expect(payload.itensTotal).toBe(1);
+    expect(payload.itensConcluidos).toBe(1);
+    expect(payload.percentualGeral).toBe(100);
+    expect(payload.marcosConcluidos).toBe(1);
+
+    await loginAndOpenProgress(page, ctx.orientador);
+    await reloadProgressAndAssert(page, marcoTitulo);
   });
 
-  test("aluno publica atualização com categoria e vê a etapa bloqueada", async ({ page, request }) => {
+  test("aluno publica atualização com categoria sem alterar o checklist", async ({ page, request }) => {
     const ctx = await prepareProgressScenario(request);
 
     await loginAndOpenProgress(page, ctx.aluno);
-    await test.step("verificar bloqueio da etapa do orientador", async () => {
-      await expect(page.getByText("Permite Orientador")).toBeVisible();
-      const button = page.getByRole("button", { name: /bloqueado/i }).first();
-      await expect(button).toBeVisible();
-      await expect(button).toBeDisabled();
-    });
-
     const title = `Atualização ${unique("progress")}`;
     await publishUpdate(page, {
       title,

@@ -109,14 +109,14 @@ export function UpdateForm({ steps = [], onSubmit, onCancel, initialValues = nul
 
         <div className="update-form__field">
           <label htmlFor="dataRegistro">
-            <span>Data da etapa</span>
+            <span>Data da atualização</span>
           </label>
           <input
             id="dataRegistro"
             type="date"
             disabled={semData}
             {...register("dataRegistro", {
-              validate: (value) => semData || Boolean(value) || "Informe a data da etapa",
+              validate: (value) => semData || Boolean(value) || "Informe a data da atualização",
             })}
           />
           <label className="update-form__checkbox">
@@ -127,14 +127,14 @@ export function UpdateForm({ steps = [], onSubmit, onCancel, initialValues = nul
         </div>
 
         <label className="update-form__field">
-          <span>Etapa relacionada</span>
+          <span>Marco relacionado</span>
           <AppCombobox
-            ariaLabel="Selecionar etapa relacionada"
+            ariaLabel="Selecionar marco relacionado"
             className="app-combobox--progress"
             value={selectedStepId}
             onChange={(nextValue) => setValue("etapaId", nextValue, { shouldDirty: true })}
             options={[
-              { value: "", label: "Sem etapa" },
+              { value: "", label: "Sem marco" },
               ...steps.map((step) => ({ value: step.id, label: `${step.stepOrder}. ${step.title}` })),
             ]}
           />
@@ -144,14 +144,14 @@ export function UpdateForm({ steps = [], onSubmit, onCancel, initialValues = nul
           <span>Descrição</span>
           <textarea
             rows={4}
-            placeholder="Conte o que foi avançado nesta atualização"
+            placeholder="Conte o que foi avançado nesta atualização (não altera as tarefas do checklist)"
             {...register("descricao")}
           />
         </label>
       </div>
 
       <div className="update-form__actions">
-        {isEditing && (
+        {onCancel && (
           <button type="button" className="update-form__cancel" onClick={onCancel} disabled={isSubmitting}>
             Cancelar
           </button>

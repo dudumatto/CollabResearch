@@ -627,6 +627,57 @@ export function mapEtapa(etapa) {
   };
 }
 
+export function mapTarefa(tarefa) {
+  if (!tarefa) return null;
+
+  return {
+    id: tarefa.id ?? null,
+    titulo: tarefa.titulo ?? "",
+    obrigatoria: Boolean(tarefa.obrigatoria),
+    origem: String(tarefa.origem ?? "ORIENTADOR").toUpperCase(),
+    concluida: Boolean(tarefa.concluida),
+    concluidaEm: tarefa.concluidaEm ?? null,
+    ordem: Number(tarefa.ordem ?? 0),
+    criadaPorId: tarefa.criadaPorId ?? null,
+    criadaPorNome: tarefa.criadaPorNome ?? "",
+  };
+}
+
+export function mapRevisao(revisao) {
+  if (!revisao) return null;
+
+  return {
+    id: revisao.id ?? null,
+    acao: String(revisao.acao ?? "").toUpperCase(),
+    comentario: revisao.comentario ?? "",
+    autorId: revisao.autorId ?? null,
+    autorNome: revisao.autorNome ?? "",
+    criadoEm: revisao.criadoEm ?? null,
+  };
+}
+
+// Marco = etapa com checklist. Contadores, percentual e emRevisao vêm prontos do backend
+// (arquitetura/progresso-marcos-contrato.md); aqui só se normaliza o formato.
+export function mapMarco(marco) {
+  if (!marco) return null;
+
+  const tarefas = (Array.isArray(marco.tarefas) ? marco.tarefas : []).map(mapTarefa).filter(Boolean);
+  const itensTotal = Number(marco.itensTotal ?? 0);
+
+  return {
+    ...mapEtapa(marco),
+    status: String(marco.status ?? "PENDING").toUpperCase(),
+    emRevisao: Boolean(marco.emRevisao),
+    enviadaEm: marco.enviadaEm ?? null,
+    itensConcluidos: Number(marco.itensConcluidos ?? 0),
+    itensTotal,
+    percentual: Number(marco.percentual ?? 0),
+    semTarefas: marco.semTarefas ?? itensTotal === 0,
+    tarefas,
+    ultimaRevisao: mapRevisao(marco.ultimaRevisao),
+  };
+}
+
 export function mapEntrega(entrega) {
   if (!entrega) return null;
 

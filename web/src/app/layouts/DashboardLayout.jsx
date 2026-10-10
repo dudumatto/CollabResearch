@@ -58,6 +58,8 @@ export function DashboardLayout() {
   const { user } = useAuth();
 
   const isChatPage = location.pathname === "/app/chat";
+  // Fundo do dashboard já na rota (antes de o .dash montar), cobrindo o fallback do Suspense.
+  const isDashboardPage = location.pathname === "/app" || location.pathname === "/app/";
   const baseInfo = pageInfoFor(location, user);
   // No dashboard a topbar mostra só o título "Dashboard" — o resumo de boas-vindas
   // já vive no banner da própria página, sem repetir como subtítulo aqui.
@@ -69,7 +71,7 @@ export function DashboardLayout() {
   return (
     <NotificationsProvider>
       <SidebarContext.Provider value={{ collapsed }}>
-        <div className="pagina-app">
+        <div className={`pagina-app ${isDashboardPage ? "pagina-app--dashboard" : ""}`}>
           <Sidebar
             collapsed={collapsed}
             setCollapsed={setCollapsed}

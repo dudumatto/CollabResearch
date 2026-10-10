@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarBlank, ClipboardText, Kanban, Plus, TrendUp, Users } from "@phosphor-icons/react";
+import { CalendarBlank, CheckSquare, ClipboardText, Flag, Hourglass, Plus, Users, WarningCircle } from "@phosphor-icons/react";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
@@ -7,14 +7,19 @@ import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useProjectProgress } from "../hooks/useProjectProgress";
 import { userService } from "../services/userService";
 import { progressService } from "../services/progressService";
-import { getProjectSlotsUsage, mapProject } from "../utils/adapters";
+import { mapProject } from "../utils/adapters";
 import { formatDate, formatProjectStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import { ProgressDonut } from "../components/progress/ProgressDonut";
-import { StepperVertical } from "../components/progress/StepperVertical";
+import { MarcoLista } from "../components/progress/MarcoLista";
+import { FiltrosMarco } from "../components/progress/MarcoPartes";
+import { marcosApi } from "../components/progress/marcosApi";
+import { useMarcos } from "../components/progress/useMarcos";
+import { contarFiltros, filtrarMarcos, mensagemDeErro } from "../components/progress/marcoUtils";
 import { UpdateForm } from "../components/progress/UpdateForm";
+import { UpdateFormModal } from "../components/progress/UpdateFormModal";
 import { UpdateFeed } from "../components/progress/UpdateFeed";
 import "./ProgressPage.css";
 
@@ -118,8 +123,8 @@ function ProgressSkeleton() {
             <Sk w={92} h={30} r={999} />
           </div>
 
-          <div className="progress-page__stats-grid">
-            {[1, 2, 3, 4].map((item) => (
+          <div className="progress-page__stats-grid progress-page__stats-grid--tres">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
               <div key={item} className="progress-stat">
                 <Sk w={18} h={18} r={999} />
                 <Sk w="70%" h={14} />
@@ -147,15 +152,7 @@ function ProgressSkeleton() {
 
           <div style={{ display: "grid", gap: 14, marginTop: 20 }}>
             {[1, 2, 3].map((item) => (
-              <div key={item} className="step-card">
-                <Sk w={42} h={42} r="50%" />
-                <div>
-                  <Sk w="45%" h={16} style={{ maxWidth: 220 }} />
-                  <Sk w="85%" h={12} style={{ maxWidth: 420, marginTop: 10 }} />
-                  <Sk w="58%" h={12} style={{ maxWidth: 300, marginTop: 8 }} />
-                </div>
-                <Sk w={88} h={32} r={999} />
-              </div>
+              <Sk key={item} h={96} r="22px" />
             ))}
           </div>
         </div>
@@ -189,6 +186,7 @@ export default function ProgressPage() {
   const [editingUpdate, setEditingUpdate] = useState(null);
   const [updateToDelete, setUpdateToDelete] = useState(null);
   const [stepDisplayOrder, setStepDisplayOrder] = useState([]);
+  const [filtroMarcos, setFiltroMarcos] = useState("todos");
 
   const { data, loading, error } = useAsyncData(
     async () => {
@@ -241,17 +239,26 @@ export default function ProgressPage() {
     [projects, effectiveSelectedProjectId],
   );
 
+  // useProjectProgress segue responsável só pelas atualizações narrativas;
+  // marcos, tarefas e resumo vêm de useMarcos (contrato de marcos com checklist).
   const {
-    steps,
     updates,
-    overallPercent,
     isLoading: progressLoading,
     error: progressError,
-    advanceStep,
     createUpdate,
     deleteUpdate,
     editUpdate,
   } = useProjectProgress(selectedProject?.id, { initialProgress: data?.initialProgress });
+
+  const {
+    marcos: steps,
+    resumo,
+    loading: marcosLoading,
+    error: marcosError,
+    recarregar: recarregarMarcos,
+    executar: executarMarcos,
+    alternarTarefa,
+  } = useMarcos(selectedProject?.id);
 
   const stepOrderStorageKey = selectedProject?.id && user?.id
     ? `collabresearch:step-display-order:${user.id}:${selectedProject.id}`
@@ -279,7 +286,7 @@ export default function ProgressPage() {
       if (firstPosition !== undefined && secondPosition !== undefined) return firstPosition - secondPosition;
       if (firstPosition !== undefined) return -1;
       if (secondPosition !== undefined) return 1;
-      return Number(first.stepOrder) - Number(second.stepOrder);
+      return Number(first.ordem ?? 0) - Number(second.ordem ?? 0);
     });
   }, [steps, stepDisplayOrder]);
 
@@ -299,20 +306,16 @@ export default function ProgressPage() {
     if (stepOrderStorageKey) window.localStorage.setItem(stepOrderStorageKey, JSON.stringify(nextOrder));
   };
 
-  const selectedProjectSlots = selectedProject
-    ? getProjectSlotsUsage(selectedProject)
-    : { total: 0, used: 0, remaining: 0 };
-
-  const currentStep = useMemo(
-    () => steps.find((step) => step.status === "ACTIVE") ?? steps.find((step) => step.status === "PENDING") ?? null,
-    [steps],
-  );
-
   const currentUserRole = String(user?.tipo ?? user?.type ?? "").toUpperCase();
   const acceptedCollaborators = selectedProject?.acceptedCollaborators ?? [];
   const advisorName = selectedProject?.advisor?.name ?? "Sem orientador";
   const isProjectFinished = selectedProject?.status === "FINALIZADO";
-  const updateFormSteps = useMemo(() => sortStepsByNearestDeadline(steps), [steps]);
+  const updateFormSteps = useMemo(
+    () => sortStepsByNearestDeadline(steps.map((marco) => ({ id: marco.id, title: marco.titulo, stepOrder: marco.ordem, prazo: marco.prazo }))),
+    [steps],
+  );
+  const marcosFiltrados = useMemo(() => filtrarMarcos(orderedSteps, filtroMarcos), [orderedSteps, filtroMarcos]);
+  const contagemFiltros = useMemo(() => contarFiltros(steps), [steps]);
 
   useEffect(() => {
     if (!targetStageId || progressLoading) return;
@@ -320,19 +323,53 @@ export default function ProgressPage() {
     element?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [targetStageId, progressLoading, orderedSteps]);
 
-  const handleAdvanceStep = async (stepId) => {
-    if (isProjectFinished) {
+  const projetoId = selectedProject?.id;
+  const acoesMarco = useMemo(() => {
+    const bloqueado = () => {
+      if (!isProjectFinished) return false;
       toast.warning("Projeto finalizado não permite alterações de progresso.");
-      return;
-    }
-
-    try {
-      await advanceStep(stepId);
-      toast.success("Etapa concluída com sucesso.");
-    } catch (err) {
-      toast.error(err.message || "Não foi possível concluir a etapa.");
-    }
-  };
+      return true;
+    };
+    // Erros de renomear/adicionar sobem para o formulário exibir a mensagem junto ao campo.
+    return {
+      alternar: async (marco, tarefa, concluida) => {
+        if (bloqueado()) return;
+        try {
+          await alternarTarefa(marco.id, tarefa.id, concluida);
+        } catch (err) {
+          toast.error(mensagemDeErro(err, "Não foi possível atualizar a tarefa."));
+        }
+      },
+      adicionar: async (marco, dados) => {
+        if (bloqueado()) return;
+        await executarMarcos(() => marcosApi.createTarefa(projetoId, marco.id, { titulo: dados.titulo, obrigatoria: false }));
+        toast.success("Tarefa pessoal adicionada.");
+      },
+      renomear: async (marco, tarefa, titulo) => {
+        if (bloqueado()) return;
+        await executarMarcos(() => marcosApi.updateTarefa(projetoId, marco.id, tarefa.id, { titulo }));
+      },
+      remover: async (marco, tarefa) => {
+        if (bloqueado()) return;
+        try {
+          await executarMarcos(() => marcosApi.deleteTarefa(projetoId, marco.id, tarefa.id));
+          toast.success("Tarefa removida.");
+        } catch (err) {
+          toast.error(mensagemDeErro(err, "Não foi possível remover a tarefa."));
+        }
+      },
+      enviar: async (marco) => {
+        if (bloqueado()) return;
+        try {
+          await executarMarcos(() => marcosApi.submitMarcoForReview(projetoId, marco.id));
+          toast.success("Marco enviado para revisão do orientador.");
+        } catch (err) {
+          toast.error(mensagemDeErro(err, "Não foi possível enviar o marco para revisão."));
+        }
+      },
+      historico: (marco) => marcosApi.listRevisoes(projetoId, marco.id),
+    };
+  }, [alternarTarefa, executarMarcos, isProjectFinished, projetoId]);
 
   const handleCreateUpdate = async (payload) => {
     if (isProjectFinished) {
@@ -381,9 +418,11 @@ export default function ProgressPage() {
     }
   };
 
-  const hasProgressContent = steps.length > 0 || updates.length > 0 || overallPercent > 0;
+  const hasProgressContent = steps.length > 0 || updates.length > 0 || Boolean(resumo);
+  const overallPercent = resumo?.percentualGeral ?? 0;
+  const atualizacoesTotal = Math.max(resumo?.atualizacoesTotal ?? 0, updates.length);
 
-  if (loading || (progressLoading && !hasProgressContent)) {
+  if (loading || ((progressLoading || marcosLoading) && !hasProgressContent)) {
     return <ProgressSkeleton />;
   }
 
@@ -414,7 +453,7 @@ export default function ProgressPage() {
           <span className="progress-page__eyebrow">Acompanhamento estruturado</span>
           <h1 className="progress-page__title">Progresso do projeto</h1>
           <p className="progress-page__lead">
-            Progresso com peso calculado automaticamente, etapas organizadas por peso e atualizações vinculadas ao avanço real do projeto.
+            Cada marco tem um checklist: conclua as tarefas, envie o marco para revisão do orientador e registre atualizações narrativas sobre o andamento.
           </p>
         </div>
 
@@ -437,7 +476,7 @@ export default function ProgressPage() {
         <div className="progress-page__panel progress-page__panel--summary">
           <ProgressDonut
             percent={overallPercent}
-            subtitle={`${updates.length} atualizações registradas`}
+            subtitle={`${resumo ? `${resumo.itensConcluidos} de ${resumo.itensTotal} itens · ` : ""}${atualizacoesTotal} ${atualizacoesTotal === 1 ? "atualização registrada" : "atualizações registradas"}`}
           />
         </div>
 
@@ -452,28 +491,36 @@ export default function ProgressPage() {
             </span>
           </div>
 
-          <div className="progress-page__stats-grid">
+          <div className="progress-page__stats-grid progress-page__stats-grid--tres">
+            <div className="progress-stat">
+              <CheckSquare size={16} />
+              <span>Itens concluídos</span>
+              <strong>{resumo ? `${resumo.itensConcluidos} de ${resumo.itensTotal}` : "-"}</strong>
+            </div>
+            <div className="progress-stat">
+              <Flag size={16} />
+              <span>Marcos aprovados</span>
+              <strong>{resumo ? `${resumo.marcosConcluidos} de ${resumo.marcosTotal}` : "-"}</strong>
+            </div>
+            <div className="progress-stat">
+              <Hourglass size={16} />
+              <span>Em revisão</span>
+              <strong>{resumo?.marcosEmRevisao ?? "-"}</strong>
+            </div>
+            <div className={`progress-stat${resumo?.marcosComAtencao > 0 ? " progress-stat--alerta" : ""}`}>
+              <WarningCircle size={16} />
+              <span>Precisam de atenção</span>
+              <strong>{resumo?.marcosComAtencao ?? "-"}</strong>
+            </div>
             <div className="progress-stat">
               <CalendarBlank size={16} />
               <span>Criado em</span>
               <strong>{formatDate(selectedProject.createdAt)}</strong>
             </div>
             <div className="progress-stat">
-              <TrendUp size={16} />
-              <span>Etapa atual</span>
-              <strong>{currentStep?.title ?? "Todas concluídas"}</strong>
-            </div>
-            <div className="progress-stat">
               <Users size={16} />
               <span>Colaboradores</span>
               <strong>{acceptedCollaborators.length + 1}</strong>
-            </div>
-            <div className="progress-stat">
-              <Kanban size={16} />
-              <span>Vagas</span>
-              <strong>
-                {selectedProjectSlots.used}/{selectedProjectSlots.total}
-              </strong>
             </div>
           </div>
 
@@ -489,48 +536,69 @@ export default function ProgressPage() {
           <div className="progress-page__panel-header">
             <div>
               <h2>Progresso</h2>
-              <p>{isProjectFinished ? "Projeto finalizado. As etapas ficam disponíveis apenas para consulta." : currentUserRole === "ALUNO" ? "Use a alça Mover para reorganizar sua visualização ou conclua a etapa ativa quando permitido." : "Conclua a etapa ativa quando o papel do usuário permitir."}</p>
+              <p>{isProjectFinished ? "Projeto finalizado. As etapas ficam disponíveis apenas para consulta." : "Abra um marco para ver o checklist, marcar tarefas, criar tarefas pessoais e enviar para revisão. Use Mover para reorganizar sua visualização."}</p>
             </div>
           </div>
-          <StepperVertical steps={orderedSteps} currentUserRole={currentUserRole} onAdvanceStep={handleAdvanceStep} onReorderStep={handleReorderStep} highlightedStepId={targetStageId} canReorderSteps={!isProjectFinished} />
+          {steps.length > 0 ? (
+            <FiltrosMarco valor={filtroMarcos} onChange={setFiltroMarcos} contagens={contagemFiltros} />
+          ) : null}
+          {marcosLoading ? (
+            <div className="stepper-vertical" aria-busy="true" aria-label="Carregando marcos">
+              {[1, 2, 3].map((item) => <Sk key={item} h={96} r="22px" />)}
+            </div>
+          ) : marcosError ? (
+            <div className="marco-lista-vazia" role="alert">
+              <p>{mensagemDeErro(marcosError, "Não foi possível carregar os marcos.")}</p>
+              <button type="button" className="marco-btn" onClick={() => recarregarMarcos()}>Tentar novamente</button>
+            </div>
+          ) : steps.length === 0 ? (
+            <div className="marco-lista-vazia">
+              <p>Este projeto ainda não tem marcos. Quando o orientador definir os marcos e tarefas, eles aparecerão aqui.</p>
+            </div>
+          ) : marcosFiltrados.length === 0 ? (
+            <div className="marco-lista-vazia"><p>Nenhum marco neste filtro.</p></div>
+          ) : (
+            <MarcoLista
+              marcos={marcosFiltrados}
+              podeReordenar={!isProjectFinished && filtroMarcos === "todos" && currentUserRole === "ALUNO"}
+              somenteLeitura={isProjectFinished}
+              destacadoId={targetStageId}
+              onReordenar={handleReorderStep}
+              acoes={acoesMarco}
+            />
+          )}
         </div>
 
         <div className={`progress-page__panel progress-page__panel--updates${isProjectFinished ? " progress-page__panel--updates-finished" : ""}`}>
           <div className="progress-page__panel-header">
             <div>
-              <h2>Nova atualização</h2>
-              <p>{isProjectFinished ? "Projeto finalizado. As etapas ficam disponíveis apenas para consulta." : "Adicione título, categoria e vínculo com a etapa quando fizer sentido."}</p>
+              <h2>Atualizações</h2>
+              <p>{isProjectFinished ? "Projeto finalizado. As etapas ficam disponíveis apenas para consulta." : "Relato narrativo do andamento. Publicar uma atualização não conclui nem reabre tarefas: para isso, use o checklist do marco."}</p>
             </div>
             {!isProjectFinished && (
               <button
                 type="button"
                 className="progress-page__toggle-form"
                 onClick={() => {
-                  if (showUpdateForm) {
-                    setEditingUpdate(null);
-                    setShowUpdateForm(false);
-                  } else {
-                    setShowUpdateForm(true);
-                  }
+                  setEditingUpdate(null);
+                  setShowUpdateForm(true);
                 }}
               >
-                <Plus size={15} />
-                {showUpdateForm ? "Ocultar" : "Nova atualização"}
+                <Plus size={14} weight="bold" aria-hidden="true" />
+                Nova atualização
               </button>
             )}
           </div>
 
-          {isProjectFinished ? null : showUpdateForm ? (
-            <UpdateForm
-              steps={updateFormSteps}
-              onSubmit={handleCreateUpdate}
-              onCancel={editingUpdate ? handleCancelEdit : undefined}
-              initialValues={editingUpdate}
-            />
-          ) : (
-            <div className="progress-page__collapsed-form">
-              <p>O formulário está recolhido. Use o botão acima para publicar uma atualização.</p>
-            </div>
+          {isProjectFinished ? null : (
+            <UpdateFormModal open={showUpdateForm} editing={Boolean(editingUpdate)} onClose={handleCancelEdit}>
+              <UpdateForm
+                steps={updateFormSteps}
+                onSubmit={handleCreateUpdate}
+                onCancel={handleCancelEdit}
+                initialValues={editingUpdate}
+              />
+            </UpdateFormModal>
           )}
 
           <div className="progress-page__updates">

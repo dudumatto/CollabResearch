@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { FileText, Bell, TrendUp, MagnifyingGlass, Sparkle, Users, CalendarCheck, ChatCircleText, Star } from "@phosphor-icons/react";
+import { FileText, Bell, TrendUp, MagnifyingGlass, Warning, CalendarCheck, ChatCircleText, Star } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useNotifications } from "../providers/NotificationsProvider";
@@ -22,7 +22,7 @@ import {
   DashAvatar,
   DashAgenda,
   DashProgress,
-  DashPromo,
+  DashPendentes,
   DashFit,
   DashEvaluations,
 } from "../components/DashboardKit";
@@ -32,6 +32,7 @@ import {
   mapProject,
   mapDeadlineAgenda,
   getUserId,
+  mapEtapa,
 } from "../utils/adapters";
 import { formatApplicationStatus, getInitials } from "../utils/formatters";
 import "../components/DashboardKit.css";
@@ -41,6 +42,7 @@ const MESSAGES_PREVIEW_LIMIT = 2;
 // Calendário mostra 3 prazos inteiros + o 4º cortado com fade e "Ver mais"
 // (mesmo comportamento do painel do orientador, ver AdvisorDashboardPage).
 const CALENDAR_PREVIEW_LIMIT = 3;
+const PENDING_STEPS_PREVIEW_LIMIT = 2;
 
 const applicationTone = {
   APROVADO: "verde",
@@ -114,6 +116,45 @@ function notificationGroup(value) {
     : date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
 }
 
+// Mesma regra do painel do orientador (OrientadorService.estaAtrasada): etapa
+// com prazo vencido que não foi concluída nem rejeitada. Fonte: /api/me/prazos-etapas.
+function mapOverdueDeliveries(rawStages) {
+  const list = Array.isArray(rawStages) ? rawStages : [];
+  const now = Date.now();
+  return list
+    .map((raw) => {
+      const etapa = mapEtapa(raw);
+      const prazo = new Date(etapa?.prazo ?? "").getTime();
+      if (Number.isNaN(prazo) || prazo >= now) return null;
+      if (etapa.status === "DONE" || etapa.status === "REJECTED") return null;
+      const projetoId = raw?.projetoId ?? null;
+      const projetoTitulo = raw?.projetoTitulo ?? "Projeto";
+      return {
+        id: etapa.id,
+        prazo,
+        titulo: etapa.titulo,
+        subtitulo: `${projetoTitulo} - prazo ${formatShortDate(prazo)}`,
+        destino: projetoId != null ? `/app/projects/${projetoId}` : "/app/progress",
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.prazo - b.prazo);
+}
+
+// Etapas ainda não concluídas (PENDING, ACTIVE, REJECTED), as de prazo mais próximo primeiro.
+function mapPendingSteps(rawStages) {
+  const list = Array.isArray(rawStages) ? rawStages : rawStages?.content ?? rawStages?.data ?? [];
+  return list
+    .map((raw) => ({ etapa: mapEtapa(raw), projeto: raw?.projetoTitulo ?? raw?.tituloProjeto ?? "Projeto" }))
+    .filter(({ etapa }) => etapa && etapa.status !== "DONE")
+    .sort((a, b) => String(a.etapa.prazo ?? "9999").localeCompare(String(b.etapa.prazo ?? "9999")))
+    .map(({ etapa, projeto }) => ({
+      id: etapa.id ?? `${projeto}-${etapa.titulo}`,
+      title: etapa.titulo,
+      subtitle: projeto,
+    }));
+}
+
 async function loadEvaluations(userId) {
   const projects = await userService.getProjects(userId).catch(() => []);
   const ids = (Array.isArray(projects) ? projects.map(mapProject) : [])
@@ -159,12 +200,14 @@ export default function DashboardPage() {
       projects: mappedProjects,
       applications: mappedApplications,
       agenda: mapDeadlineAgenda(prazos),
+      pendingSteps: mapPendingSteps(prazos),
+      entregasAtrasadas: mapOverdueDeliveries(prazos),
       conversations: Array.isArray(conversas) ? conversas : [],
       evaluations,
       progress,
     };
   }, [userId], {
-    initialData: { projects: [], applications: [], agenda: [], conversations: [], evaluations: [], progress: null },
+    initialData: { projects: [], applications: [], agenda: [], entregasAtrasadas: [], conversations: [], evaluations: [], progress: null, pendingSteps: [] },
   });
 
   const derived = useMemo(() => {
@@ -178,6 +221,8 @@ export default function DashboardPage() {
       recentApplications: applications.slice(0, DASHBOARD_PREVIEW_LIMIT),
       conversations: (data?.conversations ?? []).slice(0, MESSAGES_PREVIEW_LIMIT),
       agenda: data?.agenda ?? [],
+      pendingSteps: (data?.pendingSteps ?? []).slice(0, PENDING_STEPS_PREVIEW_LIMIT),
+      entregasAtrasadas: (data?.entregasAtrasadas ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT),
       latestNotification: notifications[0] ?? null,
       unreadNotifications: notifications.filter((item) => !item.read).length,
       progress: progress
@@ -240,10 +285,13 @@ export default function DashboardPage() {
           )}
         </DashCard>
 
-        <DashCard icon={Sparkle} tone="roxo" title="Lumen AI" caption="Pergunte a IA">
-          <DashPromo>
-            Use gratuitamente a nova IA da plataforma para pesquisas, perguntas e muito mais.
-          </DashPromo>
+        <DashCard
+          icon={TrendUp}
+          tone="verde"
+          title="Etapas pendentes"
+          onOpen={() => navigate("/app/progress")}
+        >
+          <DashPendentes items={derived.pendingSteps} />
         </DashCard>
       </div>
 
@@ -298,10 +346,25 @@ export default function DashboardPage() {
               )}
             </DashCard>
 
-            <DashCard icon={Users} tone="roxo" title="Entregas aguardando revisão">
-              <DashPromo>
-                Em <strong>Comunidade</strong> você pode explorar e compartilhar novidades com outros usuários.
-              </DashPromo>
+            <DashCard
+              icon={Warning}
+              tone="vermelho"
+              title="Entregas atrasadas"
+              onOpen={() => navigate("/app/progress")}
+            >
+              {derived.entregasAtrasadas.length === 0 ? (
+                <DashEmpty>Nenhuma entrega atrasada.</DashEmpty>
+              ) : (
+                derived.entregasAtrasadas.map((item, index) => (
+                  <DashRow
+                    key={`${item.id}-${index}`}
+                    title={item.titulo}
+                    subtitle={item.subtitulo}
+                    onOpen={() => navigate(item.destino)}
+                    openLabel={item.titulo}
+                  />
+                ))
+              )}
             </DashCard>
           </div>
 
@@ -316,7 +379,9 @@ export default function DashboardPage() {
           </DashCard>
         </div>
 
-        <div className="dash-coluna">
+        {/* Coluna estica até a altura da esquerda; Mensagens absorve o restante
+            e termina alinhada ao fim de Avaliações. */}
+        <div className="dash-coluna dash-coluna--preencher">
           <DashCard
             icon={CalendarCheck}
             tone="roxo"
@@ -344,7 +409,7 @@ export default function DashboardPage() {
             title="Mensagens"
             caption="Últimas mensagens recebidas"
             onOpen={() => navigate("/app/chat")}
-            className="dash-card--igual"
+            className="dash-card--preencher"
           >
             {derived.conversations.length === 0 ? (
               <DashEmpty>Suas conversas aparecerão aqui.</DashEmpty>

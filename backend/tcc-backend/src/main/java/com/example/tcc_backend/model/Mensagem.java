@@ -49,9 +49,17 @@ public class Mensagem {
     @Column(name = "data_leitura")
     private OffsetDateTime dataLeitura;
 
+    @Builder.Default
+    @Column(name = "excluida", nullable = false)
+    private Boolean excluida = false;
+
+    @Column(name = "data_exclusao")
+    private OffsetDateTime dataExclusao;
+
     @PrePersist
     public void prePersist() {
         this.dataEnvio = OffsetDateTime.now();
         if (this.editada == null) this.editada = false;
+        if (this.excluida == null) this.excluida = false;
     }
 }

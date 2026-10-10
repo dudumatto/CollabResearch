@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { CaretLeft, CaretRight, CheckCircle } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, CheckCircle, Warning } from "@phosphor-icons/react";
 import "./DashboardKit.css";
 
 /* Encaixa o painel na altura da viewport sem rolagem. Usa CSS `zoom` (não
@@ -257,6 +257,26 @@ export function DashProgress({ status, statusTone = "azul", label, done = 0, tot
 /* Bloco promocional centralizado (ex.: Comunidade). */
 export function DashPromo({ children }) {
   return <p className="dash-promo">{children}</p>;
+}
+
+/* Etapas ainda não concluídas: ícone de alerta, título da etapa e projeto
+   (o subtítulo longo some em fade à direita, como no Figma). */
+export function DashPendentes({ items = [] }) {
+  if (items.length === 0) return <DashEmpty>Nenhuma etapa pendente.</DashEmpty>;
+
+  return (
+    <ul className="dash-pendentes">
+      {items.map((item) => (
+        <li key={item.id} className="dash-pendentes__item">
+          <Warning size={24} weight="fill" className="dash-pendentes__icone" aria-hidden="true" />
+          <span className="dash-linha__info">
+            <span className="dash-pendentes__titulo">{item.title}</span>
+            <span className="dash-pendentes__subtitulo">{item.subtitle}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export function DashAvatar({ src, initials }) {

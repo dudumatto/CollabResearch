@@ -31,6 +31,8 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Integer>, JpaS
     @Query("SELECT p FROM Projeto p WHERE p.id = :id")
     Optional<Projeto> findByIdForUpdate(@Param("id") Integer id);
     List<Projeto> findByStatus(StatusProjeto status);
+    @EntityGraph(attributePaths = {"area"})
+    List<Projeto> findByStatusOrderByDataCriacaoDesc(StatusProjeto status);
     Page<Projeto> findByStatus(StatusProjeto status, Pageable pageable);
     long countByStatus(StatusProjeto status);
     List<Projeto> findByAreaId(Integer areaId);

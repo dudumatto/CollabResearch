@@ -34,6 +34,7 @@ public class OrientadorService {
     private final ProjetoRepository projetoRepository;
     private final InscricaoRepository inscricaoRepository;
     private final EtapaProgressoRepository etapaProgressoRepository;
+    private final EtapaTarefaRepository etapaTarefaRepository;
     private final ProjectDeliveryRepository projectDeliveryRepository;
     private final DeliveryVersionRepository deliveryVersionRepository;
     private final AcademicEvaluationRepository academicEvaluationRepository;
@@ -190,6 +191,7 @@ public class OrientadorService {
                         || p.getStatus() == StatusProjeto.EM_ANDAMENTO)
                 .toList();
         Map<Integer, List<EtapaProgresso>> etapasPorProjeto = carregarEtapasPorProjeto(projetos);
+        Map<Integer, List<EtapaTarefa>> tarefasPorEtapa = carregarTarefasPorEtapa(etapasPorProjeto.values());
 
         List<OrientandoResponse> resultado = inscricoesDoEscopo(usuario).stream()
                 .filter(i -> i.getStatus() == StatusInscricao.APROVADO)
@@ -197,7 +199,7 @@ public class OrientadorService {
                 .collect(Collectors.groupingBy(i -> i.getAluno().getId(),
                         LinkedHashMap::new, Collectors.toList()))
                 .values().stream()
-                .map(lista -> montarOrientando(lista, ativos, etapasPorProjeto))
+                .map(lista -> montarOrientando(lista, ativos, etapasPorProjeto, tarefasPorEtapa))
                 .filter(o -> busca == null || busca.isBlank()
                         || contemIgnoreCase(o.getNome(), busca)
                         || contemIgnoreCase(o.getEmail(), busca))
@@ -247,6 +249,7 @@ public class OrientadorService {
 
         Projeto projeto = projetoSelecionado.getProjeto();
         List<EtapaProgresso> etapas = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projeto.getId());
+        Map<Integer, List<EtapaTarefa>> tarefasPorEtapa = carregarTarefasPorEtapa(List.of(etapas));
         List<Progresso> historico = progressoRepository
                 .findByProjetoIdAndAutorIdOrderByDataRegistroDesc(projeto.getId(), aluno.getUsuario().getId());
 
@@ -271,8 +274,8 @@ public class OrientadorService {
                         .projetoTitulo(projeto.getTitulo())
                         .status(projeto.getStatus())
                         .build())
-                .progresso(calcularPercentual(etapas))
-                .etapas(etapas.stream().map(OrientadorService::etapaResponse).toList())
+                .progresso(calcularPercentual(etapas, tarefasPorEtapa))
+                .etapas(etapas.stream().map(e -> etapaResponse(e, tarefasPorEtapa.get(e.getId()))).toList())
                 .historico(historico.stream().map(OrientadorService::historicoResponse).toList())
                 .build();
     }
@@ -330,7 +333,8 @@ public class OrientadorService {
 
     private OrientandoResponse montarOrientando(List<Inscricao> vinculadas,
                                                 List<Projeto> ativos,
-                                                Map<Integer, List<EtapaProgresso>> etapasPorProjeto) {
+                                                Map<Integer, List<EtapaProgresso>> etapasPorProjeto,
+                                                Map<Integer, List<EtapaTarefa>> tarefasPorEtapa) {
         Inscricao primeira = vinculadas.get(0);
         Aluno aluno = primeira.getAluno();
 
@@ -353,7 +357,7 @@ public class OrientadorService {
                 .count();
 
         int progresso = vinculadas.stream()
-                .map(i -> calcularPercentual(etapasPorProjeto.getOrDefault(i.getProjeto().getId(), List.of())))
+                .map(i -> calcularPercentual(etapasPorProjeto.getOrDefault(i.getProjeto().getId(), List.of()), tarefasPorEtapa))
                 .reduce(0, Integer::sum)
                 / Math.max(vinculadas.size(), 1);
 
@@ -413,22 +417,22 @@ public class OrientadorService {
         return mapa;
     }
 
-    private Integer calcularPercentual(List<EtapaProgresso> etapas) {
-        int pesoTotal = etapas.stream().mapToInt(e -> e.getPeso() == null ? 0 : e.getPeso()).sum();
-        if (pesoTotal == 0) {
-            return 0;
+    private Map<Integer, List<EtapaTarefa>> carregarTarefasPorEtapa(java.util.Collection<List<EtapaProgresso>> etapasPorProjeto) {
+        List<Integer> ids = etapasPorProjeto.stream().flatMap(List::stream).map(EtapaProgresso::getId).toList();
+        if (ids.isEmpty()) {
+            return Map.of();
         }
-        int pesoConcluido = etapas.stream()
-                .filter(e -> e.getStatus() == EtapaProgressoStatus.DONE)
-                .mapToInt(e -> e.getPeso() == null ? 0 : e.getPeso())
-                .sum();
-        return (int) Math.round(pesoConcluido * 100.0 / pesoTotal);
+        return etapaTarefaRepository.findByEtapaIdInOrderByOrdemAscIdAsc(ids).stream()
+                .collect(Collectors.groupingBy(t -> t.getEtapa().getId()));
+    }
+
+    private Integer calcularPercentual(List<EtapaProgresso> etapas, Map<Integer, List<EtapaTarefa>> tarefasPorEtapa) {
+        return MarcoProgressoCalculator.projeto(etapas, tarefasPorEtapa, OffsetDateTime.now()).percentualGeral();
     }
 
     private static boolean estaAtrasada(EtapaProgresso etapa) {
         return etapa.getPrazo() != null
                 && etapa.getStatus() != EtapaProgressoStatus.DONE
-                && etapa.getStatus() != EtapaProgressoStatus.REJECTED
                 && etapa.getPrazo().isBefore(OffsetDateTime.now());
     }
 
@@ -542,7 +546,8 @@ public class OrientadorService {
                 .build();
     }
 
-    private static OrientandoEtapaResponse etapaResponse(EtapaProgresso etapa) {
+    private static OrientandoEtapaResponse etapaResponse(EtapaProgresso etapa, List<EtapaTarefa> tarefas) {
+        MarcoProgressoCalculator.Marco calculo = MarcoProgressoCalculator.marco(tarefas);
         return OrientandoEtapaResponse.builder()
                 .id(etapa.getId())
                 .titulo(etapa.getTitulo())
@@ -555,6 +560,10 @@ public class OrientadorService {
                 .prazo(etapa.getPrazo())
                 .concluidaEm(etapa.getConcluidaEm())
                 .concluidaPorNome(etapa.getConcluidaPor() != null ? etapa.getConcluidaPor().getNome() : null)
+                .emRevisao(MarcoProgressoCalculator.emRevisao(etapa))
+                .itensConcluidos(calculo.itensConcluidos())
+                .itensTotal(calculo.itensTotal())
+                .percentual(calculo.percentual())
                 .build();
     }
 

@@ -20,7 +20,7 @@ Conteudo coberto:
 - 6 areas de pesquisa
 - 14 projetos em estados diferentes
 - inscricoes pendentes, aprovadas e rejeitadas
-- etapas concluidas, pendentes, ativas, rejeitadas e atrasadas
+- marcos com checklist (tarefas do orientador e pessoais), marcos aprovados, em andamento, em revisao, devolvidos e atrasados, com historico de revisoes
 - entregas aguardando revisao, aprovadas e com alteracoes solicitadas
 - avaliacoes academicas e ciencias
 - feedbacks, conversas, mensagens, notificacoes e documentos

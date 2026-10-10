@@ -83,7 +83,7 @@ test.describe("AppCombobox dropdowns", () => {
     await page.getByRole("button", { name: /Nova atualiza/ }).click();
     await expectEveryVisibleComboboxOpens(page);
     await selectComboboxOption(page, /Selecionar categoria/i, /Documento/, /Documento/);
-    await selectComboboxOption(page, /Selecionar etapa relacionada/i, /Proposta aprovada/, /Proposta aprovada/);
+    await selectComboboxOption(page, /Selecionar marco relacionado/i, /Proposta aprovada/, /Proposta aprovada/);
 
     await expect(consoleIssues).toEqual([]);
   });

@@ -2,7 +2,13 @@ package com.example.tcc_backend.controller;
 
 import com.example.tcc_backend.dto.request.AdvanceProgressStepRequest;
 import com.example.tcc_backend.dto.request.EtapaRequest;
+import com.example.tcc_backend.dto.request.OrdemRequest;
+import com.example.tcc_backend.dto.request.RevisaoRequest;
+import com.example.tcc_backend.dto.request.TarefaPatchRequest;
+import com.example.tcc_backend.dto.request.TarefaRequest;
 import com.example.tcc_backend.dto.response.EtapaResponse;
+import com.example.tcc_backend.dto.response.RevisaoResponse;
+import com.example.tcc_backend.service.EtapaChecklistService;
 import com.example.tcc_backend.service.EtapaProgressoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +30,7 @@ import java.util.List;
 public class EtapaController {
 
     private final EtapaProgressoService etapaProgressoService;
+    private final EtapaChecklistService checklistService;
 
     @Operation(summary = "Listar etapas do projeto")
     @ApiResponses({
@@ -90,5 +97,70 @@ public class EtapaController {
                                                   @PathVariable Integer etapaId,
                                                   @RequestBody @Valid AdvanceProgressStepRequest request) {
         return ResponseEntity.ok(etapaProgressoService.concluirEtapa(id, etapaId, request));
+    }
+
+    @Operation(summary = "Reordenar marcos do projeto")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Marcos reordenados"),
+            @ApiResponse(responseCode = "400", description = "Lista de ids invalida"),
+            @ApiResponse(responseCode = "403", description = "Apenas o orientador responsavel pode executar esta acao")
+    })
+    @PutMapping("/ordem")
+    public ResponseEntity<List<EtapaResponse>> reordenar(@PathVariable Integer id,
+                                                         @RequestBody @Valid OrdemRequest request) {
+        return ResponseEntity.ok(etapaProgressoService.reordenarEtapas(id, request));
+    }
+
+    @Operation(summary = "Criar tarefa no marco (origem derivada do papel)")
+    @PostMapping("/{etapaId}/tarefas")
+    public ResponseEntity<EtapaResponse> criarTarefa(@PathVariable Integer id,
+                                                     @PathVariable Integer etapaId,
+                                                     @RequestBody @Valid TarefaRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(checklistService.criarTarefa(id, etapaId, request));
+    }
+
+    @Operation(summary = "Editar, concluir ou reabrir tarefa do marco")
+    @PatchMapping("/{etapaId}/tarefas/{tarefaId}")
+    public ResponseEntity<EtapaResponse> atualizarTarefa(@PathVariable Integer id,
+                                                         @PathVariable Integer etapaId,
+                                                         @PathVariable Integer tarefaId,
+                                                         @RequestBody @Valid TarefaPatchRequest request) {
+        return ResponseEntity.ok(checklistService.atualizarTarefa(id, etapaId, tarefaId, request));
+    }
+
+    @Operation(summary = "Remover tarefa do marco")
+    @DeleteMapping("/{etapaId}/tarefas/{tarefaId}")
+    public ResponseEntity<EtapaResponse> excluirTarefa(@PathVariable Integer id,
+                                                       @PathVariable Integer etapaId,
+                                                       @PathVariable Integer tarefaId) {
+        return ResponseEntity.ok(checklistService.excluirTarefa(id, etapaId, tarefaId));
+    }
+
+    @Operation(summary = "Reordenar as tarefas que o usuario gerencia")
+    @PutMapping("/{etapaId}/tarefas/ordem")
+    public ResponseEntity<EtapaResponse> reordenarTarefas(@PathVariable Integer id,
+                                                          @PathVariable Integer etapaId,
+                                                          @RequestBody @Valid OrdemRequest request) {
+        return ResponseEntity.ok(checklistService.reordenarTarefas(id, etapaId, request));
+    }
+
+    @Operation(summary = "Aluno envia o marco para revisao do orientador")
+    @PostMapping("/{etapaId}/enviar-revisao")
+    public ResponseEntity<EtapaResponse> enviarRevisao(@PathVariable Integer id, @PathVariable Integer etapaId) {
+        return ResponseEntity.ok(checklistService.enviarParaRevisao(id, etapaId));
+    }
+
+    @Operation(summary = "Orientador aprova ou devolve o marco")
+    @PostMapping("/{etapaId}/revisao")
+    public ResponseEntity<EtapaResponse> revisar(@PathVariable Integer id,
+                                                 @PathVariable Integer etapaId,
+                                                 @RequestBody @Valid RevisaoRequest request) {
+        return ResponseEntity.ok(checklistService.revisar(id, etapaId, request));
+    }
+
+    @Operation(summary = "Historico de revisoes do marco")
+    @GetMapping("/{etapaId}/revisoes")
+    public ResponseEntity<List<RevisaoResponse>> revisoes(@PathVariable Integer id, @PathVariable Integer etapaId) {
+        return ResponseEntity.ok(checklistService.listarRevisoes(id, etapaId));
     }
 }
