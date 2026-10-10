@@ -376,7 +376,7 @@ export default function DashboardPage() {
             onOpen={() => navigate("/app/avaliacoes")}
             className="dash-card--igual"
           >
-            <DashEvaluations items={data?.evaluations ?? []} />
+            <DashEvaluations items={data?.evaluations ?? []} onOpen={() => navigate("/app/avaliacoes")} />
           </DashCard>
         </div>
 

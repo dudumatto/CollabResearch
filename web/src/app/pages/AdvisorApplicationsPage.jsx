@@ -101,7 +101,7 @@ function EstadoVazio({ titulo, descricao }) {
 }
 
 const LUMEN_TOOLTIP =
-  "Analisa as inscrições pendentes do projeto, atribuindo uma nota de 0 a 10 a cada candidato com base na compatibilidade com o projeto (perfil, biografia, motivação e documentos anexados) e gera um ranking para auxiliar na avaliação. A nota é apenas uma sugestão: a decisão de aprovar ou recusar continua sendo sua. Candidatos já avaliados não são refeitos, mas você pode reavaliá-los depois.";
+  "Atribui nota de 0 a 10 às inscrições pendentes conforme a compatibilidade com o projeto e gera um ranking para apoiar sua decisão. A nota é só uma sugestão.";
 
 export default function AdvisorApplicationsPage() {
   const navigate = useNavigate();

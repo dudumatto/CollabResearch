@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { advisorService } from "../services/advisorService";
+import { projectService } from "../services/projectService";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { LumenLoadingModal } from "../components/LumenLoadingModal";
 
@@ -15,6 +16,8 @@ export function LumenAnalysisProvider({ children }) {
   const [rodando, setRodando] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
   const [conclusao, setConclusao] = useState(null);
+  const [recomendacao, setRecomendacao] = useState(null);
+  const [tipo, setTipo] = useState("ranking");
 
   useEffect(() => {
     mounted.current = true;
@@ -26,6 +29,7 @@ export function LumenAnalysisProvider({ children }) {
   const iniciar = useCallback(async (projetoId, ids = []) => {
     if (!projetoId || rodandoRef.current) return;
     rodandoRef.current = true;
+    setTipo("ranking");
     setRodando(true);
     setModalAberto(true);
     try {
@@ -59,7 +63,46 @@ export function LumenAnalysisProvider({ children }) {
     }
   }, [navigate]);
 
-  const value = useMemo(() => ({ rodando, conclusao, iniciar }), [rodando, conclusao, iniciar]);
+  // Aluno: recomendação de projetos. Mesmo fluxo: segue em segundo plano e avisa ao terminar.
+  const iniciarRecomendacao = useCallback(async () => {
+    if (rodandoRef.current) return;
+    rodandoRef.current = true;
+    setTipo("recomendacao");
+    setRodando(true);
+    setModalAberto(true);
+    try {
+      const resultado = await projectService.recomendarComLumen();
+      if (!mounted.current) return;
+      if (!Array.isArray(resultado?.recomendacoes) || resultado.recomendacoes.length === 0) {
+        toast.info(resultado?.aviso || "A Lumen não encontrou projetos para recomendar.");
+        return;
+      }
+      setRecomendacao(resultado);
+      toast.success("Sua análise terminou. Venha conferir os projetos recomendados.", {
+        duration: Infinity,
+        closeButton: true,
+        action: {
+          label: "Ver resultados",
+          onClick: () => navigate("/app/projects", { state: { lumenRecomendacao: true } }),
+        },
+      });
+    } catch (err) {
+      if (mounted.current) {
+        toast.error(getErrorMessage(normalizeError(err), "Não foi possível analisar com a Lumen."));
+      }
+    } finally {
+      rodandoRef.current = false;
+      if (mounted.current) {
+        setRodando(false);
+        setModalAberto(false);
+      }
+    }
+  }, [navigate]);
+
+  const value = useMemo(
+    () => ({ rodando, conclusao, iniciar, recomendacao, iniciarRecomendacao }),
+    [rodando, conclusao, iniciar, recomendacao, iniciarRecomendacao],
+  );
 
   return (
     <LumenAnalysisContext.Provider value={value}>
@@ -67,7 +110,9 @@ export function LumenAnalysisProvider({ children }) {
       <LumenLoadingModal
         open={rodando && modalAberto}
         onClose={() => setModalAberto(false)}
-        message="O Lumen está analisando as candidaturas. Você será avisado quando o processo for concluído."
+        message={tipo === "recomendacao"
+          ? "A Lumen está comparando seu perfil com os projetos abertos. Você será avisado quando o processo for concluído."
+          : "O Lumen está analisando as candidaturas. Você será avisado quando o processo for concluído."}
       />
     </LumenAnalysisContext.Provider>
   );

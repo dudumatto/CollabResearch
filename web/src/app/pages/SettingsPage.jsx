@@ -71,6 +71,23 @@ function useOverlayMode() {
   return overlay;
 }
 
+const EASE_OUT = [0.22, 1, 0.36, 1];
+
+// Desktop: o painel ocupa o lugar da lista (no fluxo). Entra com fade + leve
+// subida; sai na hora para não sobrepor a lista que reaparece.
+const PANEL_INLINE_MOTION = {
+  initial: { opacity: 0, y: 14, scale: 0.99 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: EASE_OUT } },
+  exit: { opacity: 0, transition: { duration: 0.01 } },
+};
+
+// Telas pequenas: overlay fixo, desliza curto pela direita com fade.
+const PANEL_OVERLAY_MOTION = {
+  initial: { opacity: 0, x: 40 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.4, ease: EASE_OUT } },
+  exit: { opacity: 0, x: 24, transition: { duration: 0.22, ease: "easeIn" } },
+};
+
 function Panel({ panelId, activePanel, title, onBack, children, collapsed }) {
   const open = activePanel === panelId;
   const overlay = useOverlayMode();
@@ -80,10 +97,7 @@ function Panel({ panelId, activePanel, title, onBack, children, collapsed }) {
       {open && (
         <motion.div
           className={`cfg-panel ${collapsed ? "cfg-panel--recolhida" : ""}`}
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "100%" }}
-          transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
+          {...(overlay ? PANEL_OVERLAY_MOTION : PANEL_INLINE_MOTION)}
         >
           <div className="cfg-panel__header">
             <button className="cfg-panel__back" onClick={onBack} aria-label="Voltar para configurações">

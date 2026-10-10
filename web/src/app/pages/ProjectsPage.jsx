@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { MagnifyingGlass, SlidersHorizontal, X, Plus } from "@phosphor-icons/react";
-import { toast } from "sonner";
+import { Tooltip } from "antd";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useAuth } from "../hooks/useAuth";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
@@ -14,12 +14,14 @@ import { AppCombobox } from "../components/ui/AppCombobox";
 import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
 import ProjectGridCard from "../components/ProjectGridCard";
 import { LumenAIButton } from "../components/ui/LumenAIButton";
-import { LumenLoadingModal } from "../components/LumenLoadingModal";
+import { useLumenAnalysis } from "../providers/LumenAnalysisProvider";
 import { LumenRecommendationsModal } from "../components/LumenRecommendationsModal";
 import { getUserId, mapApplication, mapProject } from "../utils/adapters";
 import { formatProjectStatus } from "../utils/formatters";
-import { normalizeError, getErrorMessage } from "../utils/apiError";
 import "./ProjectsPage.css";
+
+const LUMEN_TOOLTIP =
+  "Compara seu perfil com os projetos abertos e sugere os 3 mais compatíveis com você. É só uma sugestão: a escolha é sua.";
 
 function normalizeValue(value) {
   return String(value ?? "")
@@ -72,7 +74,8 @@ export default function ProjectsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
-  const [lumenLoading, setLumenLoading] = useState(false);
+  const location = useLocation();
+  const { rodando: lumenLoading, recomendacao, iniciarRecomendacao } = useLumenAnalysis();
   const [lumenResultado, setLumenResultado] = useState(null);
   const isAluno = String(user?.tipo ?? "").toUpperCase() === "ALUNO";
   const closeLumen = useCallback(() => setLumenResultado(null), []);
@@ -139,22 +142,13 @@ export default function ProjectsPage() {
     }
   }, [loadingMore, loading, data, filterKey, selectedCourse, selectedArea, selectedStatus, debouncedSearch, setData]);
 
-  const recomendarComLumen = async () => {
-    if (lumenLoading) return;
-    setLumenLoading(true);
-    try {
-      const resultado = await projectService.recomendarComLumen();
-      if (Array.isArray(resultado?.recomendacoes) && resultado.recomendacoes.length > 0) {
-        setLumenResultado(resultado);
-      } else {
-        toast.info(resultado?.aviso || "A Lumen não encontrou projetos para recomendar.");
-      }
-    } catch (err) {
-      toast.error(getErrorMessage(normalizeError(err), "Não foi possível analisar com a Lumen."));
-    } finally {
-      setLumenLoading(false);
-    }
-  };
+  // "Ver resultados" da notificação: abre as recomendações concluídas em segundo plano.
+  const verRecomendacao = location.state?.lumenRecomendacao;
+  useEffect(() => {
+    if (!verRecomendacao || !recomendacao) return;
+    setLumenResultado(recomendacao);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [verRecomendacao, recomendacao, location.pathname, navigate]);
 
   const { data: myApplications } = useAsyncData(
     async () => {
@@ -249,13 +243,13 @@ export default function ProjectsPage() {
         </div>
         <div className="pagina-projetos__acoes-cabecalho">
           {isAluno && (
-            <LumenAIButton
-              onClick={recomendarComLumen}
-              disabled={lumenLoading}
-              title="Comparar seu perfil com os projetos abertos e sugerir os 3 mais compatíveis"
-            >
-              {lumenLoading ? "Analisando com Lumen..." : "Analisar projetos"}
-            </LumenAIButton>
+            <Tooltip title={LUMEN_TOOLTIP} placement="bottom" styles={{ root: { maxWidth: 340 } }}>
+              <span style={{ display: "inline-flex" }}>
+                <LumenAIButton onClick={iniciarRecomendacao} disabled={lumenLoading}>
+                  {lumenLoading ? "Analisando com Lumen..." : "Analisar projetos"}
+                </LumenAIButton>
+              </span>
+            </Tooltip>
           )}
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -436,10 +430,6 @@ export default function ProjectsPage() {
         aviso={lumenResultado?.aviso}
         onClose={closeLumen}
         onOpenProject={handleOpenProject}
-      />
-      <LumenLoadingModal
-        open={lumenLoading}
-        message="A Lumen está comparando seu perfil com os projetos abertos. Isso pode levar alguns segundos."
       />
     </motion.div>
   );

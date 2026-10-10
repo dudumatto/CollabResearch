@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate, useLocation, useParams, useRouteError } from "react-router";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -44,6 +44,15 @@ function lazyRoute(importer) {
 function RouteErrorView() {
   const error = useRouteError();
   const isChunkError = isRouteChunkError(error);
+
+  if (!isChunkError) {
+    console.error(error);
+    return (
+      <Suspense fallback={null}>
+        <NotFoundPage />
+      </Suspense>
+    );
+  }
 
   return (
     <div style={{ padding: "1rem", minHeight: "100vh", background: "var(--cor-fundo)" }}>

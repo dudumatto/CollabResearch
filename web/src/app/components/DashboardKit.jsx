@@ -299,7 +299,7 @@ function formatDataAvaliacao(value) {
 
 /* Carrossel de avaliações acadêmicas: mostra uma por vez e, havendo mais de
    uma, setas para alternar. A altura do corpo é fixa para o cartão não mudar. */
-export function DashEvaluations({ items = [] }) {
+export function DashEvaluations({ items = [], onOpen }) {
   const [index, setIndex] = useState(0);
   if (items.length === 0) return <DashEmpty>Suas avaliações aparecerão aqui.</DashEmpty>;
 
@@ -314,6 +314,7 @@ export function DashEvaluations({ items = [] }) {
   ];
 
   return (
+    <div className="dash-aval-wrap">
     <div className="dash-aval">
       <div className="dash-aval__quem">
         <div className="dash-aval__nome">
@@ -337,6 +338,11 @@ export function DashEvaluations({ items = [] }) {
               {current.comentarioOrientador}
             </q>
           )}
+          {onOpen && (
+            <button type="button" className="dash-aval__ver" onClick={onOpen}>
+              Ver avaliação <CaretRight size={12} aria-hidden="true" />
+            </button>
+          )}
           {items.length > 1 && (
             <div className="dash-aval__nav">
               <button type="button" onClick={() => go(-1)} aria-label="Avaliação anterior">
@@ -350,6 +356,7 @@ export function DashEvaluations({ items = [] }) {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

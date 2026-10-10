@@ -7,14 +7,12 @@
   /* O fundo (cor sólida + imagem) mora em .pagina-app:has(.dash), no fim
      deste arquivo, para cobrir também o entorno da sidebar e da topbar. */
   --dash-canvas: transparent;
-  /* Glassmorphism: cartões a 75% de opacidade + desfoque. */
-  --dash-card: rgba(255, 255, 255, 0.75);
-  --dash-card-borda: rgba(200, 218, 205, 0.6);
-  --dash-card-vidro: blur(16px) saturate(140%);
-  /* Sem sombreamento nos cartões do painel — só a borda separa um cartão do
-     outro. */
-  --dash-card-sombra: none;
-  --dash-card-sombra-hover: none;
+  /* Glassmorphism: cartões translúcidos + desfoque, borda de luz e brilho interno. */
+  --dash-card: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.72));
+  --dash-card-borda: rgba(180, 210, 192, 0.75);
+  --dash-card-vidro: blur(22px) saturate(160%);
+  --dash-card-sombra: 0 8px 28px rgba(31, 90, 66, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --dash-card-sombra-hover: 0 10px 32px rgba(31, 90, 66, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --dash-titulo: var(--cor-texto-forte);
   --dash-texto: var(--cor-texto-secundario);
   --dash-mudo: var(--cor-texto-medio);
@@ -31,7 +29,7 @@
   --dash-heroi-botao-borda: rgba(255, 255, 255, 0.34);
 
   /* Cor de chegada do fade de corte (Calendário/listas): a mesma do vidro */
-  --dash-card-fade: rgba(255, 255, 255, 0.92);
+  --dash-card-fade: rgba(255, 255, 255, 0.86);
 
   /* Paleta dos selos de ícone, extraída do Figma */
   --dash-azul: #42abfc;
@@ -53,11 +51,11 @@
 }
 
 .dark .dash {
-  --dash-card: rgba(6, 28, 21, 0.75);
-  --dash-card-fade: rgba(6, 28, 21, 0.92);
-  --dash-card-borda: rgba(255, 255, 255, 0.1);
-  --dash-card-sombra: none;
-  --dash-card-sombra-hover: none;
+  --dash-card: linear-gradient(135deg, rgba(10, 44, 33, 0.88), rgba(6, 28, 21, 0.74));
+  --dash-card-fade: rgba(6, 28, 21, 0.8);
+  --dash-card-borda: rgba(255, 255, 255, 0.2);
+  --dash-card-sombra: 0 8px 28px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --dash-card-sombra-hover: 0 10px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   --dash-titulo: #f4f8f5;
   --dash-texto: rgba(244, 248, 245, 0.82);
   --dash-mudo: rgba(244, 248, 245, 0.56);
@@ -725,6 +723,10 @@
   overflow-y: auto;
 }
 
+.dash-card--igual .dash-card__corpo:has(.dash-aval-wrap) {
+  overflow: hidden;
+}
+
 /* ---- Avaliações (carrossel) ---- */
 .dash-aval {
   display: grid;
@@ -851,6 +853,86 @@
 
 .dash-aval__nav button:hover {
   background: var(--dash-realce);
+}
+
+.dash-aval__ver {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--cor-primaria);
+  border-radius: var(--raio-completo);
+  background: transparent;
+  color: var(--cor-primaria);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.dash-aval__ver:hover {
+  background: var(--dash-realce);
+}
+
+/* Card estreito: empilha, notas 2x2, comentário em até 3 linhas. */
+.dash-aval-wrap {
+  container-type: inline-size;
+}
+
+@container (max-width: 34rem) {
+  .dash-aval {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .dash-aval__quem {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--espaco-3);
+  }
+
+  .dash-aval__notas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dash-aval {
+    gap: 0.4rem;
+  }
+
+  .dash-aval__direita {
+    gap: 0.4rem;
+  }
+
+  .dash-aval__nome {
+    display: none;
+  }
+
+  .dash-aval__notas {
+    gap: 0.3rem 0.6rem;
+  }
+
+  .dash-aval__nota {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+  }
+
+  .dash-aval__nota strong {
+    flex: 0 0 auto;
+    min-width: 2.6rem;
+    padding: 0.1rem 0.3rem;
+    font-size: 1rem;
+  }
+
+  .dash-aval__comentario {
+    display: -webkit-box;
+    flex: 1 1 0;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-align: left;
+    white-space: normal;
+  }
 }
 
 /* ---- Notificação recente ---- */
@@ -1025,7 +1107,8 @@
   pointer-events: none;
   background: url("/brand/dash-fundo-claro.jpg") center top / cover no-repeat;
   /* scale evita a borda esmaecida que o blur cria nas margens da imagem */
-  filter: hue-rotate(-72deg) saturate(0.45) brightness(1.5) blur(36px);
+  filter: hue-rotate(-72deg) saturate(1.6) brightness(1.25) contrast(0.9) blur(36px);
+  opacity: 0.25;
   transform: scale(1.15);
 }
 
@@ -1033,4 +1116,5 @@
 .dark .pagina-app--dashboard::before {
   background-image: url("/brand/dash-fundo-escuro.webp");
   filter: hue-rotate(-72deg) saturate(0.95) brightness(0.85) blur(36px);
+  opacity: 1;
 }

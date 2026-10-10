@@ -1184,10 +1184,22 @@
   width: 128px;
   height: 128px;
   margin: auto;
-  border-radius: 50%;
-  background: conic-gradient(#1f7a5a 0 var(--progress-percent), #e2e8f0 var(--progress-percent) 100%);
-  -webkit-mask: radial-gradient(circle, transparent 0 47px, #000 48px);
-  mask: radial-gradient(circle, transparent 0 47px, #000 48px);
+  transform: rotate(-90deg);
+}
+
+.progress-donut__trilha,
+.progress-donut__valor {
+  fill: none;
+  stroke-width: 16;
+}
+
+.progress-donut__trilha {
+  stroke: #e2e8f0;
+}
+
+.progress-donut__valor {
+  stroke: #1f7a5a;
+  stroke-linecap: round;
 }
 
 .progress-donut__center {

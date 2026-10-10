@@ -67,13 +67,13 @@ export default function AdvisorProfilePage() {
 
   const [form, setForm] = useState(null);
   const bioRef = useRef(null);
+  const [editing, setEditing] = useState(false);
   useEffect(() => {
     const el = bioRef.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
   }, [form?.bio, editing]);
-  const [editing, setEditing] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
 
