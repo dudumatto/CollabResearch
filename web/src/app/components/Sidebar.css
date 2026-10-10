@@ -380,6 +380,14 @@
   transition: var(--sidebar-conteudo-entra);
 }
 
+.barra-lateral__ia {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: #8b7cf6;
+  transition: var(--sidebar-conteudo-entra);
+}
+
+.barra-lateral--recolhida .barra-lateral__ia,
 .barra-lateral--recolhida .barra-lateral__contador {
   margin-left: 0;
   width: 0;

@@ -5,8 +5,9 @@ import "./DashboardKit.css";
 /* Encaixa o painel na altura da viewport sem rolagem. Usa CSS `zoom` (não
    `transform`): o navegador re-renderiza o texto na escala final, então fica
    nítido, e o layout refaz o fluxo mantendo proporção e responsividade.
-   Se nem MIN_ZOOM couber (ou sem suporte a zoom), fluxo natural com rolagem. */
-const MIN_ZOOM = 0.7;
+   Nunca rola em telas >= 640px: MIN_ZOOM é só um piso de segurança da busca.
+   Sem suporte a zoom ou abaixo de 640px, fluxo natural com rolagem. */
+const MIN_ZOOM = 0.25;
 
 function useFitZoom() {
   const ref = useRef(null);
@@ -44,21 +45,17 @@ function useFitZoom() {
       // nos breakpoints, então iterar por proporção oscila; a busca sempre converge)
       let z = 1;
       if (at(1) > available) {
-        if (at(MIN_ZOOM) > available) {
-          z = 1; // nem o zoom mínimo cabe: tamanho legível + rolagem
-        } else {
-          let lo = MIN_ZOOM;
-          let hi = 1;
-          while (hi - lo > 0.005) {
-            const mid = (lo + hi) / 2;
-            if (at(mid) <= available) lo = mid;
-            else hi = mid;
-          }
-          z = lo;
+        let lo = MIN_ZOOM;
+        let hi = 1;
+        while (hi - lo > 0.005) {
+          const mid = (lo + hi) / 2;
+          if (at(mid) <= available) lo = mid;
+          else hi = mid;
         }
+        z = lo;
       }
       at(z);
-      dash.style.overflowY = height() > available ? "auto" : "hidden";
+      dash.style.overflowY = "hidden";
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(solve);
@@ -155,6 +152,14 @@ export function DashMetric({ icon, tone = "verde", title, caption, value, onOpen
       <span className="dash-metrica__valor">{value}</span>
     </button>
   );
+}
+
+/* Estilo WhatsApp: só conversas com mensagens não lidas, a mais recente no topo. */
+export function unreadConversations(conversations, limit) {
+  return (conversations ?? [])
+    .filter((c) => c.mensagensNaoLidas > 0)
+    .sort((a, b) => Date.parse(b.ultimaMensagemHorario) - Date.parse(a.ultimaMensagemHorario))
+    .slice(0, limit);
 }
 
 export function DashRow({ title, subtitle, badge, badgeTone = "neutro", avatar, trailing, onOpen, openLabel }) {

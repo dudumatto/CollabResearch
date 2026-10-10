@@ -1,9 +1,17 @@
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Sparkle } from "@phosphor-icons/react";
+import { Sparkle, X } from "@phosphor-icons/react";
 import "./LogoutConfirmModal.css";
 import "./LumenLoadingModal.css";
 
-export function LumenLoadingModal({ open, count = 0, message }) {
+export function LumenLoadingModal({ open, onClose, count = 0, message }) {
+  useEffect(() => {
+    if (!open || !onClose) return undefined;
+    const onKeyDown = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const descricao = message ?? (count === 1
@@ -13,7 +21,7 @@ export function LumenLoadingModal({ open, count = 0, message }) {
   return createPortal(
     <div className="logout-confirm__overlay" role="presentation" data-entering="true">
       <div
-        className="logout-confirm__modal"
+        className="logout-confirm__modal lumen-loading__modal"
         role="alertdialog"
         aria-modal="true"
         aria-busy="true"
@@ -22,6 +30,11 @@ export function LumenLoadingModal({ open, count = 0, message }) {
         aria-describedby="lumen-loading-description"
         data-entering="true"
       >
+        {onClose && (
+          <button type="button" className="lumen-loading__fechar" onClick={onClose} aria-label="Fechar">
+            <X size={20} />
+          </button>
+        )}
         <div className="lumen-loading__icon" aria-hidden="true">
           <span className="lumen-loading__spinner" />
           <Sparkle size={28} weight="fill" />

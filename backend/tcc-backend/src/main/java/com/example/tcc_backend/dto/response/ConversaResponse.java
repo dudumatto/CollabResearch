@@ -42,6 +42,7 @@ public class ConversaResponse {
     // Última mensagem
     private String ultimaMensagem;
     private OffsetDateTime ultimaMensagemHorario;
+    private long mensagensNaoLidas;
 
     public static ConversaResponse fromEntity(Conversa conversa, Integer usuarioLogadoId) {
         return fromEntity(conversa, usuarioLogadoId, Function.identity());
@@ -59,7 +60,12 @@ public class ConversaResponse {
             Mensagem ultima = conversa.getMensagens().get(0);
             builder
                     .ultimaMensagem(ultima.getConteudo())
-                    .ultimaMensagemHorario(ultima.getDataEnvio());
+                    .ultimaMensagemHorario(ultima.getDataEnvio())
+                    .mensagensNaoLidas(conversa.getMensagens().stream()
+                            .filter(m -> m.getDataLeitura() == null
+                                    && m.getRemetente() != null
+                                    && !m.getRemetente().getId().equals(usuarioLogadoId))
+                            .count());
         }
 
         if (conversa.getTipo() == TipoConversa.PRIVADA) {

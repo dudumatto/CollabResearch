@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { Tray, Check, X, FileText, CaretRight, User, Sparkle, Warning } from "@phosphor-icons/react";
 import { toast } from "sonner";
+import { Tooltip } from "antd";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { applicationService } from "../services/applicationService";
@@ -13,7 +14,7 @@ import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import { LumenAIButton } from "../components/ui/LumenAIButton";
-import { LumenLoadingModal } from "../components/LumenLoadingModal";
+import { useLumenAnalysis } from "../providers/LumenAnalysisProvider";
 import "./AdvisorWorkspace.css";
 
 const FILTROS = [
@@ -99,16 +100,19 @@ function EstadoVazio({ titulo, descricao }) {
   );
 }
 
+const LUMEN_TOOLTIP =
+  "Analisa as inscrições pendentes do projeto, atribuindo uma nota de 0 a 10 a cada candidato com base na compatibilidade com o projeto (perfil, biografia, motivação e documentos anexados) e gera um ranking para auxiliar na avaliação. A nota é apenas uma sugestão: a decisão de aprovar ou recusar continua sendo sua. Candidatos já avaliados não são refeitos, mas você pode reavaliá-los depois.";
+
 export default function AdvisorApplicationsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { rodando: lumenLoading, conclusao, iniciar } = useLumenAnalysis();
   const [filtro, setFiltro] = useState("todas");
   const [expandedIds, setExpandedIds] = useState(() => new Set());
   const [modal, setModal] = useState(null);
   const [parecer, setParecer] = useState("");
   const [acaoLoadingId, setAcaoLoadingId] = useState(null);
   const [projetoFiltrado, setProjetoFiltrado] = useState("");
-  const [lumenLoading, setLumenLoading] = useState(false);
-  const [lumenCount, setLumenCount] = useState(0);
   const [lumenModalAberto, setLumenModalAberto] = useState(false);
   const [lumenFoco, setLumenFoco] = useState(null);
   const [selecionando, setSelecionando] = useState(false);
@@ -185,33 +189,35 @@ export default function AdvisorApplicationsPage() {
 
   const mostrarBotaoLumen = Boolean(projetoFiltrado) && filtro === "PENDENTE" && filtradas.length > 0;
 
-  const analisarComLumen = async (projetoId = projetoFiltrado, ids = []) => {
-    if (!projetoId) return;
-    setLumenCount(ids.length);
-    setLumenLoading(true);
-    try {
-      const resultado = await advisorService.ranquearComLumen(projetoId, ids);
-      const novas = new Map((resultado?.ranking ?? []).map((c) => [c.inscricaoId, c]));
-      // Guarda as novas avaliações nas inscrições (o servidor também já as salvou).
-      setData((prev) => (Array.isArray(prev)
-        ? prev.map((app) => (novas.has(app.id)
-          ? { ...app, lumenPontuacao: novas.get(app.id).pontuacao, lumenJustificativa: novas.get(app.id).justificativa }
-          : app))
-        : prev));
-      setLumenFoco(ids.length === 1 ? ids[0] : null);
-      setSelecionando(false);
-      setSelecionados(new Set());
-      if (novas.size > 0) {
-        setLumenModalAberto(true);
-      } else {
-        toast.info(resultado?.aviso || "A Lumen não retornou sugestões.");
-      }
-    } catch (err) {
-      toast.error(getErrorMessage(normalizeError(err), "Não foi possível analisar com a Lumen."));
-    } finally {
-      setLumenLoading(false);
-    }
+  // A análise roda no provider do layout: continua se o orientador sair da tela.
+  const analisarComLumen = (projetoId = projetoFiltrado, ids = []) => {
+    setLumenModalAberto(false);
+    setSelecionando(false);
+    setSelecionados(new Set());
+    iniciar(projetoId, ids);
   };
+
+  // Análise concluída com a página aberta: guarda as novas avaliações (o servidor também já as salvou).
+  useEffect(() => {
+    if (!conclusao) return;
+    const novas = new Map(conclusao.ranking.map((c) => [c.inscricaoId, c]));
+    setData((prev) => (Array.isArray(prev)
+      ? prev.map((app) => (novas.has(app.id)
+        ? { ...app, lumenPontuacao: novas.get(app.id).pontuacao, lumenJustificativa: novas.get(app.id).justificativa }
+        : app))
+      : prev));
+  }, [conclusao, setData]);
+
+  // "Ver resultados" da notificação: abre a avaliação do projeto analisado.
+  const lumenResultados = location.state?.lumenResultados;
+  useEffect(() => {
+    if (!lumenResultados) return;
+    setFiltro("PENDENTE");
+    setProjetoFiltrado(lumenResultados.projetoId);
+    setLumenFoco(lumenResultados.foco);
+    setLumenModalAberto(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [lumenResultados, location.pathname, navigate]);
 
   const appEmFoco = lumenFoco != null ? inscricoes.find((app) => app.id === lumenFoco) : null;
 
@@ -323,11 +329,15 @@ export default function AdvisorApplicationsPage() {
           />
 
           {mostrarBotaoLumen && (
-            <LumenAIButton onClick={() => analisarComLumen()} disabled={lumenLoading}>
-              {lumenLoading
-                ? "Analisando..."
-                : filtradas.some((app) => rankingMap.has(app.id)) ? "Avaliar novos com Lumen" : "Analisar com Lumen"}
-            </LumenAIButton>
+            <Tooltip title={LUMEN_TOOLTIP} placement="top" styles={{ root: { maxWidth: 340 } }}>
+              <span style={{ display: "inline-flex" }}>
+                <LumenAIButton onClick={() => analisarComLumen()} disabled={lumenLoading}>
+                  {lumenLoading
+                    ? "Analisando..."
+                    : filtradas.some((app) => rankingMap.has(app.id)) ? "Avaliar novos com Lumen" : "Analisar com Lumen"}
+                </LumenAIButton>
+              </span>
+            </Tooltip>
           )}
 
           {mostrarBotaoLumen && (
@@ -653,8 +663,6 @@ export default function AdvisorApplicationsPage() {
           </div>
         </div>
       ), document.body)}
-
-      <LumenLoadingModal open={lumenLoading} count={lumenCount} />
     </motion.div>
   );
 }

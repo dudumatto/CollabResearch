@@ -25,6 +25,7 @@ import {
   DashPendentes,
   DashFit,
   DashEvaluations,
+  unreadConversations,
 } from "../components/DashboardKit";
 import {
   mapAvaliacaoAcademica,
@@ -219,7 +220,7 @@ export default function DashboardPage() {
     return {
       recentProjects: (data?.projects ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT),
       recentApplications: applications.slice(0, DASHBOARD_PREVIEW_LIMIT),
-      conversations: (data?.conversations ?? []).slice(0, MESSAGES_PREVIEW_LIMIT),
+      conversations: unreadConversations(data?.conversations, MESSAGES_PREVIEW_LIMIT),
       agenda: data?.agenda ?? [],
       pendingSteps: (data?.pendingSteps ?? []).slice(0, PENDING_STEPS_PREVIEW_LIMIT),
       entregasAtrasadas: (data?.entregasAtrasadas ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT),
@@ -407,18 +408,20 @@ export default function DashboardPage() {
             icon={ChatCircleText}
             tone="verde"
             title="Mensagens"
-            caption="Últimas mensagens recebidas"
+            caption="Mensagens não lidas"
             onOpen={() => navigate("/app/chat")}
             className="dash-card--preencher"
           >
             {derived.conversations.length === 0 ? (
-              <DashEmpty>Suas conversas aparecerão aqui.</DashEmpty>
+              <DashEmpty>Nenhuma mensagem não lida.</DashEmpty>
             ) : (
               derived.conversations.map((conversa) => (
                 <DashRow
                   key={conversa.id}
                   title={conversa.titulo ?? "Conversa"}
                   subtitle={conversa.ultimaMensagem ?? "Nenhuma mensagem ainda"}
+                  badge={conversa.mensagensNaoLidas}
+                  badgeTone="verde"
                   avatar={
                     <DashAvatar
                       src={conversa.fotoPerfilUrl || undefined}

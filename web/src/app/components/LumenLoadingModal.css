@@ -1,3 +1,26 @@
+.lumen-loading__modal {
+  position: relative;
+}
+
+.lumen-loading__fechar {
+  background: none;
+  border: none;
+  border-radius: var(--raio-pequeno);
+  color: var(--cor-texto-mudo);
+  cursor: pointer;
+  padding: var(--espaco-1);
+  position: absolute;
+  right: var(--espaco-3);
+  top: var(--espaco-3);
+}
+
+.lumen-loading__fechar:hover,
+.lumen-loading__fechar:focus-visible {
+  background-color: var(--cor-fundo-leve);
+  color: var(--cor-texto);
+  outline: none;
+}
+
 .lumen-loading__icon {
   align-items: center;
   background-color: color-mix(in srgb, var(--cor-primaria) 15%, transparent);

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { NavLink } from "react-router";
-import { FolderOpen, SquaresFour, ChatCircleText, Bell, User, FileText, TrendUp, CaretLeft, Gear, Users, ClipboardText, GraduationCap, CalendarCheck, SignOut } from "@phosphor-icons/react";
+import { Sparkle, FolderOpen, SquaresFour, ChatCircleText, Bell, User, FileText, TrendUp, CaretLeft, Gear, Users, ClipboardText, GraduationCap, CalendarCheck, SignOut } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../providers/NotificationsProvider";
 import { getInitials } from "../utils/formatters";
@@ -14,7 +14,7 @@ const studentSections = [
   {
     items: [
       { path: "/app", label: "Dashboard", icon: SquaresFour, exact: true },
-      { path: "/app/projects", label: "Projetos", icon: FolderOpen },
+      { path: "/app/projects", label: "Projetos", icon: FolderOpen, ia: true },
     ],
   },
   {
@@ -46,7 +46,7 @@ const advisorSections = [
   {
     label: "Pesquisa",
     items: [
-      { path: "/app/applications", label: "Inscrições", icon: FileText },
+      { path: "/app/applications", label: "Inscrições", icon: FileText, ia: true },
       { path: "/app/advisees", label: "Alunos", icon: GraduationCap },
       { path: "/app/deliveries", label: "Entregas", icon: ClipboardText },
       { path: "/app/progress", label: "Progresso", icon: TrendUp },
@@ -109,6 +109,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             <span className={isActive ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo" : "barra-lateral__rotulo-nav"}>
               {item.label}
             </span>
+            {item.ia && <Sparkle size={16} weight="fill" className="barra-lateral__ia" aria-label="Recurso com IA" />}
             {item.path === "/app/notifications" && unreadCount > 0 && (
               <span className="barra-lateral__contador">{unreadCount}</span>
             )}

@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router";
 import { Sidebar } from "../components/Sidebar";
 import { Topbar } from "../components/Topbar";
 import { useAuth } from "../hooks/useAuth";
+import { LumenAnalysisProvider } from "../providers/LumenAnalysisProvider";
 import { NotificationsProvider } from "../providers/NotificationsProvider";
 import "./DashboardLayout.css";
 
@@ -70,6 +71,7 @@ export function DashboardLayout() {
 
   return (
     <NotificationsProvider>
+      <LumenAnalysisProvider>
       <SidebarContext.Provider value={{ collapsed }}>
         <div className={`pagina-app ${isDashboardPage ? "pagina-app--dashboard" : ""}`}>
           <Sidebar
@@ -98,6 +100,7 @@ export function DashboardLayout() {
           </div>
         </div>
       </SidebarContext.Provider>
+      </LumenAnalysisProvider>
     </NotificationsProvider>
   );
 }

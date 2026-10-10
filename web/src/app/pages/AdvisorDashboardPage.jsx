@@ -24,6 +24,7 @@ import {
   DashAgenda,
   DashListaCortada,
   DashFit,
+  unreadConversations,
 } from "../components/DashboardKit";
 import "../components/DashboardKit.css";
 
@@ -165,7 +166,7 @@ export default function AdvisorDashboardPage() {
   const projetosExcede = projetosTotal.length > DASHBOARD_PREVIEW_LIMIT;
   const projetosAtivos = projetosTotal.slice(0, DASHBOARD_PREVIEW_LIMIT + (projetosExcede ? 1 : 0));
 
-  const conversations = (data?.conversations ?? []).slice(0, MESSAGES_PREVIEW_LIMIT);
+  const conversations = unreadConversations(data?.conversations, MESSAGES_PREVIEW_LIMIT);
 
   const pendingTotal =
     (metricas.inscricoesPendentes ?? 0) +
@@ -342,18 +343,20 @@ export default function AdvisorDashboardPage() {
             icon={ChatCircleText}
             tone="verde"
             title="Mensagens"
-            caption="Últimas mensagens recebidas"
+            caption="Mensagens não lidas"
             onOpen={() => go("/app/chat")}
             className="dash-card--preencher"
           >
             {conversations.length === 0 ? (
-              <DashEmpty>Suas conversas aparecerão aqui.</DashEmpty>
+              <DashEmpty>Nenhuma mensagem não lida.</DashEmpty>
             ) : (
               conversations.map((conversa) => (
                 <DashRow
                   key={conversa.id}
                   title={conversa.titulo ?? "Conversa"}
                   subtitle={conversa.ultimaMensagem ?? "Nenhuma mensagem ainda"}
+                  badge={conversa.mensagensNaoLidas}
+                  badgeTone="verde"
                   avatar={
                     <DashAvatar
                       src={conversa.fotoPerfilUrl || undefined}
