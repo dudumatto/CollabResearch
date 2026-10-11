@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { SignOut } from "@phosphor-icons/react";
 import "./LogoutConfirmModal.css";
 
@@ -14,7 +15,7 @@ export function LogoutConfirmModal({ open, onConfirm, onCancel }) {
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       className="logout-confirm__overlay"
       role="presentation"
@@ -48,6 +49,7 @@ export function LogoutConfirmModal({ open, onConfirm, onCancel }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

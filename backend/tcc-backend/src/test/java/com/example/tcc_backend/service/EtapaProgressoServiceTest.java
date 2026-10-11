@@ -296,6 +296,66 @@ class EtapaProgressoServiceTest {
     }
 
     @Test
+    void excluirAtualizacaoRemoveRegistroDoAutor() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));
+        Progresso progresso = Progresso.builder().id(7).projeto(projeto).autor(alunoUsuario).build();
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(progressoRepository.findByProjetoIdAndId(10, 7)).thenReturn(Optional.of(progresso));
+
+        etapaProgressoService.excluirAtualizacao(10, 7);
+
+        verify(progressoRepository).delete(progresso);
+    }
+
+    @Test
+    void editarAtualizacaoAlteraCamposEVinculoDeEtapa() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));
+        EtapaProgresso etapa = TestDataFactory.etapaProgresso(2, projeto, null, 2, 15, EtapaProgressoStatus.ACTIVE);
+        Progresso progresso = Progresso.builder().id(7).projeto(projeto).autor(alunoUsuario)
+                .titulo("Antigo").categoria("progress").tipo(TipoProgresso.ATUALIZACAO).build();
+
+        CreateProjectProgressUpdateRequest request = new CreateProjectProgressUpdateRequest();
+        request.setTitulo("  Novo  ");
+        request.setDescricao("Texto novo");
+        request.setCategoria("problem");
+        request.setEtapaId(2);
+        request.setEtapaContribuicao(40);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(progressoRepository.findByProjetoIdAndId(10, 7)).thenReturn(Optional.of(progresso));
+        when(etapaProgressoRepository.findByProjetoIdAndId(10, 2)).thenReturn(Optional.of(etapa));
+        when(progressoRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = etapaProgressoService.atualizarAtualizacao(10, 7, request);
+
+        assertThat(response.getId()).isEqualTo(7);
+        assertThat(response.getTitle()).isEqualTo("Novo");
+        assertThat(response.getCategory()).isEqualTo("problem");
+        assertThat(response.getStepId()).isEqualTo(2);
+        assertThat(response.getStepContribution()).isEqualTo(40);
+        assertThat(progresso.getTipo()).isEqualTo(TipoProgresso.BLOQUEIO);
+    }
+
+    @Test
+    void excluirAtualizacaoInexistenteRetorna404() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findById(10)).thenReturn(Optional.of(projeto));
+        when(progressoRepository.findByProjetoIdAndId(10, 99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> etapaProgressoService.excluirAtualizacao(10, 99))
+                .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
+        verify(progressoRepository, never()).delete(any());
+    }
+
+    @Test
     void criarAtualizacaoDevePermitirDataNulaQuandoMarcadaSemData() {
         Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
         Projeto projeto = TestDataFactory.projetoComAlunoCriador(10, TestDataFactory.aluno(1, alunoUsuario));

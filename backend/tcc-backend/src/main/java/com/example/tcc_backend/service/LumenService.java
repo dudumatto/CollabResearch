@@ -62,6 +62,10 @@ public class LumenService {
     private static final int MAX_PROJETOS_RECOMENDACAO = 30;
     private static final int MAX_CHARS_PROJETO = 600;
     private static final int TOTAL_RECOMENDACOES = 3;
+    private static final int NOTA_ALTA = 5;
+    private static final int NOTA_MINIMA = 4;
+    private static final String MENSAGEM_SEM_COMPATIVEIS = "Não encontramos nenhum projeto que combine com seu perfil por enquanto. "
+            + "Que tal aproveitar essa oportunidade para começar algo novo e tirar sua própria ideia do papel?";
 
     private static final String SYSTEM_PROMPT = """
             # REGRAS DE SEGURANCA - OBRIGATORIAS
@@ -141,7 +145,8 @@ public class LumenService {
             - Compare curso, periodo, areas de interesse, biografia e documentos do aluno com area, descricao, requisitos e tecnologias de cada projeto.
             - Priorize aderencia concreta: area e interesses em comum, requisitos que o aluno atende, tecnologias que ele conhece ou demonstra querer aprender.
             - Se o campo "periodo" contradiz a biografia, nao use o periodo como criterio eliminatorio.
-            - Recomende no maximo 3 projetos, do mais para o menos aderente, usando SOMENTE ids presentes em <projetos>. Nao repita projetos.
+            - Avalie ate 3 projetos, do mais para o menos aderente, usando SOMENTE ids presentes em <projetos>. Nao repita projetos.
+            - Seja honesto: se um projeto nao combina com o aluno, classifique-o como D em vez de inflar a nota. O sistema descarta os fracos.
             - Classificacao de aderencia: A (excelente), B (boa), C (parcial), D (fraca).
             - A justificativa deve ter 2 a 3 frases, dirigida ao aluno ("voce"), citando os pontos do perfil que combinam com o projeto e, se houver, o que ele precisaria desenvolver.
 
@@ -262,6 +267,7 @@ public class LumenService {
         Map<Integer, Projeto> elegiveis = new LinkedHashMap<>();
         for (Projeto p : projetoRepository.findByStatusOrderByDataCriacaoDesc(StatusProjeto.ABERTO)) {
             if (elegiveis.size() >= MAX_PROJETOS_RECOMENDACAO) break;
+            if (p.getStatus() != StatusProjeto.ABERTO) continue;
             if (jaInscritos.contains(p.getId())) continue;
             if (p.getDataLimiteInscricao() != null && p.getDataLimiteInscricao().isBefore(hoje)) continue;
             if (p.getAlunoCriador() != null && Objects.equals(p.getAlunoCriador().getId(), aluno.getId())) continue;
@@ -283,10 +289,14 @@ public class LumenService {
                 + "Recomende ate " + Math.min(TOTAL_RECOMENDACOES, elegiveis.size())
                 + " projetos para este aluno e responda somente com o JSON do formato fixo.";
 
-        List<ProjetoRecomendado> recomendacoes = parseRecomendacoes(
+        List<Pontuado> avaliados = parseRecomendacoes(
                 callOpenRouter(SYSTEM_PROMPT_RECOMENDACAO, prompt), elegiveis);
-        if (recomendacoes.isEmpty()) {
+        if (avaliados.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI nao retornou recomendacoes validas. Tente novamente.");
+        }
+        List<ProjetoRecomendado> recomendacoes = selecionar(avaliados);
+        if (recomendacoes.isEmpty()) {
+            return new LumenRecomendacaoResponse(List.of(), MENSAGEM_SEM_COMPATIVEIS);
         }
         String aviso = fontesSuspeitas.isEmpty()
                 ? "Sugestao gerada por IA com base no seu perfil. Avalie cada projeto antes de se inscrever."
@@ -309,29 +319,42 @@ public class LumenService {
         return lista.toString();
     }
 
-    private List<ProjetoRecomendado> parseRecomendacoes(String content, Map<Integer, Projeto> elegiveis) {
-        List<ProjetoRecomendado> resultado = new ArrayList<>();
+    private record Pontuado(int pontuacao, ProjetoRecomendado projeto) {}
+
+    private List<Pontuado> parseRecomendacoes(String content, Map<Integer, Projeto> elegiveis) {
+        List<Pontuado> resultado = new ArrayList<>();
         try {
             JsonNode itens = objectMapper.readTree(extractJsonObject(content)).path("recomendacoes");
             for (JsonNode item : itens) {
-                if (resultado.size() >= TOTAL_RECOMENDACOES) break;
                 if (!item.path("projeto_id").canConvertToInt()) continue;
                 Projeto projeto = elegiveis.get(item.path("projeto_id").asInt());
                 // Descarta ids inventados pelo modelo ou repetidos.
-                if (projeto == null || resultado.stream().anyMatch(r -> r.projetoId().equals(projeto.getId()))) continue;
+                if (projeto == null || resultado.stream().anyMatch(r -> r.projeto().projetoId().equals(projeto.getId()))) continue;
                 String nivel = nivel(item.path("classificacao").asText(null));
                 String justificativa = item.path("justificativa").asText("").strip();
                 if (justificativa.length() > 1000) justificativa = justificativa.substring(0, 1000);
-                resultado.add(new ProjetoRecomendado(projeto.getId(), projeto.getTitulo(),
-                        projeto.getArea() != null ? projeto.getArea().getNome() : null,
-                        pontuacao(nivel == null ? "D" : nivel), justificativa));
+                resultado.add(new Pontuado(pontuacao(nivel == null ? "D" : nivel),
+                        new ProjetoRecomendado(projeto.getId(), projeto.getTitulo(),
+                                projeto.getArea() != null ? projeto.getArea().getNome() : null, justificativa)));
             }
         } catch (Exception ex) {
             log.warn("Falha ao interpretar recomendacoes da Lumen AI: {}", ex.getMessage());
         }
-        // Sort estavel: empates mantem a ordem sugerida pelo modelo.
-        resultado.sort((x, y) -> Integer.compare(y.pontuacao(), x.pontuacao()));
         return resultado;
+    }
+
+    /**
+     * Regras de exibicao: nota > 5 (ate 3 melhores); senao, nota 4-5 (ate 3 melhores); nota < 4 nunca aparece.
+     * Sort estavel: empates mantem a ordem sugerida pelo modelo.
+     */
+    private static List<ProjetoRecomendado> selecionar(List<Pontuado> candidatos) {
+        List<Pontuado> ordenados = candidatos.stream()
+                .sorted((x, y) -> Integer.compare(y.pontuacao(), x.pontuacao()))
+                .toList();
+        List<Pontuado> altas = ordenados.stream().filter(p -> p.pontuacao() > NOTA_ALTA).toList();
+        List<Pontuado> escolhidos = !altas.isEmpty() ? altas
+                : ordenados.stream().filter(p -> p.pontuacao() >= NOTA_MINIMA).toList();
+        return escolhidos.stream().limit(TOTAL_RECOMENDACOES).map(Pontuado::projeto).toList();
     }
 
     private void salvarAvaliacoes(List<Inscricao> inscricoes, List<CandidatoRanking> ranking) {

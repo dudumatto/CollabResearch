@@ -65,4 +65,33 @@ public class ProjectProgressController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(etapaProgressoService.criarAtualizacao(id, request));
     }
+
+    @Operation(summary = "Editar atualizacao do projeto")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Atualizacao editada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados invalidos"),
+            @ApiResponse(responseCode = "403", description = "Sem permissao para editar a atualizacao"),
+            @ApiResponse(responseCode = "404", description = "Projeto, etapa ou atualizacao nao encontrados"),
+            @ApiResponse(responseCode = "409", description = "Projeto finalizado")
+    })
+    @PutMapping({"/projects/{id}/updates/{updateId}", "/projetos/{id}/updates/{updateId}"})
+    public ResponseEntity<ProjectProgressUpdateResponse> editarAtualizacao(
+            @PathVariable Integer id,
+            @PathVariable Integer updateId,
+            @RequestBody @Valid CreateProjectProgressUpdateRequest request) {
+        return ResponseEntity.ok(etapaProgressoService.atualizarAtualizacao(id, updateId, request));
+    }
+
+    @Operation(summary = "Excluir atualizacao do projeto")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Atualizacao excluida com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Sem permissao para excluir a atualizacao"),
+            @ApiResponse(responseCode = "404", description = "Projeto ou atualizacao nao encontrados"),
+            @ApiResponse(responseCode = "409", description = "Projeto finalizado")
+    })
+    @DeleteMapping({"/projects/{id}/updates/{updateId}", "/projetos/{id}/updates/{updateId}"})
+    public ResponseEntity<Void> excluirAtualizacao(@PathVariable Integer id, @PathVariable Integer updateId) {
+        etapaProgressoService.excluirAtualizacao(id, updateId);
+        return ResponseEntity.noContent().build();
+    }
 }

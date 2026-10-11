@@ -15,6 +15,7 @@ import { AppCombobox } from "../components/ui/AppCombobox";
 import { AdvisorMarcoCard } from "../components/progress/AdvisorMarcoCard";
 import { FiltrosMarco } from "../components/progress/MarcoPartes";
 import { marcosApi } from "../components/progress/marcosApi";
+import { MarcoForm, MARCO_FORM_ID } from "../components/progress/MarcoForm";
 import { useMarcos } from "../components/progress/useMarcos";
 import { contarFiltros, filtrarMarcos, mensagemDeErro } from "../components/progress/marcoUtils";
 import "./AdvisorWorkspace.css";
@@ -27,7 +28,7 @@ function projetoPillClass(status) {
 }
 
 function camposVazios() {
-  return { titulo: "", descricao: "", prazo: "", semData: false, obrigatoria: true, tarefasIniciais: "" };
+  return { titulo: "", descricao: "", prazo: "", semData: false, obrigatoria: true, tarefas: [] };
 }
 
 function toDeliveryDatePayload(value) {
@@ -68,8 +69,6 @@ export default function AdvisorProgressPage() {
   const projetoDaUrl = Number(new URLSearchParams(location.search).get("projectId")) || null;
   const [selectedProjectId, setSelectedProjectId] = useState(projetoDaUrl);
   const [modal, setModal] = useState(null);
-  const [campos, setCampos] = useState(camposVazios());
-  const [campoErro, setCampoErro] = useState("");
   const [mutando, setMutando] = useState(false);
   const [filtro, setFiltro] = useState("todos");
   const [somenteRevisao, setSomenteRevisao] = useState(false);
@@ -181,41 +180,29 @@ export default function AdvisorProgressPage() {
       return;
     }
 
-    if (tipo === "nova") {
-      setCampos(camposVazios());
-    } else if (tipo === "editar" && marco) {
-      setCampos({
-        titulo: marco.titulo,
-        descricao: marco.descricao ?? "",
-        prazo: marco.prazo ? String(marco.prazo).slice(0, 10) : "",
-        semData: !marco.prazo,
-        obrigatoria: marco.obrigatoria ?? true,
-        tarefasIniciais: "",
-        responsavel: marco.responsavel,
-      });
-    }
-    setCampoErro("");
-    setModal({ tipo, marco });
+    const valores = tipo === "nova"
+      ? camposVazios()
+      : tipo === "editar" && marco
+        ? {
+          titulo: marco.titulo,
+          descricao: marco.descricao ?? "",
+          prazo: marco.prazo ? String(marco.prazo).slice(0, 10) : "",
+          semData: !marco.prazo,
+          obrigatoria: marco.obrigatoria ?? true,
+          tarefas: [],
+        }
+        : null;
+    setModal({ tipo, marco, valores });
   }
 
   const fecharModal = () => {
     setModal(null);
-    setCampos(camposVazios());
-    setCampoErro("");
   };
 
-  const salvarMarco = async () => {
+  const salvarMarco = async (campos) => {
     if (projetoFinalizado) {
       toast.warning("Projeto finalizado não permite alterações de progresso.");
       fecharModal();
-      return;
-    }
-    if (!campos.titulo.trim()) {
-      setCampoErro("titulo");
-      return;
-    }
-    if (!campos.semData && !campos.prazo) {
-      setCampoErro("prazo");
       return;
     }
     if (!pid) return;
@@ -224,12 +211,12 @@ export default function AdvisorProgressPage() {
       const payload = {
         titulo: campos.titulo.trim(),
         descricao: campos.descricao.trim(),
-        responsavel: campos.responsavel ?? "AMBOS",
+        responsavel: modal.marco?.responsavel ?? "AMBOS",
         prazo: campos.semData ? null : toDeliveryDatePayload(campos.prazo),
         obrigatoria: campos.obrigatoria,
       };
       if (modal.tipo === "nova") {
-        const titulos = campos.tarefasIniciais.split("\n").map((l) => l.trim()).filter(Boolean);
+        const titulos = campos.tarefas.map((t) => t.titulo.trim()).filter(Boolean);
         let falhas = 0;
         await executar(async () => {
           const criado = await marcosApi.createMarco(pid, payload);
@@ -554,89 +541,8 @@ export default function AdvisorProgressPage() {
               </button>
             </div>
 
-            {(modal.tipo === "nova" || modal.tipo === "editar") && (
-              <div className="advisor-modal__corpo">
-                <div className="advisor-campo">
-                  <label className="advisor-campo__rotulo" htmlFor="marco-titulo">Título *</label>
-                  <input
-                    id="marco-titulo"
-                    type="text"
-                    autoFocus
-                    maxLength={120}
-                    value={campos.titulo}
-                    onChange={(e) => {
-                      setCampos({ ...campos, titulo: e.target.value });
-                      if (campoErro === "titulo") setCampoErro("");
-                    }}
-                    className={`advisor-campo__input ${campoErro === "titulo" ? "advisor-campo__input--erro" : ""}`}
-                    aria-invalid={campoErro === "titulo"}
-                    placeholder="Ex.: Revisão bibliográfica"
-                  />
-                  {campoErro === "titulo" && <span className="advisor-campo__erro" role="alert">Informe o título do marco.</span>}
-                </div>
-                <div className="advisor-campo">
-                  <label className="advisor-campo__rotulo" htmlFor="marco-descricao">Descrição</label>
-                  <textarea
-                    id="marco-descricao"
-                    value={campos.descricao}
-                    onChange={(e) => setCampos({ ...campos, descricao: e.target.value })}
-                    rows={3}
-                    className="advisor-campo__input"
-                    placeholder="Descreva o objetivo e a entrega esperada deste marco..."
-                  />
-                </div>
-                <div className="advisor-campo">
-                  <label className="advisor-campo__rotulo" htmlFor="marco-prazo">Prazo</label>
-                  <input
-                    id="marco-prazo"
-                    type="date"
-                    value={campos.prazo}
-                    disabled={campos.semData}
-                    onChange={(e) => {
-                      setCampos({ ...campos, prazo: e.target.value });
-                      if (campoErro === "prazo") setCampoErro("");
-                    }}
-                    className={`advisor-campo__input ${campoErro === "prazo" ? "advisor-campo__input--erro" : ""}`}
-                    aria-invalid={campoErro === "prazo"}
-                  />
-                  {campoErro === "prazo" && <span className="advisor-campo__erro" role="alert">Informe o prazo do marco.</span>}
-                  <label className="advisor-checkbox advisor-checkbox--campo" htmlFor="marco-sem-data">
-                    <input
-                      id="marco-sem-data"
-                      type="checkbox"
-                      checked={campos.semData}
-                      onChange={(e) => {
-                        const semData = e.target.checked;
-                        setCampos({ ...campos, semData, prazo: semData ? "" : campos.prazo });
-                        if (semData && campoErro === "prazo") setCampoErro("");
-                      }}
-                    />
-                    <span>Este marco não precisa de um prazo específico agora</span>
-                  </label>
-                </div>
-                {modal.tipo === "nova" && (
-                  <div className="advisor-campo">
-                    <label className="advisor-campo__rotulo" htmlFor="marco-tarefas">Tarefas iniciais (uma por linha, opcional)</label>
-                    <textarea
-                      id="marco-tarefas"
-                      value={campos.tarefasIniciais}
-                      onChange={(e) => setCampos({ ...campos, tarefasIniciais: e.target.value })}
-                      rows={4}
-                      className="advisor-campo__input"
-                      placeholder={"Ler 10 artigos-base\nFichar as referências"}
-                    />
-                    <span className="advisor-campo__contador">Você poderá marcar tarefas como obrigatórias depois, no marco.</span>
-                  </div>
-                )}
-                <label className="advisor-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={campos.obrigatoria}
-                    onChange={(e) => setCampos({ ...campos, obrigatoria: e.target.checked })}
-                  />
-                  Marco obrigatório para finalizar o projeto
-                </label>
-              </div>
+            {modal.valores && (
+              <MarcoForm defaultValues={modal.valores} comTarefas={modal.tipo === "nova"} onSubmit={salvarMarco} />
             )}
 
             {modal.tipo === "excluir" && (
@@ -668,7 +574,8 @@ export default function AdvisorProgressPage() {
                 Cancelar
               </button>
               <button
-                type="button"
+                type={modal.valores ? "submit" : "button"}
+                form={modal.valores ? MARCO_FORM_ID : undefined}
                 className={
                   modal.tipo === "excluir" || modal.tipo === "finalizar"
                     ? "advisor-botao advisor-botao--perigo"
@@ -676,7 +583,6 @@ export default function AdvisorProgressPage() {
                 }
                 disabled={mutando}
                 onClick={() => {
-                  if (modal.tipo === "nova" || modal.tipo === "editar") salvarMarco();
                   if (modal.tipo === "excluir") excluirMarco();
                   if (modal.tipo === "iniciar" || modal.tipo === "finalizar") mudarStatusProjeto();
                 }}

@@ -1335,6 +1335,16 @@
   border-color: var(--cor-borda);
 }
 
+.advisor-linha-card--selecionavel-multi {
+  cursor: pointer;
+}
+
+.advisor-linha-card--selecionada,
+.advisor-linha-card--selecionada:hover {
+  border-color: var(--cor-primaria);
+  background-color: var(--cor-fundo-leve);
+}
+
 .advisor-linha-card--selecionavel {
   width: 100%;
   text-align: left;

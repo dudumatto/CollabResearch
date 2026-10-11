@@ -328,7 +328,7 @@ export default function AdvisorApplicationsPage() {
             ]}
           />
 
-          {mostrarBotaoLumen && (
+          {mostrarBotaoLumen && !selecionando && (
             <Tooltip title={LUMEN_TOOLTIP} placement="top" styles={{ root: { maxWidth: 340 } }}>
               <span style={{ display: "inline-flex" }}>
                 <LumenAIButton onClick={() => analisarComLumen()} disabled={lumenLoading}>
@@ -405,15 +405,19 @@ export default function AdvisorApplicationsPage() {
           {filtradas.map((app, index) => {
             const expandida = expandedIds.has(app.id);
             const carregando = acaoLoadingId === app.id;
+            const selecionavel = selecionando && app.status === "PENDENTE";
             return (
               <motion.div
                 key={app.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, delay: index * 0.03 }}
-                className="advisor-linha-card"
+                className={`advisor-linha-card${selecionavel ? " advisor-linha-card--selecionavel-multi" : ""}${selecionavel && selecionados.has(app.id) ? " advisor-linha-card--selecionada" : ""}`}
+                onClick={selecionavel ? (e) => {
+                  if (!e.target.closest("button, a, input, label")) toggleSelecionado(app.id);
+                } : undefined}
               >
-                {selecionando && app.status === "PENDENTE" && (
+                {selecionavel && (
                   <input
                     type="checkbox"
                     checked={selecionados.has(app.id)}
@@ -449,7 +453,7 @@ export default function AdvisorApplicationsPage() {
                         Lumen: {rankingMap.get(app.id).pontuacao}/10
                       </button>
                     )}
-                    {app.status === "PENDENTE" && app.projetoId != null && (
+                    {app.status === "PENDENTE" && app.projetoId != null && !selecionando && (
                       <button
                         type="button"
                         className="advisor-etapa__botao-link"
@@ -538,7 +542,7 @@ export default function AdvisorApplicationsPage() {
         </div>
       )}
 
-      {modal && (
+      {modal && createPortal((
         <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Decidir inscrição">
           <div className="advisor-modal">
             <div className="advisor-modal__cabecalho">
@@ -598,7 +602,7 @@ export default function AdvisorApplicationsPage() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {lumenModalAberto && lumenRanking.length > 0 && createPortal((
         <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Resultado da análise Lumen">

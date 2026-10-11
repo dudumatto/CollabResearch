@@ -97,10 +97,72 @@ class LumenRecomendacaoTest {
         LumenRecomendacaoResponse resposta = service.recomendarProjetos(usuario);
 
         assertThat(resposta.recomendacoes()).extracting(LumenRecomendacaoResponse.ProjetoRecomendado::projetoId)
-                .containsExactly(3, 4, 5);
-        assertThat(resposta.recomendacoes().get(0).pontuacao()).isEqualTo(9);
+                .containsExactly(3, 6, 4);
         assertThat(resposta.recomendacoes().get(0).justificativa()).isEqualTo("Python e IA.");
         assertThat(promptRecebido.get()).doesNotContain("Ja inscrito").doesNotContain("Prazo vencido");
+    }
+
+    private LumenRecomendacaoResponse recomendarComNiveis(String... niveis) {
+        when(inscricaoRepository.findByAlunoId(5)).thenReturn(List.of());
+        List<Projeto> projetos = new java.util.ArrayList<>();
+        StringBuilder itens = new StringBuilder();
+        for (int i = 0; i < niveis.length; i++) {
+            projetos.add(projeto(i + 1, "P" + (i + 1)));
+            itens.append(i > 0 ? "," : "").append("{\"projeto_id\": ").append(i + 1)
+                    .append(", \"classificacao\": \"").append(niveis[i]).append("\", \"justificativa\": \"j\"}");
+        }
+        when(projetoRepository.findByStatusOrderByDataCriacaoDesc(StatusProjeto.ABERTO)).thenReturn(projetos);
+        respostaModelo.set("{\"recomendacoes\": [" + itens + "]}");
+        return service.recomendarProjetos(usuario);
+    }
+
+    @Test
+    void comNotaAcimaDe5ExibeSoEssasOrdenadasPorNota() {
+        // B=7, C=5 (nao > 5), A=9, D=2
+        LumenRecomendacaoResponse resposta = recomendarComNiveis("B", "C", "A", "D");
+
+        assertThat(resposta.recomendacoes()).extracting(LumenRecomendacaoResponse.ProjetoRecomendado::projetoId)
+                .containsExactly(3, 1);
+    }
+
+    @Test
+    void semNotaAcimaDe5ExibeNotasEntre4e5() {
+        LumenRecomendacaoResponse resposta = recomendarComNiveis("D", "C", "D");
+
+        assertThat(resposta.recomendacoes()).extracting(LumenRecomendacaoResponse.ProjetoRecomendado::projetoId)
+                .containsExactly(2);
+    }
+
+    @Test
+    void todasAbaixoDe4NaoExibemNadaEMostramMensagemAmigavel() {
+        LumenRecomendacaoResponse resposta = recomendarComNiveis("D", "D", "D");
+
+        assertThat(resposta.recomendacoes()).isEmpty();
+        assertThat(resposta.aviso()).contains("tirar sua própria ideia do papel");
+    }
+
+    @Test
+    void ignoraProjetosEmAndamentoEFinalizados() {
+        Projeto andamento = projeto(7, "Em andamento");
+        andamento.setStatus(StatusProjeto.EM_ANDAMENTO);
+        Projeto finalizado = projeto(8, "Finalizado");
+        finalizado.setStatus(StatusProjeto.FINALIZADO);
+        when(inscricaoRepository.findByAlunoId(5)).thenReturn(List.of());
+        when(projetoRepository.findByStatusOrderByDataCriacaoDesc(StatusProjeto.ABERTO))
+                .thenReturn(List.of(andamento, finalizado, projeto(3, "Aberto")));
+        respostaModelo.set("""
+                {"recomendacoes": [
+                  {"projeto_id": 7, "classificacao": "A", "justificativa": "andamento"},
+                  {"projeto_id": 8, "classificacao": "A", "justificativa": "finalizado"},
+                  {"projeto_id": 3, "classificacao": "B", "justificativa": "aberto"}
+                ]}
+                """);
+
+        LumenRecomendacaoResponse resposta = service.recomendarProjetos(usuario);
+
+        assertThat(resposta.recomendacoes()).extracting(LumenRecomendacaoResponse.ProjetoRecomendado::projetoId)
+                .containsExactly(3);
+        assertThat(promptRecebido.get()).doesNotContain("Em andamento").doesNotContain("Finalizado");
     }
 
     @Test

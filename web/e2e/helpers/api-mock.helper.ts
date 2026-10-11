@@ -649,11 +649,10 @@ export async function setupApiMock(page: Page, options: MockOptions = {}) {
       const recomendacoes = state.projects
         .filter((project) => project.status === "ABERTO")
         .slice(0, 3)
-        .map((project, index) => ({
+        .map((project) => ({
           projetoId: project.id,
           titulo: project.titulo,
           area: project.areaNome,
-          pontuacao: 9 - index * 2,
           justificativa: `Seu perfil combina com ${project.titulo}.`,
         }));
       await fulfill(route, 200, { recomendacoes, aviso: "Sugestao gerada por IA com base no seu perfil." });

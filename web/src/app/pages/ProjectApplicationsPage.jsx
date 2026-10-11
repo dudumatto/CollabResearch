@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams } from "react-router";
 import { ArrowLeft, Calendar, CheckCircle, CaretDown, CaretRight, Clock, CircleNotch, User, Users, XCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
@@ -369,7 +370,7 @@ export default function ProjectApplicationsPage() {
         </div>
       )}
 
-      {actionModal && (
+      {actionModal && createPortal((
         <div className="modal-inscricao__sobreposicao" role="presentation" onClick={(e) => e.target === e.currentTarget && closeActionModal()}>
           <div className="modal-inscricao__painel pagina-inscricoes-projeto__modal">
             <h3 className="modal-inscricao__titulo">
@@ -400,7 +401,7 @@ export default function ProjectApplicationsPage() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </div>
   );
 }

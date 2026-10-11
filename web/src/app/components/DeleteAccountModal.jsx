@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Trash } from "@phosphor-icons/react";
 import "./LogoutConfirmModal.css";
 import "./DeleteAccountModal.css";
@@ -38,7 +39,7 @@ export function DeleteAccountModal({ open, expectedEmail, onConfirm, onCancel })
     }
   };
 
-  return (
+  return createPortal(
     <div
       className="logout-confirm__overlay"
       role="presentation"
@@ -101,6 +102,7 @@ export function DeleteAccountModal({ open, expectedEmail, onConfirm, onCancel })
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

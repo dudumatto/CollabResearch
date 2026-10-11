@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Upload, FileText, CheckCircle, Trash, Eye, FolderOpen, Plus, X, WarningCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
@@ -103,7 +104,7 @@ function DocumentViewer({ doc, onClose }) {
     };
   }, [doc?.id]);
 
-  return (
+  return createPortal(
     <div className="doc-viewer__overlay" onClick={onClose}>
       <div className="doc-viewer__modal" onClick={(e) => e.stopPropagation()}>
 
@@ -162,7 +163,8 @@ function DocumentViewer({ doc, onClose }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

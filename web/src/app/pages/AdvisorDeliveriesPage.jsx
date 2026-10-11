@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { useLocation, useParams } from "react-router";
 import { FolderOpen, CaretDown, CaretRight, Download, FileArchive, CheckCircle, ArrowUUpLeft, X } from "@phosphor-icons/react";
@@ -461,7 +462,7 @@ export default function AdvisorDeliveriesPage() {
         </div>
       )}
 
-      {modal && (
+      {modal && createPortal((
         <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Revisar entrega">
           <div className="advisor-modal">
             <div className="advisor-modal__cabecalho">
@@ -524,7 +525,7 @@ export default function AdvisorDeliveriesPage() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </motion.div>
   );
 }

@@ -322,6 +322,71 @@ public class EtapaProgressoService {
         return ProjectProgressUpdateResponse.fromEntity(salvo);
     }
 
+    /** Edita uma atualizacao narrativa; so o autor ou os donos do projeto (orientador/aluno criador). */
+    @Transactional
+    public ProjectProgressUpdateResponse atualizarAtualizacao(Integer projetoId, Integer atualizacaoId,
+                                                              CreateProjectProgressUpdateRequest request) {
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        Projeto projeto = carregarProjeto(projetoId);
+        validarParticipacaoProjeto(projeto, usuarioLogado.getId());
+        validarProjetoEditavel(projeto);
+
+        if (request == null || request.getTitulo() == null || request.getTitulo().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Titulo e obrigatorio");
+        }
+        Progresso progresso = carregarAtualizacaoEditavel(projeto, atualizacaoId, usuarioLogado);
+
+        EtapaProgresso etapa = null;
+        if (request.getEtapaId() != null) {
+            etapa = etapaProgressoRepository.findByProjetoIdAndId(projetoId, request.getEtapaId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Etapa nao encontrada"));
+        }
+        // Sem valor no request, mantem a contribuicao salva enquanto a etapa for a mesma.
+        Integer atual = progresso.getEtapa() != null && etapa != null && progresso.getEtapa().getId().equals(etapa.getId())
+                ? progresso.getStepContribution() : null;
+        int contribuicao = etapa == null ? 0
+                : Optional.ofNullable(request.getEtapaContribuicao()).or(() -> Optional.ofNullable(atual)).orElse(0);
+        if (contribuicao < 0 || contribuicao > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contribuicao deve estar entre 0 e 100");
+        }
+
+        progresso.setTitulo(normalizarTexto(request.getTitulo()));
+        progresso.setDescricao(normalizarTexto(request.getDescricao()));
+        progresso.setCategoria(normalizarCategoria(request.getCategoria()));
+        progresso.setTipo(mapaTipo(request.getCategoria()));
+        progresso.setEtapa(etapa);
+        progresso.setStepContribution(contribuicao);
+        if (Boolean.TRUE.equals(request.getSemData())) {
+            progresso.setDataRegistro(null);
+        } else if (request.getDataRegistro() != null) {
+            progresso.setDataRegistro(request.getDataRegistro());
+        }
+        return ProjectProgressUpdateResponse.fromEntity(progressoRepository.save(progresso));
+    }
+
+    /** Exclui uma atualizacao narrativa; so o autor ou os donos do projeto (orientador/aluno criador). */
+    @Transactional
+    public void excluirAtualizacao(Integer projetoId, Integer atualizacaoId) {
+        Usuario usuarioLogado = authHelper.getCurrentUser();
+        Projeto projeto = carregarProjeto(projetoId);
+        validarParticipacaoProjeto(projeto, usuarioLogado.getId());
+        validarProjetoEditavel(projeto);
+        progressoRepository.delete(carregarAtualizacaoEditavel(projeto, atualizacaoId, usuarioLogado));
+    }
+
+    private Progresso carregarAtualizacaoEditavel(Projeto projeto, Integer atualizacaoId, Usuario usuario) {
+        Progresso progresso = progressoRepository.findByProjetoIdAndId(projeto.getId(), atualizacaoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Atualizacao nao encontrada"));
+        Integer usuarioId = usuario.getId();
+        boolean autor = progresso.getAutor() != null && progresso.getAutor().getId().equals(usuarioId);
+        boolean dono = (projeto.getOrientador() != null && projeto.getOrientador().getUsuario().getId().equals(usuarioId))
+                || (projeto.getAlunoCriador() != null && projeto.getAlunoCriador().getUsuario().getId().equals(usuarioId));
+        if (!autor && !dono) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para alterar esta atualizacao");
+        }
+        return progresso;
+    }
+
     @Transactional
     public void garantirEtapasPadrao(Projeto projeto) {
         if (projeto == null || projeto.getId() == null) {

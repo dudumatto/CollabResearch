@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { ArrowUp, MagnifyingGlass, Pencil, Trash, ArrowLeft, DotsThreeVertical, ChatCircleText, Check, Checks, Prohibit } from "@phosphor-icons/react";
 import { toast } from "sonner";
@@ -1033,7 +1034,7 @@ export default function ChatPage() {
       </div>
 
       {/* MODAL EDIÇÃO */}
-      {modalEdicao && (
+      {modalEdicao && createPortal((
         <div className="modal-overlay" onClick={fecharModalEdicao}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal__cabecalho">
@@ -1063,10 +1064,10 @@ export default function ChatPage() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* MODAL CONFIRMAÇÃO EXCLUSÃO */}
-      {modalExclusao && (
+      {modalExclusao && createPortal((
         <div className="modal-overlay" onClick={fecharModalExclusao}>
           <div className="modal modal--pequeno" onClick={(e) => e.stopPropagation()}>
             <div className="modal__cabecalho">
@@ -1085,7 +1086,7 @@ export default function ChatPage() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </div>
   );
 }

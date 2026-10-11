@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
 import { FileText, Clock, CheckCircle, XCircle, CaretRight, ChatCircleText, Calendar, ArrowSquareOut, CircleNotch } from "@phosphor-icons/react";
 import { toast } from "sonner";
@@ -290,7 +291,7 @@ export default function ApplicationsPage() {
         </div>
       )}
 
-      {cancelTargetId != null && (
+      {cancelTargetId != null && createPortal((
         <div
           className="modal-inscricao__sobreposicao"
           role="presentation"
@@ -321,7 +322,7 @@ export default function ApplicationsPage() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </div>
   );
 }

@@ -3,12 +3,6 @@ import { createPortal } from "react-dom";
 import { Sparkle, Warning, X, ArrowRight } from "@phosphor-icons/react";
 import "../pages/AdvisorWorkspace.css";
 
-function corPontuacao(pontuacao) {
-  if (pontuacao >= 7) return "advisor-etiqueta--verde";
-  if (pontuacao >= 4) return "advisor-etiqueta--amarelo";
-  return "advisor-etiqueta--vermelho";
-}
-
 export function LumenRecommendationsModal({ open, recomendacoes = [], aviso, onClose, onOpenProject }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -44,7 +38,6 @@ export function LumenRecommendationsModal({ open, recomendacoes = [], aviso, onC
                 <div className="advisor-lumen__card-topo">
                   <span className="advisor-lumen__posicao">{i + 1}º</span>
                   <strong className="advisor-lumen__nome" title={r.titulo}>{r.titulo}</strong>
-                  <span className={`advisor-etiqueta ${corPontuacao(r.pontuacao)}`}>{r.pontuacao}/10</span>
                 </div>
                 {r.area && <span className="advisor-lumen__subtitulo">{r.area}</span>}
                 <p className="advisor-lumen__texto">{r.justificativa || "Sem justificativa informada."}</p>
