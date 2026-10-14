@@ -8,6 +8,7 @@ import { applicationService } from "../services/applicationService";
 import { mapApplication } from "../utils/adapters";
 import { formatApplicationStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { Sk } from "../components/Skeleton";
 import "./ApplicationsPage.css";
 import "./ProjectDetailPage.css";
 
@@ -38,42 +39,27 @@ const statusConfig = {
   },
 };
 
-function ApplicationsSkeleton() {
-  const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
-    <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
-  );
+// Só a lista depende da API; resumos e abas são estáticos.
+function ApplicationsListSkeleton() {
   return (
-    <div className="pagina-inscricoes">
-      <div className="pagina-inscricoes__grade-resumos">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", padding: "var(--espaco-5)", border: "1px solid var(--cor-borda-clara)", display: "flex", flexDirection: "column", gap: 8 }}>
-            <Sk w="40%" h={26} />
-            <Sk w="65%" h={13} />
-          </div>
-        ))}
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: "var(--espaco-4)", marginTop: "var(--espaco-2)" }}>
-        {[1, 2, 3, 4].map((i) => <Sk key={i} w={90} h={32} r="var(--raio-completo)" />)}
-      </div>
-      <div className="pagina-inscricoes__lista">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-4)", display: "flex", alignItems: "center", gap: 14 }}>
-            <Sk w={40} h={40} r="50%" />
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <Sk w="45%" h={15} />
-                <Sk w={72} h={22} r="var(--raio-completo)" />
-              </div>
-              <Sk w="35%" h={12} />
-              <div style={{ display: "flex", gap: 12 }}>
-                <Sk w={110} h={11} />
-                <Sk w={110} h={11} />
-              </div>
+    <div className="pagina-inscricoes__lista" aria-busy="true" aria-label="Carregando inscrições">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-4)", display: "flex", alignItems: "center", gap: 14 }}>
+          <Sk w={40} h={40} r="50%" />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <Sk w="45%" h={15} />
+              <Sk w={72} h={22} r="var(--raio-completo)" />
             </div>
-            <Sk w={16} h={16} />
+            <Sk w="35%" h={12} />
+            <div style={{ display: "flex", gap: 12 }}>
+              <Sk w={110} h={11} />
+              <Sk w={110} h={11} />
+            </div>
           </div>
-        ))}
-      </div>
+          <Sk w={16} h={16} />
+        </div>
+      ))}
     </div>
   );
 }
@@ -134,8 +120,6 @@ export default function ApplicationsPage() {
     }
   };
 
-  if (loading) return <ApplicationsSkeleton />;
-
   if (error) {
     return <StatusView title="Falha ao carregar inscrições" description={error.message} />;
   }
@@ -156,7 +140,7 @@ export default function ApplicationsPage() {
             className={`resumo-inscricao ${filter === status ? "resumo-inscricao--ativo" : "resumo-inscricao--inativo"}`}
           >
             <p className={`resumo-inscricao__valor ${filter === status ? "resumo-inscricao__valor--ativo" : "resumo-inscricao__valor--inativo"}`}>
-              {counts[status]}
+              {loading ? <Sk w="40%" h={26} /> : counts[status]}
             </p>
             <p className={`resumo-inscricao__rotulo ${filter === status ? "resumo-inscricao__rotulo--ativo" : "resumo-inscricao__rotulo--inativo"}`}>
               {label}
@@ -178,7 +162,9 @@ export default function ApplicationsPage() {
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <ApplicationsListSkeleton />
+      ) : filtered.length === 0 ? (
         <div className="pagina-inscricoes__estado-vazio">
           <div className="pagina-inscricoes__icone-vazio">
             <FileText size={24} style={{ color: "var(--cor-texto-mudo)" }} />

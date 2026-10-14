@@ -7,6 +7,7 @@ import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { api } from "../services/api";
 import { documentService } from "../services/documentService";
 import { StatusView } from "../components/StatusView";
+import { Sk } from "../components/Skeleton";
 import { useUploadDocumento } from "../../hooks/useUploadDocumento";
 import "./DocumentsPage.css";
 
@@ -26,45 +27,24 @@ function normalizeDocument(doc) {
   };
 }
 
-function DocumentsSkeleton() {
-  const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
-    <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
-  );
+// Só a lista e as contagens dependem da API; upload e estrutura são estáticos.
+function DocumentsListSkeleton() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-5)", padding: "var(--espaco-4)" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: "var(--espaco-4)" }}>
-        {[1, 2].map((i) => (
-          <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-5)", display: "flex", gap: 14, alignItems: "center" }}>
-            <Sk w={44} h={44} r="var(--raio-medio)" />
-            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              <Sk w={40} h={20} />
-              <Sk w={110} h={12} />
-            </div>
+    <div className="pagina-documentos__grade-itens" aria-busy="true" aria-label="Carregando documentos">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-4)", display: "flex", alignItems: "center", gap: 14 }}>
+          <Sk w={40} h={40} r="var(--raio-medio)" />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
+            <Sk w="50%" h={14} />
+            <Sk w="35%" h={12} />
           </div>
-        ))}
-      </div>
-      <div style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "2px dashed var(--cor-borda-media)", padding: "var(--espaco-8)", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-        <Sk w={48} h={48} r="50%" />
-        <Sk w={180} h={16} />
-        <Sk w={240} h={13} />
-        <Sk w={130} h={36} r="var(--raio-medio)" />
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-4)", display: "flex", alignItems: "center", gap: 14 }}>
-            <Sk w={40} h={40} r="var(--raio-medio)" />
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
-              <Sk w="50%" h={14} />
-              <Sk w="35%" h={12} />
-            </div>
-            <Sk w={72} h={22} r="var(--raio-completo)" />
-            <div style={{ display: "flex", gap: 6 }}>
-              <Sk w={32} h={32} r="var(--raio-medio)" />
-              <Sk w={32} h={32} r="var(--raio-medio)" />
-            </div>
+          <Sk w={72} h={22} r="var(--raio-completo)" />
+          <div style={{ display: "flex", gap: 6 }}>
+            <Sk w={32} h={32} r="var(--raio-medio)" />
+            <Sk w={32} h={32} r="var(--raio-medio)" />
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -190,6 +170,8 @@ export default function DocumentsPage() {
   );
 
   const docs = Array.isArray(data) ? data : [];
+  // Recargas após upload/remoção mantêm a lista atual em vez de piscar skeleton.
+  const loadingDocs = loading && docs.length === 0;
   const uploading = uploadingStorage || savingMetadata;
 
   const handleUpload = async (files) => {
@@ -239,7 +221,6 @@ export default function DocumentsPage() {
     [docs],
   );
 
-  if (loading) return <DocumentsSkeleton />;
   if (error) return <StatusView title="Falha ao carregar documentos" description={error.message} />;
 
   return (
@@ -250,7 +231,7 @@ export default function DocumentsPage() {
             <div className={`resumo-documentos__icone-area ${item.areaClass}`}>
               <item.icon size={18} className={item.iconClass} />
             </div>
-            <p className="resumo-documentos__valor">{statValues[item.key]}</p>
+            <p className="resumo-documentos__valor">{loadingDocs ? <Sk w={40} h={20} /> : statValues[item.key]}</p>
             <p className="resumo-documentos__label">{item.label}</p>
           </div>
         ))}
@@ -318,7 +299,7 @@ export default function DocumentsPage() {
       <div className="pagina-documentos__lista">
         <div className="pagina-documentos__cabecalho-lista">
           <h3 className="pagina-documentos__contagem">
-            {docs.length} documento{docs.length !== 1 ? "s" : ""}
+            {loadingDocs ? <Sk inline w={110} h={16} /> : <>{docs.length} documento{docs.length !== 1 ? "s" : ""}</>}
           </h3>
           <button onClick={() => fileInputRef.current?.click()} className="pagina-documentos__botao-adicionar">
             <Plus size={14} />
@@ -326,7 +307,9 @@ export default function DocumentsPage() {
           </button>
         </div>
 
-        {docs.length === 0 ? (
+        {loadingDocs ? (
+          <DocumentsListSkeleton />
+        ) : docs.length === 0 ? (
           <div className="pagina-documentos__vazio">
             <div className="pagina-documentos__icone-vazio">
               <FolderOpen size={22} />

@@ -31,11 +31,14 @@ public class InscricaoResponse {
     /** Avaliacao da Lumen AI; preenchida apenas nas respostas voltadas ao orientador. */
     private Integer lumenPontuacao;
     private String lumenJustificativa;
+    /** JSON serializado de LumenAvaliacao (nulo em avaliacoes antigas). */
+    private String lumenAvaliacao;
 
     public static InscricaoResponse fromEntityParaOrientador(Inscricao inscricao) {
         InscricaoResponse response = fromEntity(inscricao);
         response.setLumenPontuacao(inscricao.getLumenPontuacao());
         response.setLumenJustificativa(inscricao.getLumenJustificativa());
+        response.setLumenAvaliacao(inscricao.getLumenAvaliacao());
         return response;
     }
 

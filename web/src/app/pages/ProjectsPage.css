@@ -57,6 +57,58 @@
   }
 }
 
+/* Lumen: "Analisar com Lumen" ocupa o espaço livre; "Ver histórico" fica compacto ao lado. */
+.pagina-projetos__lumen-grupo {
+  display: flex;
+  align-items: stretch;
+  gap: var(--espaco-2);
+  width: 100%;
+}
+
+.pagina-projetos__lumen-principal {
+  display: inline-flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pagina-projetos__lumen-principal .lumen-ai-btn {
+  flex: 1;
+  height: 2.5rem;
+}
+
+.pagina-projetos__lumen-historico {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  height: 2.5rem;
+  padding: 0 var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: 9999px;
+  background: var(--cor-superficie);
+  color: var(--cor-texto-secundario);
+  font-family: var(--fonte-principal);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.pagina-projetos__lumen-historico:hover,
+.pagina-projetos__lumen-historico:focus-visible {
+  background: var(--cor-superficie-brand);
+  color: var(--cor-texto);
+  outline: none;
+}
+
+@media (min-width: 640px) {
+  .pagina-projetos__lumen-grupo {
+    width: auto;
+  }
+}
+
 .pagina-projetos__botao-novo {
   width: 100%;
   display: flex;

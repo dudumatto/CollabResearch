@@ -44,19 +44,6 @@ function EvaluationsListSkeleton() {
   ));
 }
 
-function StudentEvaluationsSkeleton() {
-  return (
-    <div className="advisor-pagina student-evaluations-page" aria-busy="true" aria-label="Carregando avaliações">
-      <div className="advisor-card-conteudo">
-        <Sk w="12rem" h={22} />
-        <Sk w="min(100%, 24rem)" h={14} style={{ marginTop: 12 }} />
-        <Sk w="min(100%, 18rem)" h={42} r="var(--raio-medio)" style={{ marginTop: 18 }} />
-      </div>
-      <EvaluationsListSkeleton />
-    </div>
-  );
-}
-
 export default function StudentEvaluationsPage() {
   const { user } = useAuth();
   const [projectId, setProjectId] = useState("");
@@ -122,15 +109,11 @@ export default function StudentEvaluationsPage() {
     }
   };
 
-  if (loadingProjects) {
-    return <StudentEvaluationsSkeleton />;
-  }
-
   if (projectsError) {
     return <StatusView title="Falha ao carregar projetos" description={projectsError.message} />;
   }
 
-  if (!projects.length && !projectId) {
+  if (!loadingProjects && !projects.length && !projectId) {
     return (
       <div className="advisor-pagina student-evaluations-page">
         <div className="advisor-estado-vazio">
@@ -147,18 +130,22 @@ export default function StudentEvaluationsPage() {
       <div className="advisor-card-conteudo">
         <h2 className="advisor-card-conteudo__titulo">Minhas avaliações</h2>
         <p>Avaliações acadêmicas são privadas entre você e seu orientador.</p>
-        <AppCombobox
-          ariaLabel="Selecionar projeto avaliado"
-          className="advisor-select"
-          value={effectiveProjectId}
-          onChange={setProjectId}
-          options={projects.map((item) => ({ value: item.id, label: item.title }))}
-        />
+        {loadingProjects ? (
+          <Sk w="min(100%, 18rem)" h={42} r="var(--raio-medio)" style={{ marginTop: 18 }} />
+        ) : (
+          <AppCombobox
+            ariaLabel="Selecionar projeto avaliado"
+            className="advisor-select"
+            value={effectiveProjectId}
+            onChange={setProjectId}
+            options={projects.map((item) => ({ value: item.id, label: item.title }))}
+          />
+        )}
       </div>
 
-      {loading && <EvaluationsListSkeleton />}
+      {(loadingProjects || loading) && <EvaluationsListSkeleton />}
       {error && <StatusView title="Falha ao carregar avaliações" description={error.message} />}
-      {!loading && !error && evaluations.length === 0 && (
+      {!loadingProjects && !loading && !error && evaluations.length === 0 && (
         <StatusView title="Nenhuma avaliação registrada" description="As avaliações aparecerão após a conclusão das etapas." />
       )}
 

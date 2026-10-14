@@ -5,6 +5,7 @@ import { useUploadDocumento } from "../../hooks/useUploadDocumento";
 import { documentService } from "../services/documentService";
 import { api } from "../services/api";
 import { StatusView } from "./StatusView";
+import { Sk } from "./Skeleton";
 
 function normalizeDocument(doc) {
   return {
@@ -20,7 +21,7 @@ function formatDocumentType(type) {
   return type === "HISTORICO" ? "Histórico escolar" : "Currículo";
 }
 
-export function ProfileDocuments({ userId, documents = [], editable = false, onUploaded }) {
+export function ProfileDocuments({ userId, documents = [], editable = false, onUploaded, loading = false }) {
   const fileInputRef = useRef(null);
   const [savingMetadata, setSavingMetadata] = useState(false);
   const [removingId, setRemovingId] = useState(null);
@@ -108,7 +109,19 @@ export function ProfileDocuments({ userId, documents = [], editable = false, onU
         )}
       </div>
 
-      {docs.length === 0 ? (
+      {loading && docs.length === 0 ? (
+        <div className="perfil-documentos__lista" aria-busy="true" aria-label="Carregando documentos">
+          {[1, 2].map((i) => (
+            <div key={i} className="perfil-documentos__item">
+              <Sk className="perfil-documentos__icone" w={36} h={36} r="var(--raio-medio)" />
+              <div className="perfil-documentos__info">
+                <Sk w="55%" h={14} />
+                <Sk w="35%" h={12} style={{ marginTop: 6 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : docs.length === 0 ? (
         <StatusView title="Nenhum documento" description="Nenhum currículo foi enviado até o momento." />
       ) : (
         <div className="perfil-documentos__lista">

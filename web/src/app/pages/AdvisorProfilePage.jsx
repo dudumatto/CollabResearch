@@ -9,6 +9,7 @@ import { userService } from "../services/userService";
 import { mapOrientadorPerfil, withImageCacheBuster } from "../utils/adapters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { Sk, SkLines } from "../components/Skeleton";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import { INSTITUICOES, TITULACOES, DEPARTAMENTOS } from "../constants/academicOptions";
 import "./AdvisorWorkspace.css";
@@ -37,21 +38,13 @@ function resetFormFromPerfil(perfil) {
   };
 }
 
-function PerfilSkeleton() {
-  return (
-    <div className="advisor-pagina">
-      <div className="advisor-detalhe-grade">
-        <div className="advisor-detalhe-lateral">
-          <div className="skeleton" style={{ width: "100%", height: 260, borderRadius: "var(--raio-grande)" }} />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-4)" }}>
-          <div className="skeleton" style={{ width: "100%", height: 120, borderRadius: "var(--raio-grande)" }} />
-          <div className="skeleton" style={{ width: "100%", height: 260, borderRadius: "var(--raio-grande)" }} />
-        </div>
-      </div>
-    </div>
-  );
-}
+const CAMPOS_PERFIL = [
+  ["perfil-nome", "Nome *"],
+  ["perfil-email", "E-mail *"],
+  ["perfil-instituicao", "Instituição"],
+  ["perfil-departamento", "Departamento"],
+  ["perfil-titulacao", "Titulação"],
+];
 
 const BIO_MAX = 500;
 
@@ -152,9 +145,10 @@ export default function AdvisorProfilePage() {
     }
   };
 
-  if (loading) return <PerfilSkeleton />;
+  // Layout, rótulos e ações aparecem na hora; só os dados do perfil mostram skeleton.
+  const pendente = loading && !perfil;
 
-  if (normError || !perfil) {
+  if (!loading && (normError || !perfil)) {
     return <StatusView title="Não foi possível carregar o perfil" description={getErrorMessage(normError, "Perfil não encontrado.")} />;
   }
 
@@ -182,7 +176,9 @@ export default function AdvisorProfilePage() {
         <div className="advisor-detalhe-lateral">
           <div className="advisor-perfil-cartao">
             <div className="advisor-profile-standard__avatar-wrap">
-              {showProfilePhoto ? (
+              {pendente ? (
+                <Sk w="4rem" h="4rem" r="var(--raio-grande)" />
+              ) : showProfilePhoto ? (
                 <img
                   src={form.fotoPerfilUrl}
                   alt="Foto de perfil"
@@ -190,7 +186,7 @@ export default function AdvisorProfilePage() {
                   className="advisor-profile-standard__avatar-img"
                 />
               ) : (
-                <div className="advisor-perfil-cartao__avatar">{iniciais(perfil.nome)}</div>
+                <div className="advisor-perfil-cartao__avatar">{iniciais(perfil?.nome)}</div>
               )}
               {editing && (
                 <>
@@ -214,6 +210,14 @@ export default function AdvisorProfilePage() {
                 </>
               )}
             </div>
+            {pendente ? (
+              <>
+                <Sk w="60%" h={18} />
+                <Sk w="40%" h={13} />
+                <SkLines rows={3} h={14} gap="var(--espaco-2)" label="Carregando perfil" />
+              </>
+            ) : (
+            <>
             <h3 className="advisor-perfil-cartao__nome">{perfil.nome}</h3>
             <p className="advisor-perfil-cartao__meta">{perfil.titulacao || "Professor/Orientador"}</p>
             <div className="advisor-perfil-cartao__info">
@@ -236,6 +240,8 @@ export default function AdvisorProfilePage() {
                 </div>
               )}
             </div>
+            </>
+            )}
           </div>
 
           <div className="advisor-card-conteudo" style={{ padding: "var(--espaco-4)" }}>
@@ -245,15 +251,15 @@ export default function AdvisorProfilePage() {
             <div className="advisor-notas">
               <div className="advisor-nota">
                 <span className="advisor-nota__rotulo">Projetos</span>
-                <span className="advisor-nota__valor">{perfil.projetos}</span>
+                <span className="advisor-nota__valor">{pendente ? <Sk inline w={28} h={20} /> : perfil.projetos}</span>
               </div>
               <div className="advisor-nota">
                 <span className="advisor-nota__rotulo">Orientandos</span>
-                <span className="advisor-nota__valor">{perfil.orientandos}</span>
+                <span className="advisor-nota__valor">{pendente ? <Sk inline w={28} h={20} /> : perfil.orientandos}</span>
               </div>
               <div className="advisor-nota">
                 <span className="advisor-nota__rotulo">Avaliações</span>
-                <span className="advisor-nota__valor">{perfil.avaliacoes}</span>
+                <span className="advisor-nota__valor">{pendente ? <Sk inline w={28} h={20} /> : perfil.avaliacoes}</span>
               </div>
             </div>
           </div>
@@ -275,7 +281,22 @@ export default function AdvisorProfilePage() {
             </div>
           </div>
 
-          {!editavel && <p className="advisor-linha-card__meta">Carregando formulário...</p>}
+          {!editavel && (
+            <>
+              <div className="advisor-profile-standard__form-grid" aria-busy="true" aria-label="Carregando formulário">
+                {CAMPOS_PERFIL.map(([id, rotulo]) => (
+                  <div className="advisor-campo" key={id}>
+                    <span className="advisor-campo__rotulo">{rotulo}</span>
+                    <Sk h={40} r="var(--raio-medio)" />
+                  </div>
+                ))}
+              </div>
+              <div className="advisor-campo">
+                <span className="advisor-campo__rotulo">Biografia</span>
+                <Sk h={80} r="var(--raio-medio)" />
+              </div>
+            </>
+          )}
 
           {editavel && (
             <>

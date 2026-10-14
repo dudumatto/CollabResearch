@@ -6,10 +6,12 @@ public record LumenRankingResponse(
         List<CandidatoRanking> ranking,
         String aviso
 ) {
+    /** {@code pontuacao} e a nota 0-10 arredondada; a nota exata esta em {@code avaliacao.notaFinal()}. */
     public record CandidatoRanking(
             Integer inscricaoId,
             String nomeAluno,
             int pontuacao,
-            String justificativa
+            String justificativa,
+            LumenAvaliacao avaliacao
     ) {}
 }

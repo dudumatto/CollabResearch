@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { MagnifyingGlass, SlidersHorizontal, X, Plus } from "@phosphor-icons/react";
-import { Tooltip } from "antd";
+import { ClockCounterClockwise, MagnifyingGlass, SlidersHorizontal, X, Plus } from "@phosphor-icons/react";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useAuth } from "../hooks/useAuth";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
@@ -12,8 +11,10 @@ import { courseService } from "../services/courseService";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import ProjectCardSkeleton from "../components/ProjectCardSkeleton";
+import { Sk } from "../components/Skeleton";
 import ProjectGridCard from "../components/ProjectGridCard";
 import { LumenAIButton } from "../components/ui/LumenAIButton";
+import { LumenTooltip } from "../components/ui/LumenTooltip";
 import { useLumenAnalysis } from "../providers/LumenAnalysisProvider";
 import { LumenRecommendationsModal } from "../components/LumenRecommendationsModal";
 import { getUserId, mapApplication, mapProject } from "../utils/adapters";
@@ -21,7 +22,7 @@ import { formatProjectStatus } from "../utils/formatters";
 import "./ProjectsPage.css";
 
 const LUMEN_TOOLTIP =
-  "Compara seu perfil com os projetos abertos e sugere os 3 mais compatíveis com você. É só uma sugestão: a escolha é sua.";
+  "Compara seu perfil com os projetos abertos e sugere os 3 mais compatíveis com você.";
 
 function normalizeValue(value) {
   return String(value ?? "")
@@ -243,13 +244,25 @@ export default function ProjectsPage() {
         </div>
         <div className="pagina-projetos__acoes-cabecalho">
           {isAluno && (
-            <Tooltip title={LUMEN_TOOLTIP} placement="bottom" styles={{ root: { maxWidth: 340 } }}>
-              <span style={{ display: "inline-flex" }}>
-                <LumenAIButton onClick={iniciarRecomendacao} disabled={lumenLoading}>
-                  {lumenLoading ? "Analisando com Lumen..." : "Analisar projetos"}
-                </LumenAIButton>
-              </span>
-            </Tooltip>
+            <div className="pagina-projetos__lumen-grupo">
+              <LumenTooltip title={LUMEN_TOOLTIP} placement="bottom" className="pagina-projetos__lumen-principal">
+                <span className="pagina-projetos__lumen-principal">
+                  <LumenAIButton onClick={iniciarRecomendacao} disabled={lumenLoading}>
+                    {lumenLoading ? "Analisando com Lumen..." : "Analisar com Lumen"}
+                  </LumenAIButton>
+                </span>
+              </LumenTooltip>
+              {recomendacao && (
+                <button
+                  type="button"
+                  className="pagina-projetos__lumen-historico"
+                  onClick={() => setLumenResultado(recomendacao)}
+                >
+                  <ClockCounterClockwise size={16} aria-hidden="true" />
+                  Ver histórico
+                </button>
+              )}
+            </div>
           )}
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -290,7 +303,7 @@ export default function ProjectsPage() {
             onClick={() => setSelectedStatus(status)}
             className={`pagina-projetos__atalho-status ${selectedStatus === status ? "pagina-projetos__atalho-status--ativo" : ""}`}
           >
-            <span className="pagina-projetos__atalho-status-valor">{countsLoading ? "–" : count}</span>
+            <span className="pagina-projetos__atalho-status-valor">{countsLoading ? <Sk inline w={16} h={14} /> : count}</span>
             <span className="pagina-projetos__atalho-status-label">{label}</span>
           </button>
         ))}

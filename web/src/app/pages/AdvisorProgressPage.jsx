@@ -18,6 +18,7 @@ import { marcosApi } from "../components/progress/marcosApi";
 import { MarcoForm, MARCO_FORM_ID } from "../components/progress/MarcoForm";
 import { useMarcos } from "../components/progress/useMarcos";
 import { contarFiltros, filtrarMarcos, mensagemDeErro } from "../components/progress/marcoUtils";
+import { Sk, SkLines } from "../components/Skeleton";
 import "./AdvisorWorkspace.css";
 
 function projetoPillClass(status) {
@@ -36,18 +37,6 @@ function toDeliveryDatePayload(value) {
   const [year, month, day] = value.split("-").map(Number);
   if (!year || !month || !day) return null;
   return `${value}T12:00:00Z`;
-}
-
-function SkeletonProgresso() {
-  return (
-    <div className="advisor-pagina">
-      <div className="skeleton" style={{ width: "100%", height: 60, borderRadius: "var(--raio-grande)" }} />
-      <div className="skeleton" style={{ width: "100%", height: 120, borderRadius: "var(--raio-grande)" }} />
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="skeleton" style={{ width: "100%", height: 76, borderRadius: "var(--raio-medio)" }} />
-      ))}
-    </div>
-  );
 }
 
 function ChipsResumo({ resumo }) {
@@ -277,13 +266,13 @@ export default function AdvisorProgressPage() {
     }
   };
 
-  if (loadingProjetos) return <SkeletonProgresso />;
-
-  if (normErroProjetos) {
+  // Títulos, filtros e ações aparecem na hora; só dados de projetos e marcos
+  // mostram skeleton enquanto a API responde.
+  if (!loadingProjetos && normErroProjetos) {
     return <StatusView title="Falha ao carregar projetos" description={getErrorMessage(normErroProjetos)} />;
   }
 
-  if (projetosAtivos.length === 0) {
+  if (!loadingProjetos && projetosAtivos.length === 0) {
     return (
       <div className="advisor-pagina">
         <div className="advisor-estado-vazio">
@@ -324,14 +313,16 @@ export default function AdvisorProgressPage() {
 
         <div className="marco-filtros" role="group" aria-label="Filtrar projetos" style={{ marginTop: 0 }}>
           <button type="button" className="marco-filtro" aria-pressed={!somenteRevisao} onClick={() => setSomenteRevisao(false)}>
-            Todos <span className="marco-filtro__contador">{projetosAtivos.length}</span>
+            Todos <span className="marco-filtro__contador">{loadingProjetos ? <Sk inline w={12} h={12} /> : projetosAtivos.length}</span>
           </button>
           <button type="button" className="marco-filtro" aria-pressed={somenteRevisao} onClick={() => setSomenteRevisao(true)}>
-            Com revisão pendente <span className="marco-filtro__contador">{totalPendentes}</span>
+            Com revisão pendente <span className="marco-filtro__contador">{loadingProjetos ? <Sk inline w={12} h={12} /> : totalPendentes}</span>
           </button>
         </div>
 
-        {lista.length === 0 ? (
+        {loadingProjetos ? (
+          <SkLines rows={3} h={76} gap="var(--espaco-3)" label="Carregando projetos" />
+        ) : lista.length === 0 ? (
           <p className="advisor-etapas-grupo__vazio">Nenhum projeto com revisão pendente.</p>
         ) : (
           <div className="advisor-lista">
@@ -394,6 +385,9 @@ export default function AdvisorProgressPage() {
       </div>
 
       <div className="advisor-toolbar">
+        {loadingProjetos ? (
+          <Sk w="min(25rem, 100%)" h="3rem" r="var(--raio-medio)" />
+        ) : (
         <div className="advisor-busca advisor-busca--projeto">
           <FolderOpen size={16} className="advisor-busca__icone" />
           <AppCombobox
@@ -407,13 +401,22 @@ export default function AdvisorProgressPage() {
             })}
           />
         </div>
-        {!projetoFinalizado && (
+        )}
+        {!loadingProjetos && !projetoFinalizado && (
           <button type="button" className="advisor-botao advisor-botao--primario" onClick={() => abrirModal("nova")}>
             <Plus size={16} />
             Novo marco
           </button>
         )}
       </div>
+
+      {loadingProjetos && (
+        <div className="advisor-card-conteudo" aria-busy="true" aria-label="Carregando projeto">
+          <Sk w="45%" h={16} />
+          <Sk w={88} h={22} r="var(--raio-completo)" />
+          <Sk w="60%" h={13} />
+        </div>
+      )}
 
       {projetoAtivo && (
         <div className="advisor-card-conteudo">

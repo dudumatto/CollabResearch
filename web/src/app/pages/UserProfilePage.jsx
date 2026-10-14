@@ -7,6 +7,7 @@ import { conversationService } from "../services/conversationService";
 import { formatProjectStatus, formatUserType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { ProfileDocuments } from "../components/ProfileDocuments";
+import { Sk } from "../components/Skeleton";
 import { toast } from "sonner";
 import "./ProfilePage.css";
 
@@ -32,18 +33,18 @@ export default function UserProfilePage() {
   const navigate = useNavigate();
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
 
-  const { data, loading, error } = useAsyncData(async () => {
-    const [profile, projects, documents] = await Promise.all([
-      userService.getProfileById(id),
-      userService.getProjects(id).catch(() => []),
-      userService.getDocuments(id).catch(() => []),
-    ]);
-    return {
-      profile,
-      projects: Array.isArray(projects) ? projects : projects?.content ?? [],
-      documents: Array.isArray(documents) ? documents : [],
-    };
-  }, [id], { initialData: { profile: null, projects: [], documents: [] } });
+  // Perfil, projetos e documentos carregam de forma independente; o layout
+  // estático aparece na hora e só os dados pendentes mostram skeleton.
+  const { data: profileData, loading, error } = useAsyncData(() => userService.getProfileById(id), [id]);
+  const projectsState = useAsyncData(async () => {
+    const projects = await userService.getProjects(id).catch(() => []);
+    return Array.isArray(projects) ? projects : projects?.content ?? [];
+  }, [id], { initialData: [] });
+  const documentsState = useAsyncData(async () => {
+    const documents = await userService.getDocuments(id).catch(() => []);
+    return Array.isArray(documents) ? documents : [];
+  }, [id], { initialData: [] });
+  const data = { profile: profileData, documents: documentsState.data };
 
   useEffect(() => {
     setAvatarLoadFailed(false);
@@ -58,52 +59,12 @@ export default function UserProfilePage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="pagina-perfil">
-        <div className="skeleton perfil-sk-voltar" style={{ marginBottom: "var(--espaco-4)" }} />
-        <div className="pagina-perfil__grade">
-          <div className="cartao-perfil">
-            <div className="cartao-perfil__corpo cartao-perfil__corpo--sem-capa">
-              <div className="cartao-perfil__avatar-wrapper">
-                <div className="skeleton perfil-sk-avatar" />
-              </div>
-              <div className="skeleton perfil-sk-nome" style={{ marginBottom: 8 }} />
-              <div className="skeleton perfil-sk-tipo" style={{ marginBottom: 4 }} />
-              <div className="skeleton perfil-sk-inst" style={{ marginBottom: "var(--espaco-4)" }} />
-              <div className="skeleton perfil-sk-stats" style={{ marginBottom: "var(--espaco-4)" }} />
-              <div className="perfil-sk-info-lista">
-                {["--w80", "--w70", "--w75", "--w60", "--w65"].map((w) => (
-                  <div key={w} className={`skeleton perfil-sk-info perfil-sk-info${w}`} />
-                ))}
-              </div>
-              <div className="skeleton perfil-sk-botao" />
-            </div>
-          </div>
-          <div className="pagina-perfil__conteudo-principal">
-            <div className="secao-perfil perfil-sk-secao">
-              <div className="skeleton perfil-sk-sec-titulo" />
-              <div className="skeleton perfil-sk-texto perfil-sk-texto--100" />
-              <div className="skeleton perfil-sk-texto perfil-sk-texto--85" />
-              <div className="skeleton perfil-sk-texto perfil-sk-texto--90" />
-            </div>
-            <div className="secao-perfil perfil-sk-secao">
-              <div className="skeleton perfil-sk-sec-titulo" />
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="skeleton perfil-sk-projeto" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !data?.profile) {
+  if (!loading && (error || !data?.profile)) {
     return <StatusView title="Usuário não encontrado" description={error?.message || "Perfil indisponível."} />;
   }
 
-  const { profile, projects } = data;
+  const profile = data.profile ?? {};
+  const projects = projectsState.data;
   const showProfilePhoto = Boolean(profile.fotoPerfilUrl) && !avatarLoadFailed;
 
   return (
@@ -121,7 +82,9 @@ export default function UserProfilePage() {
           <div className="cartao-perfil__corpo cartao-perfil__corpo--sem-capa">
             <div className="cartao-perfil__avatar-wrapper">
               <div className="cartao-perfil__avatar">
-                {showProfilePhoto ? (
+                {loading ? (
+                  <Sk r="inherit" w="100%" h="100%" />
+                ) : showProfilePhoto ? (
                   <img
                     src={profile.fotoPerfilUrl}
                     alt={profile.nome ?? "Foto de perfil"}
@@ -134,14 +97,24 @@ export default function UserProfilePage() {
               </div>
             </div>
 
-            <h2 className="cartao-perfil__nome">{profile.nome}</h2>
-            <p className="cartao-perfil__tipo">{formatUserType(profile.tipo)}</p>
-            <p className="cartao-perfil__instituicao">{profile.instituicao ?? "Instituição não informada"}</p>
+            {loading ? (
+              <>
+                <span className="skeleton perfil-sk-nome" aria-hidden="true" style={{ display: "block", margin: "0 auto 8px" }} />
+                <span className="skeleton perfil-sk-tipo" aria-hidden="true" style={{ display: "block", margin: "0 auto 4px" }} />
+                <span className="skeleton perfil-sk-inst" aria-hidden="true" style={{ display: "block", margin: "0 auto var(--espaco-4)" }} />
+              </>
+            ) : (
+              <>
+                <h2 className="cartao-perfil__nome">{profile.nome}</h2>
+                <p className="cartao-perfil__tipo">{formatUserType(profile.tipo)}</p>
+                <p className="cartao-perfil__instituicao">{profile.instituicao ?? "Instituição não informada"}</p>
+              </>
+            )}
 
             <div className="cartao-perfil__estatisticas">
               {[
-                { label: "Projetos", value: projects.length },
-                { label: "Tipo", value: formatUserType(profile.tipo) },
+                { label: "Projetos", value: projectsState.loading ? <Sk inline w={28} h={20} /> : projects.length },
+                { label: "Tipo", value: loading ? <Sk inline w={64} h={20} /> : formatUserType(profile.tipo) },
               ].map((item) => (
                 <div key={item.label} className="cartao-perfil__stat">
                   <p className="cartao-perfil__stat-valor">{item.value}</p>
@@ -157,10 +130,10 @@ export default function UserProfilePage() {
                 { icon: Buildings, label: profile.instituicao ?? "Instituição não informada" },
                 { icon: GraduationCap, label: profile.semestre ?? "Semestre não informado" },
                 { icon: Calendar, label: `Membro desde ${profile.dataCadastro ? new Date(profile.dataCadastro).toLocaleDateString("pt-BR") : "-"}` },
-              ].map((item) => (
-                <div key={item.label} className="cartao-perfil__info-item">
+              ].map((item, index) => (
+                <div key={loading ? index : item.label} className="cartao-perfil__info-item">
                   <item.icon size={14} className="cartao-perfil__info-icone" />
-                  <span className="cartao-perfil__info-texto">{item.label}</span>
+                  <span className="cartao-perfil__info-texto">{loading ? <Sk inline w={120 + (index % 3) * 20} h={13} /> : item.label}</span>
                 </div>
               ))}
             </div>
@@ -204,13 +177,17 @@ export default function UserProfilePage() {
 
           {profile.tipo === "ALUNO" && (
             <div className="secao-perfil">
-              <ProfileDocuments userId={id} documents={data.documents} editable={false} />
+              <ProfileDocuments userId={id} documents={data.documents} loading={documentsState.loading} editable={false} />
             </div>
           )}
 
           <div className="secao-perfil">
             <h3 className="secao-perfil__titulo">Projetos</h3>
-            {projects.length === 0 ? (
+            {projectsState.loading ? (
+              <div className="historico-academico__lista" aria-busy="true" aria-label="Carregando projetos">
+                {[0, 1, 2].map((i) => <span key={i} className="skeleton perfil-sk-projeto" aria-hidden="true" style={{ display: "block" }} />)}
+              </div>
+            ) : projects.length === 0 ? (
               <p style={{ color: "var(--cor-texto-mudo)", fontSize: "var(--tamanho-medio)" }}>
                 Nenhum projeto encontrado.
               </p>

@@ -7,74 +7,36 @@ import { feedbackService } from "../services/feedbackService";
 import { userService } from "../services/userService";
 import { mapFeedback, mapProject } from "../utils/adapters";
 import { StatusView } from "../components/StatusView";
+import { Sk } from "../components/Skeleton";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import "./FeedbackPage.css";
 
-function FeedbackSkeleton() {
-  const Sk = ({ w = "100%", h = 14, r = "0.5rem", className = "", style }) => (
-    <div className={`skeleton ${className}`.trim()} style={{ width: w, height: h, borderRadius: r, ...style }} />
-  );
-
+// Só valores e lista dependem da API; títulos e formulário são estáticos.
+function FeedbackListSkeleton() {
   return (
-    <div className="pagina-feedback pagina-feedback--skeleton" aria-busy="true" aria-label="Carregando feedbacks">
-      <div className="pagina-feedback__grade-resumos">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="resumo-feedback resumo-feedback--skeleton">
-            <Sk className="resumo-feedback__icone-area" w={40} h={40} r="var(--raio-grande)" />
-            <div className="resumo-feedbak__header resumo-feedback__skeleton-header">
-              <Sk w={i === 2 ? 56 : 42} h={24} />
-              <Sk w={i === 3 ? 128 : 150} h={13} />
+    <>
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="feedback-card feedback-card--skeleton" aria-hidden="true">
+          <div className="feedback-card__cabecalho">
+            <Sk w={40} h={40} r="50%" />
+            <div className="feedback-card__info">
+              <Sk w={i === 1 ? "58%" : "48%"} h={15} />
+              <Sk w="42%" h={12} style={{ marginTop: 7 }} />
+            </div>
+            <div className="feedback-card__estrelas">
+              {[1, 2, 3, 4, 5].map((j) => (
+                <Sk key={j} w={14} h={14} r="50%" />
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-
-      <div className="pagina-feedback__grade-principal">
-        <div>
-          <Sk w={190} h={22} style={{ marginBottom: "var(--espaco-4)" }} />
-          <div className="pagina-feedback__lista">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="feedback-card feedback-card--skeleton">
-                <div className="feedback-card__cabecalho">
-                  <Sk w={40} h={40} r="50%" />
-                  <div className="feedback-card__info">
-                    <Sk w={i === 1 ? "58%" : "48%"} h={15} />
-                    <Sk w="42%" h={12} style={{ marginTop: 7 }} />
-                  </div>
-                  <div className="feedback-card__estrelas">
-                    {[1, 2, 3, 4, 5].map((j) => (
-                      <Sk key={j} w={14} h={14} r="50%" />
-                    ))}
-                  </div>
-                </div>
-                <div className="feedback-card__comentario feedback-card__comentario--skeleton">
-                  <Sk h={13} />
-                  <Sk w="86%" h={13} />
-                  <Sk w="64%" h={13} />
-                </div>
-              </div>
-            ))}
+          <div className="feedback-card__comentario feedback-card__comentario--skeleton">
+            <Sk h={13} />
+            <Sk w="86%" h={13} />
+            <Sk w="64%" h={13} />
           </div>
         </div>
-
-        <div>
-          <Sk w={150} h={22} style={{ marginBottom: "var(--espaco-4)" }} />
-          <div className="avaliacao-orientador avaliacao-orientador--skeleton">
-            <div className="avaliacao-orientador__prompt">
-              <div className="avaliacao-orientador__estrelas-prompt">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Sk key={i} w={28} h={28} r="50%" />
-                ))}
-              </div>
-              <Sk w="48%" h={18} style={{ margin: "0 auto var(--espaco-3)" }} />
-              <Sk w="78%" h={13} style={{ margin: "0 auto var(--espaco-2)" }} />
-              <Sk w="62%" h={13} style={{ margin: "0 auto var(--espaco-6)" }} />
-              <Sk w={104} h={44} r="var(--raio-grande)" style={{ margin: "0 auto" }} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      ))}
+    </>
   );
 }
 
@@ -157,8 +119,6 @@ export default function FeedbackPage() {
     }
   };
 
-  if (loading) return <FeedbackSkeleton />;
-
   if (error) {
     return <StatusView title="Falha ao carregar feedbacks" description={error.message} />;
   }
@@ -173,7 +133,7 @@ export default function FeedbackPage() {
             </div>
             <div className="resumo-feedbak__header">
             <p className="resumo-feedback__label">{item.label}</p>
-            <p className="resumo-feedback__valor">{statsValues[index]}</p>
+            <p className="resumo-feedback__valor">{loading ? <Sk w={index === 2 ? 96 : 42} h={24} /> : statsValues[index]}</p>
             </div>
           </div>
         ))}
@@ -183,7 +143,8 @@ export default function FeedbackPage() {
         <div>
           <h3 className="pagina-feedback__secao-titulo">Feedbacks recebidos</h3>
           <div className="pagina-feedback__lista">
-            {(data.feedbacks ?? []).map((feedback) => (
+            {loading && <FeedbackListSkeleton />}
+            {!loading && (data.feedbacks ?? []).map((feedback) => (
               <div key={feedback.id} className="feedback-card">
                 <div className="feedback-card__cabecalho">
                   <div className="feedback-card__avatar">
@@ -208,7 +169,7 @@ export default function FeedbackPage() {
               </div>
             ))}
 
-            {(data.feedbacks ?? []).length === 0 && (
+            {!loading && (data.feedbacks ?? []).length === 0 && (
               <div className="feedback-card--vazio">
                 <div className="feedback-card__icone-vazio">
                   <Star size={22} className="resumo-feedback__icone--amarelo" />

@@ -9,6 +9,7 @@ import { useAuth } from "../hooks/useAuth";
 import { projectService } from "../services/projectService";
 import { applicationService } from "../services/applicationService";
 import { StatusView } from "../components/StatusView";
+import { Sk, SkLines } from "../components/Skeleton";
 import {
   getProjectSeatHolders,
   getProjectSlotsUsage,
@@ -22,70 +23,123 @@ import {
 import { formatProjectStatus } from "../utils/formatters";
 import "./ProjectDetailPage.css";
 
-function ProjectDetailSkeleton() {
-  const Sk = ({ w = "100%", h = 14, r = "0.5rem", className = "", style = {} }) => (
-    <div className={`skeleton ${className}`.trim()} style={{ width: w, height: h, borderRadius: r, ...style }} />
-  );
-
+// Mesma estrutura da página carregada: navegação, títulos de seção, rótulos e
+// ícones aparecem na hora; só os dados do projeto mostram skeleton.
+function ProjectDetailSkeleton({ onBack }) {
   return (
-    <div className="pagina-detalhe-projeto pagina-detalhe-projeto--skeleton" aria-busy="true" aria-label="Carregando projeto">
-      <div className="pagina-detalhe-projeto__barra-topo detalhe-skeleton__barra">
-        <Sk w={32} h={32} r="var(--raio-medio)" />
-        <Sk w="min(48vw, 200px)" h={16} />
-        <Sk w={70} h={22} r="var(--raio-completo)" className="detalhe-skeleton__status" />
+    <div className="pagina-detalhe-projeto" aria-busy="true" aria-label="Carregando projeto">
+      <div className="pagina-detalhe-projeto__barra-topo">
+        <button onClick={onBack} className="pagina-detalhe-projeto__voltar">
+          <ArrowLeft size={16} />
+          Voltar para projetos
+        </button>
       </div>
 
-      <div className="pagina-detalhe-projeto__grade detalhe-skeleton__grade">
+      <div className="pagina-detalhe-projeto__grade">
         <div className="pagina-detalhe-projeto__conteudo-principal">
-          <section className="detalhe-card detalhe-card--skeleton">
+          <div className="detalhe-card">
+            <div className="detalhe-card__topo">
+              <div className="detalhe-card__badges">
+                <Sk inline w={70} h={22} r="var(--raio-completo)" />
+                <Sk inline w={90} h={22} r="var(--raio-completo)" />
+              </div>
+            </div>
             <Sk w="70%" h={22} style={{ marginBottom: 12 }} />
+            <div className="detalhe-card__estatisticas">
+              <div className="detalhe-card__stat-item"><ChartBar size={14} /><Sk inline w={90} h={12} /></div>
+              <div className="detalhe-card__stat-item"><Clock size={14} /><Sk inline w={130} h={12} /></div>
+            </div>
+          </div>
+
+          <div className="detalhe-card">
+            <h2 className="detalhe-card__titulo-secao">Sobre o projeto</h2>
             <Sk h={13} style={{ marginBottom: 6 }} />
             <Sk w="95%" h={13} style={{ marginBottom: 6 }} />
-            <Sk w="80%" h={13} style={{ marginBottom: 16 }} />
-            <div className="detalhe-skeleton__chips">
-              {[1, 2, 3].map((i) => <Sk key={i} w={70} h={24} r="var(--raio-completo)" />)}
+            <Sk w="80%" h={13} />
+          </div>
+
+          <div className="detalhe-card">
+            <h2 className="detalhe-card__titulo-secao">Requisitos</h2>
+            <div className="detalhe-card__lista-requisitos">
+              {[1, 2].map((i) => <Sk key={i} w={i === 1 ? "60%" : "45%"} h={14} />)}
             </div>
-            <div className="detalhe-skeleton__stats">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="detalhe-skeleton__stat">
-                  <Sk w="60%" h={12} />
-                  <Sk w="80%" h={16} />
+          </div>
+
+          <div className="detalhe-card">
+            <h2 className="detalhe-card__titulo-secao">Tecnologias e competências</h2>
+            <div className="detalhe-card__chips">
+              {[1, 2, 3].map((i) => <Sk key={i} inline w={70} h={24} r="var(--raio-completo)" />)}
+            </div>
+          </div>
+
+          <div className="detalhe-card">
+            <h2 className="detalhe-card__titulo-secao">Histórico do projeto</h2>
+            <Sk w="55%" h={13} style={{ marginBottom: 6 }} />
+            <Sk w="40%" h={11} />
+          </div>
+        </div>
+
+        <div className="pagina-detalhe-projeto__sidebar">
+          <div className="card-inscricao">
+            <div className="card-inscricao__grade-stats">
+              {[
+                { icon: Users, label: "Vagas disponiveis" },
+                { icon: Clock, label: "Criado em" },
+                { icon: BookOpen, label: "Área" },
+              ].map((item) => (
+                <div key={item.label} className="card-inscricao__stat">
+                  <div className="card-inscricao__stat-linha">
+                    <item.icon size={13} className="card-inscricao__stat-icone" />
+                    <span className="card-inscricao__stat-label">{item.label}</span>
+                  </div>
+                  <Sk w="70%" h={16} />
                 </div>
               ))}
             </div>
-          </section>
+            <button className="card-inscricao__botao-perguntar" disabled>
+              <ChatCircleText size={15} /> Perguntar ao orientador
+            </button>
+          </div>
 
-          <section className="detalhe-card detalhe-card--skeleton">
-            <Sk w={160} h={16} style={{ marginBottom: 16 }} />
-            {[1, 2].map((i) => (
-              <div key={i} className="detalhe-skeleton__linha">
-                <Sk w={36} h={36} r="50%" className="detalhe-skeleton__avatar" />
-                <div className="detalhe-skeleton__texto">
-                  <Sk w="55%" h={13} style={{ marginBottom: 6 }} />
-                  <Sk w="40%" h={11} />
-                </div>
-                <Sk w={70} h={22} r="var(--raio-completo)" className="detalhe-skeleton__status" />
-              </div>
-            ))}
-          </section>
-        </div>
-
-        <aside className="pagina-detalhe-projeto__sidebar detalhe-skeleton__sidebar">
-          <section className="card-inscricao detalhe-card--skeleton">
-            <Sk w={110} h={15} />
-            <div className="detalhe-skeleton__orientador">
-              <Sk w={48} h={48} r="50%" className="detalhe-skeleton__avatar" />
-              <div className="detalhe-skeleton__texto">
+          <div className="card-orientador">
+            <h3 className="card-orientador__titulo">Orientador do projeto</h3>
+            <div className="card-orientador__cabecalho">
+              <Sk w={48} h={48} r="50%" />
+              <div style={{ flex: 1 }}>
                 <Sk w="65%" h={14} style={{ marginBottom: 6 }} />
                 <Sk w="50%" h={12} />
               </div>
             </div>
-            <Sk h={40} r="var(--raio-medio)" />
-            <Sk h={40} r="var(--raio-medio)" />
-          </section>
-        </aside>
+            <div className="card-orientador__info-lista">
+              <div className="card-orientador__info-linha">
+                <span className="card-orientador__info-label">Email</span>
+                <Sk inline w={140} h={12} />
+              </div>
+              <div className="card-orientador__info-linha">
+                <span className="card-orientador__info-label">Atualizações</span>
+                <Sk inline w={24} h={12} />
+              </div>
+            </div>
+            <button className="card-orientador__botao-mensagem" disabled>
+              <Envelope size={14} /> Enviar mensagem
+            </button>
+          </div>
+
+          <div className="card-colaboradores">
+            <h3 className="card-colaboradores__titulo">
+              <Users size={15} /> Participantes
+            </h3>
+            <CollaboratorsSkeleton />
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+function CollaboratorsSkeleton() {
+  return (
+    <SkLines rows={2} h={32} gap="var(--espaco-2)" label="Carregando participantes" />
   );
 }
 
@@ -544,7 +598,7 @@ export default function ProjectDetailPage() {
   const applicationStatus = currentApplication?.status;
   const hasApplicationOrParticipation = Boolean(currentApplication) || isStudentCreator;
 
-  if (loading) return <ProjectDetailSkeleton />;
+  if (loading) return <ProjectDetailSkeleton onBack={() => navigate(-1)} />;
   if (error || !project) {
     return <StatusView title="Projeto indisponível" description={error?.message || "Não foi possível localizar este projeto."} />;
   }
@@ -852,7 +906,7 @@ export default function ProjectDetailPage() {
               <Users size={15} /> Participantes
             </h3>
             {collabLoading ? (
-              <p className="card-colaboradores__vazio">Carregando...</p>
+              <CollaboratorsSkeleton />
             ) : displayParticipants.length > 0 ? (
               <ul className="card-colaboradores__lista">
                 {displayParticipants.map((c) => (

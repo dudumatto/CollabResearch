@@ -54,6 +54,10 @@ public class Inscricao {
     @Column(name = "lumen_justificativa", columnDefinition = "TEXT")
     private String lumenJustificativa;
 
+    /** JSON da avaliacao detalhada (criterios, pontos fortes/atencao, confianca); ver LumenAvaliacao. */
+    @Column(name = "lumen_avaliacao", columnDefinition = "TEXT")
+    private String lumenAvaliacao;
+
     @Column(name = "data_inscricao")
     private LocalDateTime dataInscricao;
 

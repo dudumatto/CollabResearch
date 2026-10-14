@@ -98,20 +98,28 @@
 }
 
 .pagina-inscricoes__aba {
-  flex-shrink: 0;
-  padding: var(--espaco-2) var(--espaco-3);
+  /* mobile: abas dividem toda a largura da barra igualmente */
+  flex: 1 1 0;
+  min-width: 0;
+  padding: var(--espaco-2) 0.25rem;
   border-radius: var(--raio-medio);
   border: none;
   cursor: pointer;
-  font-size: var(--tamanho-base);
+  font-size: 0.875rem;
+  text-align: center;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: var(--transicao-normal);
   font-family: var(--fonte-principal);
 }
 
 @media (min-width: 640px) {
   .pagina-inscricoes__aba {
+    flex: 0 0 auto;
     padding: var(--espaco-2) var(--espaco-4);
+    font-size: var(--tamanho-base);
+    overflow: visible;
   }
 }
 
