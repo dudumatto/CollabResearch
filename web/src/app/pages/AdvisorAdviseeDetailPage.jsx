@@ -9,6 +9,7 @@ import { mapOrientandoDetalhe } from "../utils/adapters";
 import { formatProjectStatus, formatDate } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { Sk, SkLines } from "../components/Skeleton";
 import { AdvisorMarcoCard } from "../components/progress/AdvisorMarcoCard";
 import { FiltrosMarco } from "../components/progress/MarcoPartes";
 import { marcosApi } from "../components/progress/marcosApi";
@@ -78,13 +79,7 @@ function MarcosDoOrientando({ projetoId, finalizado, onGerenciar }) {
 
       {marcos.length > 0 && <FiltrosMarco valor={filtro} onChange={setFiltro} contagens={contagem} />}
 
-      {loading && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }} aria-busy="true" aria-label="Carregando marcos">
-          {[1, 2].map((i) => (
-            <div key={i} className="skeleton" style={{ width: "100%", height: 96, borderRadius: "var(--raio-medio)" }} />
-          ))}
-        </div>
-      )}
+      {loading && <MarcosSkeleton />}
       {!loading && error && (
         <p className="advisor-campo__erro" role="alert">
           {mensagemDeErro(error, "Não foi possível carregar os marcos.")}{" "}
@@ -108,22 +103,12 @@ function MarcosDoOrientando({ projetoId, finalizado, onGerenciar }) {
   );
 }
 
-function DetalheSkeleton() {
+const DETALHE_VAZIO = { nome: "", projetos: [], historico: [], progresso: 0, projetoSelecionado: null };
+
+function MarcosSkeleton() {
   return (
-    <div className="advisor-pagina">
-      <div className="skeleton" style={{ width: 140, height: 18 }} />
-      <div className="advisor-detalhe-grade" style={{ marginTop: "var(--espaco-4)" }}>
-        <div className="advisor-detalhe-lateral">
-          <div className="skeleton" style={{ width: "100%", height: 220, borderRadius: "var(--raio-grande)" }} />
-          <div className="skeleton" style={{ width: "100%", height: 90, borderRadius: "var(--raio-grande)" }} />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-4)" }}>
-          <div className="skeleton" style={{ width: "100%", height: 110, borderRadius: "var(--raio-grande)" }} />
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton" style={{ width: "100%", height: 76, borderRadius: "var(--raio-medio)" }} />
-          ))}
-        </div>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }} aria-busy="true" aria-label="Carregando marcos">
+      {[1, 2].map((i) => <Sk key={i} h={96} r="var(--raio-medio)" />)}
     </div>
   );
 }
@@ -133,7 +118,7 @@ export default function AdvisorAdviseeDetailPage() {
   const navigate = useNavigate();
   const [projectId, setProjectId] = useState(null);
 
-  const { data, loading, error } = useAsyncData(
+  const { data: detalhe, loading, error } = useAsyncData(
     async () => {
       const raw = await advisorService.detalheOrientando(id, projectId ?? undefined);
       return mapOrientandoDetalhe(raw);
@@ -144,9 +129,12 @@ export default function AdvisorAdviseeDetailPage() {
 
   const normError = error ? normalizeError(error) : null;
 
-  if (loading) return <DetalheSkeleton />;
+  // Estrutura, títulos e ações aparecem na hora; só os dados do orientando
+  // mostram skeleton. Ao trocar de projeto, só a parte do projeto recarrega.
+  const pendente = loading && !detalhe;
+  const data = detalhe ?? DETALHE_VAZIO;
 
-  if (normError || !data) {
+  if (!loading && (normError || !detalhe)) {
     return (
       <StatusView
         title="Não foi possível carregar o orientando"
@@ -183,6 +171,15 @@ export default function AdvisorAdviseeDetailPage() {
       <div className="advisor-detalhe-grade">
         <div className="advisor-detalhe-lateral">
           <div className="advisor-perfil-cartao">
+            {pendente ? (
+              <>
+                <Sk w="4.5rem" h="4.5rem" r="var(--raio-completo)" />
+                <Sk w="60%" h={18} />
+                <Sk w={88} h={22} r="var(--raio-completo)" />
+                <SkLines rows={3} h={14} gap="var(--espaco-2)" label="Carregando dados do orientando" />
+              </>
+            ) : (
+            <>
             <AvatarPerfil nome={data.nome} src={data.fotoPerfilUrl || data.avatarUrl} />
             <h3 className="advisor-perfil-cartao__nome">{data.nome}</h3>
             <span className={`advisor-etiqueta ${situacaoPillClass(data.projetoSelecionado?.status ?? data.projetos[0]?.status ?? "INATIVO")}`}>
@@ -208,6 +205,8 @@ export default function AdvisorAdviseeDetailPage() {
                 </div>
               )}
             </div>
+            </>
+            )}
           </div>
 
           {data.projetos.length > 1 && (
@@ -247,10 +246,12 @@ export default function AdvisorAdviseeDetailPage() {
           <div className="advisor-card-conteudo">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
               <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>
-                {data.projetoSelecionado?.projetoTitulo ?? data.projetos.find((p) => p.projetoId === projetoAtivoId)?.projetoTitulo ?? "Projeto"}
+                {pendente
+                  ? <Sk inline w={200} h={16} />
+                  : data.projetoSelecionado?.projetoTitulo ?? data.projetos.find((p) => p.projetoId === projetoAtivoId)?.projetoTitulo ?? "Projeto"}
               </p>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span className="advisor-percentual">{data.progresso}%</span>
+                <span className="advisor-percentual">{loading ? <Sk inline w={32} h={14} /> : `${data.progresso}%`}</span>
                 <div className="advisor-barra-progresso" style={{ width: 140 }}>
                   <div className="advisor-barra-progresso__preenchimento" style={{ width: `${Math.min(100, Math.max(0, data.progresso))}%` }} />
                 </div>
@@ -262,22 +263,30 @@ export default function AdvisorAdviseeDetailPage() {
             </p>
           </div>
 
+          {pendente ? (
+            <div className="advisor-card-conteudo">
+              <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>Marcos</p>
+              <MarcosSkeleton />
+            </div>
+          ) : (
           <MarcosDoOrientando
             key={projetoAtivoId}
             projetoId={projetoAtivoId}
             finalizado={(data.projetoSelecionado?.status ?? data.projetos.find((p) => p.projetoId === projetoAtivoId)?.status) === "FINALIZADO"}
             onGerenciar={() => navigate(`/app/progress?projectId=${projetoAtivoId}`)}
           />
+          )}
 
           <div className="advisor-card-conteudo">
             <p className="advisor-card-conteudo__titulo" style={{ fontSize: "var(--tamanho-normal)" }}>
-              Atualizações do aluno {data.historico.length > 0 && `(${data.historico.length})`}
+              Atualizações do aluno {!loading && data.historico.length > 0 && `(${data.historico.length})`}
             </p>
-            {data.historico.length === 0 && (
+            {loading && <SkLines rows={3} h={56} label="Carregando atualizações" />}
+            {!loading && data.historico.length === 0 && (
               <p className="advisor-linha-card__meta">O aluno ainda não registrou atualizações neste projeto.</p>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
-              {data.historico.slice(0, 10).map((item) => (
+              {!loading && data.historico.slice(0, 10).map((item) => (
                 <div key={item.id ?? item.titulo} className="advisor-etapa">
                   <div className="advisor-etapa__cabecalho">
                     <p className="advisor-etapa__titulo">{item.titulo}</p>

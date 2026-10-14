@@ -9,6 +9,7 @@ import { applicationService } from "../services/applicationService";
 import { mapApplication, withImageCacheBuster } from "../utils/adapters";
 import { formatUserType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { Sk } from "../components/Skeleton";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import { ProfileDocuments } from "../components/ProfileDocuments";
 import { INSTITUICOES } from "../constants/academicOptions";
@@ -25,24 +26,6 @@ function initials(name = "") {
     .map((part) => part[0])
     .join("")
     .toUpperCase() || "IC";
-}
-
-function ProfileSkeleton() {
-  return (
-    <div className="advisor-pagina advisor-profile-standard student-profile-standard">
-      <div className="skeleton perfil-sk-hero" style={{ marginBottom: "var(--espaco-6)" }} />
-      <div className="advisor-detalhe-grade">
-        <div className="advisor-detalhe-lateral">
-          <div className="skeleton perfil-sk-card perfil-sk-card--alto" />
-          <div className="skeleton perfil-sk-card perfil-sk-card--med" />
-        </div>
-        <div className="student-profile-standard__main">
-          <div className="skeleton perfil-sk-card perfil-sk-card--form" />
-          <div className="skeleton perfil-sk-card perfil-sk-card--docs" />
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function resetFormFromProfile(profile) {
@@ -171,8 +154,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) return <ProfileSkeleton />;
-
+  // Perfil vem do usuário autenticado; só contagens e documentos aguardam a API.
   if (error || !data?.profile) {
     return <StatusView title="Falha ao carregar perfil" description={error?.message || "Perfil indisponível."} />;
   }
@@ -262,11 +244,11 @@ export default function ProfilePage() {
             <div className="advisor-notas">
               <div className="advisor-nota">
                 <span className="advisor-nota__rotulo">Projetos</span>
-                <span className="advisor-nota__valor">{approvedApps}</span>
+                <span className="advisor-nota__valor">{loading ? <Sk inline w={28} h={20} /> : approvedApps}</span>
               </div>
               <div className="advisor-nota">
                 <span className="advisor-nota__rotulo">Inscrições</span>
-                <span className="advisor-nota__valor">{data.applications.length}</span>
+                <span className="advisor-nota__valor">{loading ? <Sk inline w={28} h={20} /> : data.applications.length}</span>
               </div>
               <div className="advisor-nota">
                 <span className="advisor-nota__rotulo">Tipo</span>
@@ -425,6 +407,7 @@ export default function ProfilePage() {
               <ProfileDocuments
                 userId={user.id}
                 documents={data.documents}
+                loading={loading}
                 editable
                 onUploaded={reload}
               />

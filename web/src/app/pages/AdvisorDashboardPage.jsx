@@ -14,6 +14,7 @@ import {
 } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
+import { Sk, SkLines } from "../components/Skeleton";
 import { WelcomeBanner } from "../components/WelcomeBanner";
 import {
   DashCard,
@@ -50,49 +51,6 @@ function formatTime(value) {
   return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
 }
 
-const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
-  <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
-);
-
-function SkeletonCard({ rows = 3, className = "" }) {
-  return (
-    <div className={`dash-card ${className}`}>
-      <div className="dash-card__cabecalho">
-        <Sk w={28} h={28} r="0.5rem" />
-        <Sk w={150} h={16} />
-      </div>
-      <div className="dash-card__corpo" style={{ gap: "var(--espaco-4)", paddingTop: "var(--espaco-2)" }}>
-        {Array.from({ length: rows }).map((_, i) => <Sk key={i} w="100%" h={30} />)}
-      </div>
-    </div>
-  );
-}
-
-function AdvisorDashboardSkeleton() {
-  return (
-    <div className="dash" aria-busy="true" aria-label="Carregando painel do orientador">
-      <Sk w="100%" h={140} r="var(--raio-grande)" />
-      <div className="dash-grade">
-        {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} rows={1} />)}
-      </div>
-      <div className="dash-colunas">
-        <div className="dash-coluna">
-          <SkeletonCard />
-          <div className="dash-grade" style={{ "--dash-colunas": 2 }}>
-            <SkeletonCard rows={1} />
-            <SkeletonCard rows={1} />
-          </div>
-          <SkeletonCard rows={2} />
-        </div>
-        <div className="dash-coluna dash-coluna--preencher">
-          <SkeletonCard rows={3} className="dash-card--preencher" />
-          <SkeletonCard rows={3} className="dash-card--preencher" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 const applicationTone = {
   APROVADO: "verde",
   PENDENTE: "laranja",
@@ -110,38 +68,24 @@ export default function AdvisorDashboardPage() {
   const { user } = useAuth();
   const userId = getUserId(user);
 
+  // Cada seção carrega sozinha: o layout estático aparece na hora e só os
+  // dados ainda pendentes mostram skeleton.
   const { data, loading, error } = useAsyncData(
-    async () => {
-      const [dashboard, prazos, conversas] = await Promise.all([
-        advisorService.dashboard(),
-        etapaService.listMine().catch(() => []),
-        userId != null ? conversationService.listByUser(userId).catch(() => []) : Promise.resolve([]),
-      ]);
-
-      return {
-        ...mapOrientadorDashboard(dashboard),
-        agenda: mapDeadlineAgenda(prazos, RIGHT_COLUMN_LIMIT),
-        conversations: Array.isArray(conversas) ? conversas : [],
-      };
-    },
-    [userId],
-    {
-      initialData: {
-        metricas: {
-          inscricoesPendentes: 0,
-          etapasAtrasadas: 0,
-          entregasAguardandoRevisao: 0,
-        },
-        filas: {},
-        agenda: [],
-        conversations: [],
-      },
-    },
+    async () => mapOrientadorDashboard(await advisorService.dashboard()),
+    [],
+    { initialData: { metricas: {}, filas: {} } },
   );
+  const agendaState = useAsyncData(
+    async () => mapDeadlineAgenda(await etapaService.listMine().catch(() => []), RIGHT_COLUMN_LIMIT),
+    [],
+    { initialData: [] },
+  );
+  const conversationsState = useAsyncData(async () => {
+    const conversas = userId != null ? await conversationService.listByUser(userId).catch(() => []) : [];
+    return Array.isArray(conversas) ? conversas : [];
+  }, [userId], { initialData: [] });
 
   const normError = error ? normalizeError(error) : null;
-
-  if (loading) return <AdvisorDashboardSkeleton />;
 
   if (normError) {
     return <StatusView title="Falha ao carregar o painel" description={getErrorMessage(normError)} />;
@@ -149,7 +93,7 @@ export default function AdvisorDashboardPage() {
 
   const metricas = data?.metricas ?? {};
   const filas = data?.filas ?? {};
-  const agenda = data?.agenda ?? [];
+  const agenda = agendaState.data ?? [];
   const go = (destino) => navigate(destino);
 
   const etapasAtrasadas = (filas.etapasAtrasadas ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT);
@@ -166,7 +110,7 @@ export default function AdvisorDashboardPage() {
   const projetosExcede = projetosTotal.length > DASHBOARD_PREVIEW_LIMIT;
   const projetosAtivos = projetosTotal.slice(0, DASHBOARD_PREVIEW_LIMIT + (projetosExcede ? 1 : 0));
 
-  const conversations = unreadConversations(data?.conversations, MESSAGES_PREVIEW_LIMIT);
+  const conversations = unreadConversations(conversationsState.data, MESSAGES_PREVIEW_LIMIT);
 
   const pendingTotal =
     (metricas.inscricoesPendentes ?? 0) +
@@ -185,7 +129,9 @@ export default function AdvisorDashboardPage() {
         name={user?.nome?.split(" ")[0] ?? "professor(a)"}
         role="Orientador"
         institution={user?.instituicao}
-        summary={pendingTotal > 0
+        summary={loading
+          ? <Sk inline w="22em" h="1em" style={{ maxWidth: "100%" }} />
+          : pendingTotal > 0
           ? <>Você tem <strong>{pendingTotal} pendências</strong> para revisar antes de seguir a rotina.</>
           : <>Nenhuma <strong>pendência crítica</strong> no momento.</>}
         secondaryAction={{ label: "Ver progresso", icon: TrendUp, onClick: () => go("/app/progress") }}
@@ -198,7 +144,7 @@ export default function AdvisorDashboardPage() {
           tone="azul"
           title="Inscrições"
           caption="Inscrições aguardando análise"
-          value={metricas.inscricoesPendentes ?? 0}
+          value={loading ? <Sk w={48} h={36} /> : metricas.inscricoesPendentes ?? 0}
           onOpen={() => go("/app/applications")}
         />
         <DashMetric
@@ -206,7 +152,7 @@ export default function AdvisorDashboardPage() {
           tone="verde"
           title="Progresso"
           caption="Etapas atrasadas em seu projeto"
-          value={metricas.etapasAtrasadas ?? 0}
+          value={loading ? <Sk w={48} h={36} /> : metricas.etapasAtrasadas ?? 0}
           onOpen={() => go("/app/progress")}
         />
         <DashMetric
@@ -214,7 +160,7 @@ export default function AdvisorDashboardPage() {
           tone="laranja"
           title="Entregas"
           caption="Entregas aguardando revisão"
-          value={metricas.entregasAguardandoRevisao ?? 0}
+          value={loading ? <Sk w={48} h={36} /> : metricas.entregasAguardandoRevisao ?? 0}
           onOpen={() => go("/app/deliveries")}
         />
       </div>
@@ -228,7 +174,9 @@ export default function AdvisorDashboardPage() {
             caption="Resumo de suas inscrições pendentes para análise"
             onOpen={() => go("/app/applications")}
           >
-            {inscricoesPendentes.length === 0 ? (
+            {loading ? (
+              <SkLines rows={DASHBOARD_PREVIEW_LIMIT} />
+            ) : inscricoesPendentes.length === 0 ? (
               <DashEmpty>Nenhuma inscrição aguardando análise.</DashEmpty>
             ) : (
               <DashListaCortada excedeLimite={inscricoesExcede} onVerMais={() => go("/app/applications")}>
@@ -254,7 +202,9 @@ export default function AdvisorDashboardPage() {
               title="Etapas atrasadas"
               onOpen={() => go("/app/progress")}
             >
-              {etapasAtrasadas.length === 0 ? (
+              {loading ? (
+                <SkLines rows={2} />
+              ) : etapasAtrasadas.length === 0 ? (
                 <DashEmpty>Nenhuma etapa atrasada.</DashEmpty>
               ) : (
                 etapasAtrasadas.map((item, index) => (
@@ -275,7 +225,9 @@ export default function AdvisorDashboardPage() {
               title="Entregas aguardando revisão"
               onOpen={() => go("/app/deliveries")}
             >
-              {entregasAguardandoRevisao.length === 0 ? (
+              {loading ? (
+                <SkLines rows={2} />
+              ) : entregasAguardandoRevisao.length === 0 ? (
                 <DashEmpty>Nenhuma entrega aguardando revisão.</DashEmpty>
               ) : (
                 entregasAguardandoRevisao.map((item, index) => (
@@ -297,7 +249,9 @@ export default function AdvisorDashboardPage() {
             title="Projetos Ativos"
             onOpen={() => go("/app/projects")}
           >
-            {projetosAtivos.length === 0 ? (
+            {loading ? (
+              <SkLines rows={2} />
+            ) : projetosAtivos.length === 0 ? (
               <DashEmpty>Nenhum projeto ativo no momento.</DashEmpty>
             ) : (
               <DashListaCortada excedeLimite={projetosExcede} onVerMais={() => go("/app/projects")}>
@@ -327,11 +281,15 @@ export default function AdvisorDashboardPage() {
             className="dash-card--sombra dash-card--calendario"
           >
             <div className="dash-agenda-lista">
-              <DashAgenda
-                items={agenda.slice(0, CALENDAR_PREVIEW_LIMIT + 1)}
-                emptyLabel="Nenhum prazo próximo cadastrado."
-              />
-              {agenda.length > CALENDAR_PREVIEW_LIMIT && (
+              {agendaState.loading ? (
+                <SkLines rows={CALENDAR_PREVIEW_LIMIT} h={40} />
+              ) : (
+                <DashAgenda
+                  items={agenda.slice(0, CALENDAR_PREVIEW_LIMIT + 1)}
+                  emptyLabel="Nenhum prazo próximo cadastrado."
+                />
+              )}
+              {!agendaState.loading && agenda.length > CALENDAR_PREVIEW_LIMIT && (
                 <button type="button" className="dash-agenda-vermais" onClick={() => go("/app/deadlines")}>
                   Ver mais
                 </button>
@@ -347,7 +305,9 @@ export default function AdvisorDashboardPage() {
             onOpen={() => go("/app/chat")}
             className="dash-card--preencher"
           >
-            {conversations.length === 0 ? (
+            {conversationsState.loading ? (
+              <SkLines rows={MESSAGES_PREVIEW_LIMIT} h={40} />
+            ) : conversations.length === 0 ? (
               <DashEmpty>Nenhuma mensagem não lida.</DashEmpty>
             ) : (
               conversations.map((conversa) => (

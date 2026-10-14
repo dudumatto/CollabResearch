@@ -3152,6 +3152,45 @@
   color: var(--cor-texto-fraco);
 }
 
+.advisor-lumen__detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  align-items: flex-start;
+}
+
+.advisor-lumen__criterios,
+.advisor-lumen__lista-itens {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.advisor-lumen__lista-itens {
+  list-style: disc;
+  padding-left: var(--espaco-4);
+  gap: 2px;
+  font-size: var(--tamanho-base);
+  color: var(--cor-texto-fraco);
+}
+
+.advisor-lumen__criterio-topo {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  font-size: var(--tamanho-base);
+  color: var(--cor-texto);
+}
+
+.advisor-lumen__subtitulo-lista {
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto);
+}
+
 .advisor-lumen__aviso {
   display: flex;
   align-items: center;

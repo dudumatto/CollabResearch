@@ -15,6 +15,17 @@ export function getUserType(user) {
   return user?.tipo ?? user?.type ?? nestedUser?.tipo ?? nestedUser?.type ?? "";
 }
 
+/** Avaliacao detalhada da Lumen chega como JSON serializado; retorna null se ausente ou invalida. */
+function parseLumenAvaliacao(value) {
+  if (!value) return null;
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
 function firstNonEmptyString(values) {
   return values.map((value) => String(value ?? "").trim()).find(Boolean) ?? "";
 }
@@ -292,6 +303,7 @@ export function mapAdvisorApplication(application) {
     updatedAt: application?.dataAtualizacao ?? null,
     lumenPontuacao: application?.lumenPontuacao ?? null,
     lumenJustificativa: application?.lumenJustificativa ?? "",
+    lumenAvaliacao: parseLumenAvaliacao(application?.lumenAvaliacao),
     projetoId: application?.projetoId ?? project?.id ?? null,
     projetoTitulo: application?.projetoTitulo ?? project?.title ?? "Projeto",
     alunoId: application?.alunoId ?? null,

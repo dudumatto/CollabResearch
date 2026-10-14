@@ -13,6 +13,7 @@ import { progressService } from "../services/progressService";
 import { userService } from "../services/userService";
 import { evaluationService } from "../services/evaluationService";
 import { StatusView } from "../components/StatusView";
+import { Sk, SkLines } from "../components/Skeleton";
 import { WelcomeBanner } from "../components/WelcomeBanner";
 import {
   DashCard,
@@ -50,49 +51,6 @@ const applicationTone = {
   PENDENTE: "laranja",
   REJEITADO: "vermelho",
 };
-
-const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
-  <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
-);
-
-function SkeletonCard({ rows = 3 }) {
-  return (
-    <div className="dash-card">
-      <div className="dash-card__cabecalho">
-        <Sk w={28} h={28} r="0.5rem" />
-        <Sk w={140} h={16} />
-      </div>
-      <div className="dash-card__corpo" style={{ gap: "var(--espaco-4)", paddingTop: "var(--espaco-2)" }}>
-        {Array.from({ length: rows }).map((_, i) => <Sk key={i} w="100%" h={30} />)}
-      </div>
-    </div>
-  );
-}
-
-function DashboardSkeleton() {
-  return (
-    <div className="dash" aria-busy="true" aria-label="Carregando painel">
-      <Sk w="100%" h={140} r="var(--raio-grande)" />
-      <div className="dash-grade">
-        {[1, 2, 3].map((i) => <SkeletonCard key={i} rows={1} />)}
-      </div>
-      <div className="dash-colunas">
-        <div className="dash-coluna">
-          <SkeletonCard />
-          <div className="dash-grade" style={{ "--dash-colunas": 2 }}>
-            <SkeletonCard rows={1} />
-            <SkeletonCard rows={1} />
-          </div>
-          <SkeletonCard rows={2} />
-        </div>
-        <div className="dash-coluna">
-          <SkeletonCard rows={5} />
-          <SkeletonCard rows={2} />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function formatShortDate(value) {
   if (!value) return "";
@@ -173,66 +131,68 @@ async function loadEvaluations(userId) {
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { notifications } = useNotifications();
   const userId = getUserId(user);
 
-  const { data, loading, error } = useAsyncData(async () => {
-    const [projectPage, applications, prazos, conversas] = await Promise.all([
-      projectService.listPaged({}, { page: 0, size: DASHBOARD_PREVIEW_LIMIT }),
-      applicationService.listMine().catch(() => []),
-      etapaService.listMine().catch(() => []),
-      userId != null ? conversationService.listByUser(userId).catch(() => []) : Promise.resolve([]),
-    ]);
-
-    const evaluations = userId != null ? await loadEvaluations(userId) : [];
-    const mappedProjects = Array.isArray(projectPage?.content) ? projectPage.content.map(mapProject) : [];
-    const mappedApplications = Array.isArray(applications) ? applications.map(mapApplication) : [];
-
-    const activeApplication = mappedApplications.find(
-      (item) => item.status === "APROVADO" && item.project?.status !== "FINALIZADO",
-    );
-    const activeProjectId = activeApplication?.project?.id ?? activeApplication?.projectId ?? null;
-
-    const progress = activeProjectId != null
-      ? await progressService.getProgress(activeProjectId).catch(() => null)
-      : null;
-
+  const { notifications, loading: notificationsReloading } = useNotifications();
+  // Recargas do provider (ex.: tempo real) não devem piscar skeleton sobre dados já exibidos.
+  const notificationsLoading = notificationsReloading && notifications.length === 0;
+  // Cada seção carrega sozinha: o layout estático aparece na hora e só os
+  // dados ainda pendentes mostram skeleton.
+  const { error } = useAsyncData(
+    () => projectService.listPaged({}, { page: 0, size: DASHBOARD_PREVIEW_LIMIT }),
+    [],
+  );
+  const applicationsState = useAsyncData(async () => {
+    const applications = await applicationService.listMine().catch(() => []);
+    return Array.isArray(applications) ? applications.map(mapApplication) : [];
+  }, [], { initialData: [] });
+  const prazosState = useAsyncData(async () => {
+    const prazos = await etapaService.listMine().catch(() => []);
     return {
-      projects: mappedProjects,
-      applications: mappedApplications,
       agenda: mapDeadlineAgenda(prazos),
       pendingSteps: mapPendingSteps(prazos),
       entregasAtrasadas: mapOverdueDeliveries(prazos),
-      conversations: Array.isArray(conversas) ? conversas : [],
-      evaluations,
-      progress,
     };
-  }, [userId], {
-    initialData: { projects: [], applications: [], agenda: [], entregasAtrasadas: [], conversations: [], evaluations: [], progress: null, pendingSteps: [] },
-  });
+  }, [], { initialData: { agenda: [], pendingSteps: [], entregasAtrasadas: [] } });
+  const conversationsState = useAsyncData(async () => {
+    const conversas = userId != null ? await conversationService.listByUser(userId).catch(() => []) : [];
+    return Array.isArray(conversas) ? conversas : [];
+  }, [userId], { initialData: [] });
+  const evaluationsState = useAsyncData(
+    () => (userId != null ? loadEvaluations(userId) : []),
+    [userId],
+    { initialData: [] },
+  );
+
+  const activeApplication = applicationsState.data.find(
+    (item) => item.status === "APROVADO" && item.project?.status !== "FINALIZADO",
+  );
+  const activeProjectId = activeApplication?.project?.id ?? activeApplication?.projectId ?? null;
+  const progressState = useAsyncData(
+    () => (activeProjectId != null ? progressService.getProgress(activeProjectId).catch(() => null) : null),
+    [activeProjectId],
+  );
+  const progressLoading = applicationsState.loading || progressState.loading;
 
   const derived = useMemo(() => {
-    const applications = data?.applications ?? [];
-    const progress = data?.progress ?? null;
+    const applications = applicationsState.data;
+    const progress = progressState.data;
     const steps = Array.isArray(progress?.steps) ? progress.steps : [];
     const doneSteps = steps.filter((step) => step.status === "DONE").length;
 
     return {
-      recentProjects: (data?.projects ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT),
       recentApplications: applications.slice(0, DASHBOARD_PREVIEW_LIMIT),
-      conversations: unreadConversations(data?.conversations, MESSAGES_PREVIEW_LIMIT),
-      agenda: data?.agenda ?? [],
-      pendingSteps: (data?.pendingSteps ?? []).slice(0, PENDING_STEPS_PREVIEW_LIMIT),
-      entregasAtrasadas: (data?.entregasAtrasadas ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT),
+      conversations: unreadConversations(conversationsState.data, MESSAGES_PREVIEW_LIMIT),
+      agenda: prazosState.data.agenda,
+      pendingSteps: prazosState.data.pendingSteps.slice(0, PENDING_STEPS_PREVIEW_LIMIT),
+      entregasAtrasadas: prazosState.data.entregasAtrasadas.slice(0, DASHBOARD_PREVIEW_LIMIT),
       latestNotification: notifications[0] ?? null,
       unreadNotifications: notifications.filter((item) => !item.read).length,
       progress: progress
         ? { total: steps.length, done: doneSteps, percent: progress.overallPercent ?? 0 }
         : null,
     };
-  }, [data, notifications]);
-
-  if (loading) return <DashboardSkeleton />;
+  }, [applicationsState.data, progressState.data, conversationsState.data, prazosState.data, notifications]);
 
   if (error) {
     return <StatusView title="Falha ao carregar" description={error.message} />;
@@ -251,7 +211,7 @@ export default function DashboardPage() {
         role="Estudante"
         institution={user?.instituicao}
         summary={<>
-          Você tem <strong>{derived.unreadNotifications} notificações</strong> pendentes e <strong>{derived.recentApplications.length} inscrições</strong> vinculadas ao seu perfil.
+          Você tem <strong>{notificationsLoading ? <Sk inline w="1.2em" h="0.9em" /> : derived.unreadNotifications} notificações</strong> pendentes e <strong>{applicationsState.loading ? <Sk inline w="1.2em" h="0.9em" /> : derived.recentApplications.length} inscrições</strong> vinculadas ao seu perfil.
         </>}
         secondaryAction={{ label: "Ver progresso", icon: TrendUp, onClick: () => navigate("/app/progress") }}
         primaryAction={{ label: "Buscar projetos", icon: MagnifyingGlass, onClick: () => navigate("/app/projects") }}
@@ -263,7 +223,7 @@ export default function DashboardPage() {
           tone="azul"
           title="Inscrições"
           caption="Inscrições enviadas por você"
-          value={derived.recentApplications.length}
+          value={applicationsState.loading ? <Sk w={48} h={36} /> : derived.recentApplications.length}
           onOpen={() => navigate("/app/applications")}
         />
 
@@ -273,7 +233,9 @@ export default function DashboardPage() {
           title="Notificações recentes"
           onOpen={() => navigate("/app/notifications")}
         >
-          {derived.latestNotification ? (
+          {notificationsLoading ? (
+            <SkLines rows={2} h={18} />
+          ) : derived.latestNotification ? (
             <div>
               <p className="dash-notif__grupo">{notificationGroup(derived.latestNotification.createdAt)}</p>
               <p className="dash-notif__titulo">{derived.latestNotification.title}</p>
@@ -292,7 +254,7 @@ export default function DashboardPage() {
           title="Etapas pendentes"
           onOpen={() => navigate("/app/progress")}
         >
-          <DashPendentes items={derived.pendingSteps} />
+          {prazosState.loading ? <SkLines rows={2} h={24} /> : <DashPendentes items={derived.pendingSteps} />}
         </DashCard>
       </div>
 
@@ -305,7 +267,9 @@ export default function DashboardPage() {
             caption="Resumo das suas inscrições"
             onOpen={() => navigate("/app/applications")}
           >
-            {derived.recentApplications.length === 0 ? (
+            {applicationsState.loading ? (
+              <SkLines rows={3} />
+            ) : derived.recentApplications.length === 0 ? (
               <DashEmpty>Quando você se candidatar a projetos, elas aparecerão aqui.</DashEmpty>
             ) : (
               derived.recentApplications.map((application) => {
@@ -333,7 +297,9 @@ export default function DashboardPage() {
               title="Progresso"
               onOpen={() => navigate("/app/progress")}
             >
-              {derived.progress ? (
+              {progressLoading ? (
+                <SkLines rows={2} h={20} />
+              ) : derived.progress ? (
                 <DashProgress
                   status="Em andamento"
                   statusTone="verde"
@@ -353,7 +319,9 @@ export default function DashboardPage() {
               title="Entregas atrasadas"
               onOpen={() => navigate("/app/progress")}
             >
-              {derived.entregasAtrasadas.length === 0 ? (
+              {prazosState.loading ? (
+                <SkLines rows={2} />
+              ) : derived.entregasAtrasadas.length === 0 ? (
                 <DashEmpty>Nenhuma entrega atrasada.</DashEmpty>
               ) : (
                 derived.entregasAtrasadas.map((item, index) => (
@@ -376,7 +344,11 @@ export default function DashboardPage() {
             onOpen={() => navigate("/app/avaliacoes")}
             className="dash-card--igual"
           >
-            <DashEvaluations items={data?.evaluations ?? []} onOpen={() => navigate("/app/avaliacoes")} />
+            {evaluationsState.loading ? (
+              <SkLines rows={2} h={40} />
+            ) : (
+              <DashEvaluations items={evaluationsState.data} onOpen={() => navigate("/app/avaliacoes")} />
+            )}
           </DashCard>
         </div>
 
@@ -392,11 +364,15 @@ export default function DashboardPage() {
             className="dash-card--sombra dash-card--calendario"
           >
             <div className="dash-agenda-lista">
-              <DashAgenda
-                items={derived.agenda.slice(0, CALENDAR_PREVIEW_LIMIT + 1)}
-                emptyLabel="Nenhum prazo próximo cadastrado."
-              />
-              {derived.agenda.length > CALENDAR_PREVIEW_LIMIT && (
+              {prazosState.loading ? (
+                <SkLines rows={CALENDAR_PREVIEW_LIMIT} h={40} />
+              ) : (
+                <DashAgenda
+                  items={derived.agenda.slice(0, CALENDAR_PREVIEW_LIMIT + 1)}
+                  emptyLabel="Nenhum prazo próximo cadastrado."
+                />
+              )}
+              {!prazosState.loading && derived.agenda.length > CALENDAR_PREVIEW_LIMIT && (
                 <button type="button" className="dash-agenda-vermais" onClick={() => navigate("/app/deadlines")}>
                   Ver mais
                 </button>
@@ -412,7 +388,9 @@ export default function DashboardPage() {
             onOpen={() => navigate("/app/chat")}
             className="dash-card--preencher"
           >
-            {derived.conversations.length === 0 ? (
+            {conversationsState.loading ? (
+              <SkLines rows={MESSAGES_PREVIEW_LIMIT} h={40} />
+            ) : derived.conversations.length === 0 ? (
               <DashEmpty>Nenhuma mensagem não lida.</DashEmpty>
             ) : (
               derived.conversations.map((conversa) => (

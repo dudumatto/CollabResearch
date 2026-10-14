@@ -110,9 +110,7 @@ export function LumenAnalysisProvider({ children }) {
       <LumenLoadingModal
         open={rodando && modalAberto}
         onClose={() => setModalAberto(false)}
-        message={tipo === "recomendacao"
-          ? "A Lumen está comparando seu perfil com os projetos abertos. Você será avisado quando o processo for concluído."
-          : "O Lumen está analisando as candidaturas. Você será avisado quando o processo for concluído."}
+        tipo={tipo}
       />
     </LumenAnalysisContext.Provider>
   );

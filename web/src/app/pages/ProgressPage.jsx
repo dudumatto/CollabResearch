@@ -10,6 +10,7 @@ import { progressService } from "../services/progressService";
 import { mapProject } from "../utils/adapters";
 import { formatDate, formatProjectStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { Sk } from "../components/Skeleton";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import { ProgressDonut } from "../components/progress/ProgressDonut";
@@ -22,10 +23,6 @@ import { UpdateForm } from "../components/progress/UpdateForm";
 import { UpdateFormModal } from "../components/progress/UpdateFormModal";
 import { UpdateFeed } from "../components/progress/UpdateFeed";
 import "./ProgressPage.css";
-
-const Sk = ({ w = "100%", h = 14, r = "0.5rem", style }) => (
-  <div className="skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />
-);
 
 function projectStatusClass(status) {
   if (status === "FINALIZADO") return "progress-page__status-chip--finalizado";
@@ -52,125 +49,31 @@ function sortStepsByNearestDeadline(steps = []) {
   });
 }
 
-function UpdatesPanelSkeleton() {
+// Só o feed depende da API; título e ações do painel são estáticos.
+function UpdateFeedSkeleton() {
   return (
-    <>
-      <div className="progress-page__collapsed-form progress-page__collapsed-form--skeleton" aria-hidden="true">
-        <Sk w="58%" h={15} style={{ maxWidth: 320 }} />
-        <Sk w="82%" h={13} style={{ maxWidth: 520, marginTop: 12 }} />
-      </div>
-
-      <div className="progress-page__updates" aria-busy="true" aria-label="Carregando atualizações">
-        <h3>Atualizações recentes</h3>
-        <div className="update-feed update-feed--skeleton">
-          {[0, 1, 2].map((item) => (
-            <article key={item} className="update-feed__item update-feed__item--skeleton">
-              <div className="update-feed__header">
-                <div className="update-feed__author">
-                  <Sk w={36} h={36} r="50%" />
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <Sk w="46%" h={14} style={{ maxWidth: 170 }} />
-                    <Sk w="32%" h={11} style={{ maxWidth: 120, marginTop: 8 }} />
-                  </div>
-                </div>
-                <Sk w={92} h={26} r={999} />
+    <div className="update-feed update-feed--skeleton" aria-busy="true" aria-label="Carregando atualizações">
+      {[0, 1, 2].map((item) => (
+        <article key={item} className="update-feed__item update-feed__item--skeleton">
+          <div className="update-feed__header">
+            <div className="update-feed__author">
+              <Sk w={36} h={36} r="50%" />
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <Sk w="46%" h={14} style={{ maxWidth: 170 }} />
+                <Sk w="32%" h={11} style={{ maxWidth: 120, marginTop: 8 }} />
               </div>
-              <Sk w="68%" h={18} style={{ maxWidth: 360, marginTop: 18 }} />
-              <Sk w="100%" h={12} style={{ maxWidth: 560, marginTop: 12 }} />
-              <Sk w="76%" h={12} style={{ maxWidth: 430, marginTop: 8 }} />
-              <div className="update-feed__meta">
-                <Sk w={130} h={13} />
-                <Sk w={116} h={13} />
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-}
-function ProgressSkeleton() {
-  return (
-    <div className="progress-page">
-      <header className="progress-page__hero">
-        <div className="progress-page__hero-copy">
-          <Sk w={190} h={28} r={999} style={{ maxWidth: "55%" }} />
-          <Sk w={340} h={38} r={12} style={{ maxWidth: "80%", marginTop: 14 }} />
-          <Sk w="100%" h={14} r={999} style={{ maxWidth: 620, marginTop: 16 }} />
-          <Sk w="72%" h={14} r={999} style={{ maxWidth: 460, marginTop: 8 }} />
-        </div>
-        <div className="progress-page__project-picker">
-          <Sk w={72} h={13} />
-          <Sk w="100%" h={48} r={16} />
-        </div>
-      </header>
-
-      <section className="progress-page__overview">
-        <div className="progress-page__panel progress-page__panel--summary">
-          <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <Sk w={180} h={180} r="50%" style={{ marginBottom: 18 }} />
-            <Sk w="58%" h={16} style={{ maxWidth: 150, marginBottom: 10 }} />
-            <Sk w="42%" h={12} style={{ maxWidth: 120 }} />
-          </div>
-        </div>
-
-        <div className="progress-page__panel progress-page__panel--stats">
-          <div className="progress-page__panel-title-row">
-            <div style={{ flex: 1 }}>
-              <Sk w="45%" h={22} style={{ maxWidth: 260 }} />
-              <Sk w="34%" h={13} style={{ maxWidth: 190, marginTop: 10 }} />
             </div>
-            <Sk w={92} h={30} r={999} />
+            <Sk w={92} h={26} r={999} />
           </div>
-
-          <div className="progress-page__stats-grid progress-page__stats-grid--tres">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div key={item} className="progress-stat">
-                <Sk w={18} h={18} r={999} />
-                <Sk w="70%" h={14} />
-                <Sk w="45%" h={18} />
-              </div>
-            ))}
+          <Sk w="68%" h={18} style={{ maxWidth: 360, marginTop: 18 }} />
+          <Sk w="100%" h={12} style={{ maxWidth: 560, marginTop: 12 }} />
+          <Sk w="76%" h={12} style={{ maxWidth: 430, marginTop: 8 }} />
+          <div className="update-feed__meta">
+            <Sk w={130} h={13} />
+            <Sk w={116} h={13} />
           </div>
-
-          <div className="progress-page__summary-line">
-            <Sk w={120} h={14} />
-            <Sk w={150} h={15} />
-          </div>
-        </div>
-      </section>
-
-      <section className="progress-page__grid">
-        <div className="progress-page__panel">
-          <div className="progress-page__panel-header">
-            <div style={{ flex: 1 }}>
-              <Sk w={96} h={20} />
-              <Sk w="70%" h={13} style={{ maxWidth: 380, marginTop: 10 }} />
-            </div>
-            <Sk w={126} h={30} r={999} />
-          </div>
-
-          <div style={{ display: "grid", gap: 14, marginTop: 20 }}>
-            {[1, 2, 3].map((item) => (
-              <Sk key={item} h={96} r="22px" />
-            ))}
-          </div>
-        </div>
-
-        <div className="progress-page__panel">
-          <div className="progress-page__panel-header">
-            <div style={{ flex: 1 }}>
-              <Sk w={155} h={20} />
-              <Sk w="78%" h={13} style={{ maxWidth: 360, marginTop: 10 }} />
-            </div>
-            <Sk w={156} h={40} r={14} />
-          </div>
-
-          <div className="progress-page__collapsed-form">
-            <Sk w="80%" h={14} style={{ maxWidth: 480 }} />
-          </div>
-        </div>
-      </section>
+        </article>
+      ))}
     </div>
   );
 }
@@ -422,9 +325,11 @@ export default function ProgressPage() {
   const overallPercent = resumo?.percentualGeral ?? 0;
   const atualizacoesTotal = Math.max(resumo?.atualizacoesTotal ?? 0, updates.length);
 
-  if (loading || ((progressLoading || marcosLoading) && !hasProgressContent)) {
-    return <ProgressSkeleton />;
-  }
+  // Cada bloco carrega de forma independente: textos fixos aparecem na hora e
+  // só os dados ainda pendentes mostram skeleton.
+  const resumoPendente = loading || (marcosLoading && !hasProgressContent);
+  const marcosPendentes = loading || marcosLoading;
+  const updatesPendentes = loading || (progressLoading && updates.length === 0);
 
   if (error) {
     return <StatusView title="Falha ao carregar progresso" description={error.message} />;
@@ -434,7 +339,7 @@ export default function ProgressPage() {
     return <StatusView title="Falha ao carregar progresso" description={progressError.message} />;
   }
 
-  if (!selectedProject) {
+  if (!loading && !selectedProject) {
     return (
       <div className="progress-page">
         <div className="progress-page__empty">
@@ -460,6 +365,7 @@ export default function ProgressPage() {
         <div className="progress-page__project-picker">
           <span>Projeto</span>
           <div className="progress-page__project-picker-control">
+            {loading ? <Sk h={48} r={16} /> : (
             <AppCombobox
               ariaLabel="Selecionar projeto"
               className="app-combobox--progress"
@@ -467,6 +373,7 @@ export default function ProgressPage() {
               onChange={setSelectedProjectId}
               options={projects.map((project) => ({ value: project.id, label: project.title }))}
             />
+            )}
           </div>
         </div>
 
@@ -474,59 +381,71 @@ export default function ProgressPage() {
 
       <section className="progress-page__overview">
         <div className="progress-page__panel progress-page__panel--summary">
-          <ProgressDonut
-            percent={overallPercent}
-            subtitle={`${resumo ? `${resumo.itensConcluidos} de ${resumo.itensTotal} itens · ` : ""}${atualizacoesTotal} ${atualizacoesTotal === 1 ? "atualização registrada" : "atualizações registradas"}`}
-          />
+          {resumoPendente ? (
+            <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }} aria-busy="true" aria-label="Carregando resumo">
+              <Sk w={180} h={180} r="50%" style={{ marginBottom: 18 }} />
+              <Sk w="58%" h={16} style={{ maxWidth: 150, marginBottom: 10 }} />
+              <Sk w="42%" h={12} style={{ maxWidth: 120 }} />
+            </div>
+          ) : (
+            <ProgressDonut
+              percent={overallPercent}
+              subtitle={`${resumo ? `${resumo.itensConcluidos} de ${resumo.itensTotal} itens · ` : ""}${atualizacoesTotal} ${atualizacoesTotal === 1 ? "atualização registrada" : "atualizações registradas"}`}
+            />
+          )}
         </div>
 
         <div className="progress-page__panel progress-page__panel--stats">
           <div className="progress-page__panel-title-row">
             <div>
-              <h2>{selectedProject.title}</h2>
-              <p>Orientador: {selectedProject.advisor?.name ?? "Sem orientador"}</p>
+              <h2>{loading ? <Sk w={260} h={22} style={{ maxWidth: "100%" }} /> : selectedProject.title}</h2>
+              <p>Orientador: {loading ? <Sk inline w={140} h={13} /> : selectedProject.advisor?.name ?? "Sem orientador"}</p>
             </div>
-            <span className={`progress-page__status-chip ${projectStatusClass(selectedProject.status)}`}>
-              {formatProjectStatus(selectedProject.status)}
-            </span>
+            {loading ? (
+              <Sk w={92} h={30} r={999} />
+            ) : (
+              <span className={`progress-page__status-chip ${projectStatusClass(selectedProject.status)}`}>
+                {formatProjectStatus(selectedProject.status)}
+              </span>
+            )}
           </div>
 
           <div className="progress-page__stats-grid progress-page__stats-grid--tres">
             <div className="progress-stat">
               <CheckSquare size={16} />
               <span>Itens concluídos</span>
-              <strong>{resumo ? `${resumo.itensConcluidos} de ${resumo.itensTotal}` : "-"}</strong>
+              <strong>{resumoPendente ? <Sk w="45%" h={18} /> : resumo ? `${resumo.itensConcluidos} de ${resumo.itensTotal}` : "-"}</strong>
             </div>
             <div className="progress-stat">
               <Flag size={16} />
               <span>Marcos aprovados</span>
-              <strong>{resumo ? `${resumo.marcosConcluidos} de ${resumo.marcosTotal}` : "-"}</strong>
+              <strong>{resumoPendente ? <Sk w="45%" h={18} /> : resumo ? `${resumo.marcosConcluidos} de ${resumo.marcosTotal}` : "-"}</strong>
             </div>
             <div className="progress-stat">
               <Hourglass size={16} />
               <span>Em revisão</span>
-              <strong>{resumo?.marcosEmRevisao ?? "-"}</strong>
+              <strong>{resumoPendente ? <Sk w="45%" h={18} /> : resumo?.marcosEmRevisao ?? "-"}</strong>
             </div>
             <div className={`progress-stat${resumo?.marcosComAtencao > 0 ? " progress-stat--alerta" : ""}`}>
               <WarningCircle size={16} />
               <span>Precisam de atenção</span>
-              <strong>{resumo?.marcosComAtencao ?? "-"}</strong>
+              <strong>{resumoPendente ? <Sk w="45%" h={18} /> : resumo?.marcosComAtencao ?? "-"}</strong>
             </div>
             <div className="progress-stat">
               <CalendarBlank size={16} />
               <span>Criado em</span>
-              <strong>{formatDate(selectedProject.createdAt)}</strong>
+              <strong>{loading ? <Sk w="45%" h={18} /> : formatDate(selectedProject.createdAt)}</strong>
             </div>
             <div className="progress-stat">
               <Users size={16} />
               <span>Colaboradores</span>
-              <strong>{acceptedCollaborators.length + 1}</strong>
+              <strong>{loading ? <Sk w="45%" h={18} /> : acceptedCollaborators.length + 1}</strong>
             </div>
           </div>
 
           <div className="progress-page__summary-line">
             <span>Responsável:</span>
-            <strong>{advisorName}</strong>
+            <strong>{loading ? <Sk inline w={150} h={15} /> : advisorName}</strong>
           </div>
         </div>
       </section>
@@ -542,7 +461,7 @@ export default function ProgressPage() {
           {steps.length > 0 ? (
             <FiltrosMarco valor={filtroMarcos} onChange={setFiltroMarcos} contagens={contagemFiltros} />
           ) : null}
-          {marcosLoading ? (
+          {marcosPendentes ? (
             <div className="stepper-vertical" aria-busy="true" aria-label="Carregando marcos">
               {[1, 2, 3].map((item) => <Sk key={item} h={96} r="22px" />)}
             </div>
@@ -575,7 +494,7 @@ export default function ProgressPage() {
               <h2>Atualizações</h2>
               <p>{isProjectFinished ? "Projeto finalizado. As etapas ficam disponíveis apenas para consulta." : "Relato narrativo do andamento. Publicar uma atualização não conclui nem reabre tarefas: para isso, use o checklist do marco."}</p>
             </div>
-            {!isProjectFinished && (
+            {!loading && !isProjectFinished && (
               <button
                 type="button"
                 className="progress-page__toggle-form"
@@ -603,12 +522,16 @@ export default function ProgressPage() {
 
           <div className="progress-page__updates">
             <h3>Atualizações recentes</h3>
-            <UpdateFeed
-              updates={updates}
-              currentUserId={user?.id}
-              onEdit={handleEditUpdate}
-              onDelete={handleDeleteUpdate}
-            />
+            {updatesPendentes ? (
+              <UpdateFeedSkeleton />
+            ) : (
+              <UpdateFeed
+                updates={updates}
+                currentUserId={user?.id}
+                onEdit={handleEditUpdate}
+                onDelete={handleDeleteUpdate}
+              />
+            )}
           </div>
         </div>
       </section>

@@ -64,8 +64,9 @@ function DeliveryVersionsSkeleton({ linhas = 2 }) {
   );
 }
 
-function AdvisorDeliverySkeleton({ linhas = 4, includeShell = false }) {
-  const cards = (
+// Só a lista depende da API; título, filtros e abas são estáticos.
+function AdvisorDeliverySkeleton({ linhas = 4 }) {
+  return (
     <div className="advisor-lista advisor-lista--skeleton" aria-busy="true" aria-label="Carregando entregas">
       {Array.from({ length: linhas }).map((_, index) => (
         <article key={index} className="advisor-entrega advisor-entrega--skeleton">
@@ -86,31 +87,6 @@ function AdvisorDeliverySkeleton({ linhas = 4, includeShell = false }) {
           {index === 0 && <DeliveryVersionsSkeleton linhas={2} />}
         </article>
       ))}
-    </div>
-  );
-
-  if (!includeShell) {
-    return cards;
-  }
-
-  return (
-    <div className="advisor-pagina advisor-pagina--skeleton" aria-busy="true" aria-label="Carregando pagina de entregas">
-      <section className="advisor-hero advisor-hero--sem-sombra advisor-hero--skeleton">
-        <SkeletonBlock className="advisor-skeleton__hero-title" />
-        <SkeletonBlock className="advisor-skeleton__hero-text" />
-      </section>
-
-      <div className="advisor-toolbar advisor-toolbar--skeleton">
-        <SkeletonBlock className="advisor-skeleton__control" />
-      </div>
-
-      <div className="advisor-abas advisor-abas--skeleton">
-        {FILTROS.map((filtro) => (
-          <SkeletonBlock key={filtro.key} className="advisor-skeleton__tab" />
-        ))}
-      </div>
-
-      {cards}
     </div>
   );
 }
@@ -275,15 +251,13 @@ export default function AdvisorDeliveriesPage() {
     }
   };
 
-  if (loadingProjetos) return <AdvisorDeliverySkeleton includeShell />;
-
-  if (normErroProjetos && listaEntregas.length === 0) {
+  if (!loadingProjetos && normErroProjetos && listaEntregas.length === 0) {
     return <StatusView title="Falha ao carregar projetos" description={getErrorMessage(normErroProjetos)} />;
   }
 
-  if (!entregasAtualizadas || loadingEntregas) return <AdvisorDeliverySkeleton includeShell />;
+  const carregandoEntregas = loadingProjetos || !entregasAtualizadas || loadingEntregas;
 
-  if (!loadingEntregas && !normErroEntregas && todosProjetos.length === 0 && listaEntregas.length === 0) {
+  if (!carregandoEntregas && !normErroEntregas && todosProjetos.length === 0 && listaEntregas.length === 0) {
     return (
       <div className="advisor-pagina">
         <div className="advisor-estado-vazio">
@@ -316,6 +290,9 @@ export default function AdvisorDeliveriesPage() {
       </div>
 
       <div className="advisor-toolbar">
+        {loadingProjetos ? (
+          <SkeletonBlock className="advisor-skeleton__control" />
+        ) : (
         <div className="advisor-busca advisor-busca--projeto">
           <FolderOpen size={16} className="advisor-busca__icone" />
           <AppCombobox
@@ -329,6 +306,7 @@ export default function AdvisorDeliveriesPage() {
             ]}
           />
         </div>
+        )}
       </div>
 
       <div className="advisor-abas" role="tablist" aria-label="Filtro de entregas">
@@ -346,13 +324,13 @@ export default function AdvisorDeliveriesPage() {
         ))}
       </div>
 
-      {loadingEntregas && <AdvisorDeliverySkeleton linhas={4} />}
+      {carregandoEntregas && <AdvisorDeliverySkeleton linhas={4} />}
 
-      {!loadingEntregas && normErroEntregas && (
+      {!carregandoEntregas && normErroEntregas && (
         <StatusView title="Falha ao carregar entregas" description={getErrorMessage(normErroEntregas)} />
       )}
 
-      {!loadingEntregas && !normErroEntregas && filtradas.length === 0 && (
+      {!carregandoEntregas && !normErroEntregas && filtradas.length === 0 && (
         <div className="advisor-estado-vazio">
           <div className="advisor-estado-vazio__icone">
             <FileArchive size={22} />
@@ -364,7 +342,7 @@ export default function AdvisorDeliveriesPage() {
         </div>
       )}
 
-      {!loadingEntregas && !normErroEntregas && filtradas.length > 0 && (
+      {!carregandoEntregas && !normErroEntregas && filtradas.length > 0 && (
         <div className="advisor-lista">
           {filtradas.map((entrega, index) => {
             const expandida = expandedIds.has(entrega.id);

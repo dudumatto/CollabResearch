@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { Tray, Check, X, FileText, CaretRight, User, Sparkle, Warning } from "@phosphor-icons/react";
 import { toast } from "sonner";
-import { Tooltip } from "antd";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { applicationService } from "../services/applicationService";
@@ -14,7 +13,9 @@ import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import { LumenAIButton } from "../components/ui/LumenAIButton";
+import { LumenTooltip } from "../components/ui/LumenTooltip";
 import { useLumenAnalysis } from "../providers/LumenAnalysisProvider";
+import { Sk } from "../components/Skeleton";
 import "./AdvisorWorkspace.css";
 
 const FILTROS = [
@@ -59,6 +60,43 @@ function corPontuacao(pontuacao) {
   if (pontuacao >= 7) return "advisor-etiqueta--verde";
   if (pontuacao >= 4) return "advisor-etiqueta--amarelo";
   return "advisor-etiqueta--vermelho";
+}
+
+const CONFIANCA_ROTULO = { alto: "Confiança alta", medio: "Confiança média", baixo: "Confiança baixa" };
+
+function ListaLumen({ titulo, itens }) {
+  if (!itens?.length) return null;
+  return (
+    <div>
+      <strong className="advisor-lumen__subtitulo-lista">{titulo}</strong>
+      <ul className="advisor-lumen__lista-itens">
+        {itens.map((item, i) => <li key={i}>{item}</li>)}
+      </ul>
+    </div>
+  );
+}
+
+function DetalhesLumen({ avaliacao }) {
+  return (
+    <div className="advisor-lumen__detalhes">
+      <span className="advisor-etiqueta advisor-etiqueta--cinza">
+        {CONFIANCA_ROTULO[avaliacao.confianca] ?? CONFIANCA_ROTULO.medio}
+      </span>
+      <ul className="advisor-lumen__criterios">
+        {avaliacao.criterios?.map((c) => (
+          <li key={c.chave}>
+            <div className="advisor-lumen__criterio-topo">
+              <span>{c.nome} <small>({c.peso}%)</small></span>
+              <strong>{c.nota != null ? `${c.nota}/10` : "sem dados"}</strong>
+            </div>
+            {c.justificativa && <p className="advisor-lumen__texto">{c.justificativa}</p>}
+          </li>
+        ))}
+      </ul>
+      <ListaLumen titulo="Pontos fortes" itens={avaliacao.pontosFortes} />
+      <ListaLumen titulo="Pontos de atenção" itens={avaliacao.pontosAtencao} />
+    </div>
+  );
 }
 
 function SkeletonLinha({ linhas = 5 }) {
@@ -152,8 +190,9 @@ export default function AdvisorApplicationsPage() {
         mapa.set(app.id, {
           inscricaoId: app.id,
           nomeAluno: app.alunoNome,
-          pontuacao: app.lumenPontuacao,
+          pontuacao: app.lumenAvaliacao?.notaFinal ?? app.lumenPontuacao,
           justificativa: app.lumenJustificativa,
+          avaliacao: app.lumenAvaliacao,
         });
       }
     });
@@ -203,7 +242,12 @@ export default function AdvisorApplicationsPage() {
     const novas = new Map(conclusao.ranking.map((c) => [c.inscricaoId, c]));
     setData((prev) => (Array.isArray(prev)
       ? prev.map((app) => (novas.has(app.id)
-        ? { ...app, lumenPontuacao: novas.get(app.id).pontuacao, lumenJustificativa: novas.get(app.id).justificativa }
+        ? {
+          ...app,
+          lumenPontuacao: novas.get(app.id).pontuacao,
+          lumenJustificativa: novas.get(app.id).justificativa,
+          lumenAvaliacao: novas.get(app.id).avaliacao ?? null,
+        }
         : app))
       : prev));
   }, [conclusao, setData]);
@@ -308,7 +352,7 @@ export default function AdvisorApplicationsPage() {
             }}
             className={`advisor-abas__botao ${filtro === item.key ? "advisor-abas__botao--ativo" : ""}`}
           >
-            {item.rotulo} ({counts[item.key] ?? 0})
+            {item.rotulo} ({loading ? <Sk inline w={12} h={12} /> : counts[item.key] ?? 0})
           </button>
         ))}
       </div>
@@ -329,7 +373,7 @@ export default function AdvisorApplicationsPage() {
           />
 
           {mostrarBotaoLumen && !selecionando && (
-            <Tooltip title={LUMEN_TOOLTIP} placement="top" styles={{ root: { maxWidth: 340 } }}>
+            <LumenTooltip title={LUMEN_TOOLTIP} placement="top">
               <span style={{ display: "inline-flex" }}>
                 <LumenAIButton onClick={() => analisarComLumen()} disabled={lumenLoading}>
                   {lumenLoading
@@ -337,7 +381,7 @@ export default function AdvisorApplicationsPage() {
                     : filtradas.some((app) => rankingMap.has(app.id)) ? "Avaliar novos com Lumen" : "Analisar com Lumen"}
                 </LumenAIButton>
               </span>
-            </Tooltip>
+            </LumenTooltip>
           )}
 
           {mostrarBotaoLumen && (
@@ -640,6 +684,7 @@ export default function AdvisorApplicationsPage() {
                         <span className={`advisor-etiqueta ${corPontuacao(c.pontuacao)}`}>{c.pontuacao}/10</span>
                       </div>
                       <p className="advisor-lumen__texto">{c.justificativa}</p>
+                      {c.avaliacao && <DetalhesLumen avaliacao={c.avaliacao} />}
                     </div>
                   ))}
                 </div>

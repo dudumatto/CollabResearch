@@ -5,78 +5,26 @@ import { etapaService } from "../services/etapaService";
 import { mapEtapa } from "../utils/adapters";
 import { formatEtapaResponsavel, formatEtapaStatus } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { Sk } from "../components/Skeleton";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
 
 const ALL_PROJECTS_VALUE = "Todos";
 
-const Sk = ({ w = "100%", h = 14, r = "0.5rem", style }) => (
-  <div className="skeleton" style={{ width: w, height: h, borderRadius: r, ...style }} />
-);
-
-function CalendarSkeleton() {
+// Grade, meses e títulos são estáticos; só as listas de etapas aguardam a API.
+function DeadlineListSkeleton({ compact = false }) {
   return (
-    <div className="calendario-pagina" aria-busy="true" aria-label="Carregando calendário">
-      <header className="calendario-cabecalho">
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <Sk w={150} h={13} r={999} />
-          <Sk w="52%" h={30} r={10} style={{ maxWidth: 340, marginTop: 12 }} />
-          <Sk w="76%" h={14} r={999} style={{ maxWidth: 560, marginTop: 14 }} />
-        </div>
-        <div className="calendario-cabecalho__filtro calendario-cabecalho__filtro--skeleton">
-          <Sk w={64} h={12} r={999} />
-          <Sk w="100%" h={42} r="var(--raio-medio)" style={{ marginTop: 8 }} />
-        </div>
-        <div className="calendario-cabecalho__resumo">
-          <Sk w={44} h={32} r={10} style={{ margin: "0 auto" }} />
-          <Sk w={118} h={12} r={999} style={{ marginTop: 8 }} />
-        </div>
-      </header>
-
-      <div className="calendario-layout">
-        <section className="calendario-card calendario-card--principal">
-          <div className="calendario-card__topo">
-            <Sk w={36} h={36} r="50%" />
-            <Sk w={190} h={24} r={999} />
-            <Sk w={36} h={36} r="50%" />
+    <div className="calendario-lista calendario-lista--rolagem" aria-busy="true" aria-label="Carregando prazos">
+      {[0, 1, 2].map((item) => (
+        <article key={item} className="calendario-prazo">
+          <Sk w={36} h={36} r="50%" />
+          <div className="calendario-prazo__conteudo">
+            <Sk w="72%" h={15} r={999} />
+            <Sk w="54%" h={12} r={999} style={{ marginTop: 8 }} />
+            {!compact && <Sk w="88%" h={12} r={999} style={{ marginTop: 10 }} />}
           </div>
-
-          <div className="calendario-grade calendario-grade--semana">
-            {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => <span key={day}>{day}</span>)}
-          </div>
-          <div className="calendario-grade">
-            {Array.from({ length: 42 }).map((_, index) => (
-              <div key={index} className={`calendario-dia ${index < 3 || index > 35 ? "calendario-dia--fora" : ""}`}>
-                <Sk w={24} h={14} r={999} />
-                <div className="calendario-dia__eventos">
-                  {[6, 12, 19, 27, 33].includes(index) && <Sk w="74%" h={16} r={999} />}
-                  {[19, 27].includes(index) && <Sk w="52%" h={16} r={999} />}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <aside className="calendario-lateral">
-          {[0, 1].map((section) => (
-            <section key={section} className={`calendario-card calendario-card--lateral ${section === 1 ? "calendario-card--alerta" : ""}`}>
-              <Sk w={section === 0 ? 96 : 148} h={20} r={999} />
-              <div className="calendario-lista calendario-lista--rolagem">
-                {[0, 1, 2].map((item) => (
-                  <article key={item} className="calendario-prazo">
-                    <Sk w={36} h={36} r="50%" />
-                    <div className="calendario-prazo__conteudo">
-                      <Sk w="72%" h={15} r={999} />
-                      <Sk w="54%" h={12} r={999} style={{ marginTop: 8 }} />
-                      {section === 0 && <Sk w="88%" h={12} r={999} style={{ marginTop: 10 }} />}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-          ))}
-        </aside>
-      </div>
+        </article>
+      ))}
     </div>
   );
 }
@@ -313,7 +261,6 @@ export default function StudentDeadlinesPage() {
         : { ...current, [key]: placement }
     ));
   };
-  if (loading) return <CalendarSkeleton />;
   if (error) return <StatusView title="Falha ao carregar calendário" description="Não foi possível carregar as etapas dos seus projetos." />;
 
   return (
@@ -329,6 +276,9 @@ export default function StudentDeadlinesPage() {
         <div className="calendario-cabecalho__acoes">
           <div className="calendario-cabecalho__filtro">
             <span>Projeto</span>
+            {loading ? (
+              <Sk w="100%" h={42} r="var(--raio-medio)" style={{ marginTop: 8 }} />
+            ) : (
             <AppCombobox
               ariaLabel="Filtrar calendário por projeto"
               className="calendario-projeto-select"
@@ -340,15 +290,16 @@ export default function StudentDeadlinesPage() {
               }}
               options={projectFilterOptions}
             />
+            )}
           </div>
           <div className="calendario-cabecalho__resumo">
-            <strong>{scheduled.length}</strong>
+            <strong>{loading ? <Sk w={44} h={32} r={10} style={{ margin: "0 auto" }} /> : scheduled.length}</strong>
             <span>itens no calendário</span>
           </div>
         </div>
       </header>
 
-      {scheduled.length === 0 && withoutDate.length === 0 ? (
+      {!loading && scheduled.length === 0 && withoutDate.length === 0 ? (
         <div className="advisor-estado-vazio">
           <div className="advisor-estado-vazio__icone"><ClipboardText size={24} /></div>
           <h2 className="advisor-estado-vazio__titulo">Nenhum prazo cadastrado</h2>
@@ -460,7 +411,9 @@ export default function StudentDeadlinesPage() {
           <aside className="calendario-lateral">
             <section className="calendario-card calendario-card--lateral">
               <h2 className="calendario-card__titulo">Este mês</h2>
-              {monthItems.length === 0 ? (
+              {loading ? (
+                <DeadlineListSkeleton />
+              ) : monthItems.length === 0 ? (
                 <p className="calendario-vazio">Nenhuma entrega neste mês.</p>
               ) : (
                 <div className="calendario-lista calendario-lista--rolagem">
@@ -474,7 +427,9 @@ export default function StudentDeadlinesPage() {
                 <WarningCircle size={17} />
                 <h2>Etapas sem data</h2>
               </div>
-              {withoutDate.length === 0 ? (
+              {loading ? (
+                <DeadlineListSkeleton compact />
+              ) : withoutDate.length === 0 ? (
                 <p className="calendario-vazio">Nenhuma etapa sem data.</p>
                 ) : (
                 <div className="calendario-lista calendario-lista--rolagem">

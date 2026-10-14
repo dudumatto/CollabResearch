@@ -6,6 +6,7 @@ import { useNotifications } from "../providers/NotificationsProvider";
 import { notificationService } from "../services/notificationService";
 import { formatNotificationType } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
+import { Sk } from "../components/Skeleton";
 import "./NotificationsPage.css";
 
 const typeConfig = {
@@ -28,48 +29,26 @@ function storeHiddenNotificationIds(ids) {
   window.sessionStorage.setItem("collabresearch:hidden-notifications", JSON.stringify(ids));
 }
 
-function NotificationsSkeleton() {
-  const Sk = ({ w = "100%", h = 14, r = "0.5rem", className = "", style }) => (
-    <div className={`skeleton ${className}`.trim()} style={{ width: w, height: h, borderRadius: r, ...style }} />
-  );
-
+// Só contagens e lista dependem da API; ações e estrutura são estáticas.
+function NotificationsListSkeleton() {
   return (
-    <div className="pagina-notificacoes pagina-notificacoes--skeleton" aria-busy="true" aria-label="Carregando notificacoes">
-      <div className="pagina-notificacoes__acoes">
-        <div className="pagina-notificacoes__contagem">
-          <Sk w={20} h={20} r="50%" />
-          <Sk w={160} h={15} />
-        </div>
-        <div className="pagina-notificacoes__botoes-acao">
-          <Sk className="pagina-notificacoes__botao-skeleton" w={170} h={38} r="var(--raio-medio)" />
-          <Sk className="pagina-notificacoes__botao-skeleton" w={142} h={38} r="var(--raio-medio)" />
-        </div>
-      </div>
-
-      <div className="pagina-notificacoes__filtros-tipo">
-        {[112, 142, 126].map((width, i) => (
-          <Sk key={i} className="pagina-notificacoes__chip-skeleton" w={width} h={38} r="var(--raio-medio)" />
-        ))}
-      </div>
-
-      <div className="pagina-notificacoes__lista">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="notificacao-item notificacao-item--skeleton">
-            <Sk className="notificacao-item__icone-area" w={40} h={40} r="var(--raio-grande)" />
-            <div className="notificacao-item__conteudo">
-              <div className="notificacao-item__linha-topo">
-                <Sk w={i % 2 === 0 ? "48%" : "58%"} h={15} />
-                <Sk w={70} h={12} />
-              </div>
-              <Sk w={i === 3 ? "68%" : "84%"} h={13} style={{ marginTop: 8 }} />
+    <div className="pagina-notificacoes__lista" aria-busy="true" aria-label="Carregando notificacoes">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="notificacao-item notificacao-item--skeleton">
+          <Sk className="notificacao-item__icone-area" w={40} h={40} r="var(--raio-grande)" />
+          <div className="notificacao-item__conteudo">
+            <div className="notificacao-item__linha-topo">
+              <Sk w={i % 2 === 0 ? "48%" : "58%"} h={15} />
+              <Sk w={70} h={12} />
             </div>
-            <div className="notificacao-item__acoes notificacao-item__acoes--skeleton">
-              <Sk w={32} h={32} r="var(--raio-pequeno)" />
-              <Sk w={32} h={32} r="var(--raio-pequeno)" />
-            </div>
+            <Sk w={i === 3 ? "68%" : "84%"} h={13} style={{ marginTop: 8 }} />
           </div>
-        ))}
-      </div>
+          <div className="notificacao-item__acoes notificacao-item__acoes--skeleton">
+            <Sk w={32} h={32} r="var(--raio-pequeno)" />
+            <Sk w={32} h={32} r="var(--raio-pequeno)" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -116,7 +95,9 @@ function getChatTargetFromUrl(actionUrl) {
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
-  const { notifications: initialNotifications, loading, error, setNotifications: setData } = useNotifications();
+  const { notifications: initialNotifications, loading: reloading, error, setNotifications: setData } = useNotifications();
+  // Recargas do provider não devem piscar skeleton sobre dados já exibidos.
+  const loading = reloading && initialNotifications.length === 0;
   const [filter, setFilter] = useState("all");
   const [hiddenIds, setHiddenIds] = useState(() => new Set(readHiddenNotificationIds()));
   const visibleNotifications = useMemo(
@@ -216,8 +197,6 @@ export default function NotificationsPage() {
       navigate(notification.actionUrl);
     }
   };
-  if (loading) return <NotificationsSkeleton />;
-
   if (error) {
     return <StatusView title="Falha ao carregar notificações" description={error.message} />;
   }
@@ -230,11 +209,11 @@ export default function NotificationsPage() {
         <div className="pagina-notificacoes__contagem">
           <Bell size={18} className="pagina-notificacoes__icone-contagem" />
           <span className="pagina-notificacoes__texto-contagem">
-            {notificationStatusText}
+            {loading ? <Sk inline w={160} h={15} /> : notificationStatusText}
           </span>
         </div>
         <div className="pagina-notificacoes__botoes-acao">
-          {unreadCount > 0 && (
+          {!loading && unreadCount > 0 && (
             <button onClick={markAllAsRead} className="pagina-notificacoes__botao-marcar-lidas">
               <Checks size={14} /> Marcar todas como lidas
             </button>
@@ -254,13 +233,15 @@ export default function NotificationsPage() {
           >
             {type === "all" ? "Todas" : formatNotificationType(type)}
             <span className="pagina-notificacoes__chip-contagem">
-              {type === "all" ? visibleNotifications.length : visibleNotifications.filter((item) => item.type === type).length}
+              {loading ? <Sk inline w={14} h={12} /> : type === "all" ? visibleNotifications.length : visibleNotifications.filter((item) => item.type === type).length}
             </span>
           </button>
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <NotificationsListSkeleton />
+      ) : filtered.length === 0 ? (
         <div className="pagina-notificacoes__estado-vazio">
           <div className="pagina-notificacoes__icone-vazio">
             <Bell size={24} style={{ color: "var(--cor-texto-mudo)" }} />

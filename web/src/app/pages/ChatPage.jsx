@@ -316,40 +316,38 @@ const VirtualMessageRow = memo(function VirtualMessageRow({
   );
 });
 
-function ChatPageSkeleton() {
+// Título, busca e estrutura do chat são estáticos; só conversas e mensagens
+// aguardam a API.
+function ConversationListSkeleton() {
   return (
-    <div className="pagina-chat" aria-busy="true">
-      <div className="pagina-chat__lista-conversas">
-        <div className="pagina-chat__cabecalho-lista">
-          <div className="chat-skeleton chat-skeleton--titulo" />
-          <div className="chat-skeleton chat-skeleton--busca" />
-        </div>
-        <div className="pagina-chat__rolagem-conversas">
-          {[0, 1, 2, 3, 4].map((item) => (
-            <div className="conversa-item conversa-item--skeleton" key={item}>
-              <div className="chat-skeleton chat-skeleton--avatar" />
-              <div className="conversa-item__info">
-                <div className="chat-skeleton chat-skeleton--linha-media" />
-                <div className="chat-skeleton chat-skeleton--linha-curta" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="pagina-chat__area-conversa pagina-chat__area-conversa--visivel">
-        <div className="pagina-chat__topo-conversa">
-          <div className="chat-skeleton chat-skeleton--topo" />
-        </div>
-        <MessageListSkeleton />
-        <div className="pagina-chat__area-input">
-          <div className="pagina-chat__linha-input">
-            <div className="chat-skeleton chat-skeleton--input" />
-            <div className="chat-skeleton chat-skeleton--botao" />
+    <div aria-busy="true" aria-label="Carregando conversas">
+      {[0, 1, 2, 3, 4].map((item) => (
+        <div className="conversa-item conversa-item--skeleton" key={item}>
+          <div className="chat-skeleton chat-skeleton--avatar" />
+          <div className="conversa-item__info">
+            <div className="chat-skeleton chat-skeleton--linha-media" />
+            <div className="chat-skeleton chat-skeleton--linha-curta" />
           </div>
         </div>
-      </div>
+      ))}
     </div>
+  );
+}
+
+function ConversationAreaSkeleton() {
+  return (
+    <>
+      <div className="pagina-chat__topo-conversa">
+        <div className="chat-skeleton chat-skeleton--topo" />
+      </div>
+      <MessageListSkeleton />
+      <div className="pagina-chat__area-input">
+        <div className="pagina-chat__linha-input">
+          <div className="chat-skeleton chat-skeleton--input" />
+          <div className="chat-skeleton chat-skeleton--botao" />
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -909,7 +907,6 @@ export default function ChatPage() {
     String(data.messages[index]?.id ?? data.firstMessageIndex + index)
   ), []);
 
-  if (loading) return <ChatPageSkeleton />;
   if (error) return <StatusView title="Erro" description="Falha ao carregar" />;
 
   return (
@@ -931,7 +928,9 @@ export default function ChatPage() {
         </div>
 
         <div className="pagina-chat__rolagem-conversas">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <ConversationListSkeleton />
+          ) : filtered.length === 0 ? (
             <div className="pagina-chat__lista-vazia">
               <ChatCircleText size={36} className="pagina-chat__lista-vazia-icone" />
               <p className="pagina-chat__lista-vazia-texto">
@@ -952,7 +951,9 @@ export default function ChatPage() {
 
       {/* CONVERSA */}
       <div className={`pagina-chat__area-conversa ${!showMobileList ? "pagina-chat__area-conversa--visivel" : ""}`}>
-        {selectedConversation ? (
+        {loading ? (
+          <ConversationAreaSkeleton />
+        ) : selectedConversation ? (
           <>
             <div className="pagina-chat__topo-conversa">
               <button

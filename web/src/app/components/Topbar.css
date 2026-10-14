@@ -232,7 +232,9 @@
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
-  width: min(22rem, calc(100vw - 2rem));
+  box-sizing: border-box;
+  /* Acompanha a largura do campo (mínimo legível), sem estourar a tela. */
+  width: min(max(100%, 18rem), calc(100vw - 2rem));
   max-height: 22rem;
   overflow-y: auto;
   padding: var(--espaco-2);
@@ -265,7 +267,13 @@
   border-radius: var(--raio-medio);
   cursor: pointer;
   text-align: left;
+  font-family: inherit;
   transition: background-color 140ms ease;
+}
+
+.barra-topo__resultado-info {
+  flex: 1 1 auto;
+  align-items: flex-start;
 }
 
 .barra-topo__resultado:hover {
@@ -347,6 +355,14 @@
   .barra-topo__busca-wrap--aberta .barra-topo__busca {
     display: flex;
     width: 100%;
+  }
+
+  /* Resultados centralizados e alinhados às bordas do campo aberto. */
+  .barra-topo__busca-wrap--aberta .barra-topo__resultados {
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin-inline: auto;
   }
 
   .barra-topo__busca-atalho {

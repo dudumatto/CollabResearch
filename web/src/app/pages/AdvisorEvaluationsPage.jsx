@@ -39,8 +39,9 @@ function EvaluationOptionsSkeleton() {
   );
 }
 
-function AdvisorEvaluationSkeleton({ linhas = 4, includeShell = false }) {
-  const cards = (
+// Só a lista depende da API; título, filtro e ação são estáticos.
+function AdvisorEvaluationSkeleton({ linhas = 4 }) {
+  return (
     <div className="advisor-lista advisor-lista--skeleton" aria-busy="true" aria-label="Carregando avaliacoes">
       {Array.from({ length: linhas }).map((_, index) => (
         <article key={index} className="advisor-avaliacao advisor-avaliacao--skeleton">
@@ -62,26 +63,6 @@ function AdvisorEvaluationSkeleton({ linhas = 4, includeShell = false }) {
           {index === 0 && <SkeletonBlock className="advisor-skeleton__comment" />}
         </article>
       ))}
-    </div>
-  );
-
-  if (!includeShell) {
-    return cards;
-  }
-
-  return (
-    <div className="advisor-pagina advisor-pagina--skeleton" aria-busy="true" aria-label="Carregando pagina de avaliacoes">
-      <section className="advisor-hero advisor-hero--sem-sombra advisor-hero--skeleton">
-        <SkeletonBlock className="advisor-skeleton__hero-title" />
-        <SkeletonBlock className="advisor-skeleton__hero-text" />
-      </section>
-
-      <div className="advisor-toolbar advisor-toolbar--avaliacoes advisor-toolbar--skeleton">
-        <SkeletonBlock className="advisor-skeleton__control" />
-        <SkeletonBlock className="advisor-skeleton__primary-action" />
-      </div>
-
-      {cards}
     </div>
   );
 }
@@ -267,13 +248,13 @@ export default function AdvisorEvaluationsPage() {
     }
   };
 
-  if (loadingProjetos) return <AdvisorEvaluationSkeleton includeShell />;
+  const carregandoAvaliacoes = loadingProjetos || loadingAvaliacoes;
 
-  if (normErroProjetos) {
+  if (!loadingProjetos && normErroProjetos) {
     return <StatusView title="Falha ao carregar projetos" description={getErrorMessage(normErroProjetos)} />;
   }
 
-  if (todosProjetos.length === 0) {
+  if (!loadingProjetos && todosProjetos.length === 0) {
     return (
       <div className="advisor-pagina">
         <div className="advisor-estado-vazio">
@@ -303,6 +284,9 @@ export default function AdvisorEvaluationsPage() {
       </div>
 
       <div className="advisor-toolbar advisor-toolbar--avaliacoes">
+        {loadingProjetos ? (
+          <SkeletonBlock className="advisor-skeleton__control" />
+        ) : (
         <div className="advisor-busca advisor-busca--avaliacoes">
           <FolderOpen size={16} className="advisor-busca__icone" />
           <AppCombobox
@@ -316,6 +300,7 @@ export default function AdvisorEvaluationsPage() {
             ]}
           />
         </div>
+        )}
         <button
           type="button"
           className="advisor-botao advisor-botao--primario"
@@ -327,13 +312,13 @@ export default function AdvisorEvaluationsPage() {
         </button>
       </div>
 
-      {loadingAvaliacoes && <AdvisorEvaluationSkeleton linhas={4} />}
+      {carregandoAvaliacoes && <AdvisorEvaluationSkeleton linhas={4} />}
 
-      {!loadingAvaliacoes && normErroAvaliacoes && (
+      {!carregandoAvaliacoes && normErroAvaliacoes && (
         <StatusView title="Falha ao carregar avaliações" description={getErrorMessage(normErroAvaliacoes)} />
       )}
 
-      {!loadingAvaliacoes && !normErroAvaliacoes && listaAvaliacoes.length === 0 && (
+      {!carregandoAvaliacoes && !normErroAvaliacoes && listaAvaliacoes.length === 0 && (
         <div className="advisor-estado-vazio">
           <h3 className="advisor-estado-vazio__titulo">Nenhuma avaliação registrada</h3>
           <p className="advisor-estado-vazio__descricao">
@@ -342,7 +327,7 @@ export default function AdvisorEvaluationsPage() {
         </div>
       )}
 
-      {!loadingAvaliacoes && !normErroAvaliacoes && listaAvaliacoes.length > 0 && (
+      {!carregandoAvaliacoes && !normErroAvaliacoes && listaAvaliacoes.length > 0 && (
         <div className="advisor-lista">
           {listaAvaliacoes.map((avaliacao, index) => {
             const media = avaliacao.media ?? null;

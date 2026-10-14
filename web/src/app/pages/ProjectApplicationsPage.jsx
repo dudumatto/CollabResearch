@@ -12,6 +12,7 @@ import { mapApplication, mapProject } from "../utils/adapters";
 import { formatApplicationStatus } from "../utils/formatters";
 import "./ApplicationsPage.css";
 import "./ProjectDetailPage.css";
+import { Sk } from "../components/Skeleton";
 import "./ProjectApplicationsPage.css";
 
 const statusConfig = {
@@ -45,40 +46,24 @@ function mapProjectApplication(raw) {
   };
 }
 
-function ProjectApplicationsSkeleton() {
-  const Sk = ({ w = "100%", h = 14, r = "0.5rem" }) => (
-    <div className="skeleton" style={{ width: w, height: h, borderRadius: r }} />
-  );
+// Cabeçalho e rótulos são estáticos; só título do projeto, contagens e lista aguardam a API.
+function ApplicationsListSkeleton() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-5)", padding: "var(--espaco-4)" }}>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: "var(--espaco-2)" }}>
-        <Sk w={32} h={32} r="var(--raio-medio)" />
-        <Sk w={200} h={16} />
-      </div>
-      <div style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-5)" }}>
-        <Sk w="60%" h={18} mb={10} />
-        <Sk w="100%" h={13} mb={6} />
-        <Sk w="75%" h={13} mb={16} />
-        <div style={{ display: "flex", gap: 10 }}>
-          {[1, 2, 3].map((i) => <Sk key={i} w={70} h={24} r="var(--raio-completo)" />)}
-        </div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }}>
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-4)", display: "flex", alignItems: "center", gap: 14 }}>
-            <Sk w={44} h={44} r="50%" />
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-              <Sk w="45%" h={15} />
-              <Sk w="35%" h={12} />
-              <Sk w="60%" h={11} />
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <Sk w={80} h={34} r="var(--raio-medio)" />
-              <Sk w={80} h={34} r="var(--raio-medio)" />
-            </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--espaco-3)" }} aria-busy="true" aria-label="Carregando inscrições">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} style={{ background: "var(--cor-superficie)", borderRadius: "var(--raio-grande)", border: "1px solid var(--cor-borda-clara)", padding: "var(--espaco-4)", display: "flex", alignItems: "center", gap: 14 }}>
+          <Sk w={44} h={44} r="50%" />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+            <Sk w="45%" h={15} />
+            <Sk w="35%" h={12} />
+            <Sk w="60%" h={11} />
           </div>
-        ))}
-      </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Sk w={80} h={34} r="var(--raio-medio)" />
+            <Sk w={80} h={34} r="var(--raio-medio)" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -192,9 +177,7 @@ export default function ProjectApplicationsPage() {
     }
   };
 
-  if (loading) return <ProjectApplicationsSkeleton />;
-
-  if (error || !project) {
+  if (!loading && (error || !project)) {
     return (
       <StatusView
         title="Não foi possível carregar"
@@ -208,7 +191,7 @@ export default function ProjectApplicationsPage() {
     );
   }
 
-  if (!canAdvisorManageProject) {
+  if (!loading && !canAdvisorManageProject) {
     return (
       <StatusView
         title="Acesso negado"
@@ -227,7 +210,7 @@ export default function ProjectApplicationsPage() {
       <div className="pagina-inscricoes-projeto__cabecalho">
         <div>
           <h1 className="pagina-inscricoes-projeto__titulo">Inscrições no projeto</h1>
-          <p className="pagina-inscricoes-projeto__subtitulo">{project.title}</p>
+          <p className="pagina-inscricoes-projeto__subtitulo">{loading ? <Sk inline w={220} h={14} /> : project.title}</p>
         </div>
         <Link to={`/app/projects/${id}`} className="pagina-inscricoes-projeto__botao-voltar pagina-inscricoes-projeto__botao-voltar--link">
           <ArrowLeft size={16} />
@@ -243,13 +226,15 @@ export default function ProjectApplicationsPage() {
           ["REJEITADO", "Rejeitadas"],
         ].map(([key, label]) => (
           <div key={key} className="pagina-inscricoes-projeto__resumo">
-            <p className="pagina-inscricoes-projeto__resumo-valor">{counts[key] ?? 0}</p>
+            <p className="pagina-inscricoes-projeto__resumo-valor">{loading ? <Sk w={36} h={24} /> : counts[key] ?? 0}</p>
             <p className="pagina-inscricoes-projeto__resumo-rotulo">{label}</p>
           </div>
         ))}
       </div>
 
-      {applications.length === 0 ? (
+      {loading ? (
+        <ApplicationsListSkeleton />
+      ) : applications.length === 0 ? (
         <div className="pagina-inscricoes-projeto__vazio">
           <div className="pagina-inscricoes-projeto__vazio-icone">
             <Users size={28} style={{ color: "var(--cor-texto-mudo)" }} />
