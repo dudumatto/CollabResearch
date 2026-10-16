@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.persistence.criteria.JoinType;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +33,8 @@ import java.util.Collection;
 @Service
 @RequiredArgsConstructor
 public class ProjetoService {
+
+    private static final Duration INTERVALO_TROCA_ORIENTADOR = Duration.ofMinutes(5);
 
     private final ProjetoRepository projetoRepository;
     private final OrientadorRepository orientadorRepository;
@@ -319,15 +323,7 @@ public class ProjetoService {
                     .status(StatusInscricao.APROVADO)
                     .build();
             inscricaoRepository.save(inscricaoCriador);
-            notificacaoService.criarNotificacao(
-                    projeto.getOrientador().getUsuario().getId(),
-                    "Novo projeto aguardando aceite de orientacao",
-                    TipoNotificacao.SOLICITACAO_ORIENTACAO,
-                    "PROJETO",
-                    projeto.getId(),
-                    "/app/projects/" + projeto.getId(),
-                    projeto.getTitulo()
-            );
+            notificarSolicitacaoOrientacao(projeto);
         }
 
         return projeto;
@@ -341,9 +337,43 @@ public class ProjetoService {
         validarOrientadorSolicitado(projeto, usuarioLogado);
         validarProjetoPendente(projeto);
 
-        projeto.setStatus(StatusProjeto.ABERTO);
+        projeto.setStatus(projeto.getStatusAntesAbandono() != null
+                ? projeto.getStatusAntesAbandono()
+                : StatusProjeto.ABERTO);
+        projeto.setStatusAntesAbandono(null);
         Projeto salvo = projetoRepository.save(projeto);
         notificarAlunoCriador(salvo, "Seu projeto foi aceito pelo orientador", TipoNotificacao.PROJETO_ACEITO);
+        return salvo;
+    }
+
+    @Transactional
+    public Projeto abandonarOrientacao(Integer id) {
+        Usuario usuario = authHelper.getCurrentUser();
+        Projeto projeto = projetoRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
+        projectAccessPolicy.requireResponsibleAdvisor(projeto, usuario);
+        if (projeto.getStatus() != StatusProjeto.ABERTO && projeto.getStatus() != StatusProjeto.EM_ANDAMENTO) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Orientacao so pode ser abandonada com projeto aberto ou em andamento");
+        }
+
+        projeto.setStatusAntesAbandono(projeto.getStatus());
+        projeto.setStatus(StatusProjeto.SEM_ORIENTADOR);
+        // Orientador removido: todo controle de acesso derivado de projeto.getOrientador() deixa de valer.
+        projeto.setOrientador(null);
+        Projeto salvo = projetoRepository.save(projeto);
+
+        for (Inscricao inscricao : inscricaoRepository.findByProjetoIdAndStatus(id, StatusInscricao.APROVADO)) {
+            notificacaoService.criarNotificacao(
+                    inscricao.getAluno().getUsuario().getId(),
+                    "O orientador deixou o projeto. E necessario escolher um novo orientador",
+                    TipoNotificacao.ORIENTADOR_ABANDONOU,
+                    "PROJETO",
+                    salvo.getId(),
+                    "/app/projects/" + salvo.getId(),
+                    salvo.getTitulo()
+            );
+        }
         return salvo;
     }
 
@@ -359,6 +389,68 @@ public class ProjetoService {
         Projeto salvo = projetoRepository.save(projeto);
         notificarAlunoCriador(salvo, "Seu projeto foi recusado pelo orientador", TipoNotificacao.PROJETO_REJEITADO);
         return salvo;
+    }
+
+    @Transactional
+    public Projeto trocarOrientador(Integer id, Integer orientadorUsuarioId) {
+        Usuario usuario = authHelper.getCurrentUser();
+        Projeto projeto = projetoRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
+        ProjectAccessPolicy.Relationship relacao = projectAccessPolicy.relationship(projeto, usuario);
+        // Projeto criado por orientador nao tem aluno criador: qualquer membro aprovado escolhe o substituto.
+        boolean podeTrocar = relacao == ProjectAccessPolicy.Relationship.STUDENT_CREATOR
+                || (projeto.getAlunoCriador() == null && relacao == ProjectAccessPolicy.Relationship.APPROVED_MEMBER);
+        if (!podeTrocar) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas o aluno criador pode trocar o orientador");
+        }
+        if (projeto.getStatus() != StatusProjeto.PENDENTE_ORIENTADOR
+                && projeto.getStatus() != StatusProjeto.REJEITADO_ORIENTADOR
+                && projeto.getStatus() != StatusProjeto.SEM_ORIENTADOR) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Orientador so pode ser trocado enquanto pendente, recusado ou ausente");
+        }
+        LocalDateTime ultimaTroca = projeto.getDataTrocaOrientador();
+        if (ultimaTroca != null && ultimaTroca.plus(INTERVALO_TROCA_ORIENTADOR).isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Aguarde alguns minutos antes de trocar o orientador novamente");
+        }
+        Orientador novo = orientadorRepository.findByUsuarioId(orientadorUsuarioId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Orientador nao encontrado"));
+        if (projeto.getOrientador() != null && projeto.getOrientador().getId().equals(novo.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selecione um orientador diferente do atual");
+        }
+
+        Orientador anterior = projeto.getOrientador();
+        boolean solicitacaoAnteriorAberta = projeto.getStatus() == StatusProjeto.PENDENTE_ORIENTADOR;
+
+        projeto.setOrientador(novo);
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+        projeto.setDataTrocaOrientador(LocalDateTime.now());
+        Projeto salvo = projetoRepository.save(projeto);
+        notificarSolicitacaoOrientacao(salvo);
+        if (solicitacaoAnteriorAberta && anterior != null) {
+            notificacaoService.criarNotificacao(
+                    anterior.getUsuario().getId(),
+                    "Solicitacao de orientacao cancelada pelo aluno",
+                    TipoNotificacao.SOLICITACAO_ORIENTACAO_CANCELADA,
+                    "PROJETO",
+                    salvo.getId(),
+                    "/app/projects",
+                    salvo.getTitulo()
+            );
+        }
+        return salvo;
+    }
+
+    private void notificarSolicitacaoOrientacao(Projeto projeto) {
+        notificacaoService.criarNotificacao(
+                projeto.getOrientador().getUsuario().getId(),
+                "Novo projeto aguardando aceite de orientacao",
+                TipoNotificacao.SOLICITACAO_ORIENTACAO,
+                "PROJETO",
+                projeto.getId(),
+                "/app/projects/" + projeto.getId(),
+                projeto.getTitulo()
+        );
     }
 
     @Transactional
@@ -424,7 +516,9 @@ public class ProjetoService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Projeto nao encontrado"));
         ProjectAccessPolicy.Relationship relacao = projectAccessPolicy.relationship(projeto, usuario);
         boolean retiradaPropria = relacao == ProjectAccessPolicy.Relationship.STUDENT_CREATOR
-                && projeto.getStatus() == StatusProjeto.PENDENTE_ORIENTADOR;
+                && projeto.getStatusAntesAbandono() == null
+                && (projeto.getStatus() == StatusProjeto.PENDENTE_ORIENTADOR
+                || projeto.getStatus() == StatusProjeto.REJEITADO_ORIENTADOR);
         if (!canResponsibleAdvisorManage(projeto, relacao) && !retiradaPropria) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sem permissao para excluir este projeto");
         }

@@ -10,6 +10,7 @@ String formatProjectStatus(String value) {
     'EM_ANDAMENTO' => 'Em andamento',
     'FINALIZADO' => 'Finalizado',
     'REJEITADO_ORIENTADOR' => 'Recusado pelo orientador',
+    'SEM_ORIENTADOR' => 'Sem orientador',
     _ => value.isEmpty ? '-' : value,
   };
 }

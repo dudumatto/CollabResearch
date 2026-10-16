@@ -5,5 +5,6 @@ public enum StatusProjeto {
     ABERTO,
     EM_ANDAMENTO,
     FINALIZADO,
-    REJEITADO_ORIENTADOR
+    REJEITADO_ORIENTADOR,
+    SEM_ORIENTADOR
 }

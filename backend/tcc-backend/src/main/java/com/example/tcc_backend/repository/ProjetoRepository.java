@@ -51,9 +51,13 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Integer>, JpaS
 
     @Query("""
             SELECT DISTINCT p FROM Projeto p
+            LEFT JOIN p.alunoCriador criador
+            LEFT JOIN criador.usuario criadorUsuario
             LEFT JOIN Inscricao i ON i.projeto = p
-            WHERE p.alunoCriador.usuario.id = :usuarioId
-               OR (i.aluno.usuario.id = :usuarioId AND i.status = com.example.tcc_backend.model.StatusInscricao.APROVADO)
+            LEFT JOIN i.aluno alunoInscrito
+            LEFT JOIN alunoInscrito.usuario alunoUsuario
+            WHERE criadorUsuario.id = :usuarioId
+               OR (alunoUsuario.id = :usuarioId AND i.status = com.example.tcc_backend.model.StatusInscricao.APROVADO)
             """)
     List<Projeto> findCalendarioByAlunoUsuarioId(@Param("usuarioId") Integer usuarioId);
     @Query("""

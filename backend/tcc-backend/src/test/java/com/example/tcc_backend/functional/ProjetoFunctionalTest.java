@@ -218,6 +218,93 @@ class ProjetoFunctionalTest extends FunctionalTestSupport {
     }
 
     @Test
+    void alunoCriadorPodeTrocarOrientadorAposRecusa() throws Exception {
+        TestUser aluno = registerAluno("proj-swap-owner");
+        TestUser outroAluno = registerAluno("proj-swap-other");
+        TestUser orientadorA = registerOrientador("proj-swap-advisor-a");
+        TestUser orientadorB = registerOrientador("proj-swap-advisor-b");
+        Integer areaId = createArea("Swap", createCurso("CC"));
+        Integer projetoId = createProjetoAsAluno(aluno.token(), orientadorA.userId(), "Projeto Troca", areaId);
+        String body = "{\"orientadorId\":" + orientadorB.userId() + "}";
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/orientador")
+                        .header("Authorization", authHeader(outroAluno.token()))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/rejeitar-orientacao")
+                        .header("Authorization", authHeader(orientadorA.token())))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/orientador")
+                        .header("Authorization", authHeader(aluno.token()))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDENTE_ORIENTADOR"));
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/orientador")
+                        .header("Authorization", authHeader(aluno.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"orientadorId\":" + orientadorA.userId() + "}"))
+                .andExpect(status().isTooManyRequests());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/aceitar-orientacao")
+                        .header("Authorization", authHeader(orientadorB.token())))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/orientador")
+                        .header("Authorization", authHeader(aluno.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"orientadorId\":" + orientadorA.userId() + "}"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void orientadorPodeAbandonarProjetoEmAndamentoEMembroEscolheSubstituto() throws Exception {
+        TestUser orientadorA = registerOrientador("proj-abandon-advisor-a");
+        TestUser orientadorB = registerOrientador("proj-abandon-advisor-b");
+        TestUser aluno = registerAluno("proj-abandon-student");
+        Integer areaId = createArea("Abandono", createCurso("CC"));
+        Integer projetoId = createProjetoAsOrientador(orientadorA.token(), "Projeto Abandonado", areaId);
+        aprovarInscricao(orientadorA.token(), inscreverAluno(aluno.token(), projetoId));
+        mockMvc.perform(patch("/api/projetos/" + projetoId + "/status")
+                        .header("Authorization", authHeader(orientadorA.token()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("status", "EM_ANDAMENTO"))))
+                .andExpect(status().isOk());
+        String body = "{\"orientadorId\":" + orientadorB.userId() + "}";
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/abandonar-orientacao")
+                        .header("Authorization", authHeader(aluno.token())))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/abandonar-orientacao")
+                        .header("Authorization", authHeader(orientadorA.token())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SEM_ORIENTADOR"))
+                .andExpect(jsonPath("$.orientadorId").doesNotExist());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/abandonar-orientacao")
+                        .header("Authorization", authHeader(orientadorA.token())))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/aceitar-orientacao")
+                        .header("Authorization", authHeader(orientadorB.token())))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/orientador")
+                        .header("Authorization", authHeader(aluno.token()))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDENTE_ORIENTADOR"));
+
+        mockMvc.perform(put("/api/projetos/" + projetoId + "/aceitar-orientacao")
+                        .header("Authorization", authHeader(orientadorB.token())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("EM_ANDAMENTO"));
+    }
+
+    @Test
     void alunoAprovadoNaoPodeEditarProjetoQueNaoCriou() throws Exception {
         TestUser orientador = registerOrientador("proj-approved-member-advisor");
         TestUser aluno = registerAluno("proj-approved-member-student");

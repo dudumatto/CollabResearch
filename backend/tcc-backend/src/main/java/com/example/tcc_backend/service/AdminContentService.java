@@ -95,7 +95,7 @@ public class AdminContentService {
         projeto.setArea(getArea(dto.getAreaId()));
         if (dto.getOrientadorId() != null) {
             projeto.setOrientador(getOrientador(dto.getOrientadorId()));
-        } else if (projeto.getOrientador() == null) {
+        } else if (projeto.getOrientador() == null && projeto.getStatus() != StatusProjeto.SEM_ORIENTADOR) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Orientador e obrigatorio para projetos");
         }
         projetoRepository.save(projeto);

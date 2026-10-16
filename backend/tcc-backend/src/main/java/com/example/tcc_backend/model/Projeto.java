@@ -48,6 +48,14 @@ public class Projeto {
     @Column(name = "data_criacao")
     private LocalDateTime dataCriacao;
 
+    @Column(name = "data_troca_orientador")
+    private LocalDateTime dataTrocaOrientador;
+
+    /** Estado do projeto quando o orientador o abandonou; restaurado quando um novo orientador aceita. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_antes_abandono", length = 40)
+    private StatusProjeto statusAntesAbandono;
+
     @Column(name = "data_inicio")
     private LocalDate dataInicio;
 

@@ -3,6 +3,7 @@ package com.example.tcc_backend.controller;
 import com.example.tcc_backend.dto.request.ProjetoRequest;
 import com.example.tcc_backend.dto.request.ProjetoStatusRequest;
 import com.example.tcc_backend.dto.request.RecrutarColaboradorRequest;
+import com.example.tcc_backend.dto.request.TrocarOrientadorRequest;
 import com.example.tcc_backend.dto.response.InscricaoResponse;
 import com.example.tcc_backend.dto.response.PageResponse;
 import com.example.tcc_backend.dto.response.ProjetoResponse;
@@ -202,6 +203,39 @@ public class ProjetoController {
     @PutMapping("/{id}/rejeitar-orientacao")
     public ResponseEntity<ProjetoResponse> rejeitarOrientacao(@PathVariable Integer id) {
         return ResponseEntity.ok(toResponse(projetoService.rejeitarOrientacao(id)));
+    }
+
+    @Operation(
+            summary = "Abandonar orientacao",
+            description = "Permite que o orientador responsavel deixe um projeto aberto ou em andamento. O projeto fica sem orientador ate o aluno escolher outro."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Orientacao abandonada, projeto fica sem orientador"),
+            @ApiResponse(responseCode = "403", description = "Usuario nao e o orientador responsavel"),
+            @ApiResponse(responseCode = "409", description = "Projeto nao esta aberto nem em andamento"),
+            @ApiResponse(responseCode = "404", description = "Projeto nao encontrado")
+    })
+    @PutMapping("/{id}/abandonar-orientacao")
+    public ResponseEntity<ProjetoResponse> abandonarOrientacao(@PathVariable Integer id) {
+        return ResponseEntity.ok(toResponse(projetoService.abandonarOrientacao(id)));
+    }
+
+    @Operation(
+            summary = "Trocar orientador",
+            description = "Permite que o aluno criador escolha outro orientador enquanto o projeto esta pendente ou recusado."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Orientador trocado, projeto volta a pendente"),
+            @ApiResponse(responseCode = "400", description = "Orientador igual ao atual"),
+            @ApiResponse(responseCode = "403", description = "Usuario nao e o aluno criador"),
+            @ApiResponse(responseCode = "409", description = "Projeto ja aceito pelo orientador"),
+            @ApiResponse(responseCode = "429", description = "Troca repetida em intervalo curto"),
+            @ApiResponse(responseCode = "404", description = "Projeto ou orientador nao encontrado")
+    })
+    @PutMapping("/{id}/orientador")
+    public ResponseEntity<ProjetoResponse> trocarOrientador(@PathVariable Integer id,
+                                                            @RequestBody @Valid TrocarOrientadorRequest dto) {
+        return ResponseEntity.ok(toResponse(projetoService.trocarOrientador(id, dto.getOrientadorId())));
     }
 
     @Operation(

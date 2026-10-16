@@ -25,6 +25,7 @@ public class ProjetoResponse {
     private String fotoProjetoUrl;
     private Integer vagas;
     private StatusProjeto status;
+    private StatusProjeto statusAntesAbandono;
     private LocalDateTime dataCriacao;
     private LocalDate dataInicio;
     private LocalDate dataFim;
@@ -58,6 +59,7 @@ public class ProjetoResponse {
                 .fotoProjetoUrl(projeto.getFotoProjetoUrl())
                 .vagas(projeto.getVagas())
                 .status(projeto.getStatus())
+                .statusAntesAbandono(projeto.getStatusAntesAbandono())
                 .dataCriacao(projeto.getDataCriacao())
                 .dataInicio(projeto.getDataInicio())
                 .dataFim(projeto.getDataFim())

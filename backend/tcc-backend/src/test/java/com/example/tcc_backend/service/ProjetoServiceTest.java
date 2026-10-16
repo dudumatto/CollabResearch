@@ -473,6 +473,294 @@ class ProjetoServiceTest {
                 .isInstanceOf(ResponseStatusException.class)
                 .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     }
+    @Test
+    void trocarOrientadorDeveVoltarProjetoRecusadoParaPendenteENotificarNovo() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Usuario antigoUsuario = TestDataFactory.usuarioOrientador(2);
+        Usuario novoUsuario = TestDataFactory.usuarioOrientador(3);
+        Orientador novo = TestDataFactory.orientador(3, novoUsuario);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, antigoUsuario));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.REJEITADO_ORIENTADOR);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(orientadorRepository.findByUsuarioId(3)).thenReturn(Optional.of(novo));
+        when(projetoRepository.save(any(Projeto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Projeto trocado = projetoService.trocarOrientador(10, 3);
+
+        assertThat(trocado.getOrientador()).isEqualTo(novo);
+        assertThat(trocado.getStatus()).isEqualTo(StatusProjeto.PENDENTE_ORIENTADOR);
+        verify(notificacaoService).criarNotificacao(
+                3,
+                "Novo projeto aguardando aceite de orientacao",
+                TipoNotificacao.SOLICITACAO_ORIENTACAO,
+                "PROJETO",
+                10,
+                "/app/projects/10",
+                "Projeto 10"
+        );
+    }
+
+    @Test
+    void trocarOrientadorPendenteDeveNotificarNovoECancelarParaAntigo() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Usuario antigoUsuario = TestDataFactory.usuarioOrientador(2);
+        Orientador novo = TestDataFactory.orientador(3, TestDataFactory.usuarioOrientador(3));
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, antigoUsuario));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(orientadorRepository.findByUsuarioId(3)).thenReturn(Optional.of(novo));
+        when(projetoRepository.save(any(Projeto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        projetoService.trocarOrientador(10, 3);
+
+        verify(notificacaoService).criarNotificacao(
+                3, "Novo projeto aguardando aceite de orientacao", TipoNotificacao.SOLICITACAO_ORIENTACAO,
+                "PROJETO", 10, "/app/projects/10", "Projeto 10");
+        verify(notificacaoService).criarNotificacao(
+                2, "Solicitacao de orientacao cancelada pelo aluno", TipoNotificacao.SOLICITACAO_ORIENTACAO_CANCELADA,
+                "PROJETO", 10, "/app/projects", "Projeto 10");
+    }
+
+    @Test
+    void trocarOrientadorDeveRetornarNotFoundParaOrientadorInexistente() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(orientadorRepository.findByUsuarioId(99)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> projetoService.trocarOrientador(10, 99))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void deleteDeveAceitarAlunoCriadorQuandoProjetoRecusado() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.REJEITADO_ORIENTADOR);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+
+        projetoService.delete(10);
+
+        verify(projetoRepository).delete(projeto);
+    }
+
+    @Test
+    void deleteDeveNegarAlunoCriadorQuandoProjetoAberto() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.ABERTO);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> projetoService.delete(10))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        verify(projetoRepository, never()).delete(any(Projeto.class));
+    }
+
+    @Test
+    void trocarOrientadorDeveBloquearTrocaRepetidaEmIntervaloCurto() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+        projeto.setDataTrocaOrientador(java.time.LocalDateTime.now().minusMinutes(1));
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> projetoService.trocarOrientador(10, 3))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+        verify(notificacaoService, never()).criarNotificacao(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void trocarOrientadorDevePermitirAposIntervalo() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Orientador novo = TestDataFactory.orientador(3, TestDataFactory.usuarioOrientador(3));
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+        projeto.setDataTrocaOrientador(java.time.LocalDateTime.now().minusMinutes(6));
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(orientadorRepository.findByUsuarioId(3)).thenReturn(Optional.of(novo));
+        when(projetoRepository.save(any(Projeto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        assertThat(projetoService.trocarOrientador(10, 3).getOrientador()).isEqualTo(novo);
+    }
+
+    @Test
+    void trocarOrientadorDeveNegarProjetoJaAceito() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.ABERTO);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> projetoService.trocarOrientador(10, 3))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void trocarOrientadorDeveNegarNaoCriador() {
+        Usuario outro = TestDataFactory.usuarioAluno(9);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, TestDataFactory.usuarioAluno(1)));
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+
+        when(authHelper.getCurrentUser()).thenReturn(outro);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> projetoService.trocarOrientador(10, 3))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void trocarOrientadorDeveNegarMesmoOrientador() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(2);
+        Orientador atual = TestDataFactory.orientador(2, orientadorUsuario);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, atual);
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(orientadorRepository.findByUsuarioId(2)).thenReturn(Optional.of(atual));
+
+        assertThatThrownBy(() -> projetoService.trocarOrientador(10, 2))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void abandonarOrientacaoDeveRemoverOrientadorGuardarStatusENotificarMembros() {
+        Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(2);
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientadorUsuario));
+        projeto.setStatus(StatusProjeto.EM_ANDAMENTO);
+
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.save(any(Projeto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(inscricaoRepository.findByProjetoIdAndStatus(10, StatusInscricao.APROVADO)).thenReturn(
+                List.of(TestDataFactory.inscricaoAprovada(1, TestDataFactory.aluno(1, alunoUsuario), projeto)));
+
+        Projeto salvo = projetoService.abandonarOrientacao(10);
+
+        assertThat(salvo.getOrientador()).isNull();
+        assertThat(salvo.getStatus()).isEqualTo(StatusProjeto.SEM_ORIENTADOR);
+        assertThat(salvo.getStatusAntesAbandono()).isEqualTo(StatusProjeto.EM_ANDAMENTO);
+        verify(notificacaoService).criarNotificacao(
+                1, "O orientador deixou o projeto. E necessario escolher um novo orientador",
+                TipoNotificacao.ORIENTADOR_ABANDONOU, "PROJETO", 10, "/app/projects/10", "Projeto 10");
+    }
+
+    @Test
+    void abandonarOrientacaoDeveNegarProjetoFinalizado() {
+        Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(2);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, orientadorUsuario));
+        projeto.setStatus(StatusProjeto.FINALIZADO);
+
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> projetoService.abandonarOrientacao(10))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        verify(projetoRepository, never()).save(any(Projeto.class));
+    }
+
+    @Test
+    void abandonarOrientacaoDeveNegarOutroOrientador() {
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+
+        when(authHelper.getCurrentUser()).thenReturn(TestDataFactory.usuarioOrientador(7));
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> projetoService.abandonarOrientacao(10))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void trocarOrientadorSemOrientadorDevePermitirMembroQuandoProjetoDeOrientador() {
+        Usuario membro = TestDataFactory.usuarioAluno(3);
+        Orientador novo = TestDataFactory.orientador(5, TestDataFactory.usuarioOrientador(5));
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, null);
+        projeto.setStatus(StatusProjeto.SEM_ORIENTADOR);
+        projeto.setStatusAntesAbandono(StatusProjeto.EM_ANDAMENTO);
+
+        when(authHelper.getCurrentUser()).thenReturn(membro);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(inscricaoRepository.existsByProjetoIdAndAlunoUsuarioIdAndStatus(10, 3, StatusInscricao.APROVADO)).thenReturn(true);
+        when(orientadorRepository.findByUsuarioId(5)).thenReturn(Optional.of(novo));
+        when(projetoRepository.save(any(Projeto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Projeto trocado = projetoService.trocarOrientador(10, 5);
+
+        assertThat(trocado.getOrientador()).isEqualTo(novo);
+        assertThat(trocado.getStatus()).isEqualTo(StatusProjeto.PENDENTE_ORIENTADOR);
+        assertThat(trocado.getStatusAntesAbandono()).isEqualTo(StatusProjeto.EM_ANDAMENTO);
+    }
+
+    @Test
+    void aceitarOrientacaoDeveRestaurarStatusAnteriorAoAbandono() {
+        Usuario orientadorUsuario = TestDataFactory.usuarioOrientador(5);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(5, orientadorUsuario));
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+        projeto.setStatusAntesAbandono(StatusProjeto.EM_ANDAMENTO);
+
+        when(authHelper.getCurrentUser()).thenReturn(orientadorUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+        when(projetoRepository.save(any(Projeto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Projeto aceito = projetoService.aceitarOrientacao(10);
+
+        assertThat(aceito.getStatus()).isEqualTo(StatusProjeto.EM_ANDAMENTO);
+        assertThat(aceito.getStatusAntesAbandono()).isNull();
+    }
+
+    @Test
+    void deleteDeveNegarAlunoCriadorQuandoProjetoPendenteAposAbandono() {
+        Usuario alunoUsuario = TestDataFactory.usuarioAluno(1);
+        Projeto projeto = TestDataFactory.projetoComOrientador(10, TestDataFactory.orientador(2, TestDataFactory.usuarioOrientador(2)));
+        projeto.setAlunoCriador(TestDataFactory.aluno(1, alunoUsuario));
+        projeto.setStatus(StatusProjeto.PENDENTE_ORIENTADOR);
+        projeto.setStatusAntesAbandono(StatusProjeto.EM_ANDAMENTO);
+
+        when(authHelper.getCurrentUser()).thenReturn(alunoUsuario);
+        when(projetoRepository.findByIdForUpdate(10)).thenReturn(Optional.of(projeto));
+
+        assertThatThrownBy(() -> projetoService.delete(10))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(ex -> ((ResponseStatusException) ex).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        verify(projetoRepository, never()).delete(any(Projeto.class));
+    }
+
     private ProjetoRequest requestProjeto() {
         ProjetoRequest request = new ProjetoRequest();
         request.setTitulo("Projeto");
