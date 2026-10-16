@@ -28,6 +28,7 @@ export function formatProjectStatus(value) {
     EM_ANDAMENTO: "Em andamento",
     FINALIZADO: "Finalizado",
     REJEITADO_ORIENTADOR: "Recusado pelo orientador",
+    SEM_ORIENTADOR: "Sem orientador",
   };
 
   return map[value] ?? value ?? "-";
@@ -46,6 +47,7 @@ export function formatApplicationStatus(value) {
 export function formatNotificationType(value) {
   const map = {
     SOLICITACAO_ORIENTACAO: "Solicitação de orientação",
+    SOLICITACAO_ORIENTACAO_CANCELADA: "Solicitação cancelada",
     PROJETO_ACEITO: "Projeto aceito",
     PROJETO_REJEITADO: "Projeto recusado",
     INSCRICAO_RECEBIDA: "Inscrição recebida",
@@ -112,5 +114,12 @@ export function formatOrientandoSituacao(value) {
 export function formatAvaliacaoNota(value) {
   if (value === null || value === undefined || value === "") return "-";
   const number = Number(value);
-  return Number.isFinite(number) ? number.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) : String(value);
+  return Number.isFinite(number) ? number.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : String(value);
+}
+
+export function formatFileSize(bytes) {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

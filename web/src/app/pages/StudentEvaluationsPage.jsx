@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle, ClipboardText, ChatCircleText } from "@phosphor-icons/react";
+import { CheckCircle, ClipboardText, ChatCircleText, LockSimple } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { userService } from "../services/userService";
 import { evaluationService } from "../services/evaluationService";
 import { mapAvaliacaoAcademica, mapProject } from "../utils/adapters";
-import { formatAvaliacaoNota } from "../utils/formatters";
+import { formatAvaliacaoNota, formatDate } from "../utils/formatters";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
 import "./AdvisorWorkspace.css";
@@ -125,38 +125,61 @@ export default function StudentEvaluationsPage() {
     );
   }
 
+  const medias = evaluations.map((item) => Number(item.media)).filter(Number.isFinite);
+  const mediaGeral = medias.length ? medias.reduce((sum, value) => sum + value, 0) / medias.length : null;
+  const pendentes = evaluations.filter((item) => !item.cienciaRegistrada).length;
+
   return (
-    <div className="advisor-pagina student-evaluations-page">
-      <div className="advisor-card-conteudo">
-        <h2 className="advisor-card-conteudo__titulo">Minhas avaliações</h2>
-        <p>Avaliações acadêmicas são privadas entre você e seu orientador.</p>
-        {loadingProjects ? (
-          <Sk w="min(100%, 18rem)" h={42} r="var(--raio-medio)" style={{ marginTop: 18 }} />
-        ) : (
+    <div className="advisor-pagina student-page student-evaluations-page">
+      <div className="advisor-card-conteudo student-page__header">
+        <div className="student-page__header-topo">
+          <div>
+            <h2 className="advisor-card-conteudo__titulo">Minhas avaliações</h2>
+            <p className="student-page__descricao"><LockSimple size={14} /> Avaliações acadêmicas são privadas entre você e seu orientador.</p>
+          </div>
+          {loadingProjects ? (
+            <Sk w="min(100%, 18rem)" h={42} r="var(--raio-medio)" />
+          ) : (
           <AppCombobox
             ariaLabel="Selecionar projeto avaliado"
-            className="advisor-select"
+            className="advisor-select student-page__select"
             value={effectiveProjectId}
             onChange={setProjectId}
             options={projects.map((item) => ({ value: item.id, label: item.title }))}
           />
-        )}
+          )}
+        </div>
+        <div className="student-resumo">
+          <div className="student-resumo__item"><strong>{evaluations.length}</strong><span>Avaliações</span></div>
+          <div className="student-resumo__item student-resumo__item--verde"><strong>{formatAvaliacaoNota(mediaGeral)}</strong><span>Média geral</span></div>
+          <div className="student-resumo__item student-resumo__item--amarelo"><strong>{pendentes}</strong><span>Ciência pendente</span></div>
+        </div>
       </div>
 
       {(loadingProjects || loading) && <EvaluationsListSkeleton />}
       {error && <StatusView title="Falha ao carregar avaliações" description={error.message} />}
       {!loadingProjects && !loading && !error && evaluations.length === 0 && (
-        <StatusView title="Nenhuma avaliação registrada" description="As avaliações aparecerão após a conclusão das etapas." />
+        <div className="advisor-estado-vazio">
+          <div className="advisor-estado-vazio__icone"><ClipboardText size={24} /></div>
+          <h3 className="advisor-estado-vazio__titulo">Nenhuma avaliação registrada</h3>
+          <p className="advisor-estado-vazio__descricao">As avaliações aparecerão após a conclusão das etapas.</p>
+        </div>
       )}
 
-      {evaluations.map((item) => (
-        <div className="advisor-avaliacao" key={item.id}>
+      {!loading && evaluations.map((item) => (
+        <div className={`advisor-avaliacao student-avaliacao${item.cienciaRegistrada ? "" : " student-avaliacao--pendente"}`} key={item.id}>
           <div className="advisor-avaliacao__cabecalho">
             <div>
               <strong className="advisor-avaliacao__aluno">{item.etapaTitulo || "Etapa do projeto"}</strong>
-              <p className="advisor-avaliacao__etapa">Orientador: {item.orientadorNome || "-"}</p>
+              <p className="advisor-avaliacao__etapa">
+                Orientador: {item.orientadorNome || "-"}
+                {item.criadaEm && ` · ${formatDate(item.criadaEm)}`}
+              </p>
             </div>
-            <span className="advisor-percentual">Média {formatAvaliacaoNota(item.media)}</span>
+            <div className="student-avaliacao__media">
+              <strong>{formatAvaliacaoNota(item.media)}</strong>
+              <span>média / 5</span>
+            </div>
           </div>
 
           <div className="advisor-notas">
@@ -166,36 +189,44 @@ export default function StudentEvaluationsPage() {
               ["Prazos", item.cumprimentoDePrazos],
               ["Comunicação", item.comunicacao],
             ].map(([label, value]) => (
-              <div className="advisor-nota" key={label}>
-                <span>{label}</span>
-                <strong>{value}/5</strong>
+              <div className={`advisor-nota student-nota student-nota--${value >= 4 ? "alta" : value >= 3 ? "media" : "baixa"}`} key={label}>
+                <span className="advisor-nota__rotulo">{label}</span>
+                <strong className="advisor-nota__valor">{value}/5</strong>
+                <div className="student-nota__barra" role="meter" aria-label={label} aria-valuemin={0} aria-valuemax={5} aria-valuenow={value}>
+                  <span style={{ width: `${Math.min(100, (value / 5) * 100)}%` }} />
+                </div>
               </div>
             ))}
           </div>
 
           <div className="advisor-avaliacao__comentario student-evaluations-page__comment">
-            <span>Comentário do orientador</span>
+            <span><ChatCircleText size={15} /> Comentário do orientador</span>
             <p>{item.comentarioOrientador || "Nenhum comentário informado pelo orientador."}</p>
           </div>
 
           {item.cienciaRegistrada ? (
-            <div className="advisor-entrega__acoes student-evaluations-page__actions student-evaluations-page__actions--acknowledged">
-              <button className="advisor-botao advisor-botao--sucesso" type="button" disabled>
-                <CheckCircle size={15} />
-                Ciência registrada
-              </button>
+            <div className="student-ciencia student-ciencia--ok">
+              <CheckCircle size={18} weight="fill" />
+              <div>
+                <strong>Ciência registrada{item.dataCiencia && ` em ${formatDate(item.dataCiencia)}`}</strong>
+                {item.comentarioAluno && <p>{item.comentarioAluno}</p>}
+              </div>
             </div>
           ) : (
-            <div className="advisor-entrega__acoes student-evaluations-page__actions">
-              <input
-                className="advisor-campo__input"
-                placeholder="Comentário opcional"
-                value={comments[item.id] || ""}
-                maxLength={2000}
-                onChange={(e) => setComments({ ...comments, [item.id]: e.target.value })}
-              />
-              <button className="advisor-botao advisor-botao--primario" onClick={() => acknowledge(item)}>
-                <ChatCircleText size={15} />
+            <div className="student-ciencia">
+              <label className="advisor-campo">
+                <span className="advisor-campo__rotulo">Seu comentário (opcional)</span>
+                <textarea
+                  className="advisor-campo__input student-ciencia__texto"
+                  rows={2}
+                  placeholder="Escreva uma resposta ao orientador"
+                  value={comments[item.id] || ""}
+                  maxLength={2000}
+                  onChange={(e) => setComments({ ...comments, [item.id]: e.target.value })}
+                />
+              </label>
+              <button className="advisor-botao advisor-botao--primario" type="button" onClick={() => acknowledge(item)}>
+                <CheckCircle size={15} />
                 Registrar ciência
               </button>
             </div>

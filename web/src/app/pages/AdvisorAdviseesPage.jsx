@@ -104,25 +104,24 @@ export default function AdvisorAdviseesPage() {
   }, [orientandos, busca]);
 
   const normError = error ? normalizeError(error) : null;
+  const comPendencias = orientandos.filter((o) => o.pendencias > 0).length;
+  const progressoMedio = orientandos.length ? Math.round(orientandos.reduce((sum, o) => sum + o.progresso, 0) / orientandos.length) : 0;
+  const totalProjetos = new Set(orientandos.flatMap((o) => o.projetos.map((p) => p.projetoId))).size;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="advisor-pagina"
+      className="advisor-pagina student-page"
     >
-      <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
-        <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
-          Veja vínculos ativos
-        </h2>
-        <p className="advisor-hero__subtitulo">
-          Acompanhe o progresso e as pendências de cada estudante sob sua orientação.
-        </p>
-      </div>
-
-      <div className="advisor-toolbar">
-        <div className="advisor-busca">
+      <div className="advisor-card-conteudo student-page__header">
+        <div className="student-page__header-topo">
+          <div>
+            <h2 className="advisor-card-conteudo__titulo">Meus orientandos</h2>
+            <p className="student-page__descricao">Acompanhe o progresso e as pendências de cada estudante sob sua orientação.</p>
+          </div>
+        <div className="advisor-busca student-page__select">
           <MagnifyingGlass size={16} className="advisor-busca__icone" />
           <input
             type="text"
@@ -154,6 +153,13 @@ export default function AdvisorAdviseesPage() {
               <X size={16} />
             </button>
           )}
+        </div>
+        </div>
+        <div className="student-resumo">
+          <div className="student-resumo__item"><strong>{orientandos.length}</strong><span>Orientandos</span></div>
+          <div className="student-resumo__item"><strong>{totalProjetos}</strong><span>Projetos</span></div>
+          <div className="student-resumo__item student-resumo__item--verde"><strong>{progressoMedio}%</strong><span>Progresso médio</span></div>
+          <div className="student-resumo__item student-resumo__item--vermelho"><strong>{comPendencias}</strong><span>Com pendências</span></div>
         </div>
       </div>
 
@@ -191,60 +197,64 @@ export default function AdvisorAdviseesPage() {
       )}
 
       {!loading && !normError && filtrados.length > 0 && (
-        <div className="advisor-lista">
+        <div className="advisee-grade">
           {filtrados.map((orientando, index) => (
-            <motion.div
+            <motion.button
+              type="button"
               key={orientando.alunoId}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25, delay: index * 0.03 }}
-              className="advisor-linha-card"
-              style={{ cursor: "pointer" }}
+              className={`advisee-card${orientando.pendencias > 0 ? " advisee-card--pendente" : ""}`}
               onClick={() => navigate(`/app/advisees/${orientando.alunoId}`)}
             >
-              <AvatarOrientando nome={orientando.nome} src={orientando.fotoPerfilUrl || orientando.avatarUrl} />
-
-              <div className="advisor-linha-card__conteudo">
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <p className="advisor-linha-card__titulo">{orientando.nome}</p>
-                  <span className={`advisor-etiqueta ${situacaoPillClass(orientando.situacao)}`}>
-                    {formatOrientandoSituacao(orientando.situacao)}
-                  </span>
-                  {orientando.pendencias > 0 && (
-                    <span className="advisor-etiqueta advisor-etiqueta--vermelho">
-                      <Warning size={12} style={{ marginRight: 4 }} />
-                      {orientando.pendencias} pendência{orientando.pendencias > 1 ? "s" : ""}
-                    </span>
-                  )}
+              <div className="advisee-card__topo">
+                <AvatarOrientando nome={orientando.nome} src={orientando.fotoPerfilUrl || orientando.avatarUrl} />
+                <div className="advisor-linha-card__conteudo">
+                  <p className="advisor-linha-card__titulo advisee-card__nome">{orientando.nome}</p>
+                  <p className="advisor-linha-card__meta">{[orientando.ra, orientando.curso].filter(Boolean).join(" · ") || orientando.email}</p>
                 </div>
-                <p className="advisor-linha-card__meta">
-                  {orientando.ra && <span>{orientando.ra} · </span>}
-                  {orientando.curso && <span>{orientando.curso}</span>}
-                  {orientando.projetos.length > 0 && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, marginLeft: 8 }}>
-                      <FolderOpen size={12} /> {orientando.projetos.length} projeto{orientando.projetos.length > 1 ? "s" : ""}
+                <span className={`advisor-etiqueta ${situacaoPillClass(orientando.situacao)}`}>
+                  {formatOrientandoSituacao(orientando.situacao)}
+                </span>
+              </div>
+
+              {orientando.projetos.length > 0 && (
+                <div className="advisee-card__projetos">
+                  {orientando.projetos.slice(0, 2).map((p) => (
+                    <span className="advisee-card__projeto" key={p.projetoId} title={p.projetoTitulo}>
+                      <FolderOpen size={12} /><span>{p.projetoTitulo}</span>
                     </span>
-                  )}
-                </p>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-                  <div className="advisor-barra-progresso" style={{ maxWidth: 220 }}>
-                    <div
-                      className="advisor-barra-progresso__preenchimento"
-                      style={{ width: `${Math.min(100, Math.max(0, orientando.progresso))}%` }}
-                    />
-                  </div>
+                  ))}
+                  {orientando.projetos.length > 2 && <span className="advisee-card__projeto">+{orientando.projetos.length - 2}</span>}
+                </div>
+              )}
+
+              <div className="advisee-card__progresso">
+                <div className="advisee-card__progresso-rotulo">
+                  <span>Progresso</span>
                   <span className="advisor-percentual">{orientando.progresso}%</span>
                 </div>
+                <div className="advisor-barra-progresso" role="progressbar" aria-label={`Progresso de ${orientando.nome}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={orientando.progresso}>
+                  <div
+                    className="advisor-barra-progresso__preenchimento"
+                    style={{ width: `${Math.min(100, Math.max(0, orientando.progresso))}%` }}
+                  />
+                </div>
               </div>
 
-              <div className="advisor-linha-card__acoes">
-                <span className="advisor-etiqueta advisor-etiqueta--cinza">
-                  <GraduationCap size={12} style={{ marginRight: 4 }} />
-                  {orientando.projetos.length} vínculo{orientando.projetos.length === 1 ? "" : "s"}
-                </span>
-                <CaretRight size={16} style={{ color: "var(--cor-texto-mudo)" }} />
+              <div className="advisee-card__rodape">
+                {orientando.pendencias > 0 ? (
+                  <span className="advisee-card__pendencias">
+                    <Warning size={14} weight="fill" />
+                    {orientando.pendencias} pendência{orientando.pendencias > 1 ? "s" : ""}
+                  </span>
+                ) : (
+                  <span className="advisee-card__ok"><GraduationCap size={14} /> Sem pendências</span>
+                )}
+                <span className="advisee-card__link">Ver detalhes <CaretRight size={14} /></span>
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
       )}

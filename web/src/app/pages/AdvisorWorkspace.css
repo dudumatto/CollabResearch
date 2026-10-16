@@ -2245,6 +2245,11 @@
   flex-wrap: wrap;
 }
 
+.calendario-cabecalho > div:first-child {
+  flex: 1 1 22rem;
+  min-width: 0;
+}
+
 .calendario-cabecalho__eyebrow {
   margin: 0 0 var(--espaco-1);
   color: var(--cor-primaria);
@@ -2273,7 +2278,7 @@
   align-items: flex-end;
   justify-content: flex-end;
   gap: var(--espaco-3);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .calendario-cabecalho__filtro {
@@ -2297,14 +2302,15 @@
   font-size: var(--tamanho-base);
 }
 .calendario-cabecalho__resumo {
-  min-width: 8rem;
-  padding: var(--espaco-2) var(--espaco-3);
-  border: 1px solid var(--cor-borda-clara);
+  min-height: 2.65rem;
+  padding: 0 var(--espaco-3);
+  border: 1px solid var(--cor-borda);
   border-radius: var(--raio-medio);
   background: var(--cor-superficie);
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  align-items: center;
+  gap: var(--espaco-2);
+  white-space: nowrap;
 }
 
 .calendario-cabecalho__resumo strong {
@@ -2330,17 +2336,17 @@
 
 @media (min-width: 1280px) {
   .calendario-layout {
-    grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(14rem, 1fr));
-    justify-content: start;
+    grid-template-columns: minmax(0, 2.2fr) repeat(2, minmax(15rem, 1fr));
     align-items: stretch;
   }
 }
 
 .calendario-card {
-  border: 1px solid var(--cor-borda-clara);
+  border: 1px solid var(--cor-borda);
   border-radius: var(--raio-grande);
   background: var(--cor-superficie);
-  padding: var(--espaco-3);
+  box-shadow: var(--sombra-minima);
+  padding: var(--espaco-4);
   min-width: 0;
 }
 
@@ -2379,7 +2385,16 @@
   color: var(--cor-texto-forte);
   font-size: var(--tamanho-normal);
   font-weight: var(--peso-semi);
-  text-transform: capitalize;
+}
+
+.calendario-card__topo h2 {
+  font-size: var(--tamanho-subtitulo);
+  font-weight: var(--peso-negrito);
+}
+
+/* "outubro de 2026" vira "Outubro de 2026" (capitalize afetaria o "de"). */
+.calendario-card__topo h2::first-letter {
+  text-transform: uppercase;
 }
 
 .calendario-card--lateral > .calendario-card__titulo {
@@ -2387,16 +2402,24 @@
 }
 
 .calendario-card__topo button {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--cor-borda-clara);
-  border-radius: var(--raio-medio);
-  background: var(--cor-fundo-leve);
-  color: var(--cor-texto-fraco);
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-completo);
+  background: var(--cor-superficie);
+  color: var(--cor-texto-medio);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: var(--transicao-rapida);
+}
+
+.calendario-card__topo button:hover,
+.calendario-card__topo button:focus-visible {
+  border-color: var(--cor-primaria-borda);
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria);
 }
 
 .calendario-grade {
@@ -2419,15 +2442,19 @@
   color: var(--cor-texto-mudo);
   font-size: var(--tamanho-pequeno);
   font-weight: var(--peso-semi);
-  text-align: center;
+  text-align: left;
+  padding-left: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .calendario-dia {
   aspect-ratio: 1;
-  padding: 0.45rem;
-  border: 1px solid var(--cor-borda-clara);
+  padding: 0.4rem;
+  border: 1px solid var(--cor-borda);
   border-radius: var(--raio-medio);
-  background: var(--cor-fundo-leve);
+  background: var(--cor-superficie);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -2438,22 +2465,37 @@
 }
 
 .calendario-dia--fora {
-  opacity: 0.45;
+  border-color: transparent;
+  background: var(--cor-fundo-leve);
+  opacity: 0.5;
 }
 
 .calendario-dia--hoje {
-  border-color: var(--cor-primaria-borda);
-  box-shadow: inset 0 0 0 1px var(--cor-primaria-borda);
+  border-color: var(--cor-primaria);
 }
 
 .calendario-dia--com-evento {
-  background: color-mix(in srgb, var(--cor-primaria-clara) 45%, var(--cor-fundo-leve));
+  cursor: pointer;
 }
 
 .calendario-dia__numero {
+  align-self: flex-start;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.35rem;
+  border-radius: var(--raio-completo);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--cor-texto-forte);
   font-size: var(--tamanho-pequeno);
   font-weight: var(--peso-semi);
+  font-variant-numeric: tabular-nums;
+}
+
+.calendario-dia--hoje .calendario-dia__numero {
+  background: var(--cor-primaria);
+  color: var(--cor-branco);
 }
 
 .calendario-dia__eventos {
@@ -2464,23 +2506,36 @@
   overflow: hidden;
 }
 
+/* Tons por status: usados nos chips, legenda e tooltip. */
+.calendario-evento--pendente  { --tom: var(--cor-primaria); --tom-fundo: var(--cor-primaria-clara); --tom-texto: var(--cor-primaria-texto); }
+.calendario-evento--andamento { --tom: var(--cor-atencao); --tom-fundo: var(--cor-atencao-clara); --tom-texto: var(--cor-atencao-escura); }
+.calendario-evento--concluida { --tom: var(--cor-texto-mudo); --tom-fundo: var(--cor-fundo-leve); --tom-texto: var(--cor-texto-fraco); }
+.calendario-evento--atrasada  { --tom: var(--cor-erro); --tom-fundo: var(--cor-erro-clara); --tom-texto: var(--cor-erro-escura); }
+
 .calendario-evento,
 .calendario-dia__eventos small {
   width: 100%;
   overflow: hidden;
-  text-overflow: clip;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  border-radius: var(--raio-pequeno);
-  background: var(--cor-primaria-clara);
-  color: var(--cor-primaria-texto);
+  border-radius: 0.35rem;
+  background: var(--tom-fundo, var(--cor-fundo-leve));
+  color: var(--tom-texto, var(--cor-texto-fraco));
   padding: 0.2rem 0.4rem;
   font-size: var(--tamanho-pequeno);
   font-weight: var(--peso-medio);
 }
 
 .calendario-evento {
-  border: 0;
-  cursor: default;
+  border-left: 3px solid var(--tom);
+}
+
+.calendario-evento--concluida .calendario-evento__rotulo {
+  text-decoration: line-through;
+}
+
+.calendario-evento {
+  cursor: inherit;
   display: block;
   line-height: 1.2;
   min-height: 1.35rem;
@@ -2489,16 +2544,10 @@
   text-align: left;
 }
 
-.calendario-evento:hover,
-.calendario-evento:focus-visible {
-  background: var(--cor-primaria);
-  color: var(--cor-branco);
-}
-
 .calendario-evento__rotulo {
   display: block;
   overflow: hidden;
-  text-overflow: clip;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -2508,9 +2557,37 @@
   z-index: 1000;
 }
 
-.calendario-dia:hover,
-.calendario-dia:focus-within {
+.calendario-dia--com-evento:hover,
+.calendario-dia--com-evento:focus-visible,
+.calendario-dia--tooltip-aberto {
   border-color: var(--cor-primaria-borda);
+  box-shadow: var(--sombra-media);
+  outline: none;
+}
+
+.calendario-legenda {
+  margin: var(--espaco-3) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2) var(--espaco-4);
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-pequeno);
+}
+
+.calendario-legenda__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.calendario-legenda__item::before {
+  content: "";
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: var(--raio-completo);
+  background: var(--tom);
 }
 
 .calendario-dia__tooltip {
@@ -2588,7 +2665,6 @@
   color: var(--cor-texto-mudo);
   font-size: var(--tamanho-pequeno);
   text-align: right;
-  text-transform: capitalize;
 }
 
 .calendario-dia__tooltip-lista {
@@ -2602,6 +2678,7 @@
 
 .calendario-dia__tooltip-item {
   border: 1px solid var(--cor-borda-clara);
+  border-left: 3px solid var(--tom);
   border-radius: var(--raio-pequeno);
   background: var(--cor-fundo-leve);
   color: var(--cor-texto);
@@ -2614,8 +2691,7 @@
 
 .calendario-dia__tooltip-item:hover,
 .calendario-dia__tooltip-item:focus-visible {
-  border-color: var(--cor-primaria-borda);
-  background: var(--cor-primaria-clara);
+  background: var(--tom-fundo);
   outline: none;
 }
 
@@ -2647,12 +2723,14 @@
 }
 
 @media (min-width: 1280px) {
+  /* Os dois cards laterais viram colunas próprias do grid. */
   .calendario-lateral {
     display: contents;
   }
 
   .calendario-card--lateral {
     height: 100%;
+    min-height: 0;
     overflow: hidden;
   }
 }
@@ -2672,15 +2750,26 @@
 }
 
 .calendario-prazo {
+  --tom: var(--cor-primaria);
+  --tom-fundo: var(--cor-primaria-clara);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--espaco-3);
   align-items: start;
   padding: var(--espaco-3);
-  border: 1px solid var(--cor-borda-clara);
+  border: 1px solid var(--cor-borda);
   border-radius: var(--raio-medio);
-  background: var(--cor-fundo-leve);
+  background: var(--cor-superficie);
+  transition: border-color 0.15s ease;
 }
+
+.calendario-prazo:hover {
+  border-color: var(--cor-primaria-borda);
+}
+
+.calendario-prazo--andamento { --tom: var(--cor-atencao); --tom-fundo: var(--cor-atencao-clara); }
+.calendario-prazo--concluida { --tom: var(--cor-texto-mudo); --tom-fundo: var(--cor-fundo-leve); }
+.calendario-prazo--atrasada  { --tom: var(--cor-erro); --tom-fundo: var(--cor-erro-clara); }
 
 .calendario-prazo--compacto {
   padding: var(--espaco-2);
@@ -2690,8 +2779,8 @@
   width: 2rem;
   height: 2rem;
   border-radius: var(--raio-pequeno);
-  background: var(--cor-primaria-clara);
-  color: var(--cor-primaria);
+  background: var(--tom-fundo);
+  color: var(--tom);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2813,6 +2902,10 @@
   .calendario-cabecalho__filtro,
   .calendario-cabecalho__resumo {
     width: 100%;
+  }
+
+  .calendario-cabecalho__acoes {
+    flex-wrap: wrap;
   }
 
   .calendario-card {
@@ -2960,21 +3053,452 @@
 .advisor-profile-standard .advisor-notas {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-.student-evaluations-page__comment span {
-  gap: 0;
+/* ---- Páginas do aluno: entregas e avaliações ---- */
+.student-page__header {
+  gap: var(--espaco-5);
 }
 
-.student-evaluations-page__acknowledged {
-  align-self: flex-start;
-  margin-top: var(--espaco-2);
+.student-page__header-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  flex-wrap: wrap;
 }
 
-.student-evaluations-page__actions {
+.student-page__descricao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  margin-top: var(--espaco-1);
+  font-size: var(--tamanho-base);
+  color: var(--cor-texto-fraco);
+}
+
+.student-page__select {
+  width: min(100%, 20rem);
+}
+
+.student-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-3);
+}
+
+.student-resumo__item {
+  --tom: var(--cor-primaria);
+  flex: 1 1 8rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  gap: 2px;
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--cor-borda-clara);
+  border-left: 3px solid var(--tom);
+  border-radius: var(--raio-medio);
+  background: color-mix(in srgb, var(--tom) 6%, var(--cor-superficie));
+}
+
+.student-resumo__item strong {
+  font-size: 1.5rem;
+  font-weight: var(--peso-negrito);
+  line-height: 1.2;
+  color: var(--cor-texto-forte);
+}
+
+.student-resumo__item span {
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-mudo);
+}
+
+.student-resumo__item--amarelo,
+.student-entrega--amarelo  { --tom: var(--cor-atencao); }
+.student-resumo__item--vermelho,
+.student-entrega--vermelho { --tom: var(--cor-erro); }
+.student-resumo__item--verde,
+.student-entrega--verde    { --tom: var(--cor-sucesso); }
+
+.student-entregas {
+  display: grid;
   gap: var(--espaco-5);
-  margin-top: var(--espaco-4);
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .student-entregas {
+    grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
+  }
+
+  .student-entregas__form {
+    position: sticky;
+    top: var(--espaco-4);
+  }
+}
+
+.student-entregas__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.student-upload {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-1);
+  padding: var(--espaco-5) var(--espaco-4);
+  border: 1.5px dashed var(--cor-borda);
+  border-radius: var(--raio-medio);
+  background: var(--cor-fundo-leve);
+  color: var(--cor-texto-mudo);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.student-upload:hover,
+.student-upload:focus-within {
+  border-color: var(--cor-primaria);
+  color: var(--cor-primaria);
+}
+
+.student-upload:focus-within {
+  box-shadow: 0 0 0 3px var(--cor-primaria-clara);
+}
+
+.student-upload--selecionado {
+  border-style: solid;
+  border-color: var(--cor-primaria-borda);
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria);
+}
+
+.student-upload__nome {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-semi);
+  color: var(--cor-texto-forte);
+}
+
+.student-upload__dica {
+  font-size: var(--tamanho-pequeno);
+}
+
+.student-upload__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.student-entrega {
+  --tom: var(--cor-borda-media);
+  border-left: 3px solid var(--tom);
+  background: var(--cor-superficie);
+  transition: var(--transicao-normal);
+}
+
+.student-entrega:hover {
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.student-entrega__info {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.student-entrega__icone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--raio-medio);
+  background: color-mix(in srgb, var(--tom) 14%, var(--cor-superficie));
+  color: var(--tom);
+}
+
+.student-entrega .advisor-entrega__meta {
+  margin-top: 2px;
+}
+
+.student-versoes {
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--cor-borda-clara);
+}
+
+.student-versao {
+  align-items: flex-start;
+}
+
+.student-versao__numero {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: var(--raio-completo);
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  color: var(--cor-texto-medio);
+}
+
+.student-versao__revisao {
+  display: flex;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-left: 2px solid var(--cor-primaria);
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-superficie);
+  font-size: var(--tamanho-pequeno);
+  line-height: 1.5;
+  color: var(--cor-texto-medio);
+}
+
+.student-versao__revisao svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--cor-primaria);
+}
+
+.student-avaliacao {
+  gap: var(--espaco-4);
+  padding: var(--espaco-5);
+  border-radius: var(--raio-grande);
+  background: var(--cor-superficie);
+}
+
+.student-avaliacao--pendente {
+  border-color: color-mix(in srgb, var(--cor-atencao) 45%, var(--cor-borda-clara));
+}
+
+.student-avaliacao__media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 4.5rem;
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--raio-medio);
+  background: var(--cor-primaria-clara);
+  color: var(--cor-primaria-texto);
+}
+
+.student-avaliacao__media strong {
+  font-size: 1.375rem;
+  font-weight: var(--peso-negrito);
+  line-height: 1.1;
+}
+
+.student-avaliacao__media span {
+  font-size: var(--tamanho-pequeno);
+}
+
+.student-nota__barra {
+  height: 6px;
+  margin-top: var(--espaco-1);
+  border-radius: var(--raio-completo);
+  background: var(--cor-borda-clara);
+  overflow: hidden;
+}
+
+.student-nota__barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--cor-sucesso);
+}
+
+.student-nota--media .student-nota__barra span { background: var(--cor-atencao); }
+.student-nota--baixa .student-nota__barra span { background: var(--cor-erro); }
+
+.student-ciencia {
+  display: grid;
+  gap: var(--espaco-3);
+  align-items: end;
+  padding-top: var(--espaco-4);
+  border-top: 1px solid var(--cor-borda-clara);
+}
+
+@media (min-width: 760px) {
+  .student-ciencia:not(.student-ciencia--ok) {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.student-ciencia__texto {
+  min-height: 2.75rem;
+}
+
+.student-ciencia--ok {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  color: var(--cor-sucesso);
+}
+
+.student-ciencia--ok strong {
+  font-size: var(--tamanho-base);
+  color: var(--cor-sucesso-escura);
+}
+
+.student-ciencia--ok p {
+  margin-top: var(--espaco-1);
+  font-size: var(--tamanho-base);
+  color: var(--cor-texto-medio);
+}
+
+/* ---- Orientador: alunos e avaliações ---- */
+.student-page__acoes {
+  width: auto;
+  flex: 0 1 34rem;
+}
+
+.advisor-avaliacao__rodape {
+  align-items: center;
+}
+
+.advisee-avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--raio-completo);
+  background: var(--gradiente-avatar);
+  color: #f6f8f5;
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-negrito);
+}
+
+.advisee-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+  gap: var(--espaco-4);
+}
+
+.advisee-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  padding: var(--espaco-5);
+  border: 1px solid var(--cor-borda-clara);
+  border-radius: var(--raio-grande);
+  background: var(--cor-superficie);
+  font-family: var(--fonte-principal);
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: var(--transicao-normal);
+}
+
+.advisee-card:hover {
+  border-color: var(--cor-primaria-borda);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.07);
+  transform: translateY(-2px);
+}
+
+.advisee-card:focus-visible {
+  outline: none;
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px var(--cor-primaria-clara);
+}
+
+.advisee-card--pendente {
+  border-top: 3px solid var(--cor-erro);
+}
+
+.advisee-card__topo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+}
+
+.advisee-card__nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.advisee-card__projetos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.advisee-card__projeto {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 3px 10px;
+  border-radius: var(--raio-completo);
+  background: var(--cor-fundo-leve);
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-medio);
+}
+
+.advisee-card__projeto svg {
+  flex-shrink: 0;
+}
+
+.advisee-card__projeto span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.advisee-card__progresso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.advisee-card__progresso-rotulo {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--tamanho-pequeno);
+  color: var(--cor-texto-mudo);
+}
+
+.advisee-card__rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  margin-top: auto;
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--cor-borda-clara);
+  font-size: var(--tamanho-pequeno);
+}
+
+.advisee-card__pendencias,
+.advisee-card__ok,
+.advisee-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.advisee-card__pendencias {
+  font-weight: var(--peso-semi);
+  color: var(--cor-erro);
+}
+
+.advisee-card__ok {
+  color: var(--cor-texto-mudo);
+}
+
+.advisee-card__link {
+  font-weight: var(--peso-semi);
+  color: var(--cor-primaria);
 }
 
 .advisor-profile-standard__avatar-wrap {
@@ -3210,4 +3734,29 @@
 .advisor-lumen__acoes > .advisor-botao,
 .advisor-lumen__acoes > .lumen-ai-btn {
   flex: 1;
+}
+
+/* Inscrições (mobile): botões da Lumen e de seleção empilhados ocupam a largura toda, como o filtro de projeto. */
+@media (max-width: 639px) {
+  .advisor-inscricoes-acoes > * {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .advisor-inscricoes-acoes > span {
+    display: flex;
+  }
+
+  .advisor-inscricoes-acoes .lumen-ai-btn,
+  .advisor-inscricoes-acoes .advisor-botao {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.advisor-inscricoes-dica {
+  flex: 1 1 100%;
+  margin: 0;
+  color: var(--cor-texto-mudo);
+  font-size: var(--tamanho-pequeno);
 }

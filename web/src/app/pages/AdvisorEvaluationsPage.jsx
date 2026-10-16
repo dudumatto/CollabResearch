@@ -1,14 +1,14 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { FolderOpen, Star, X, Pencil, CheckCircle } from "@phosphor-icons/react";
+import { FolderOpen, Star, X, Pencil, CheckCircle, ChatCircleText, Clock, Plus } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
 import { etapaService } from "../services/etapaService";
 import { evaluationService } from "../services/evaluationService";
 import { mapProject, mapEtapa, mapOrientando, mapAvaliacaoAcademica } from "../utils/adapters";
-import { formatAvaliacaoNota, formatDate } from "../utils/formatters";
+import { formatAvaliacaoNota, formatDate, getInitials } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
@@ -68,12 +68,14 @@ function AdvisorEvaluationSkeleton({ linhas = 4 }) {
 }
 
 function AvaliacaoNota({ rotulo, valor }) {
+  const nota = Number(valor) || 0;
   return (
-    <div className="advisor-nota">
+    <div className={`advisor-nota student-nota student-nota--${nota >= 4 ? "alta" : nota >= 3 ? "media" : "baixa"}`}>
       <span className="advisor-nota__rotulo">{rotulo}</span>
-      <span className="advisor-nota__valor">
-        {valor || valor === 0 ? formatAvaliacaoNota(valor) : "-"}
-      </span>
+      <span className="advisor-nota__valor">{valor || valor === 0 ? `${valor}/5` : "-"}</span>
+      <div className="student-nota__barra" role="meter" aria-label={rotulo} aria-valuemin={0} aria-valuemax={5} aria-valuenow={nota}>
+        <span style={{ width: `${Math.min(100, (nota / 5) * 100)}%` }} />
+      </div>
     </div>
   );
 }
@@ -146,6 +148,9 @@ export default function AdvisorEvaluationsPage() {
   );
 
   const listaAvaliacoes = useMemo(() => (Array.isArray(avaliacoes) ? avaliacoes : []), [avaliacoes]);
+  const medias = listaAvaliacoes.map((a) => Number(a.media)).filter(Number.isFinite);
+  const mediaGeral = medias.length ? medias.reduce((sum, value) => sum + value, 0) / medias.length : null;
+  const aguardandoCiencia = listaAvaliacoes.filter((a) => !a.cienciaRegistrada).length;
 
   const normErroProjetos = erroProjetos ? normalizeError(erroProjetos) : null;
   const normErroAvaliacoes = erroAvaliacoes ? normalizeError(erroAvaliacoes) : null;
@@ -272,18 +277,15 @@ export default function AdvisorEvaluationsPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="advisor-pagina"
+      className="advisor-pagina student-page"
     >
-      <div className="advisor-hero advisor-hero--sem-sombra" style={{ padding: "var(--espaco-4)" }}>
-        <h2 className="advisor-hero__titulo" style={{ fontSize: "var(--tamanho-titulo)" }}>
-          Registre desempenho acadêmico
-        </h2>
-        <p className="advisor-hero__subtitulo">
-          Avalie a participação, a qualidade técnica, os prazos e a comunicação de cada estudante por etapa concluída.
-        </p>
-      </div>
-
-      <div className="advisor-toolbar advisor-toolbar--avaliacoes">
+      <div className="advisor-card-conteudo student-page__header">
+        <div className="student-page__header-topo">
+          <div>
+            <h2 className="advisor-card-conteudo__titulo">Registre desempenho acadêmico</h2>
+            <p className="student-page__descricao">Avalie participação, qualidade técnica, prazos e comunicação por etapa concluída.</p>
+          </div>
+      <div className="advisor-toolbar advisor-toolbar--avaliacoes student-page__acoes">
         {loadingProjetos ? (
           <SkeletonBlock className="advisor-skeleton__control" />
         ) : (
@@ -308,8 +310,16 @@ export default function AdvisorEvaluationsPage() {
           disabled={!activeProjectId}
           title={!activeProjectId ? "Selecione um projeto específico para registrar uma avaliação." : undefined}
         >
+          <Plus size={16} />
           Nova avaliação
         </button>
+      </div>
+        </div>
+        <div className="student-resumo">
+          <div className="student-resumo__item"><strong>{loadingAvaliacoes ? "-" : listaAvaliacoes.length}</strong><span>Avaliações</span></div>
+          <div className="student-resumo__item student-resumo__item--verde"><strong>{loadingAvaliacoes ? "-" : formatAvaliacaoNota(mediaGeral)}</strong><span>Média geral</span></div>
+          <div className="student-resumo__item student-resumo__item--amarelo"><strong>{loadingAvaliacoes ? "-" : aguardandoCiencia}</strong><span>Aguardando ciência</span></div>
+        </div>
       </div>
 
       {carregandoAvaliacoes && <AdvisorEvaluationSkeleton linhas={4} />}
@@ -337,51 +347,57 @@ export default function AdvisorEvaluationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.22, delay: index * 0.03 }}
-                className="advisor-avaliacao"
+                className={`advisor-avaliacao student-avaliacao${avaliacao.cienciaRegistrada ? "" : " student-avaliacao--pendente"}`}
               >
                 <div className="advisor-avaliacao__cabecalho">
-                  <div>
-                    <p className="advisor-avaliacao__aluno">{avaliacao.alunoNome}</p>
-                    <p className="advisor-avaliacao__etapa">
-                      {avaliacao.etapaTitulo || `Etapa #${avaliacao.etapaId ?? "-"}`} · {formatDate(avaliacao.criadaEm)}
-                      {!activeProjectId && ` · ${todosProjetos.find((p) => p.id === avaliacao.projetoId)?.title ?? "Projeto"}`}
-                    </p>
+                  <div className="student-entrega__info">
+                    <span className="advisee-avatar">{getInitials(avaliacao.alunoNome)}</span>
+                    <div>
+                      <p className="advisor-avaliacao__aluno">{avaliacao.alunoNome}</p>
+                      <p className="advisor-avaliacao__etapa">
+                        {avaliacao.etapaTitulo || `Etapa #${avaliacao.etapaId ?? "-"}`} · {formatDate(avaliacao.criadaEm)}
+                        {!activeProjectId && ` · ${todosProjetos.find((p) => p.id === avaliacao.projetoId)?.title ?? "Projeto"}`}
+                      </p>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span className="advisor-percentual">Média {formatAvaliacaoNota(media)}</span>
-                    {avaliacao.cienciaRegistrada ? (
-                      <span className="advisor-etiqueta advisor-etiqueta--verde">
-                        <CheckCircle size={12} style={{ marginRight: 4 }} />
-                        Ciência registrada
-                      </span>
-                    ) : (
-                      <span className="advisor-etiqueta advisor-etiqueta--amarelo">Aguardando ciência</span>
-                    )}
-                    {!avaliacao.cienciaRegistrada && (
-                      <button
-                        type="button"
-                        className="advisor-botao advisor-botao--secundario"
-                        onClick={() => abrirModal(avaliacao)}
-                      >
-                        <Pencil size={15} />
-                        Editar
-                      </button>
-                    )}
+                  <div className="student-avaliacao__media">
+                    <strong>{formatAvaliacaoNota(media)}</strong>
+                    <span>média / 5</span>
                   </div>
                 </div>
 
                 <div className="advisor-notas">
-                  <AvaliacaoNota rotulo="Participação" valor={avaliacao.participacao} />
-                  <AvaliacaoNota rotulo="Qualidade técnica" valor={avaliacao.qualidadeTecnica} />
-                  <AvaliacaoNota rotulo="Cumprimento de prazos" valor={avaliacao.cumprimentoDePrazos} />
-                  <AvaliacaoNota rotulo="Comunicação" valor={avaliacao.comunicacao} />
+                  {CRITERIOS.map((criterio) => (
+                    <AvaliacaoNota key={criterio.key} rotulo={criterio.rotulo} valor={avaliacao[criterio.key]} />
+                  ))}
                 </div>
 
                 {avaliacao.comentarioOrientador && (
-                  <p style={{ fontSize: "var(--tamanho-base)", color: "var(--cor-texto-fraco)", lineHeight: 1.6 }}>
-                    “{avaliacao.comentarioOrientador}”
-                  </p>
+                  <div className="advisor-avaliacao__comentario">
+                    <span><ChatCircleText size={15} /> Seu comentário</span>
+                    <p>{avaliacao.comentarioOrientador}</p>
+                  </div>
                 )}
+
+                <div className="student-ciencia advisor-avaliacao__rodape">
+                  {avaliacao.cienciaRegistrada ? (
+                    <div className="student-ciencia--ok">
+                      <CheckCircle size={18} weight="fill" />
+                      <div>
+                        <strong>Ciência registrada{avaliacao.dataCiencia && ` em ${formatDate(avaliacao.dataCiencia)}`}</strong>
+                        {avaliacao.comentarioAluno && <p>“{avaliacao.comentarioAluno}”</p>}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="advisor-etiqueta advisor-etiqueta--amarelo"><Clock size={12} style={{ marginRight: 4 }} />Aguardando ciência do aluno</span>
+                      <button type="button" className="advisor-botao advisor-botao--secundario advisor-botao--pequeno" onClick={() => abrirModal(avaliacao)}>
+                        <Pencil size={15} />
+                        Editar
+                      </button>
+                    </>
+                  )}
+                </div>
               </motion.div>
             );
           })}

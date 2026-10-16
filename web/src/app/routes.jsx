@@ -111,6 +111,7 @@ const AdvisorProgressPage = lazyRoute(() => import("./pages/AdvisorProgressPage"
 const AdvisorDeliveriesPage = lazyRoute(() => import("./pages/AdvisorDeliveriesPage"));
 const AdvisorEvaluationsPage = lazyRoute(() => import("./pages/AdvisorEvaluationsPage"));
 const AdvisorProfilePage = lazyRoute(() => import("./pages/AdvisorProfilePage"));
+const StudentDeliveriesPage = lazyRoute(() => import("./pages/StudentDeliveriesPage"));
 const StudentEvaluationsPage = lazyRoute(() => import("./pages/StudentEvaluationsPage"));
 const StudentDeadlinesPage = lazyRoute(() => import("./pages/StudentDeadlinesPage"));
 
@@ -143,7 +144,10 @@ const routePreloaders = {
     ORIENTADOR: [() => import("./pages/AdvisorProfilePage")],
   },
   "/app/advisees": { ORIENTADOR: [() => import("./pages/AdvisorAdviseesPage")] },
-  "/app/deliveries": { ORIENTADOR: [() => import("./pages/AdvisorDeliveriesPage")] },
+  "/app/deliveries": {
+    ALUNO: [() => import("./pages/StudentDeliveriesPage")],
+    ORIENTADOR: [() => import("./pages/AdvisorDeliveriesPage")],
+  },
   "/app/configuracoes": [() => import("./pages/SettingsPage")],
 };
 const preloadedRoutes = new Set();
@@ -281,11 +285,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "deliveries",
-        element: (
-          <AdvisorOnly>
-            <AdvisorDeliveriesPage />
-          </AdvisorOnly>
-        ),
+        element: <RoleAware advisor={AdvisorDeliveriesPage} student={StudentDeliveriesPage} />,
       },
       {
         path: "avaliacoes",

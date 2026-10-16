@@ -22,6 +22,7 @@ const studentSections = [
     items: [
       { path: "/app/applications", label: "Inscrições", icon: FileText },
       { path: "/app/progress", label: "Minhas etapas", icon: TrendUp },
+      { path: "/app/deliveries", label: "Minhas entregas", icon: ClipboardText },
       { path: "/app/avaliacoes", label: "Minhas avaliações", icon: Users },
       { path: "/app/deadlines", label: "Calendário", icon: CalendarCheck },
       { path: "/app/chat", label: "Conversas", icon: ChatCircleText },

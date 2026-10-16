@@ -9,7 +9,7 @@ import { advisorService } from "../services/advisorService";
 import { deliveryService } from "../services/deliveryService";
 import { api } from "../services/api";
 import { mapProject, mapEntrega, mapDeliveryVersion } from "../utils/adapters";
-import { formatEntregaStatus, formatEntregaDecisao, formatDate } from "../utils/formatters";
+import { formatEntregaStatus, formatEntregaDecisao, formatDate, formatFileSize } from "../utils/formatters";
 import { normalizeError, getErrorMessage } from "../utils/apiError";
 import { StatusView } from "../components/StatusView";
 import { AppCombobox } from "../components/ui/AppCombobox";
@@ -29,13 +29,6 @@ function entregaPillClass(status) {
   if (status === "CHANGES_REQUESTED") return "advisor-etiqueta--laranja";
   if (status === "APPROVED") return "advisor-etiqueta--verde";
   return "advisor-etiqueta--cinza";
-}
-
-function formatarTamanho(bytes) {
-  if (!bytes) return "";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function mapEntregaComProjeto(item, projetoId) {
@@ -417,7 +410,7 @@ export default function AdvisorDeliveriesPage() {
                           </p>
                           <p className="advisor-versao__meta">
                             {formatDate(versao.enviadaEm)}
-                            {versao.tamanhoBytes ? ` · ${formatarTamanho(versao.tamanhoBytes)}` : ""}
+                            {versao.tamanhoBytes ? ` · ${formatFileSize(versao.tamanhoBytes)}` : ""}
                             {versao.revisao && (
                               <span> · {formatEntregaDecisao(versao.revisao.decisao)}</span>
                             )}
