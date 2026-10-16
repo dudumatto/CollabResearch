@@ -550,18 +550,29 @@ export default function ChatPage() {
 
   useEffect(() => {
     const conversationId = selectedConversation?.id;
-    if (!conversationId || loadingMessages || showMobileList) return;
-    const hasUnreadIncoming = messages.some((message) =>
+    // A lista só esconde a conversa no mobile; no desktop ela está sempre visível.
+    if (!conversationId || loadingMessages || !isConversationOpen(conversationId, selectedConversation, showMobileList)) return;
+    // Também considera a contagem do servidor: a lista de conversas pode apontar
+    // não lidas mesmo quando a página de mensagens carregada não as mostra.
+    const hasUnreadIncoming = Number(selectedConversation?.mensagensNaoLidas) > 0 || messages.some((message) =>
       !message._temporaria && !message.lida && Number(message.remetenteId) !== Number(user?.id),
     );
     if (!hasUnreadIncoming) return;
-    conversationService.markAsRead(conversationId).catch(() => {});
-    setMessages((prev) => prev.map((message) =>
-      !message._temporaria && Number(message.remetenteId) !== Number(user?.id)
-        ? { ...message, lida: true }
-        : message,
-    ));
-  }, [messages, selectedConversation?.id, loadingMessages, showMobileList, user?.id]);
+    // Só marca localmente após o servidor confirmar; se falhar, tenta de novo na próxima mudança.
+    conversationService.markAsRead(conversationId)
+      .then(() => {
+        const zeroUnread = (c) => (Number(c?.id) === Number(conversationId) ? { ...c, mensagensNaoLidas: 0 } : c);
+        setConversations((prev) => prev.map(zeroUnread));
+        setSelectedConversation((prev) => prev && zeroUnread(prev));
+        if (Number(selectedConversationRef.current?.id) !== Number(conversationId)) return;
+        setMessages((prev) => prev.map((message) =>
+          !message._temporaria && Number(message.remetenteId) !== Number(user?.id)
+            ? { ...message, lida: true }
+            : message,
+        ));
+      })
+      .catch((err) => console.warn("Falha ao marcar mensagens como lidas", err));
+  }, [messages, selectedConversation, loadingMessages, showMobileList, user?.id]);
 
   const conversationIdsKey = useMemo(
     () => conversations.map((conversation) => conversation.id).filter(Boolean).sort((a, b) => Number(a) - Number(b)).join(","),

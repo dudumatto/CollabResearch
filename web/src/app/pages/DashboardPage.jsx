@@ -407,7 +407,7 @@ export default function DashboardPage() {
                     />
                   }
                   trailing={formatTime(conversa.ultimaMensagemHorario)}
-                  onOpen={() => navigate("/app/chat")}
+                  onOpen={() => navigate("/app/chat", { state: { conversationId: conversa.id } })}
                   openLabel={`Abrir conversa ${conversa.titulo ?? ""}`}
                 />
               ))

@@ -94,7 +94,7 @@ export default function AdvisorDashboardPage() {
   const metricas = data?.metricas ?? {};
   const filas = data?.filas ?? {};
   const agenda = agendaState.data ?? [];
-  const go = (destino) => navigate(destino);
+  const go = (destino, options) => navigate(destino, options);
 
   const etapasAtrasadas = (filas.etapasAtrasadas ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT);
   const entregasAguardandoRevisao = (filas.entregasAguardandoRevisao ?? []).slice(0, DASHBOARD_PREVIEW_LIMIT);
@@ -324,7 +324,7 @@ export default function AdvisorDashboardPage() {
                     />
                   }
                   trailing={formatTime(conversa.ultimaMensagemHorario)}
-                  onOpen={() => go("/app/chat")}
+                  onOpen={() => go("/app/chat", { state: { conversationId: conversa.id } })}
                   openLabel={`Abrir conversa ${conversa.titulo ?? ""}`}
                 />
               ))

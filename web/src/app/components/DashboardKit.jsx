@@ -175,8 +175,14 @@ export function DashRow({ title, subtitle, badge, badgeTone = "neutro", avatar, 
         <span className="dash-linha__titulo">{title}</span>
         {subtitle && <span className="dash-linha__subtitulo">{subtitle}</span>}
       </span>
-      {badge && <span className={`dash-selo dash-selo--${badgeTone}`}>{badge}</span>}
-      {trailing && <span className="dash-linha__horario">{trailing}</span>}
+      {trailing ? (
+        <span className="dash-linha__lateral">
+          <span className={`dash-linha__horario ${badge ? "dash-linha__horario--destaque" : ""}`}>{trailing}</span>
+          {badge && <span className={`dash-selo dash-selo--${badgeTone} dash-selo--contador`}>{badge}</span>}
+        </span>
+      ) : (
+        badge && <span className={`dash-selo dash-selo--${badgeTone}`}>{badge}</span>
+      )}
     </Root>
   );
 }
