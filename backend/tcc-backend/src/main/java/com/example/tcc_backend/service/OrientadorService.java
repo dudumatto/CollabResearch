@@ -74,8 +74,11 @@ public class OrientadorService {
         List<ProjectDelivery> aguardandoRevisao = entregas.stream()
                 .filter(e -> e.getStatus() == EntregaStatus.PENDING_REVIEW)
                 .toList();
+        Set<Long> comCiencia = avaliacoes.isEmpty() ? Set.of()
+                : acknowledgementRepository.findByAvaliacaoIdIn(avaliacoes.stream().map(AcademicEvaluation::getId).toList())
+                        .stream().map(c -> c.getAvaliacao().getId()).collect(Collectors.toSet());
         List<AcademicEvaluation> aguardandoCiencia = avaliacoes.stream()
-                .filter(a -> !acknowledgementRepository.existsByAvaliacaoId(a.getId()))
+                .filter(a -> !comCiencia.contains(a.getId()))
                 .toList();
 
         OrientadorDashboardMetricas metricas = OrientadorDashboardMetricas.builder()
@@ -407,14 +410,11 @@ public class OrientadorService {
     }
 
     private Map<Integer, List<EtapaProgresso>> carregarEtapasPorProjeto(List<Projeto> projetos) {
-        Map<Integer, List<EtapaProgresso>> mapa = new LinkedHashMap<>();
-        for (Projeto projeto : projetos) {
-            List<EtapaProgresso> etapas = etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(projeto.getId());
-            if (!etapas.isEmpty()) {
-                mapa.put(projeto.getId(), etapas);
-            }
+        if (projetos.isEmpty()) {
+            return Map.of();
         }
-        return mapa;
+        return etapaProgressoRepository.findByProjetoIdInOrderByOrdemAsc(projetos.stream().map(Projeto::getId).toList()).stream()
+                .collect(Collectors.groupingBy(e -> e.getProjeto().getId(), LinkedHashMap::new, Collectors.toList()));
     }
 
     private Map<Integer, List<EtapaTarefa>> carregarTarefasPorEtapa(java.util.Collection<List<EtapaProgresso>> etapasPorProjeto) {

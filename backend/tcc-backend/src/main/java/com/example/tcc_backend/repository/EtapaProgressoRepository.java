@@ -13,6 +13,7 @@ public interface EtapaProgressoRepository extends JpaRepository<EtapaProgresso, 
     @Query("SELECT e FROM EtapaProgresso e JOIN FETCH e.projeto p LEFT JOIN FETCH e.concluidaPor WHERE p.id IN :projetoIds ORDER BY p.id, e.ordem")
     List<EtapaProgresso> findAllForCalendarioByProjetoIds(@Param("projetoIds") List<Integer> projetoIds);
     List<EtapaProgresso> findByProjetoIdOrderByOrdemAsc(Integer projetoId);
+    List<EtapaProgresso> findByProjetoIdInOrderByOrdemAsc(List<Integer> projetoIds);
     List<EtapaProgresso> findByProjetoOrientadorUsuarioId(Integer usuarioId);
     List<EtapaProgresso> findByPrazoIsNotNull();
     Optional<EtapaProgresso> findByProjetoIdAndId(Integer projetoId, Integer id);

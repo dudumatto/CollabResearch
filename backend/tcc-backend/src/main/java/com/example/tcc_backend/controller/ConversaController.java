@@ -36,6 +36,14 @@ public class ConversaController {
         return ConversaResponse.fromEntity(conversa, usuarioLogadoId, usuarioService::resolverFotoPerfilParaExibicao);
     }
 
+    private List<ConversaResponse> toConversaResponses(List<com.example.tcc_backend.model.Conversa> conversas, Integer usuarioLogadoId) {
+        ConversaService.ResumoConversas resumo = conversaService.resumirConversas(conversas, usuarioLogadoId);
+        return conversas.stream()
+                .map(c -> ConversaResponse.fromEntity(c, usuarioLogadoId, usuarioService::resolverFotoPerfilParaExibicao,
+                        resumo.ultimas().get(c.getId()), resumo.naoLidas().getOrDefault(c.getId(), 0L)))
+                .toList();
+    }
+
     @Operation(summary = "Criar conversa", description = "Cria uma nova conversa vinculada a um projeto.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Conversa criada com sucesso"),
@@ -86,8 +94,7 @@ public class ConversaController {
     public ResponseEntity<List<ConversaResponse>> listarConversas(@PathVariable Integer usuarioId) {
         Integer logadoId = authHelper.getCurrentUser().getId();
         return ResponseEntity.ok(
-                conversaService.listarConversasDoUsuario(usuarioId)
-                        .stream().map(c -> toConversaResponse(c, logadoId)).toList()
+                toConversaResponses(conversaService.listarConversasDoUsuario(usuarioId), logadoId)
         );
     }
 
@@ -96,8 +103,7 @@ public class ConversaController {
     public ResponseEntity<List<ConversaResponse>> listarMinhasTodas() {
         Integer logadoId = authHelper.getCurrentUser().getId();
         return ResponseEntity.ok(
-                conversaService.listarTodasConversasDoUsuario(logadoId)
-                        .stream().map(c -> toConversaResponse(c, logadoId)).toList()
+                toConversaResponses(conversaService.listarTodasConversasDoUsuario(logadoId), logadoId)
         );
     }
 
@@ -106,8 +112,7 @@ public class ConversaController {
     public ResponseEntity<List<ConversaResponse>> listarTodas(@PathVariable Integer usuarioId) {
         Integer logadoId = authHelper.getCurrentUser().getId();
         return ResponseEntity.ok(
-                conversaService.listarTodasConversasDoUsuario(usuarioId)
-                        .stream().map(c -> toConversaResponse(c, logadoId)).toList()
+                toConversaResponses(conversaService.listarTodasConversasDoUsuario(usuarioId), logadoId)
         );
     }
 
@@ -121,14 +126,13 @@ public class ConversaController {
             @RequestParam(defaultValue = "DESC") String direction) {
 
         Integer logadoId = authHelper.getCurrentUser().getId();
-        return ResponseEntity.ok(
-                PageResponse.from(
-                        conversaService.listarConversasDoUsuario(
-                                usuarioId,
-                                PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort))
-                        ).map(c -> toConversaResponse(c, logadoId))
-                )
+        var pagina = conversaService.listarConversasDoUsuario(
+                usuarioId,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort))
         );
+        List<ConversaResponse> respostas = toConversaResponses(pagina.getContent(), logadoId);
+        return ResponseEntity.ok(PageResponse.from(new org.springframework.data.domain.PageImpl<>(
+                respostas, pagina.getPageable(), pagina.getTotalElements())));
     }
 
     @Operation(summary = "Listar mensagens de uma conversa")

@@ -117,7 +117,6 @@ class OrientadorServiceTest {
         AcademicEvaluation avaliacao = AcademicEvaluation.builder()
                 .id(50L).projeto(projetoAberto).aluno(aluno).build();
         when(academicEvaluationRepository.findByProjetoOrientadorUsuarioId(2)).thenReturn(List.of(avaliacao));
-        when(acknowledgementRepository.existsByAvaliacaoId(50L)).thenReturn(false);
 
         OrientadorDashboardResponse response = orientadorService.dashboard();
 
@@ -193,8 +192,6 @@ class OrientadorServiceTest {
     @Test
     void orientandosDevemDeduplicarAlunoEmVariosProjetos() {
         autenticarOrientador();
-        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(10)).thenReturn(List.of());
-        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(11)).thenReturn(List.of());
 
         List<OrientandoResponse> orientandos = orientadorService.orientandos(null, null, null);
 
@@ -208,8 +205,6 @@ class OrientadorServiceTest {
     @Test
     void orientandosDevemSuportarBuscaPorNomeESituacao() {
         autenticarOrientador();
-        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(10)).thenReturn(List.of());
-        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(11)).thenReturn(List.of());
 
         assertThat(orientadorService.orientandos("Aluno Teste", null, null)).hasSize(1);
         assertThat(orientadorService.orientandos("Inexistente", null, null)).isEmpty();
@@ -220,8 +215,6 @@ class OrientadorServiceTest {
     @Test
     void orientandosDevemFiltrarPorProjeto() {
         autenticarOrientador();
-        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(10)).thenReturn(List.of());
-        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(11)).thenReturn(List.of());
 
         assertThat(orientadorService.orientandos(null, null, 11)).hasSize(1);
         assertThat(orientadorService.orientandos(null, null, 99)).isEmpty();
@@ -237,8 +230,7 @@ class OrientadorServiceTest {
                 .id(31).projeto(projetoAberto).titulo("Atrasada").peso(60)
                 .status(EtapaProgressoStatus.PENDING)
                 .prazo(OffsetDateTime.now().minusDays(1)).build();
-        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(10)).thenReturn(List.of(concluida, atrasada));
-        when(etapaProgressoRepository.findByProjetoIdOrderByOrdemAsc(11)).thenReturn(List.of());
+        when(etapaProgressoRepository.findByProjetoIdInOrderByOrdemAsc(List.of(10, 11))).thenReturn(List.of(concluida, atrasada));
         // progresso vem dos itens (2 de 5 concluidos), nao do peso dos marcos
         when(etapaTarefaRepository.findByEtapaIdInOrderByOrdemAscIdAsc(List.of(30, 31))).thenReturn(List.of(
                 tarefa(1, concluida, true), tarefa(2, concluida, true),

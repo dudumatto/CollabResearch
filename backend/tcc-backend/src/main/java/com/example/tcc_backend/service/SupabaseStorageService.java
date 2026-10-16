@@ -22,6 +22,14 @@ import java.time.Duration;
 public class SupabaseStorageService {
 
     private static final int SIGNED_URL_EXPIRATION_SECONDS = 3600;
+    // Reaproveita a URL assinada enquanto faltar bem mais que isso para expirar.
+    private static final long SIGNED_URL_REUSE_MS = (SIGNED_URL_EXPIRATION_SECONDS - 900) * 1000L;
+
+    private record CachedSignedUrl(String url, long reuseUntil) {}
+
+    // Cada assinatura e um POST ao Supabase (centenas de ms); listas com fotos faziam um por item.
+    // ponytail: mapa sem limite, cresce com arquivos distintos assinados; trocar por cache com tamanho maximo se o volume crescer.
+    private final java.util.concurrent.ConcurrentHashMap<String, CachedSignedUrl> signedUrlCache = new java.util.concurrent.ConcurrentHashMap<>();
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -186,6 +194,7 @@ public class SupabaseStorageService {
         if (ref == null || !ref.bucket().equals(userDocumentsBucket) || !isConfigured()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Arquivo remoto nao identificado ou armazenamento nao configurado");
         }
+        signedUrlCache.remove(ref.bucket() + "/" + ref.path().replaceAll("^/+", ""));
 
         String encodedPath = java.util.Arrays.stream(ref.path().split("/"))
                 .map(segment -> URLEncoder.encode(segment, StandardCharsets.UTF_8).replace("+", "%20"))
@@ -251,6 +260,19 @@ public class SupabaseStorageService {
         }
 
         String cleanPath = caminho.replaceAll("^/+", "");
+        String cacheKey = bucket + "/" + cleanPath;
+        CachedSignedUrl cached = signedUrlCache.get(cacheKey);
+        if (cached != null && cached.reuseUntil() > System.currentTimeMillis()) {
+            return cached.url();
+        }
+        String signedUrl = requestSignedUrl(bucket, cleanPath);
+        if (signedUrl != null) {
+            signedUrlCache.put(cacheKey, new CachedSignedUrl(signedUrl, System.currentTimeMillis() + SIGNED_URL_REUSE_MS));
+        }
+        return signedUrl;
+    }
+
+    private String requestSignedUrl(String bucket, String cleanPath) {
         String endpoint = "/storage/v1/object/sign/" + URLEncoder.encode(bucket, StandardCharsets.UTF_8) + "/" + cleanPath;
 
         try {

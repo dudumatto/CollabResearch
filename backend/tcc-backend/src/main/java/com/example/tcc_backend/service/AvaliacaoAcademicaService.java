@@ -16,6 +16,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -114,8 +117,11 @@ public class AvaliacaoAcademicaService {
                 ? academicEvaluationRepository.findByProjetoIdAndAlunoId(projetoId, alunoId)
                 : academicEvaluationRepository.findByProjetoId(projetoId);
 
+        Map<Long, AcademicEvaluationAcknowledgement> ciencias = avaliacoes.isEmpty() ? Map.of()
+                : acknowledgementRepository.findByAvaliacaoIdIn(avaliacoes.stream().map(AcademicEvaluation::getId).toList())
+                        .stream().collect(Collectors.toMap(c -> c.getAvaliacao().getId(), Function.identity()));
         return avaliacoes.stream()
-                .map(a -> AvaliacaoAcademicaResponse.fromEntity(a, buscarCiencia(a)))
+                .map(a -> AvaliacaoAcademicaResponse.fromEntity(a, ciencias.get(a.getId())))
                 .toList();
     }
 

@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.function.Function;
 
 @Data
@@ -49,23 +50,31 @@ public class ConversaResponse {
     }
 
     public static ConversaResponse fromEntity(Conversa conversa, Integer usuarioLogadoId, Function<String, String> fotoPerfilResolver) {
+        // Última mensagem (lista já vem ordenada DESC pelo @OrderBy)
+        List<Mensagem> mensagens = conversa.getMensagens();
+        Mensagem ultima = mensagens != null && !mensagens.isEmpty() ? mensagens.get(0) : null;
+        long naoLidas = mensagens == null ? 0 : mensagens.stream()
+                .filter(m -> m.getDataLeitura() == null
+                        && m.getRemetente() != null
+                        && !m.getRemetente().getId().equals(usuarioLogadoId))
+                .count();
+        return fromEntity(conversa, usuarioLogadoId, fotoPerfilResolver, ultima, naoLidas);
+    }
+
+    /** Variante para listagens: última mensagem e não lidas vêm de consultas agregadas, sem carregar todas as mensagens. */
+    public static ConversaResponse fromEntity(Conversa conversa, Integer usuarioLogadoId, Function<String, String> fotoPerfilResolver,
+                                              Mensagem ultima, long naoLidas) {
         Function<String, String> resolver = fotoPerfilResolver != null ? fotoPerfilResolver : Function.identity();
         ConversaResponseBuilder builder = ConversaResponse.builder()
                 .id(conversa.getId())
                 .dataCriacao(conversa.getDataCriacao())
                 .tipo(conversa.getTipo().name());
 
-        // Última mensagem (lista já vem ordenada DESC pelo @OrderBy)
-        if (conversa.getMensagens() != null && !conversa.getMensagens().isEmpty()) {
-            Mensagem ultima = conversa.getMensagens().get(0);
+        if (ultima != null) {
             builder
                     .ultimaMensagem(ultima.getConteudo())
                     .ultimaMensagemHorario(ultima.getDataEnvio())
-                    .mensagensNaoLidas(conversa.getMensagens().stream()
-                            .filter(m -> m.getDataLeitura() == null
-                                    && m.getRemetente() != null
-                                    && !m.getRemetente().getId().equals(usuarioLogadoId))
-                            .count());
+                    .mensagensNaoLidas(naoLidas);
         }
 
         if (conversa.getTipo() == TipoConversa.PRIVADA) {

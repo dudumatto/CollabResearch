@@ -110,6 +110,59 @@ class ConversaFunctionalTest extends FunctionalTestSupport {
     }
 
     @Test
+    void marcarComoLidasDeveZerarMensagensNaoLidasNaListagem() throws Exception {
+        TestUser remetente = registerAluno("conv-unread-a");
+        TestUser destinatario = registerAluno("conv-unread-b");
+        Integer conversaId = objectMapper.readTree(
+                mockMvc.perform(post("/api/conversas/privada/" + destinatario.userId())
+                                .header("Authorization", authHeader(remetente.token())))
+                        .andExpect(status().is2xxSuccessful())
+                        .andReturn().getResponse().getContentAsString()
+        ).get("id").asInt();
+        enviarMensagem(remetente.token(), conversaId, "Ola!");
+
+        assertThat(naoLidas(destinatario, conversaId)).isEqualTo(1);
+
+        mockMvc.perform(post("/api/conversas/" + conversaId + "/lidas")
+                        .header("Authorization", authHeader(destinatario.token())))
+                .andExpect(status().isNoContent());
+
+        assertThat(naoLidas(destinatario, conversaId)).isZero();
+    }
+
+    @Test
+    void orientadorMarcaComoLidasMensagemDeAlunoNoChatDoProjeto() throws Exception {
+        TestUser orientador = registerOrientador("conv-unread-adv");
+        TestUser aluno = registerAluno("conv-unread-stu");
+        Integer areaId = createArea("IA", createCurso("CC"));
+        Integer projetoId = createProjetoAsOrientador(orientador.token(), "Projeto Unread", areaId);
+        aprovarInscricao(orientador.token(), inscreverAluno(aluno.token(), projetoId));
+        Integer conversaId = criarConversa(orientador.token(), projetoId);
+        enviarMensagem(aluno.token(), conversaId, "Duvida");
+
+        assertThat(naoLidas(orientador, conversaId)).isEqualTo(1);
+
+        mockMvc.perform(post("/api/conversas/" + conversaId + "/lidas")
+                        .header("Authorization", authHeader(orientador.token())))
+                .andExpect(status().isNoContent());
+
+        assertThat(naoLidas(orientador, conversaId)).isZero();
+    }
+
+    private long naoLidas(TestUser usuario, Integer conversaId) throws Exception {
+        JsonNode conversas = objectMapper.readTree(
+                mockMvc.perform(get("/api/conversas/" + usuario.userId() + "/todas")
+                                .header("Authorization", authHeader(usuario.token())))
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString()
+        );
+        for (JsonNode c : conversas) {
+            if (c.get("id").asInt() == conversaId) return c.get("mensagensNaoLidas").asLong();
+        }
+        throw new AssertionError("conversa nao listada: " + conversaId);
+    }
+
+    @Test
     void editarMensagemDeveFuncionar() throws Exception {
         TestUser orientador = registerOrientador("conv-edit");
         Integer areaId = createArea("IA", createCurso("CC"));

@@ -134,6 +134,25 @@ public class ConversaService {
         return todas;
     }
 
+    public record ResumoConversas(Map<Integer, Mensagem> ultimas, Map<Integer, Long> naoLidas) {}
+
+    /** Última mensagem e contagem de não lidas de várias conversas em 2 consultas. */
+    public ResumoConversas resumirConversas(List<Conversa> conversas, Integer usuarioId) {
+        List<Integer> ids = conversas.stream().map(Conversa::getId).toList();
+        if (ids.isEmpty()) {
+            return new ResumoConversas(Map.of(), Map.of());
+        }
+        Map<Integer, Mensagem> ultimas = new HashMap<>();
+        for (Mensagem m : mensagemRepository.findUltimasPorConversaIds(ids)) {
+            ultimas.merge(m.getConversa().getId(), m, (a, b) -> a.getId() >= b.getId() ? a : b);
+        }
+        Map<Integer, Long> naoLidas = new HashMap<>();
+        for (Object[] row : mensagemRepository.contarNaoLidasPorConversaIds(ids, usuarioId)) {
+            naoLidas.put((Integer) row[0], ((Number) row[1]).longValue());
+        }
+        return new ResumoConversas(ultimas, naoLidas);
+    }
+
     public List<Mensagem> listarMensagens(Integer conversaId) {
         Usuario usuarioLogado = authHelper.getCurrentUser();
         Conversa conversa = conversaRepository.findById(conversaId)
