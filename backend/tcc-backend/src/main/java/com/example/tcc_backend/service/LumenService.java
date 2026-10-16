@@ -201,7 +201,7 @@ public class LumenService {
                          ObjectMapper objectMapper,
                          @Value("${lumen.api.key:}") String apiKey,
                          @Value("${lumen.api.url:https://openrouter.ai/api/v1/chat/completions}") String apiUrl,
-                         @Value("${lumen.model:nvidia/nemotron-3-ultra-550b-a55b:free}") String model,
+                         @Value("${lumen.model:}") String model,
                          @Value("${lumen.timeout-ms:45000}") long timeoutMs) {
         this.inscricaoRepository = inscricaoRepository;
         this.projetoRepository = projetoRepository;
@@ -247,8 +247,8 @@ public class LumenService {
                     : "Todos os candidatos pendentes ja foram avaliados pela Lumen.");
         }
 
-        if (!StringUtils.hasText(apiKey)) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI nao configurada (LUMEN_API_KEY ausente)");
+        if (!StringUtils.hasText(apiKey) || !StringUtils.hasText(model)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI nao configurada (LUMEN_API_KEY ou LUMEN_MODEL ausente)");
         }
 
         String contextoProjeto = buildContextoProjeto(projeto);
@@ -298,8 +298,8 @@ public class LumenService {
             return new LumenRecomendacaoResponse(List.of(), "Nenhum projeto aberto disponivel para recomendacao no momento.");
         }
 
-        if (!StringUtils.hasText(apiKey)) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI nao configurada (LUMEN_API_KEY ausente)");
+        if (!StringUtils.hasText(apiKey) || !StringUtils.hasText(model)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI nao configurada (LUMEN_API_KEY ou LUMEN_MODEL ausente)");
         }
 
         List<String> fontesSuspeitas = new ArrayList<>();
@@ -503,7 +503,9 @@ public class LumenService {
                     .body(String.class);
             response = raw != null ? objectMapper.readTree(raw) : null;
         } catch (Exception ex) {
-            log.warn("Falha ao chamar Lumen AI (OpenRouter): {}", ex.getMessage());
+            String corpo = ex instanceof org.springframework.web.client.RestClientResponseException r
+                    ? " corpo=" + StringUtils.truncate(r.getResponseBodyAsString(), 300) : "";
+            log.warn("Falha ao chamar Lumen AI (OpenRouter) modelo={}: {}{}", model, ex.getMessage(), corpo);
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI indisponivel no momento");
         }
 
