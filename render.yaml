@@ -54,3 +54,7 @@ services:
         value: "unicamp.br,g.unicamp.br,cotil.unicamp.br"
       - key: GOOGLE_TIMEOUT_MS
         value: "3000"
+      - key: LUMEN_API_KEY
+        sync: false
+      - key: LUMEN_MODEL
+        sync: false
