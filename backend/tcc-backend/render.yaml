@@ -5,7 +5,7 @@ services:
     rootDir: backend/tcc-backend
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    region: oregon
+    region: virginia
     plan: starter
     autoDeployTrigger: commit
     healthCheckPath: /api/health
