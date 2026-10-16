@@ -110,7 +110,7 @@ DESKTOP_API_PROXY_TARGET=https://seu-servico.onrender.com
 
 A interface continua chamando `/api` no servidor local de desenvolvimento, e a proxy encaminha as requisicoes ao Render. Assim, o backend nao precisa liberar origens locais no CORS de producao. Em um Web Service gratuito, a primeira requisicao apos um periodo sem uso pode demorar enquanto a instancia e reativada.
 
-Em uma versao Electron gerada com `npm run build` e aberta com `npm start`, as requisicoes sao enviadas pelo processo principal para `https://tcc-backend-jqod.onrender.com/api`. Isso permite que o aplicativo distribuido use o backend hospedado sem liberar a origem local do Electron no CORS.
+Em uma versao Electron gerada com `npm run build` e aberta com `npm start`, as requisicoes sao enviadas pelo processo principal para `https://collabresearch.onrender.com/api`. Isso permite que o aplicativo distribuido use o backend hospedado sem liberar a origem local do Electron no CORS.
 
 Para executar a versao gerada contra um backend local, informe a URL antes de iniciar:
 

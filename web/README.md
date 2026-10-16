@@ -75,9 +75,9 @@ Front-end-tcc/
 O projeto le variaveis via Vite. Crie um `.env.local` na raiz do frontend quando precisar apontar para outra API:
 
 ```env
-VITE_API_URL=https://tcc-backend-jqod.onrender.com
-VITE_BACKEND_URL=https://tcc-backend-jqod.onrender.com
-VITE_API_PROXY_TARGET=https://tcc-backend-jqod.onrender.com
+VITE_API_URL=https://collabresearch.onrender.com
+VITE_BACKEND_URL=https://collabresearch.onrender.com
+VITE_API_PROXY_TARGET=https://collabresearch.onrender.com
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 VITE_SUPABASE_BUCKET=documents
@@ -85,7 +85,7 @@ VITE_GOOGLE_CLIENT_ID=your_google_oauth_web_client_id
 VITE_GOOGLE_HOSTED_DOMAIN=unicamp.br,g.unicamp.br,cotil.unicamp.br
 ```
 
-`VITE_API_URL` define a base da API no Render. Em desenvolvimento, chamadas `/api` e `/ws` usam o proxy do Vite com `VITE_API_PROXY_TARGET`; sem `.env`, o proxy ja aponta para `https://tcc-backend-jqod.onrender.com`.
+`VITE_API_URL` define a base da API no Render. Em desenvolvimento, chamadas `/api` e `/ws` usam o proxy do Vite com `VITE_API_PROXY_TARGET`; sem `.env`, o proxy ja aponta para `https://collabresearch.onrender.com`.
 
 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e `VITE_SUPABASE_BUCKET` configuram upload direto no bucket pelo cliente Supabase. Use somente a anon key no frontend. Credenciais do banco (`DB_URL`, `DB_USER`, `DB_PASSWORD`) e `SUPABASE_SERVICE_ROLE_KEY` ficam apenas no Render/backend.
 

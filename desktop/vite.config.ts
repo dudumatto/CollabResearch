@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const backendUrl = env.DESKTOP_API_PROXY_TARGET?.replace(/\/api\/?$/, '')
     ?? env.VITE_API_URL?.replace(/\/api\/?$/, '')
-    ?? 'https://tcc-backend-jqod.onrender.com'
+    ?? 'https://collabresearch.onrender.com'
 
   return {
     plugins: [

@@ -63,7 +63,7 @@ scripts/security/
 export SECURITY_TARGET="https://collab-research.vercel.app"
 
 # Ou para backend
-export SECURITY_TARGET="https://tcc-backend-jqod.onrender.com"
+export SECURITY_TARGET="https://collabresearch.onrender.com"
 ```
 
 ### Executar Scripts Individualmente

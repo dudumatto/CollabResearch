@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
   const backendUrl =
     normalizeBackendUrl(env.VITE_API_PROXY_TARGET) ||
     normalizeBackendUrl(env.VITE_API_URL) ||
-    'https://tcc-backend-jqod.onrender.com'
+    'https://collabresearch.onrender.com'
 
   return {
     plugins: [

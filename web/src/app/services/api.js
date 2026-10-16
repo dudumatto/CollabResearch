@@ -4,7 +4,7 @@ import { ApiError } from "../utils/apiError";
 const API_BASE_URL = (
   import.meta.env.DEV
     ? ""
-    : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "https://tcc-backend-jqod.onrender.com"
+    : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "https://collabresearch.onrender.com"
 ).replace(/\/$/, "");
 
 // Cache de GET por sessao de navegacao. Qualquer mutacao (POST/PUT/PATCH/DELETE)

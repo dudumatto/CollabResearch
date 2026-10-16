@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const currentDir = dirname(fileURLToPath(import.meta.url))
-const defaultApiBaseUrl = 'https://tcc-backend-jqod.onrender.com/api'
+const defaultApiBaseUrl = 'https://collabresearch.onrender.com/api'
 const permittedApiMethods = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 
 type DesktopApiRequest = {

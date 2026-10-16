@@ -40,3 +40,6 @@ docs
 
 # Graphify cache
 graphify-out/
+
+# Dump do banco gerado na migracao de regiao (contem dados de producao)
+scripts/migracao-regiao/dump/
