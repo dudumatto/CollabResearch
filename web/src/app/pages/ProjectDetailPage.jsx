@@ -2,12 +2,14 @@ import { conversationService } from "../services/conversationService";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router";
-import { ArrowLeft, Users, Clock, BookOpen, PaperPlaneTilt, Envelope, ChatCircleText, ChartBar, CheckCircle, Pencil, Trash, UserPlus, UserMinus, CircleNotch, Warning, User, XCircle } from "@phosphor-icons/react";
+import { ArrowLeft, Users, Clock, BookOpen, PaperPlaneTilt, Envelope, ChatCircleText, ChartBar, CheckCircle, Pencil, Trash, UserPlus, UserMinus, CircleNotch, Warning, User, XCircle, ArrowsLeftRight, SignOut } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { useAuth } from "../hooks/useAuth";
 import { projectService } from "../services/projectService";
 import { applicationService } from "../services/applicationService";
+import { userService } from "../services/userService";
+import { AppCombobox } from "../components/ui/AppCombobox";
 import { StatusView } from "../components/StatusView";
 import { Sk, SkLines } from "../components/Skeleton";
 import {
@@ -285,6 +287,11 @@ export default function ProjectDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Abandono de orientacao (orientador responsavel)
+  const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
+  const [abandonLoading, setAbandonLoading] = useState(false);
+  const abandonTriggerRef = useRef(null);
+
   // Colaboradores
   const [collaborators, setCollaborators] = useState(null);
   const [collabLoading, setCollabLoading] = useState(false);
@@ -292,6 +299,26 @@ export default function ProjectDetailPage() {
   const [collaboratorToRemove, setCollaboratorToRemove] = useState(null);
   const removeCollaboratorTriggerRef = useRef(null);
   const deleteProjectTriggerRef = useRef(null);
+
+  // Troca de orientador: null | { advisors, selected, loading, saving }
+  const [advisorModal, setAdvisorModal] = useState(null);
+  const advisorTriggerRef = useRef(null);
+  const advisorModalOpen = advisorModal != null;
+  const advisorModalSaving = advisorModal?.saving === true;
+
+  useEffect(() => {
+    if (!advisorModalOpen) return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape" && !advisorModalSaving) setAdvisorModal(null);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [advisorModalOpen, advisorModalSaving]);
+
+  useEffect(() => {
+    if (!advisorModalOpen) return undefined;
+    return () => advisorTriggerRef.current?.focus();
+  }, [advisorModalOpen]);
 
   // Recrutar
   const [inscricoes, setInscricoes] = useState([]);
@@ -343,7 +370,7 @@ export default function ProjectDetailPage() {
     && project.status !== "PENDENTE_ORIENTADOR"
     && project.status !== "REJEITADO_ORIENTADOR";
   const canUpdateProject = (isStudentCreator || canAdvisorManageProject) && project.status !== "FINALIZADO";
-  const canDeleteProject = canAdvisorManageProject || (isStudentCreator && project.status === "PENDENTE_ORIENTADOR");
+  const canAbandonProject = isAdvisorOwner && (project.status === "ABERTO" || project.status === "EM_ANDAMENTO");
   const canApply = user?.tipo === "ALUNO" && !isStudentCreator;
 
   const currentApplication = useMemo(() => {
@@ -366,6 +393,14 @@ export default function ProjectDetailPage() {
     if (!user?.id || !Array.isArray(collaborators)) return false;
     return collaborators.some((collaborator) => Number(getCollaboratorId(collaborator)) === Number(user.id));
   }, [collaborators, user?.id]);
+
+  const lacksAdvisor = project?.status === "SEM_ORIENTADOR";
+  // Sem orientador: aluno criador escolhe; em projeto de orientador (sem criador) qualquer membro aprovado escolhe.
+  const canChangeAdvisor = lacksAdvisor
+    ? isStudentCreator || (user?.tipo === "ALUNO" && project.ownerId == null && isApprovedProjectCollaborator)
+    : isStudentCreator && (project?.status === "PENDENTE_ORIENTADOR" || project?.status === "REJEITADO_ORIENTADOR");
+  // Projeto que ja teve orientador nao pode ser excluido pelo aluno enquanto busca substituto.
+  const canDeleteProject = canAdvisorManageProject || (canChangeAdvisor && !lacksAdvisor && !project.previousStatus);
 
   const canOpenGroupConversation = canAdvisorManageProject
     || isStudentCreator
@@ -427,7 +462,7 @@ export default function ProjectDetailPage() {
     ? "detalhe-card__badge-status--encerrado"
     : project?.status === "REJEITADO_ORIENTADOR"
       ? "detalhe-card__badge-status--encerrado"
-      : project?.status === "PENDENTE_ORIENTADOR"
+      : project?.status === "PENDENTE_ORIENTADOR" || project?.status === "SEM_ORIENTADOR"
         ? "detalhe-card__badge-status--pendente"
     : project?.status === "EM_ANDAMENTO"
       ? "detalhe-card__badge-status--andamento"
@@ -472,6 +507,51 @@ export default function ProjectDetailPage() {
     setShowModal(false);
     setMotivation("");
   };
+  const openAdvisorModal = async () => {
+    setAdvisorModal({ advisors: [], selected: "", loading: true, saving: false });
+    try {
+      const list = await userService.listAdvisors();
+      const advisors = (Array.isArray(list) ? list : []).filter((a) => Number(a.id) !== Number(project.advisorId));
+      // m == null: usuário fechou o modal enquanto carregava; não reabrir.
+      setAdvisorModal((m) => m && { ...m, advisors, loading: false });
+    } catch {
+      setAdvisorModal(null);
+      toast.error("Não foi possível carregar os orientadores.");
+    }
+  };
+
+  const handleChangeAdvisor = async () => {
+    setAdvisorModal((m) => m && { ...m, saving: true });
+    try {
+      await projectService.changeAdvisor(id, Number(advisorModal.selected));
+    } catch (err) {
+      setAdvisorModal((m) => m && { ...m, saving: false });
+      toast.error(err.message || "Não foi possível trocar o orientador.");
+      return;
+    }
+    toast.success("Solicitação enviada ao novo orientador.");
+    setAdvisorModal(null);
+    try {
+      await reload();
+    } catch {
+      toast.error("Orientador trocado, mas não foi possível atualizar a página.");
+    }
+  };
+
+  const handleAbandon = async () => {
+    setAbandonLoading(true);
+    try {
+      await projectService.abandonGuidance(id);
+      toast.success("Você deixou a orientação do projeto.");
+      setShowAbandonConfirm(false);
+      await reload();
+    } catch (err) {
+      toast.error(err.message || "Não foi possível abandonar a orientação.");
+    } finally {
+      setAbandonLoading(false);
+    }
+  };
+
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
@@ -611,8 +691,30 @@ export default function ProjectDetailPage() {
           <ArrowLeft size={16} />
           Voltar para projetos
         </button>
-        {(canUpdateProject || canDeleteProject) && (
+        {(canUpdateProject || canDeleteProject || canChangeAdvisor || canAbandonProject) && (
           <div className="pagina-detalhe-projeto__acoes-dono">
+            {canAbandonProject && (
+              <button
+                onClick={(event) => {
+                  abandonTriggerRef.current = event.currentTarget;
+                  setShowAbandonConfirm(true);
+                }}
+                className="pagina-detalhe-projeto__botao-excluir"
+              >
+                <SignOut size={15} /> Abandonar orientação
+              </button>
+            )}
+            {canChangeAdvisor && (
+              <button
+                onClick={(event) => {
+                  advisorTriggerRef.current = event.currentTarget;
+                  openAdvisorModal();
+                }}
+                className="pagina-detalhe-projeto__botao-editar"
+              >
+                <ArrowsLeftRight size={15} /> {lacksAdvisor ? "Escolher novo orientador" : "Trocar orientador"}
+              </button>
+            )}
             {canUpdateProject && (
               <button
                 onClick={() => navigate(`/app/projects/${id}/edit`)}
@@ -1012,6 +1114,43 @@ export default function ProjectDetailPage() {
           </div>
         </div>
       , document.body)}
+      {advisorModal && createPortal(
+        <div
+          className="modal-inscricao__sobreposicao"
+          role="presentation"
+          onClick={(e) => e.target === e.currentTarget && !advisorModal.saving && setAdvisorModal(null)}
+        >
+          <div className="modal-inscricao__painel" role="dialog" aria-modal="true" aria-labelledby="change-advisor-title">
+            <div className="modal-inscricao__cabecalho">
+              <h3 id="change-advisor-title" className="modal-inscricao__titulo">Trocar orientador</h3>
+              <p className="modal-inscricao__subtitulo">{project.title}</p>
+            </div>
+            <div className="modal-inscricao__corpo">
+              <AppCombobox
+                id="novoOrientadorId"
+                name="novoOrientadorId"
+                ariaLabel="Selecionar novo orientador"
+                value={advisorModal.selected}
+                disabled={advisorModal.loading || advisorModal.saving}
+                placeholder={advisorModal.loading ? "Carregando..." : "Selecione um orientador"}
+                onChange={(selected) => setAdvisorModal((m) => ({ ...m, selected }))}
+                options={[
+                  { value: "", label: advisorModal.loading ? "Carregando..." : "Selecione um orientador", disabled: true },
+                  ...advisorModal.advisors.map((a) => ({ value: a.id, label: a.nome })),
+                ]}
+              />
+            </div>
+            <div className="modal-inscricao__rodape">
+              <button type="button" onClick={() => setAdvisorModal(null)} className="modal-inscricao__botao-cancelar" disabled={advisorModal.saving} autoFocus>
+                Cancelar
+              </button>
+              <button type="button" onClick={handleChangeAdvisor} disabled={!advisorModal.selected || advisorModal.saving} className="modal-inscricao__botao-enviar">
+                {advisorModal.saving ? <div className="modal-inscricao__spinner" /> : <><PaperPlaneTilt size={15} /> Solicitar</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      , document.body)}
       {collaboratorToRemove && (
         <ConfirmationDialog
           title="Remover colaborador"
@@ -1024,6 +1163,21 @@ export default function ProjectDetailPage() {
           titleId="remove-collaborator-title"
           descriptionId="remove-collaborator-description"
           returnFocusRef={removeCollaboratorTriggerRef}
+        />
+      )}
+
+      {showAbandonConfirm && (
+        <ConfirmationDialog
+          title="Abandonar orientação"
+          description={<>Tem certeza que deseja deixar a orientação de <strong>{project.title}</strong>? Você perderá o acesso ao projeto e a equipe precisará escolher um novo orientador.</>}
+          confirmLabel="Abandonar"
+          loadingLabel="Abandonando..."
+          loading={abandonLoading}
+          onCancel={() => setShowAbandonConfirm(false)}
+          onConfirm={handleAbandon}
+          titleId="abandon-project-title"
+          descriptionId="abandon-project-description"
+          returnFocusRef={abandonTriggerRef}
         />
       )}
 

@@ -134,6 +134,14 @@ export const projectService = {
     return api.put(`/api/projetos/${id}/rejeitar-orientacao`);
   },
 
+  abandonGuidance(id) {
+    return api.put(`/api/projetos/${id}/abandonar-orientacao`);
+  },
+
+  changeAdvisor(id, orientadorId) {
+    return api.put(`/api/projetos/${id}/orientador`, { orientadorId });
+  },
+
   // updateStatus
   updateStatus(id, status) {
     return api.patch(`/api/projetos/${id}/status`, { status });

@@ -238,6 +238,7 @@ export function mapProject(project) {
     area: project?.areaNome ?? project?.area ?? project?.orientador?.areaAtuacao ?? "Pesquisa",
     areaId: project?.areaId ?? null,
     status,
+    previousStatus: project?.statusAntesAbandono ?? null,
     createdAt: project?.dataCriacao ?? project?.createdAt ?? null,
     dataInicio: project?.dataInicio ?? null,
     dataFim: project?.dataFim ?? null,
