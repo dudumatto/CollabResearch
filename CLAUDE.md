@@ -13,10 +13,8 @@
 - Follow the repository's Caveman `ultra` guidance in `AGENTS.md`: concise Portuguese responses, maximum token compression, no filler, and no loss of technical details.
 - Use RTK for shell commands when available (`rtk git status`, `rtk git diff`, `rtk test`, and related wrappers) so command output stays compact.
 
-## Review gate
+## Security
 
-- Before any `git commit`, run Open Code Review on the pending changes with `ocr review` or the `/open-code-review:review` command. Fix or explicitly report findings before committing.
-- Before any production build, publish, or deployment, run the relevant Open Code Review review and scan. Do not claim production readiness without a successful review result.
 - Never include secrets, tokens, or credentials in source, generated graph files, frontend code, mobile code, or Electron renderer code.
 
 ## graphify
