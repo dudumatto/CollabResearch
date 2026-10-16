@@ -112,10 +112,13 @@ async function request(path, options = {}) {
     return performRequest(url, options, headers);
   }
 
-  if (options.signal) {
-    return performRequest(url, options, headers);
-  }
+  // GET com signal tambem usa o cache: o fetch e compartilhado e o abort so cancela a espera
+  // de quem abortou (ex.: troca de tela, StrictMode), sem descartar a resposta para os outros.
+  const { signal, ...sharedOptions } = options;
+  return withAbort(cachedGet(url, sharedOptions, headers), signal);
+}
 
+async function cachedGet(url, options, headers) {
   const cacheKey = getRequestCacheKey(url, headers);
   const cached = getRequestCache.get(cacheKey);
   if (cached?.promise) return cached.promise;
@@ -126,7 +129,9 @@ async function request(path, options = {}) {
 
   try {
     const result = await promise;
-    rememberGetResult(cacheKey, result);
+    if (getRequestCache.get(cacheKey)?.promise === promise) {
+      rememberGetResult(cacheKey, result);
+    }
     return result;
   } catch (err) {
     if (getRequestCache.get(cacheKey)?.promise === promise) {
@@ -134,6 +139,17 @@ async function request(path, options = {}) {
     }
     throw err;
   }
+}
+
+function withAbort(promise, signal) {
+  if (!signal) return promise;
+  const abortError = () => new DOMException("Aborted", "AbortError");
+  if (signal.aborted) return Promise.reject(abortError());
+  return new Promise((resolve, reject) => {
+    const onAbort = () => reject(abortError());
+    signal.addEventListener("abort", onAbort, { once: true });
+    promise.then(resolve, reject).finally(() => signal.removeEventListener("abort", onAbort));
+  });
 }
 
 export const api = {
