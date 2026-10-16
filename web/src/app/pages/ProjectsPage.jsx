@@ -76,9 +76,15 @@ export default function ProjectsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
   const location = useLocation();
-  const { rodando: lumenLoading, recomendacao, iniciarRecomendacao } = useLumenAnalysis();
+  const { rodando: lumenLoading, recomendacao: recomendacaoNova, iniciarRecomendacao } = useLumenAnalysis();
   const [lumenResultado, setLumenResultado] = useState(null);
   const isAluno = String(user?.tipo ?? "").toUpperCase() === "ALUNO";
+  const { data: recomendacaoSalva } = useAsyncData(
+    async () => (isAluno ? await projectService.ultimaRecomendacaoLumen().catch(() => null) : null),
+    [user?.id, isAluno],
+    { initialData: null },
+  );
+  const recomendacao = recomendacaoNova ?? recomendacaoSalva;
   const closeLumen = useCallback(() => setLumenResultado(null), []);
   const filterKey = `${selectedCourse}|${selectedArea}|${selectedStatus}|${debouncedSearch}`;
   const filterKeyRef = useRef(filterKey);

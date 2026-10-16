@@ -1,0 +1,218 @@
+/* Resultado da recomendação: mesma identidade visual do LumenLoadingModal. */
+.lumen-recs__modal {
+  max-width: 32rem;
+  width: min(100%, 32rem);
+  max-height: min(90dvh, 46rem);
+  align-items: stretch;
+}
+
+.lumen-recs__cabecalho {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.lumen-recs__orb {
+  width: 4.25rem;
+  height: 4.25rem;
+  margin-bottom: var(--espaco-3);
+}
+
+/* Análise concluída: anel gira devagar, ícone estável. */
+.lumen-recs__orb .lumen-loading__orb-ring {
+  animation-duration: 6s;
+}
+
+.lumen-recs__orb-icon {
+  position: relative;
+  color: var(--cor-primaria);
+  animation: lumen-recs-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.lumen-recs__descricao {
+  max-width: 22rem;
+}
+
+/* ---------- Lista ---------- */
+.lumen-recs__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  min-height: 0;
+  margin: 0 calc(var(--espaco-2) * -1) var(--espaco-4);
+  padding: var(--espaco-1) var(--espaco-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+  text-align: left;
+  scrollbar-width: thin;
+}
+
+.lumen-recs__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4);
+  border: 1px solid var(--cor-separador-suave, #d9ded6);
+  border-radius: var(--raio-medio);
+  background: var(--cor-fundo-leve);
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+  animation: lumen-recs-card-in 360ms ease-out both;
+  animation-delay: calc(120ms + var(--lumen-recs-ordem, 0) * 80ms);
+}
+
+.lumen-recs__card:hover,
+.lumen-recs__card:focus-within {
+  border-color: color-mix(in srgb, var(--cor-primaria) 40%, transparent);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--cor-primaria) 12%, transparent);
+  transform: translateY(-1px);
+}
+
+/* 1º lugar: borda com o gradiente do orb. */
+.lumen-recs__card--destaque {
+  border-color: transparent;
+  background:
+    linear-gradient(
+        color-mix(in srgb, var(--cor-primaria) 6%, var(--cor-superficie)),
+        color-mix(in srgb, var(--cor-primaria) 6%, var(--cor-superficie))
+      )
+      padding-box,
+    linear-gradient(120deg, #ef4444, #facc15, #3b82f6, var(--cor-primaria)) border-box;
+}
+
+.lumen-recs__card-topo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+}
+
+.lumen-recs__posicao {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cor-primaria) 12%, transparent);
+  color: var(--cor-primaria);
+  font-size: 0.8125rem;
+  font-weight: var(--peso-negrito);
+}
+
+.lumen-recs__card--destaque .lumen-recs__posicao {
+  background: var(--cor-primaria);
+  color: var(--cor-branco, #fff);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--cor-primaria) 35%, transparent);
+}
+
+.lumen-recs__card-titulos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.lumen-recs__nome {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--cor-texto);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-negrito);
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.lumen-recs__area {
+  color: var(--cor-primaria);
+  font-size: 0.75rem;
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.02em;
+}
+
+.lumen-recs__texto {
+  margin: 0;
+  color: var(--cor-texto-fraco);
+  font-size: var(--tamanho-pequeno);
+  line-height: 1.6;
+}
+
+.lumen-recs__ver {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--espaco-2);
+  min-height: 2.25rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--cor-primaria) 35%, transparent);
+  border-radius: 999px;
+  background: var(--cor-superficie);
+  color: var(--cor-primaria);
+  cursor: pointer;
+  font-family: var(--fonte-principal);
+  font-size: var(--tamanho-pequeno);
+  font-weight: var(--peso-semi);
+  transition: var(--transicao-normal);
+}
+
+.lumen-recs__ver svg {
+  transition: transform 200ms ease;
+}
+
+.lumen-recs__ver:hover,
+.lumen-recs__ver:focus-visible {
+  background: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  color: var(--cor-branco, #fff);
+  outline: none;
+}
+
+.lumen-recs__ver:hover svg,
+.lumen-recs__ver:focus-visible svg {
+  transform: translateX(3px);
+}
+
+.lumen-recs__ver:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-primaria) 30%, transparent);
+}
+
+.lumen-recs__aviso {
+  flex-shrink: 0;
+  text-align: left;
+}
+
+/* ---------- Mobile: bottom sheet (herdado) ---------- */
+@media (max-width: 480px) {
+  .lumen-recs__modal {
+    max-width: none;
+    max-height: 92dvh;
+  }
+
+  .lumen-recs__card {
+    padding: var(--espaco-3);
+  }
+}
+
+@keyframes lumen-recs-card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lumen-recs-pop {
+  from { opacity: 0; transform: scale(0.6) rotate(-20deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lumen-recs__card,
+  .lumen-recs__orb-icon {
+    animation: none !important;
+  }
+
+  .lumen-recs__card:hover,
+  .lumen-recs__card:focus-within {
+    transform: none;
+  }
+}

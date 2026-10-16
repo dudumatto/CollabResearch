@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Sparkle, Warning, X, ArrowRight } from "@phosphor-icons/react";
-import "../pages/AdvisorWorkspace.css";
+import { Sparkle, Info, X, ArrowRight } from "@phosphor-icons/react";
+import "./LogoutConfirmModal.css";
+import "./LumenLoadingModal.css";
+import "./LumenRecommendationsModal.css";
 
 export function LumenRecommendationsModal({ open, recomendacoes = [], aviso, onClose, onOpenProject }) {
   useEffect(() => {
@@ -15,55 +17,71 @@ export function LumenRecommendationsModal({ open, recomendacoes = [], aviso, onC
 
   if (!open) return null;
 
-  return createPortal(
-    <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="lumen-recomendacoes-titulo">
-      <div className="advisor-modal advisor-lumen">
-        <div className="advisor-modal__cabecalho">
-          <div className="advisor-lumen__icone" aria-hidden="true">
-            <Sparkle size={22} weight="fill" />
-          </div>
-          <div className="advisor-modal__cabecalho-conteudo">
-            <h3 id="lumen-recomendacoes-titulo" className="advisor-modal__titulo">Projetos recomendados pela Lumen</h3>
-            <p className="advisor-lumen__subtitulo">Compatibilidade entre o seu perfil e os projetos abertos</p>
-          </div>
-          <button type="button" className="advisor-modal__fechar" onClick={onClose} aria-label="Fechar">
-            <X size={20} />
-          </button>
-        </div>
+  const total = recomendacoes.length;
 
-        <div className="advisor-modal__corpo">
-          <ol className="advisor-lumen__lista" style={{ listStyle: "none", margin: 0, padding: 0 }}>
+  return createPortal(
+    <div className="logout-confirm__overlay lumen-loading__overlay" role="presentation" data-entering="true">
+      <div
+        className="logout-confirm__modal lumen-loading__modal lumen-recs__modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lumen-recomendacoes-titulo"
+        aria-describedby="lumen-recomendacoes-descricao"
+        data-entering="true"
+      >
+        <button type="button" className="lumen-loading__fechar" onClick={onClose} aria-label="Fechar">
+          <X size={18} />
+        </button>
+
+        <header className="lumen-recs__cabecalho">
+          <div className="lumen-loading__orb lumen-recs__orb" aria-hidden="true">
+            <span className="lumen-loading__orb-ring" />
+            <span className="lumen-loading__orb-fill" />
+            <Sparkle className="lumen-recs__orb-icon" size={26} weight="fill" />
+          </div>
+          <span className="lumen-loading__selo">
+            <Sparkle size={12} weight="fill" aria-hidden="true" /> Lumen IA
+          </span>
+          <h2 id="lumen-recomendacoes-titulo" className="lumen-loading__titulo">Projetos recomendados pela Lumen</h2>
+          <p id="lumen-recomendacoes-descricao" className="lumen-loading__descricao lumen-recs__descricao">
+            {total > 0
+              ? `${total === 1 ? "Encontramos 1 projeto compatível" : `Encontramos ${total} projetos compatíveis`} com o seu perfil.`
+              : "Nenhum projeto aberto combina com o seu perfil no momento."}
+          </p>
+        </header>
+
+        {total > 0 && (
+          <ol className="lumen-recs__lista">
             {recomendacoes.map((r, i) => (
-              <li key={r.projetoId} className="advisor-lumen__card">
-                <div className="advisor-lumen__card-topo">
-                  <span className="advisor-lumen__posicao">{i + 1}º</span>
-                  <strong className="advisor-lumen__nome" title={r.titulo}>{r.titulo}</strong>
+              <li
+                key={r.projetoId}
+                className={`advisor-lumen__card lumen-recs__card${i === 0 ? " lumen-recs__card--destaque" : ""}`}
+                style={{ "--lumen-recs-ordem": i }}
+              >
+                <div className="lumen-recs__card-topo">
+                  <span className="lumen-recs__posicao" aria-label={`${i + 1}º lugar`}>{i + 1}º</span>
+                  <div className="lumen-recs__card-titulos">
+                    <strong className="lumen-recs__nome" title={r.titulo}>{r.titulo}</strong>
+                    {r.area && <span className="lumen-recs__area">{r.area}</span>}
+                  </div>
                 </div>
-                {r.area && <span className="advisor-lumen__subtitulo">{r.area}</span>}
-                <p className="advisor-lumen__texto">{r.justificativa || "Sem justificativa informada."}</p>
-                <button
-                  type="button"
-                  className="advisor-botao advisor-botao--secundario advisor-botao--pequeno"
-                  style={{ alignSelf: "flex-start" }}
-                  onClick={() => onOpenProject(r.projetoId)}
-                >
-                  Ver projeto <ArrowRight size={14} />
+                <p className="lumen-recs__texto">{r.justificativa || "Sem justificativa informada."}</p>
+                <button type="button" className="lumen-recs__ver" onClick={() => onOpenProject(r.projetoId)}>
+                  Ver projeto <ArrowRight size={14} weight="bold" aria-hidden="true" />
                 </button>
               </li>
             ))}
           </ol>
-        </div>
+        )}
 
-        <p className="advisor-lumen__aviso">
-          <Warning size={14} weight="fill" />
+        <p className="lumen-loading__aviso lumen-recs__aviso">
+          <Info size={16} aria-hidden="true" />
           {aviso || "Sugestão gerada por IA. Avalie cada projeto antes de se inscrever."}
         </p>
 
-        <div className="advisor-lumen__acoes">
-          <button type="button" className="advisor-botao advisor-botao--secundario" onClick={onClose}>
-            Fechar
-          </button>
-        </div>
+        <button type="button" className="lumen-loading__continuar" onClick={onClose}>
+          Fechar
+        </button>
       </div>
     </div>,
     document.body,

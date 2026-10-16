@@ -170,4 +170,8 @@ export const projectService = {
   recomendarComLumen() {
     return api.post("/api/lumen/recomendar-projetos");
   },
+  // Última análise salva no banco (null se o aluno nunca analisou).
+  ultimaRecomendacaoLumen() {
+    return api.get("/api/lumen/recomendar-projetos");
+  },
 };
