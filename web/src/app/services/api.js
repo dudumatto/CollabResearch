@@ -1,11 +1,16 @@
 import { clearStoredToken, getStoredToken } from "../utils/storage";
 import { ApiError } from "../utils/apiError";
 
-const API_BASE_URL = (
+// Backend direto: so o WebSocket usa (rewrites da Vercel nao proxiam WS).
+const BACKEND_URL = (
   import.meta.env.DEV
     ? ""
     : import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "https://collabresearch.onrender.com"
 ).replace(/\/$/, "");
+
+// REST sempre same-origin: proxy do Vite (dev) e rewrite /api da Vercel (prod, vercel.json).
+// Cross-origin forcava um preflight OPTIONS extra por URL (Authorization dispara CORS).
+const API_BASE_URL = "";
 
 // Cache de GET por sessao de navegacao. Qualquer mutacao (POST/PUT/PATCH/DELETE)
 // limpa todo o cache, entao durante leitura/navegacao as mesmas rotas nao sao
@@ -191,5 +196,5 @@ export const api = {
       }
       return res.blob();
     }),
-  baseUrl: API_BASE_URL,
+  baseUrl: BACKEND_URL,
 };
