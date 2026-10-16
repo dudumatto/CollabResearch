@@ -226,7 +226,17 @@ export default function AdvisorApplicationsPage() {
     [inscricoes],
   );
 
-  const mostrarBotaoLumen = Boolean(projetoFiltrado) && filtro === "PENDENTE" && filtradas.length > 0;
+  const pendentesDoProjeto = useMemo(
+    () => (projetoFiltrado
+      ? inscricoes.filter((app) => app.status === "PENDENTE" && String(app.projetoId) === String(projetoFiltrado))
+      : []),
+    [inscricoes, projetoFiltrado],
+  );
+  const motivoLumenIndisponivel = !projetoFiltrado
+    ? "Selecione um projeto para analisar com a Lumen."
+    : pendentesDoProjeto.length === 0
+      ? "Este projeto não tem inscrições pendentes para analisar."
+      : null;
 
   // A análise roda no provider do layout: continua se o orientador sair da tela.
   const analisarComLumen = (projetoId = projetoFiltrado, ids = []) => {
@@ -358,7 +368,7 @@ export default function AdvisorApplicationsPage() {
       </div>
 
       {projetos.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: "var(--espaco-3)" }}>
+        <div className="advisor-inscricoes-acoes" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: "var(--espaco-3)" }}>
           <AppCombobox
             ariaLabel="Filtrar por projeto"
             className="advisor-select"
@@ -372,48 +382,52 @@ export default function AdvisorApplicationsPage() {
             ]}
           />
 
-          {mostrarBotaoLumen && !selecionando && (
-            <LumenTooltip title={LUMEN_TOOLTIP} placement="top">
+          {!selecionando && (
+            <LumenTooltip title={motivoLumenIndisponivel ?? LUMEN_TOOLTIP} placement="top">
               <span style={{ display: "inline-flex" }}>
-                <LumenAIButton onClick={() => analisarComLumen()} disabled={lumenLoading}>
+                <LumenAIButton
+                  onClick={() => analisarComLumen()}
+                  disabled={lumenLoading || Boolean(motivoLumenIndisponivel)}
+                >
                   {lumenLoading
                     ? "Analisando..."
-                    : filtradas.some((app) => rankingMap.has(app.id)) ? "Avaliar novos com Lumen" : "Analisar com Lumen"}
+                    : pendentesDoProjeto.some((app) => rankingMap.has(app.id)) ? "Avaliar novos com Lumen" : "Analisar com Lumen"}
                 </LumenAIButton>
               </span>
             </LumenTooltip>
           )}
 
-          {mostrarBotaoLumen && (
-            selecionando ? (
-              <>
-                <LumenAIButton
-                  onClick={() => analisarComLumen(projetoFiltrado, [...selecionados])}
-                  disabled={lumenLoading || selecionados.size === 0}
-                >
-                  Reavaliar selecionados ({selecionados.size})
-                </LumenAIButton>
-                <button
-                  type="button"
-                  className="advisor-botao advisor-botao--secundario"
-                  onClick={() => {
-                    setSelecionando(false);
-                    setSelecionados(new Set());
-                  }}
-                >
-                  Cancelar
-                </button>
-              </>
-            ) : (
+          {selecionando ? (
+            <>
+              <LumenAIButton
+                onClick={() => analisarComLumen(projetoFiltrado, [...selecionados])}
+                disabled={lumenLoading || selecionados.size === 0}
+              >
+                Reavaliar selecionados ({selecionados.size})
+              </LumenAIButton>
               <button
                 type="button"
                 className="advisor-botao advisor-botao--secundario"
-                onClick={() => setSelecionando(true)}
-                disabled={lumenLoading}
+                onClick={() => {
+                  setSelecionando(false);
+                  setSelecionados(new Set());
+                }}
               >
-                Selecionar para reavaliar
+                Cancelar
               </button>
-            )
+            </>
+          ) : (
+            <button
+              type="button"
+              className="advisor-botao advisor-botao--secundario"
+              onClick={() => {
+                setFiltro("PENDENTE");
+                setSelecionando(true);
+              }}
+              disabled={lumenLoading || Boolean(motivoLumenIndisponivel)}
+            >
+              Selecionar para reavaliar
+            </button>
           )}
 
           {lumenRanking.length > 0 && (
@@ -427,6 +441,9 @@ export default function AdvisorApplicationsPage() {
             >
               Ver últimas avaliações da Lumen
             </button>
+          )}
+          {!selecionando && motivoLumenIndisponivel && !lumenLoading && (
+            <p className="advisor-inscricoes-dica">{motivoLumenIndisponivel}</p>
           )}
         </div>
       )}

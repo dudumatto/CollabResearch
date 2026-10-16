@@ -81,16 +81,32 @@ function buildMonthDays(monthDate) {
   });
 }
 
-function statusClass(status) {
-  if (status === "DONE") return "advisor-etiqueta--verde";
-  if (status === "ACTIVE") return "advisor-etiqueta--amarelo";
-  if (status === "REJECTED") return "advisor-etiqueta--vermelho";
-  return "advisor-etiqueta--vermelho";
+// Tom visual da etapa: concluída, em andamento, atrasada (prazo vencido) ou pendente.
+function statusTone(item) {
+  if (item.status === "DONE") return "concluida";
+  if (item.status === "REJECTED") return "atrasada";
+  const due = getDueDate(item);
+  if (due && toDateKey(due) < toDateKey(new Date())) return "atrasada";
+  return item.status === "ACTIVE" ? "andamento" : "pendente";
 }
+
+const TONE_ETIQUETA = {
+  concluida: "advisor-etiqueta--cinza",
+  andamento: "advisor-etiqueta--amarelo",
+  atrasada: "advisor-etiqueta--vermelho",
+  pendente: "advisor-etiqueta--verde",
+};
+
+const TONE_LEGENDA = [
+  ["pendente", "Pendente"],
+  ["andamento", "Em andamento"],
+  ["concluida", "Concluída"],
+  ["atrasada", "Atrasada ou rejeitada"],
+];
 
 function DeadlineItem({ item, compact = false }) {
   return (
-    <article className={`calendario-prazo ${compact ? "calendario-prazo--compacto" : ""}`}>
+    <article className={`calendario-prazo calendario-prazo--${statusTone(item)} ${compact ? "calendario-prazo--compacto" : ""}`}>
       <div className="calendario-prazo__icone">
         <CalendarCheck size={16} />
       </div>
@@ -101,7 +117,9 @@ function DeadlineItem({ item, compact = false }) {
           <div className="calendario-prazo__detalhes">
             <span>{formatCalendarDate(item)}</span>
             <span>{formatEtapaResponsavel(item.responsavel)}</span>
-            <span className={`advisor-etiqueta ${statusClass(item.status)}`}>{formatEtapaStatus(item.status)}</span>
+            <span className={`advisor-etiqueta ${TONE_ETIQUETA[statusTone(item)]}`}>
+              {statusTone(item) === "atrasada" && item.status !== "REJECTED" ? "Atrasada" : formatEtapaStatus(item.status)}
+            </span>
           </div>
         )}
       </div>
@@ -114,10 +132,8 @@ export default function StudentDeadlinesPage() {
   const [hoverTooltipKey, setHoverTooltipKey] = useState(null);
   const [activeTooltipKey, setActiveTooltipKey] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(ALL_PROJECTS_VALUE);
-  const [visibleMonth, setVisibleMonth] = useState(() => {
-    const today = new Date();
-    return new Date(today.getFullYear(), today.getMonth(), 1);
-  });
+  // null = o usuário ainda não navegou: abre no mês de hoje (ou no mais próximo com prazos).
+  const [pickedMonth, setPickedMonth] = useState(null);
 
   const { data, loading, error } = useAsyncData(async () => {
     const result = await etapaService.listMine();
@@ -186,6 +202,20 @@ export default function StudentDeadlinesPage() {
   }, [scheduled]);
 
   const todayKey = toDateKey(new Date());
+  const visibleMonth = useMemo(() => {
+    if (pickedMonth) return pickedMonth;
+    const today = new Date();
+    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (scheduled.length === 0 || scheduled.some((item) => {
+      const date = getDueDate(item);
+      return date.getFullYear() === thisMonth.getFullYear() && date.getMonth() === thisMonth.getMonth();
+    })) return thisMonth;
+    const nearest = scheduled.reduce((best, item) => (
+      Math.abs(getDueDate(item) - today) < Math.abs(getDueDate(best) - today) ? item : best
+    ));
+    const date = getDueDate(nearest);
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+  }, [pickedMonth, scheduled]);
   const monthDays = useMemo(() => buildMonthDays(visibleMonth), [visibleMonth]);
   const monthItems = scheduled.filter((item) => {
     const date = getDueDate(item);
@@ -193,7 +223,7 @@ export default function StudentDeadlinesPage() {
   });
 
   const moveMonth = (amount) => {
-    setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
+    setPickedMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + amount, 1));
     setActiveTooltipKey(null);
     setHoverTooltipKey(null);
   };
@@ -361,15 +391,15 @@ export default function StudentDeadlinesPage() {
                   >
                     <span className="calendario-dia__numero">{date.getDate()}</span>
                     <div className="calendario-dia__eventos">
-                      {items.slice(0, 3).map((item) => (
+                      {items.slice(0, items.length > 2 ? 1 : 2).map((item) => (
                         <span
                           key={`${item.projectId}-${item.id}`}
-                          className="calendario-evento"
+                          className={`calendario-evento calendario-evento--${statusTone(item)}`}
                         >
                           <span className="calendario-evento__rotulo">{item.titulo}</span>
                         </span>
                       ))}
-                      {items.length > 3 && <small>+{items.length - 3} etapas</small>}
+                      {items.length > 2 && <small>+{items.length - 1} etapas</small>}
                     </div>
                     {canOpenTooltip && (
                       <div
@@ -390,7 +420,7 @@ export default function StudentDeadlinesPage() {
                           {items.map((item) => (
                             <div
                               key={`tooltip-${item.projectId}-${item.id}`}
-                              className="calendario-dia__tooltip-item"
+                              className={`calendario-dia__tooltip-item calendario-evento--${statusTone(item)}`}
                             >
                               <strong>{item.titulo}</strong>
                               <span>{item.projectTitle}</span>
@@ -406,6 +436,11 @@ export default function StudentDeadlinesPage() {
                 );
               })}
             </div>
+            <ul className="calendario-legenda" aria-label="Legenda de status">
+              {TONE_LEGENDA.map(([tone, label]) => (
+                <li key={tone} className={`calendario-legenda__item calendario-evento--${tone}`}>{label}</li>
+              ))}
+            </ul>
           </section>
 
           <aside className="calendario-lateral">
