@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.function.Function;
 
 @Data
 @Builder
@@ -35,7 +36,11 @@ public class InscricaoResponse {
     private String lumenAvaliacao;
 
     public static InscricaoResponse fromEntityParaOrientador(Inscricao inscricao) {
-        InscricaoResponse response = fromEntity(inscricao);
+        return fromEntityParaOrientador(inscricao, Function.identity());
+    }
+
+    public static InscricaoResponse fromEntityParaOrientador(Inscricao inscricao, Function<String, String> fotoPerfilResolver) {
+        InscricaoResponse response = fromEntity(inscricao, null, fotoPerfilResolver);
         response.setLumenPontuacao(inscricao.getLumenPontuacao());
         response.setLumenJustificativa(inscricao.getLumenJustificativa());
         response.setLumenAvaliacao(inscricao.getLumenAvaliacao());
@@ -47,11 +52,15 @@ public class InscricaoResponse {
     }
 
     public static InscricaoResponse fromEntity(Inscricao inscricao, Integer vagasOcupadas) {
+        return fromEntity(inscricao, vagasOcupadas, Function.identity());
+    }
+
+    public static InscricaoResponse fromEntity(Inscricao inscricao, Integer vagasOcupadas, Function<String, String> fotoPerfilResolver) {
         ProjetoResponse projeto = null;
         if (inscricao.getProjeto() != null) {
             projeto = vagasOcupadas != null
-                    ? ProjetoResponse.fromEntity(inscricao.getProjeto(), vagasOcupadas)
-                    : ProjetoResponse.fromEntity(inscricao.getProjeto());
+                    ? ProjetoResponse.fromEntity(inscricao.getProjeto(), vagasOcupadas, fotoPerfilResolver)
+                    : ProjetoResponse.fromEntity(inscricao.getProjeto(), fotoPerfilResolver);
         }
 
         return InscricaoResponse.builder()
@@ -66,7 +75,7 @@ public class InscricaoResponse {
                 .alunoId(inscricao.getAluno() != null ? inscricao.getAluno().getId() : null)
                 .alunoUsuarioId(inscricao.getAluno() != null && inscricao.getAluno().getUsuario() != null ? inscricao.getAluno().getUsuario().getId() : null)
                 .alunoNome(inscricao.getAluno() != null && inscricao.getAluno().getUsuario() != null ? inscricao.getAluno().getUsuario().getNome() : null)
-                .alunoFotoPerfilUrl(inscricao.getAluno() != null && inscricao.getAluno().getUsuario() != null ? inscricao.getAluno().getUsuario().getFotoPerfilUrl() : null)
+                .alunoFotoPerfilUrl(inscricao.getAluno() != null && inscricao.getAluno().getUsuario() != null ? fotoPerfilResolver.apply(inscricao.getAluno().getUsuario().getFotoPerfilUrl()) : null)
                 .build();
     }
 }

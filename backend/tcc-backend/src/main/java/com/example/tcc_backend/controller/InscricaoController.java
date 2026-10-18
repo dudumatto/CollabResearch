@@ -6,6 +6,7 @@ import com.example.tcc_backend.dto.response.InscricaoResponse;
 import com.example.tcc_backend.dto.response.PageResponse;
 import com.example.tcc_backend.service.InscricaoService;
 import com.example.tcc_backend.service.ProjetoService;
+import com.example.tcc_backend.service.UsuarioService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +32,12 @@ public class InscricaoController {
 
     private final InscricaoService inscricaoService;
     private final ProjetoService projetoService;
+    private final UsuarioService usuarioService;
 
     private InscricaoResponse toResponse(com.example.tcc_backend.model.Inscricao inscricao) {
         Integer projetoId = inscricao.getProjeto() != null ? inscricao.getProjeto().getId() : null;
         Integer vagasOcupadas = projetoId != null ? projetoService.contarVagasOcupadas(projetoId) : null;
-        return InscricaoResponse.fromEntity(inscricao, vagasOcupadas);
+        return InscricaoResponse.fromEntity(inscricao, vagasOcupadas, usuarioService::resolverFotoPerfilParaExibicao);
     }
 
     @Operation(summary = "Listar inscrições", description = "Retorna inscrições visíveis ao perfil autenticado: próprias para alunos, dos projetos sob responsabilidade para orientadores e todas para administradores.")

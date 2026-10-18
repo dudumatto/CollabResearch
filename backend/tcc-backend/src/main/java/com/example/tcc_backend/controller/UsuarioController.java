@@ -49,7 +49,7 @@ public class UsuarioController {
     private InscricaoResponse inscricaoResponse(com.example.tcc_backend.model.Inscricao inscricao) {
         Integer projetoId = inscricao.getProjeto() != null ? inscricao.getProjeto().getId() : null;
         Integer vagasOcupadas = projetoId != null ? projetoService.contarVagasOcupadas(projetoId) : null;
-        return InscricaoResponse.fromEntity(inscricao, vagasOcupadas);
+        return InscricaoResponse.fromEntity(inscricao, vagasOcupadas, usuarioService::resolverFotoPerfilParaExibicao);
     }
 
     private UsuarioResponse usuarioResponse(com.example.tcc_backend.model.Usuario usuario) {
