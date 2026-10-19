@@ -218,6 +218,63 @@ class SupabaseStorageServiceTest {
                 .isEqualTo("/storage/v1/object/documents/usuarios/1/meu%20arquivo.pdf");
     }
 
+    private static final String FOTO_PUBLICA =
+            "https://example.supabase.co/storage/v1/object/public/documents/usuarios/22/foto-perfil/foto-perfil";
+
+    private SupabaseStorageService serviceComAssinaturaMock(HttpClient httpClient) throws Exception {
+        HttpResponse<String> response = mock(HttpResponse.class);
+        when(response.statusCode()).thenReturn(200);
+        when(response.body()).thenReturn("{\"signedURL\":\"/object/sign/documents/usuarios/22/foto-perfil/foto-perfil?token=abc\"}");
+        when(httpClient.send(any(HttpRequest.class), anyStringBodyHandler())).thenReturn(response);
+        return new SupabaseStorageService(
+                httpClient, "https://example.supabase.co", "service-role-key", "project-deliveries", "documents", new ObjectMapper());
+    }
+
+    @Test
+    void segundaChamadaParaMesmoArquivoDeveReusarUrlAssinada() throws Exception {
+        HttpClient httpClient = mock(HttpClient.class);
+        SupabaseStorageService service = serviceComAssinaturaMock(httpClient);
+
+        String primeira = service.createDisplayUserDocumentUrl(FOTO_PUBLICA + "?v=1");
+        String segunda = service.createDisplayUserDocumentUrl(FOTO_PUBLICA + "?v=2");
+
+        assertThat(segunda).isEqualTo(primeira);
+        verify(httpClient, times(1)).send(any(HttpRequest.class), anyStringBodyHandler());
+    }
+
+    @Test
+    void chamadasConcorrentesParaMesmoArquivoDevemAssinarUmaVez() throws Exception {
+        HttpClient httpClient = mock(HttpClient.class);
+        SupabaseStorageService service = serviceComAssinaturaMock(httpClient);
+        java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(8);
+        try {
+            java.util.List<java.util.concurrent.Future<String>> futuros = new java.util.ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                futuros.add(pool.submit(() -> service.createDisplayUserDocumentUrl(FOTO_PUBLICA)));
+            }
+            for (java.util.concurrent.Future<String> futuro : futuros) {
+                futuro.get();
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+
+        verify(httpClient, times(1)).send(any(HttpRequest.class), anyStringBodyHandler());
+    }
+
+    @Test
+    void uploadDoMesmoCaminhoDeveInvalidarUrlAssinada() throws Exception {
+        HttpClient httpClient = mock(HttpClient.class);
+        SupabaseStorageService service = serviceComAssinaturaMock(httpClient);
+
+        service.createDisplayUserDocumentUrl(FOTO_PUBLICA);
+        service.uploadUserAvatar("usuarios/22/foto-perfil", "foto-perfil", new byte[]{1}, "image/png", true);
+        service.createDisplayUserDocumentUrl(FOTO_PUBLICA);
+
+        // assinatura + upload + nova assinatura
+        verify(httpClient, times(3)).send(any(HttpRequest.class), anyStringBodyHandler());
+    }
+
     @SuppressWarnings("unchecked")
     private static HttpResponse.BodyHandler<String> anyStringBodyHandler() {
         return (HttpResponse.BodyHandler<String>) any(HttpResponse.BodyHandler.class);
