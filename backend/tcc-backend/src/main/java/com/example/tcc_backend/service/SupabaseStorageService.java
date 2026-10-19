@@ -135,6 +135,8 @@ public class SupabaseStorageService {
                 System.err.println("[SupabaseStorage] Upload falhou: status=" + response.statusCode() + " bucket=" + bucket + " path=" + caminho + " body=" + response.body());
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falha ao enviar arquivo ao armazenamento: " + response.statusCode());
             }
+            // Objeto sobrescrito (upsert, ex.: foto de perfil): descarta a URL assinada para o cliente nao ver a imagem antiga em cache.
+            signedUrlCache.remove(bucket + "/" + caminho);
             return caminho;
         } catch (IOException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falha ao enviar arquivo ao armazenamento");
@@ -265,11 +267,16 @@ public class SupabaseStorageService {
         if (cached != null && cached.reuseUntil() > System.currentTimeMillis()) {
             return cached.url();
         }
-        String signedUrl = requestSignedUrl(bucket, cleanPath);
-        if (signedUrl != null) {
-            signedUrlCache.put(cacheKey, new CachedSignedUrl(signedUrl, System.currentTimeMillis() + SIGNED_URL_REUSE_MS));
-        }
-        return signedUrl;
+        // compute serializa a mesma chave: requests concorrentes esperam a 1a assinatura em vez de repetir o POST.
+        // ponytail: compute bloqueia outras chaves do mesmo bin durante o POST (timeout 15s); trocar por Future por chave se virar gargalo.
+        CachedSignedUrl entry = signedUrlCache.compute(cacheKey, (key, atual) -> {
+            if (atual != null && atual.reuseUntil() > System.currentTimeMillis()) {
+                return atual;
+            }
+            String signedUrl = requestSignedUrl(bucket, cleanPath);
+            return signedUrl == null ? null : new CachedSignedUrl(signedUrl, System.currentTimeMillis() + SIGNED_URL_REUSE_MS);
+        });
+        return entry == null ? null : entry.url();
     }
 
     private String requestSignedUrl(String bucket, String cleanPath) {
