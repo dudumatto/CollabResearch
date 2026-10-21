@@ -1,4 +1,4 @@
-// Fachada única das funções de marcos/tarefas (contrato em arquitetura/progresso-marcos-contrato.md).
+// Fachada única das funções de marcos/tarefas (contrato da API).
 // As funções reais vivem em services/progressService.js (dono: agente funcional).
 import * as progressModule from "../../services/progressService";
 import * as marcosMock from "./marcosMock";

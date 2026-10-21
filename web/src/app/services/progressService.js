@@ -134,7 +134,7 @@ function calcOverallFromSteps(steps) {
     .reduce((sum, step) => sum + Number(step.weight ?? 0), 0);
 }
 
-// ---- Marcos com checklist (contrato: arquitetura/progresso-marcos-contrato.md) ----
+// ---- Marcos com checklist (contrato da API) ----
 // Todos os cálculos (itens, percentual, status, emRevisao) vêm prontos do backend.
 // Mutações de marco/tarefa/revisão devolvem o marco atualizado, já normalizado.
 // A origem da tarefa (ORIENTADOR|ALUNO) é derivada do papel no backend; o front não envia.

@@ -670,7 +670,7 @@ export function mapRevisao(revisao) {
 }
 
 // Marco = etapa com checklist. Contadores, percentual e emRevisao vêm prontos do backend
-// (arquitetura/progresso-marcos-contrato.md); aqui só se normaliza o formato.
+// conforme o contrato da API; aqui só se normaliza o formato.
 export function mapMarco(marco) {
   if (!marco) return null;
 
