@@ -263,6 +263,28 @@ class SupabaseStorageServiceTest {
     }
 
     @Test
+    void prewarmDeveAssinarVariosArquivosEmUmaChamadaEPopularCache() throws Exception {
+        HttpClient httpClient = mock(HttpClient.class);
+        HttpResponse<String> response = mock(HttpResponse.class);
+        when(response.statusCode()).thenReturn(200);
+        when(response.body()).thenReturn("[{\"error\":null,\"path\":\"usuarios/1/foto-perfil/foto-perfil\",\"signedURL\":\"/object/sign/documents/usuarios/1/foto-perfil/foto-perfil?token=a\"},"
+                + "{\"error\":null,\"path\":\"usuarios/2/foto-perfil/foto-perfil\",\"signedURL\":\"/object/sign/documents/usuarios/2/foto-perfil/foto-perfil?token=b\"}]");
+        when(httpClient.send(any(HttpRequest.class), anyStringBodyHandler())).thenReturn(response);
+        SupabaseStorageService service = new SupabaseStorageService(
+                httpClient, "https://example.supabase.co", "service-role-key", "project-deliveries", "documents", new ObjectMapper());
+        String base = "https://example.supabase.co/storage/v1/object/public/documents/usuarios/";
+
+        service.prewarmSignedUserDocumentUrls(java.util.List.of(
+                base + "1/foto-perfil/foto-perfil", base + "2/foto-perfil/foto-perfil?v=9", "https://lh3.googleusercontent.com/x"));
+
+        assertThat(service.createDisplayUserDocumentUrl(base + "1/foto-perfil/foto-perfil"))
+                .isEqualTo("https://example.supabase.co/storage/v1/object/sign/documents/usuarios/1/foto-perfil/foto-perfil?token=a");
+        assertThat(service.createDisplayUserDocumentUrl(base + "2/foto-perfil/foto-perfil"))
+                .isEqualTo("https://example.supabase.co/storage/v1/object/sign/documents/usuarios/2/foto-perfil/foto-perfil?token=b");
+        verify(httpClient, times(1)).send(any(HttpRequest.class), anyStringBodyHandler());
+    }
+
+    @Test
     void uploadDoMesmoCaminhoDeveInvalidarUrlAssinada() throws Exception {
         HttpClient httpClient = mock(HttpClient.class);
         SupabaseStorageService service = serviceComAssinaturaMock(httpClient);

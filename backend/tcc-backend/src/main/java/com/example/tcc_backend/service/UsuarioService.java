@@ -318,6 +318,17 @@ public class UsuarioService {
         return response;
     }
 
+    /** Assina em lote as fotos de uma listagem; resolverFotoPerfilParaExibicao passa a achar tudo em cache. */
+    public void preAssinarFotos(java.util.Collection<String> fotosPerfilUrl) {
+        if (supabaseStorageService != null) {
+            supabaseStorageService.prewarmSignedUserDocumentUrls(fotosPerfilUrl);
+        }
+    }
+
+    public void preAssinarFotosDeUsuarios(java.util.Collection<Usuario> usuarios) {
+        preAssinarFotos(usuarios.stream().map(Usuario::getFotoPerfilUrl).filter(java.util.Objects::nonNull).toList());
+    }
+
     public String resolverFotoPerfilParaExibicao(String fotoPerfilUrl) {
         if (fotoPerfilUrl == null || fotoPerfilUrl.isBlank() || supabaseStorageService == null) {
             return fotoPerfilUrl;
