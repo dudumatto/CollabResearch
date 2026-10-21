@@ -173,12 +173,18 @@ public class OrientadorService {
         StatusInscricao filtroStatus = statusEnum;
         Integer filtroProjeto = projetoId;
 
-        return inscricoesDoEscopo(usuario).stream()
+        List<Inscricao> inscricoes = inscricoesDoEscopo(usuario).stream()
                 .filter(i -> !inscricaoDoCriadorDoProjeto(i))
                 .filter(i -> filtroStatus == null || i.getStatus() == filtroStatus)
                 .filter(i -> filtroProjeto == null || i.getProjeto().getId().equals(filtroProjeto))
                 .sorted(Comparator.comparing(Inscricao::getDataInscricao,
                         Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+        // Passada previa so para coletar as fotos exibidas e assina-las em lote.
+        List<String> fotos = new ArrayList<>();
+        inscricoes.forEach(i -> InscricaoResponse.fromEntityParaOrientador(i, foto -> { fotos.add(foto); return foto; }));
+        usuarioService.preAssinarFotos(fotos);
+        return inscricoes.stream()
                 .map(i -> InscricaoResponse.fromEntityParaOrientador(i, usuarioService::resolverFotoPerfilParaExibicao))
                 .toList();
     }

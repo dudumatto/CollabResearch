@@ -48,6 +48,15 @@ public class ProjetoController {
         return ProjetoResponse.fromEntity(projeto, vagasOcupadas.getOrDefault(projeto.getId(), 0), usuarioService::resolverFotoPerfilParaExibicao);
     }
 
+    private void preAssinarFotos(List<com.example.tcc_backend.model.Projeto> projetos) {
+        usuarioService.preAssinarFotos(projetos.stream()
+                .flatMap(p -> java.util.stream.Stream.of(
+                        p.getOrientador() != null ? p.getOrientador().getUsuario().getFotoPerfilUrl() : null,
+                        p.getAlunoCriador() != null ? p.getAlunoCriador().getUsuario().getFotoPerfilUrl() : null))
+                .filter(java.util.Objects::nonNull)
+                .toList());
+    }
+
     private InscricaoResponse toInscricaoResponse(com.example.tcc_backend.model.Inscricao inscricao) {
         Integer projetoId = inscricao.getProjeto() != null ? inscricao.getProjeto().getId() : null;
         Integer vagasOcupadas = projetoId != null ? projetoService.contarVagasOcupadas(projetoId) : null;
@@ -73,6 +82,7 @@ public class ProjetoController {
         String cursoFiltro = curso != null ? curso : course;
 
         List<com.example.tcc_backend.model.Projeto> projetos = projetoService.findAll(status, areaId, area, cursoFiltro, busca);
+        preAssinarFotos(projetos);
         Map<Integer, Integer> vagasOcupadas = projetoService.contarVagasOcupadas(
                 projetos.stream().map(com.example.tcc_backend.model.Projeto::getId).toList());
         return ResponseEntity.ok(projetos.stream().map(projeto -> toResponse(projeto, vagasOcupadas)).toList());
@@ -107,12 +117,14 @@ public class ProjetoController {
 
         if (Boolean.TRUE.equals(meusProjetos)) {
             var projetos = projetoService.findMeusProjetos(status, areaId, area, cursoFiltro, buscaFiltro, pageable);
+            preAssinarFotos(projetos.getContent());
             Map<Integer, Integer> vagasOcupadas = projetoService.contarVagasOcupadas(
                     projetos.getContent().stream().map(com.example.tcc_backend.model.Projeto::getId).toList());
             return ResponseEntity.ok(PageResponse.from(projetos.map(projeto -> toResponse(projeto, vagasOcupadas))));
         }
 
         var projetos = projetoService.findAll(status, areaId, area, cursoFiltro, buscaFiltro, pageable);
+        preAssinarFotos(projetos.getContent());
         Map<Integer, Integer> vagasOcupadas = projetoService.contarVagasOcupadas(
                 projetos.getContent().stream().map(com.example.tcc_backend.model.Projeto::getId).toList());
         return ResponseEntity.ok(PageResponse.from(projetos.map(projeto -> toResponse(projeto, vagasOcupadas))));
@@ -283,8 +295,10 @@ public class ProjetoController {
     })
     @GetMapping("/{id}/colaboradores")
     public ResponseEntity<List<UsuarioResponse>> listarColaboradores(@PathVariable Integer id) {
+        List<com.example.tcc_backend.model.Usuario> colaboradores = projetoService.listarColaboradores(id);
+        usuarioService.preAssinarFotosDeUsuarios(colaboradores);
         return ResponseEntity.ok(
-                projetoService.listarColaboradores(id).stream()
+                colaboradores.stream()
                         .map(usuario -> UsuarioResponse.fromEntity(usuario, usuarioService::resolverFotoPerfilParaExibicao))
                         .toList()
         );
