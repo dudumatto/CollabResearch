@@ -85,7 +85,11 @@ function RouteErrorView() {
   );
 }
 
-const LandingPage = lazyRoute(() => import("./pages/LandingPage"));
+// A landing é uma página estática própria (landing.html), fora do bundle do app.
+function LandingPage() {
+  window.location.replace("/landing.html");
+  return null;
+}
 const NotFoundPage = lazyRoute(() => import("./pages/NotFoundPage"));
 const LoginPage = lazyRoute(() => import("./pages/LoginPage"));
 const RegisterPage = lazyRoute(() => import("./pages/RegisterPage"));

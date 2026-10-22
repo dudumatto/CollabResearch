@@ -36,11 +36,9 @@ test.describe("jornada 1 — visitante vira usuario", () => {
   }) => {
     const landing = new LandingPage(page);
     await landing.goto();
-    await expect(
-      page.getByText("Sua pesquisa começa aqui.")
-    ).toBeVisible();
+    await landing.expectVisible();
 
-    await page.getByRole("button", { name: /criar conta/i }).first().click();
+    await page.getByRole("link", { name: /criar conta/i }).first().click();
     await expect(page).toHaveURL(/\/register/);
 
     const user = buildTestUser("journey-v1", "Aluno Jornada 1");

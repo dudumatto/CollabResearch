@@ -65,6 +65,10 @@ export default defineConfig(({ mode }) => {
       // Current bundle is ~970 kB; increase the warning limit to avoid false-positive noise in CI/local builds.
       chunkSizeWarningLimit: 1200,
       rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          landing: path.resolve(__dirname, 'landing.html'),
+        },
         output: {
           manualChunks(id) {
             if (!id.includes('node_modules')) return undefined

@@ -5,11 +5,12 @@ export class LandingPage {
 
   async goto(): Promise<void> {
     await this.page.goto("/");
+    await this.page.locator(".hero__title").waitFor();
   }
 
   async expectVisible(): Promise<void> {
-    await expect(this.page).toHaveTitle("CollabResearch — Plataforma de Iniciação Científica");
-    await expect(this.page.getByText("Sua pesquisa começa aqui.")).toBeVisible();
+    await expect(this.page).toHaveTitle("CollabResearch | Menos burocracia, mais pesquisa");
+    await expect(this.page.locator(".hero__title")).toBeVisible();
   }
 
   async expectProtectedRouteRedirects(): Promise<void> {
