@@ -15,7 +15,6 @@
 <p>
   <img alt="Status" src="https://img.shields.io/badge/status-em%20desenvolvimento-yellow?style=for-the-badge">
   <img alt="Versão" src="https://img.shields.io/badge/vers%C3%A3o-0.1.0-blue?style=for-the-badge">
-  <img alt="Licença" src="https://img.shields.io/badge/licen%C3%A7a-MIT-green?style=for-the-badge">
 </p>
 
 Monorepo com API Spring Boot, interface web React, aplicativo Flutter e painel desktop Electron. Alunos encontram projetos e acompanham inscrições e prazos; orientadores publicam oportunidades e acompanham participantes; administradores gerenciam cadastros e configurações institucionais.
@@ -36,7 +35,6 @@ Monorepo com API Spring Boot, interface web React, aplicativo Flutter e painel d
 - [Testes](#testes)
 - [Roadmap](#roadmap)
 - [Como Contribuir](#como-contribuir)
-- [Licença](#licença)
 - [Autor/Contato](#autorcontato)
 
 ---
@@ -384,12 +382,6 @@ flowchart LR
 - O mobile possui dependências para HTTP com `dio` e comunicação STOMP/WebSocket com `stomp_dart_client`.
 - O desktop chama a API por uma ponte IPC (`desktop:api-request`) no processo principal Electron.
 - O backend usa PostgreSQL como datasource configurado por variáveis de ambiente.
-
----
-
-## Licença
-
-Este projeto está licenciado sob a **Licença MIT** — veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ---
 
