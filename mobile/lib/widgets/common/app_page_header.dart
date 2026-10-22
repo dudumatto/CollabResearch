@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'academic_menu_button.dart';
 
 import '../../core/theme/app_colors.dart';
 
@@ -129,48 +129,11 @@ class AppPageHeader extends StatelessWidget {
                   trailing!,
                 ],
                 const SizedBox(width: 8),
-                const _OverflowMenu(),
+                const AcademicMenuButton(onGradient: true),
               ],
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Menu de tres pontos presente em todo cabecalho de tela. Hoje leva a Area
-/// academica, que saiu do perfil.
-class _OverflowMenu extends StatelessWidget {
-  const _OverflowMenu();
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.18),
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: PopupMenuButton<String>(
-        tooltip: 'Mais opções',
-        icon: const Icon(Icons.more_vert, color: Colors.white, size: 22),
-        onSelected: (value) {
-          final router = GoRouter.maybeOf(context);
-          if (value == 'academic' &&
-              router != null &&
-              GoRouterState.of(context).matchedLocation != '/academic') {
-            router.push('/academic');
-          }
-        },
-        itemBuilder: (_) => const [
-          PopupMenuItem<String>(
-            value: 'academic',
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.school_outlined),
-              title: Text('Área acadêmica'),
-            ),
-          ),
-        ],
       ),
     );
   }

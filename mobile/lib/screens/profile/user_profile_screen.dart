@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../widgets/common/academic_menu_button.dart';
 import '../../models/user.dart';
 import '../../models/academic_workspace.dart';
 import '../../providers/academic_workspace_provider.dart';
@@ -58,7 +59,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final academic = context.watch<AcademicWorkspaceProvider>();
     final user = academic.selectedUser;
     return Scaffold(
-      appBar: AppBar(title: const Text('Perfil')),
+      appBar: AppBar(
+        title: const Text('Perfil'),
+        actions: const [AcademicMenuButton()],
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: LayoutBuilder(
