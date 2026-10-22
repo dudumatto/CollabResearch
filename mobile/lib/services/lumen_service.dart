@@ -24,4 +24,33 @@ class LumenService {
     );
     return LumenResult.fromJson(parseObjectPayload(response.data));
   }
+
+  /// Orientador: nota 0-10 das inscricoes pendentes do projeto. [ids] vazio
+  /// avalia todas as pendentes sem nota; o backend salva o resultado.
+  Future<List<LumenCandidate>> rank(
+    String projectId, {
+    List<String> ids = const [],
+  }) async {
+    final response = await _dio.post<dynamic>(
+      ApiEndpoints.lumenRank(projectId),
+      data: ids.isEmpty
+          ? null
+          : {'inscricaoIds': ids.map((e) => int.tryParse(e) ?? e).toList()},
+      options: Options(receiveTimeout: const Duration(seconds: 120)),
+    );
+    final json = parseObjectPayload(response.data);
+    final items = json['ranking'];
+    if (items is! List || items.isEmpty) {
+      throw LumenEmptyRanking(json['aviso'] as String?);
+    }
+    return items
+        .whereType<Map>()
+        .map((e) => LumenCandidate.fromJson(e.map((k, v) => MapEntry('$k', v))))
+        .toList();
+  }
+}
+
+class LumenEmptyRanking implements Exception {
+  const LumenEmptyRanking(this.notice);
+  final String? notice;
 }

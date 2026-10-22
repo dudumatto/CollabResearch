@@ -36,21 +36,35 @@ class SubscriptionService {
     return parseListPayload(response.data).map(Subscription.fromJson).toList();
   }
 
-  Future<Subscription> approve(String id) async {
+  /// Inscricoes de todos os projetos do orientador (mesma fonte do web).
+  Future<List<Subscription>> listForAdvisor() async {
+    final response =
+        await _dio.get<dynamic>(ApiEndpoints.advisorApplications());
+    return parseListPayload(response.data).map(Subscription.fromJson).toList();
+  }
+
+  Future<Subscription> approve(String id, {String? opinion}) async {
     final response = await _dio.put<dynamic>(
       ApiEndpoints.approveSubscription(id),
+      data: _opinionBody(opinion),
     );
     return Subscription.fromJson(parseObjectPayload(response.data));
   }
 
-  Future<Subscription> reject(String id) async {
+  Future<Subscription> reject(String id, {String? opinion}) async {
     final response = await _dio.put<dynamic>(
       ApiEndpoints.rejectSubscription(id),
+      data: _opinionBody(opinion),
     );
     return Subscription.fromJson(parseObjectPayload(response.data));
   }
 
   Future<void> cancel(String id) async {
     await _dio.delete<dynamic>(ApiEndpoints.cancelSubscription(id));
+  }
+
+  Map<String, dynamic>? _opinionBody(String? opinion) {
+    final text = opinion?.trim() ?? '';
+    return text.isEmpty ? null : {'parecerOrientador': text};
   }
 }
