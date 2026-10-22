@@ -37,7 +37,7 @@ export async function runInvalidLoginFlow(page: Page) {
 
 export async function runLandingToLogin(page: Page) {
   await page.goto("/");
-  await page.getByRole("button", { name: "Entrar" }).first().click();
+  await page.getByRole("link", { name: "Entrar" }).first().click();
   await expect(page).toHaveURL(/\/login$/);
 }
 

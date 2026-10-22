@@ -4,12 +4,12 @@ import { buildTestUser } from "../../helpers/test-data.helper";
 export async function runLandingNavigationFlow(page: Page) {
   await page.goto("/");
   await expect(page).toHaveTitle(/CollabResearch/);
-  await expect(page.getByText("Sua pesquisa começa")).toBeVisible();
-  await expect(page.getByText("Busca Inteligente de Projetos")).toBeVisible();
-  await page.getByRole("button", { name: "Entrar" }).first().click();
+  await expect(page.locator(".hero__title")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Um só lugar para o ciclo inteiro da pesquisa." })).toBeAttached();
+  await page.getByRole("link", { name: "Entrar" }).first().click();
   await expect(page).toHaveURL(/\/login$/);
   await page.goto("/");
-  await page.getByRole("button", { name: /Criar conta/ }).first().click();
+  await page.getByRole("link", { name: /Criar conta/ }).first().click();
   await expect(page).toHaveURL(/\/register$/);
   await page.goto("/app");
   await expect(page).toHaveURL(/\/login$/);
