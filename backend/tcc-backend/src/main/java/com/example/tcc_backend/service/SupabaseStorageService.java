@@ -24,6 +24,7 @@ public class SupabaseStorageService {
     private static final int SIGNED_URL_EXPIRATION_SECONDS = 3600;
     // Reaproveita a URL assinada enquanto faltar bem mais que isso para expirar.
     private static final long SIGNED_URL_REUSE_MS = (SIGNED_URL_EXPIRATION_SECONDS - 900) * 1000L;
+    private static final int SIGN_BATCH_SIZE = 100;
 
     private record CachedSignedUrl(String url, long reuseUntil) {}
 
@@ -135,6 +136,8 @@ public class SupabaseStorageService {
                 System.err.println("[SupabaseStorage] Upload falhou: status=" + response.statusCode() + " bucket=" + bucket + " path=" + caminho + " body=" + response.body());
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falha ao enviar arquivo ao armazenamento: " + response.statusCode());
             }
+            // Objeto sobrescrito (upsert, ex.: foto de perfil): descarta a URL assinada para o cliente nao ver a imagem antiga em cache.
+            signedUrlCache.remove(bucket + "/" + caminho);
             return caminho;
         } catch (IOException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Falha ao enviar arquivo ao armazenamento");
@@ -265,11 +268,79 @@ public class SupabaseStorageService {
         if (cached != null && cached.reuseUntil() > System.currentTimeMillis()) {
             return cached.url();
         }
-        String signedUrl = requestSignedUrl(bucket, cleanPath);
-        if (signedUrl != null) {
-            signedUrlCache.put(cacheKey, new CachedSignedUrl(signedUrl, System.currentTimeMillis() + SIGNED_URL_REUSE_MS));
+        // compute serializa a mesma chave: requests concorrentes esperam a 1a assinatura em vez de repetir o POST.
+        // ponytail: compute bloqueia outras chaves do mesmo bin durante o POST (timeout 15s); trocar por Future por chave se virar gargalo.
+        CachedSignedUrl entry = signedUrlCache.compute(cacheKey, (key, atual) -> {
+            if (atual != null && atual.reuseUntil() > System.currentTimeMillis()) {
+                return atual;
+            }
+            String signedUrl = requestSignedUrl(bucket, cleanPath);
+            return signedUrl == null ? null : new CachedSignedUrl(signedUrl, System.currentTimeMillis() + SIGNED_URL_REUSE_MS);
+        });
+        return entry == null ? null : entry.url();
+    }
+
+    /**
+     * Assina em lote (1 POST por ate 100 arquivos) as referencias do bucket de documentos que ainda
+     * nao tem URL valida no cache, para listagens nao fazerem um POST por item. Falha em silencio:
+     * quem precisar da URL cai no caminho individual de {@link #createSignedUrl(String, String)}.
+     */
+    public void prewarmSignedUserDocumentUrls(java.util.Collection<String> documentReferences) {
+        if (!isConfigured() || documentReferences == null) {
+            return;
         }
-        return signedUrl;
+        long now = System.currentTimeMillis();
+        java.util.Set<String> pendentes = new java.util.LinkedHashSet<>();
+        for (String reference : documentReferences) {
+            StorageObjectRef ref = parseUserDocumentReference(reference);
+            if (ref == null || !ref.bucket().equals(userDocumentsBucket)) {
+                continue;
+            }
+            String path = ref.path().replaceAll("^/+", "");
+            CachedSignedUrl cached = signedUrlCache.get(ref.bucket() + "/" + path);
+            if (cached == null || cached.reuseUntil() <= now) {
+                pendentes.add(path);
+            }
+        }
+        if (pendentes.size() < 2) {
+            return; // 0 ou 1 arquivo: o caminho individual ja resolve com 1 POST
+        }
+        java.util.List<String> paths = new java.util.ArrayList<>(pendentes);
+        for (int i = 0; i < paths.size(); i += SIGN_BATCH_SIZE) {
+            requestSignedUrlBatch(userDocumentsBucket, paths.subList(i, Math.min(i + SIGN_BATCH_SIZE, paths.size())));
+        }
+    }
+
+    private void requestSignedUrlBatch(String bucket, java.util.List<String> paths) {
+        String endpoint = "/storage/v1/object/sign/" + URLEncoder.encode(bucket, StandardCharsets.UTF_8);
+        try {
+            String body = objectMapper.writeValueAsString(
+                    java.util.Map.of("expiresIn", SIGNED_URL_EXPIRATION_SECONDS, "paths", paths));
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(normalizedUrl() + endpoint))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("apikey", supabaseServiceRoleKey)
+                    .header("Authorization", "Bearer " + supabaseServiceRoleKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                return;
+            }
+            long reuseUntil = System.currentTimeMillis() + SIGNED_URL_REUSE_MS;
+            for (JsonNode item : objectMapper.readTree(response.body())) {
+                String path = item.path("path").asText(null);
+                String signedUrl = buildSignedUrl(item.path("signedURL").asText(null));
+                if (!isBlank(path) && signedUrl != null) {
+                    signedUrlCache.put(bucket + "/" + path, new CachedSignedUrl(signedUrl, reuseUntil));
+                }
+            }
+        } catch (IOException | InterruptedException ex) {
+            if (ex instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private String requestSignedUrl(String bucket, String cleanPath) {

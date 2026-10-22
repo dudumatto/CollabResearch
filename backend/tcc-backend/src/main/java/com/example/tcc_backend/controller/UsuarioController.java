@@ -66,11 +66,9 @@ public class UsuarioController {
     })
     @GetMapping
     public ResponseEntity<List<UsuarioResponse>> findAll() {
-        return ResponseEntity.ok(
-                usuarioService.findAll().stream()
-                        .map(this::usuarioResponse)
-                        .toList()
-        );
+        List<com.example.tcc_backend.model.Usuario> usuarios = usuarioService.findAll();
+        usuarioService.preAssinarFotosDeUsuarios(usuarios);
+        return ResponseEntity.ok(usuarios.stream().map(this::usuarioResponse).toList());
     }
 
     @Operation(
@@ -87,12 +85,9 @@ public class UsuarioController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sort,
             @RequestParam(defaultValue = "ASC") String direction) {
-        return ResponseEntity.ok(
-                PageResponse.from(
-                        usuarioService.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort)))
-                                .map(this::usuarioResponse)
-                )
-        );
+        var usuarios = usuarioService.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort)));
+        usuarioService.preAssinarFotosDeUsuarios(usuarios.getContent());
+        return ResponseEntity.ok(PageResponse.from(usuarios.map(this::usuarioResponse)));
     }
 
     @Operation(
@@ -102,11 +97,9 @@ public class UsuarioController {
     @ApiResponse(responseCode = "200", description = "Orientadores retornados com sucesso")
     @GetMapping("/orientadores")
     public ResponseEntity<List<UsuarioResponse>> findOrientadores() {
-        return ResponseEntity.ok(
-                usuarioService.findOrientadoresAtivos().stream()
-                        .map(this::usuarioResponse)
-                        .toList()
-        );
+        List<com.example.tcc_backend.model.Usuario> orientadores = usuarioService.findOrientadoresAtivos();
+        usuarioService.preAssinarFotosDeUsuarios(orientadores);
+        return ResponseEntity.ok(orientadores.stream().map(this::usuarioResponse).toList());
     }
 
     @Operation(

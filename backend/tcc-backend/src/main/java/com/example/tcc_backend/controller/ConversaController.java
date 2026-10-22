@@ -38,6 +38,11 @@ public class ConversaController {
 
     private List<ConversaResponse> toConversaResponses(List<com.example.tcc_backend.model.Conversa> conversas, Integer usuarioLogadoId) {
         ConversaService.ResumoConversas resumo = conversaService.resumirConversas(conversas, usuarioLogadoId);
+        // Passada previa so para coletar as fotos exibidas (mesma regra do mapeamento) e assina-las em lote.
+        List<String> fotos = new java.util.ArrayList<>();
+        conversas.forEach(c -> ConversaResponse.fromEntity(c, usuarioLogadoId, foto -> { fotos.add(foto); return foto; },
+                resumo.ultimas().get(c.getId()), resumo.naoLidas().getOrDefault(c.getId(), 0L)));
+        usuarioService.preAssinarFotos(fotos);
         return conversas.stream()
                 .map(c -> ConversaResponse.fromEntity(c, usuarioLogadoId, usuarioService::resolverFotoPerfilParaExibicao,
                         resumo.ultimas().get(c.getId()), resumo.naoLidas().getOrDefault(c.getId(), 0L)))

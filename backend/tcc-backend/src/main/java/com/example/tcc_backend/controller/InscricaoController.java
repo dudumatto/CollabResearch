@@ -40,6 +40,14 @@ public class InscricaoController {
         return InscricaoResponse.fromEntity(inscricao, vagasOcupadas, usuarioService::resolverFotoPerfilParaExibicao);
     }
 
+    // Passada previa so para coletar as fotos exibidas (mesma regra do mapeamento) e assina-las em lote.
+    private <C extends java.util.Collection<com.example.tcc_backend.model.Inscricao>> C preAssinarFotos(C inscricoes) {
+        List<String> fotos = new java.util.ArrayList<>();
+        inscricoes.forEach(i -> InscricaoResponse.fromEntity(i, null, foto -> { fotos.add(foto); return foto; }));
+        usuarioService.preAssinarFotos(fotos);
+        return inscricoes;
+    }
+
     @Operation(summary = "Listar inscrições", description = "Retorna inscrições visíveis ao perfil autenticado: próprias para alunos, dos projetos sob responsabilidade para orientadores e todas para administradores.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso"),
@@ -48,7 +56,7 @@ public class InscricaoController {
     @GetMapping
     public ResponseEntity<List<InscricaoResponse>> findAll() {
         return ResponseEntity.ok(
-                inscricaoService.findAll().stream().map(this::toResponse).toList()
+                preAssinarFotos(inscricaoService.findAll()).stream().map(this::toResponse).toList()
         );
     }
 
@@ -63,13 +71,10 @@ public class InscricaoController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "dataInscricao") String sort,
             @RequestParam(defaultValue = "DESC") String direction) {
-        return ResponseEntity.ok(
-                PageResponse.from(
-                        inscricaoService.findAll(
-                                PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort))
-                        ).map(this::toResponse)
-                )
-        );
+        var inscricoes = inscricaoService.findAll(
+                PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort)));
+        preAssinarFotos(inscricoes.getContent());
+        return ResponseEntity.ok(PageResponse.from(inscricoes.map(this::toResponse)));
     }
 
     @Operation(summary = "Buscar inscrição por ID", description = "Retorna uma inscrição específica.")
@@ -93,7 +98,7 @@ public class InscricaoController {
     @GetMapping({"/projeto/{projetoId}", "/project/{projetoId}"})
     public ResponseEntity<List<InscricaoResponse>> findByProjeto(@PathVariable Integer projetoId) {
         return ResponseEntity.ok(
-                inscricaoService.findByProjeto(projetoId).stream()
+                preAssinarFotos(inscricaoService.findByProjeto(projetoId)).stream()
                         .map(this::toResponse).toList()
         );
     }
@@ -110,14 +115,11 @@ public class InscricaoController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "dataInscricao") String sort,
             @RequestParam(defaultValue = "DESC") String direction) {
-        return ResponseEntity.ok(
-                PageResponse.from(
-                        inscricaoService.findByProjeto(
-                                projetoId,
-                                PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort))
-                        ).map(this::toResponse)
-                )
-        );
+        var inscricoes = inscricaoService.findByProjeto(
+                projetoId,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(direction), sort)));
+        preAssinarFotos(inscricoes.getContent());
+        return ResponseEntity.ok(PageResponse.from(inscricoes.map(this::toResponse)));
     }
 
     @Operation(summary = "Criar inscrição", description = "Cria uma nova inscrição em um projeto.")
