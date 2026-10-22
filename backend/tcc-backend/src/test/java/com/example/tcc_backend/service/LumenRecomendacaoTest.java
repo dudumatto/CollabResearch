@@ -59,7 +59,7 @@ class LumenRecomendacaoTest {
         String url = "http://127.0.0.1:" + servidor.getAddress().getPort() + "/";
         service = new LumenService(inscricaoRepository, projetoRepository, alunoRepository, documentoRepository,
                 mock(DocumentoTextExtractor.class), mock(ProjectAccessPolicy.class), objectMapper,
-                "chave-teste", url, "modelo-teste", 5000);
+                "chave-teste", url, "modelo-teste", "", 5000);
         when(alunoRepository.findByUsuarioId(10)).thenReturn(Optional.of(aluno));
         when(documentoRepository.findByUsuarioId(10)).thenReturn(List.of());
     }

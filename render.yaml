@@ -58,3 +58,5 @@ services:
         sync: false
       - key: LUMEN_MODEL
         sync: false
+      - key: LUMEN_MODEL_FALLBACKS
+        sync: false
