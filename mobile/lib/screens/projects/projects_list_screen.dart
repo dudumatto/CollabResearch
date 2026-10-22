@@ -240,6 +240,14 @@ class _ProjectsListScreenState extends State<ProjectsListScreen> {
             description: 'Descubra oportunidades e acompanhe seus projetos.',
             compact: true,
           ),
+          if (context.read<AuthProvider>().currentUser?.type?.toUpperCase() == 'ALUNO') ...[
+            OutlinedButton.icon(
+              onPressed: () => context.push('/lumen'),
+              icon: const Icon(Icons.auto_awesome),
+              label: const Text('Recomendados para mim (Lumen AI)'),
+            ),
+            const SizedBox(height: 10),
+          ],
           _ProjectModeSelector(
             selected: provider.listMode,
             onSelected: (mode) => _selectMode(provider, mode),

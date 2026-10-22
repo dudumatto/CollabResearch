@@ -25,6 +25,7 @@ import '../screens/projects/project_detail_screen.dart';
 import '../screens/projects/projects_list_screen.dart';
 import '../screens/progress/progress_screen.dart';
 import '../screens/settings/settings_screen.dart';
+import '../screens/lumen/lumen_screen.dart';
 import '../screens/subscriptions/subscriptions_screen.dart';
 import '../screens/shell/app_shell.dart';
 import '../screens/agenda/agenda_screen.dart';
@@ -327,6 +328,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
         path: '/subscriptions',
         pageBuilder: (context, state) =>
             _slidePage(context, state, const SubscriptionsScreen()),
+      ),
+      GoRoute(
+        path: '/lumen',
+        pageBuilder: (context, state) =>
+            _slidePage(context, state, const LumenScreen()),
       ),
       GoRoute(
         path: '/progress',
