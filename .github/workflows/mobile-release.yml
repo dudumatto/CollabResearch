@@ -1,0 +1,74 @@
+name: Mobile Release
+
+# Gera o APK do mobile. Dispare em Actions > Mobile Release > Run workflow
+# informando a tag (ex.: mobile-v1.1.0) para criar o GitHub Release com o APK,
+# ou deixe a tag vazia para so gerar o APK como artefato do workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag do release (ex.: mobile-v1.1.0). Vazio = so artefato."
+        required: false
+        default: ""
+  push:
+    tags:
+      - "mobile-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+        continue-on-error: true
+
+      - name: Test
+        run: flutter test
+        continue-on-error: true
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Nomear APK
+        id: apk
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          if [ "${{ github.ref_type }}" != "tag" ] && [ -z "${{ github.event.inputs.tag }}" ]; then TAG="dev"; fi
+          cp build/app/outputs/flutter-apk/app-release.apk "collabresearch-${TAG}.apk"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "file=mobile/collabresearch-${TAG}.apk" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: collabresearch-apk
+          path: ${{ steps.apk.outputs.file }}
+
+      - name: Criar release
+        if: steps.apk.outputs.tag != 'dev'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.apk.outputs.tag }}
+          name: ${{ steps.apk.outputs.tag }}
+          generate_release_notes: true
+          files: ${{ steps.apk.outputs.file }}
