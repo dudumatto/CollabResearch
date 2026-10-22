@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/common/academic_menu_button.dart';
 import '../../core/utils/validators.dart';
 import '../../models/project.dart';
 import '../../providers/auth_provider.dart';
@@ -170,7 +171,10 @@ class _EditProjectScreenState extends State<EditProjectScreen> {
     final isMobile = MediaQuery.sizeOf(context).width < 600;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Editar projeto')),
+      appBar: AppBar(
+        title: const Text('Editar projeto'),
+        actions: const [AcademicMenuButton()],
+      ),
       body: !_initialized && (provider.isLoading || provider.isFormLoading)
           ? const ProjectDetailSkeleton()
           : _project == null

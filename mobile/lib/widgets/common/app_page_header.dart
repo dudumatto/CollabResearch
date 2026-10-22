@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'academic_menu_button.dart';
 
 import '../../core/theme/app_colors.dart';
 
@@ -127,6 +128,8 @@ class AppPageHeader extends StatelessWidget {
                   const SizedBox(width: 12),
                   trailing!,
                 ],
+                const SizedBox(width: 8),
+                const AcademicMenuButton(onGradient: true),
               ],
             ),
           ],

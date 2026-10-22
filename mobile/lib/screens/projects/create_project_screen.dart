@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/common/academic_menu_button.dart';
 import '../../core/utils/validators.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/project_provider.dart';
@@ -140,7 +141,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     final isMobile = MediaQuery.sizeOf(context).width < 600;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Criar projeto')),
+      appBar: AppBar(
+        title: const Text('Criar projeto'),
+        actions: const [AcademicMenuButton()],
+      ),
       body: provider.isFormLoading
           ? const LoadingIndicator(label: 'Carregando opções...')
           : ListView(

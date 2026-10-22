@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/common/academic_menu_button.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/project_status.dart';
 import '../../models/project.dart';
@@ -326,7 +327,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     }
     if (project == null && projects.errorMessage != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Projeto')),
+        appBar: AppBar(
+          title: const Text('Projeto'),
+          actions: const [AcademicMenuButton()],
+        ),
         body: AppErrorState(message: projects.errorMessage!, onRetry: _load),
       );
     }
@@ -388,6 +392,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               tooltip: 'Excluir projeto',
               icon: const Icon(Icons.delete_outline),
             ),
+          const AcademicMenuButton(),
         ],
       ),
       body: RefreshIndicator(

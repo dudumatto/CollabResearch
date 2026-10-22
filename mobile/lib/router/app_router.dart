@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../core/animation/app_durations.dart';
 import '../core/navigation/navigation_service.dart';
 import '../providers/auth_provider.dart';
+import '../screens/academic/academic_area_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/advisees/advisee_detail_screen.dart';
@@ -115,6 +116,14 @@ GoRouter createAppRouter(AuthProvider authProvider) {
 
       if (authenticated && location == '/') {
         return '/dashboard';
+      }
+
+      // Documentos nao existe na visao do orientador.
+      if (authenticated && location == '/documents') {
+        final user = authProvider.currentUser;
+        final type = user?.type ??
+            (user?.roles.isNotEmpty == true ? user!.roles.first : '');
+        if (type.toUpperCase() == 'ORIENTADOR') return '/academic';
       }
 
       return null;
@@ -290,6 +299,11 @@ GoRouter createAppRouter(AuthProvider authProvider) {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/academic',
+        pageBuilder: (context, state) =>
+            _slidePage(context, state, const AcademicAreaScreen()),
       ),
       GoRoute(
         path: '/documents',

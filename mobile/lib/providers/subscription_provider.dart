@@ -3,15 +3,19 @@ import 'package:flutter/foundation.dart';
 
 import '../core/api/api_client.dart';
 import '../models/subscription.dart';
+import '../services/lumen_service.dart';
 import '../services/subscription_service.dart';
 
 class SubscriptionProvider extends ChangeNotifier {
   final SubscriptionService _service = SubscriptionService();
+  final LumenService _lumen = LumenService();
 
   final List<Subscription> subscriptions = <Subscription>[];
   final Map<String, List<Subscription>> _projectSubscriptions = {};
   bool isLoading = false;
   bool isActionLoading = false;
+  bool isRanking = false;
+  String? lumenNotice;
   String? errorMessage;
 
   List<Subscription> forProject(String projectId) =>
@@ -38,6 +42,61 @@ class SubscriptionProvider extends ChangeNotifier {
       errorMessage = 'Nao foi possivel carregar as inscricoes.';
     } finally {
       isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Orientador: inscricoes de todos os seus projetos.
+  Future<void> loadForAdvisor() async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      subscriptions
+        ..clear()
+        ..addAll(await _service.listForAdvisor());
+    } on DioException catch (error) {
+      errorMessage = ApiClient.instance.friendlyError(error);
+    } catch (_) {
+      errorMessage = 'Não foi possível carregar as inscrições.';
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Lumen AI: avalia as inscricoes pendentes de [projectId] (ou apenas [ids])
+  /// e guarda nota e justificativa nas inscricoes carregadas.
+  Future<bool> rank(String projectId, {List<String> ids = const []}) async {
+    if (isRanking) return false;
+    isRanking = true;
+    errorMessage = null;
+    lumenNotice = null;
+    notifyListeners();
+    try {
+      final ranking = await _lumen.rank(projectId, ids: ids);
+      for (final candidate in ranking) {
+        final index =
+            subscriptions.indexWhere((s) => s.id == candidate.subscriptionId);
+        if (index < 0) continue;
+        subscriptions[index] = subscriptions[index].withLumen(
+          score: candidate.score,
+          justification: candidate.justification,
+          evaluation: candidate.evaluation,
+        );
+      }
+      return true;
+    } on LumenEmptyRanking catch (empty) {
+      lumenNotice = empty.notice ?? 'A Lumen não retornou sugestões.';
+      return false;
+    } on DioException catch (error) {
+      errorMessage = ApiClient.instance.friendlyError(error);
+      return false;
+    } catch (_) {
+      errorMessage = 'Não foi possível analisar com a Lumen.';
+      return false;
+    } finally {
+      isRanking = false;
       notifyListeners();
     }
   }
@@ -86,14 +145,20 @@ class SubscriptionProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> review(String id, {required bool approve}) async {
+  Future<bool> review(
+    String id, {
+    required bool approve,
+    String? opinion,
+  }) async {
     if (isActionLoading) return false;
     isActionLoading = true;
     errorMessage = null;
     notifyListeners();
     try {
       final updated =
-          approve ? await _service.approve(id) : await _service.reject(id);
+          approve
+              ? await _service.approve(id, opinion: opinion)
+              : await _service.reject(id, opinion: opinion);
       _upsert(updated);
       return true;
     } on DioException catch (error) {
@@ -145,7 +210,16 @@ class SubscriptionProvider extends ChangeNotifier {
     final index =
         subscriptions.indexWhere((item) => item.id == subscription.id);
     if (index >= 0) {
-      subscriptions[index] = subscription;
+      final old = subscriptions[index];
+      // A resposta de aprovar/rejeitar pode vir sem a nota da Lumen.
+      subscriptions[index] =
+          subscription.lumenScore == null && old.lumenScore != null
+              ? subscription.withLumen(
+                  score: old.lumenScore!,
+                  justification: old.lumenJustification,
+                  evaluation: old.lumenEvaluation,
+                )
+              : subscription;
     } else {
       subscriptions.insert(0, subscription);
     }

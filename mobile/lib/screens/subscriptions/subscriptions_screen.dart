@@ -13,6 +13,7 @@ import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/app_snackbar.dart';
+import 'advisor_subscriptions_view.dart';
 
 class SubscriptionsScreen extends StatefulWidget {
   const SubscriptionsScreen({super.key});
@@ -26,8 +27,18 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SubscriptionProvider>().load();
+      // Orientador carrega pela propria view (endpoint do orientador).
+      if (!_isAdvisor(context.read<AuthProvider>())) {
+        context.read<SubscriptionProvider>().load();
+      }
     });
+  }
+
+  bool _isAdvisor(AuthProvider auth) {
+    final user = auth.currentUser;
+    return (user?.type ?? (user?.roles.isNotEmpty == true ? user!.roles.first : ''))
+            .toUpperCase() ==
+        'ORIENTADOR';
   }
 
   Future<void> _review(
@@ -124,6 +135,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     final userType = (user?.type ??
             (user?.roles.isNotEmpty == true ? user!.roles.first : ''))
         .toUpperCase();
+
+    if (userType == 'ORIENTADOR') {
+      return Scaffold(body: AdvisorSubscriptionsView(onBack: _goBack));
+    }
 
     return Scaffold(
       body: provider.isLoading && provider.subscriptions.isEmpty

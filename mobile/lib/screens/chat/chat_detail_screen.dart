@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/common/academic_menu_button.dart';
 import '../../core/animation/app_animations.dart';
 import '../../core/animation/app_durations.dart';
 import '../../core/theme/app_colors.dart';
@@ -441,6 +442,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             iconTheme: IconThemeData(color: barForeground),
             toolbarHeight: 72,
             titleSpacing: 0,
+            actions: const [AcademicMenuButton()],
             title: Row(
               children: [
                 AppAvatar(

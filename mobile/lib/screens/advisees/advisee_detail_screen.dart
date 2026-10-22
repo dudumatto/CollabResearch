@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/common/academic_menu_button.dart';
 import '../../models/academic_workspace.dart';
 import '../../providers/academic_workspace_provider.dart';
 import '../../providers/chat_provider.dart';
@@ -64,7 +65,10 @@ class _AdviseeDetailScreenState extends State<AdviseeDetailScreen> {
     final academic = context.watch<AcademicWorkspaceProvider>();
     final detail = academic.selectedAdvisee;
     return Scaffold(
-      appBar: AppBar(title: const Text('Detalhe do orientando')),
+      appBar: AppBar(
+        title: const Text('Detalhe do orientando'),
+        actions: const [AcademicMenuButton()],
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: LayoutBuilder(

@@ -83,6 +83,7 @@ class ApiEndpoints {
   static String userDocuments(String id) => '$documents/usuario/$id';
   static String document(String id) => '$documents/$id';
   static String documentDownload(String id) => '${document(id)}/download';
+  static String lumenRank(String projectId) => '/api/lumen/ranquear/$projectId';
   static String advisorDashboard() => '$advisor/dashboard';
   static String advisorApplications() => '$advisor/inscricoes';
   static String advisees() => '$advisor/orientandos';

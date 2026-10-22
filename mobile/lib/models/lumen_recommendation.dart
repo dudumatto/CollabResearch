@@ -41,3 +41,30 @@ class LumenResult {
     );
   }
 }
+
+/// Candidato avaliado pela Lumen para um projeto (visao do orientador).
+class LumenCandidate {
+  const LumenCandidate({
+    required this.subscriptionId,
+    required this.score,
+    this.justification,
+    this.evaluation,
+  });
+
+  final String subscriptionId;
+  final int score;
+  final String? justification;
+  final Map<String, dynamic>? evaluation;
+
+  factory LumenCandidate.fromJson(Map<String, dynamic> json) {
+    final evaluation = json['avaliacao'];
+    return LumenCandidate(
+      subscriptionId: '${json['inscricaoId'] ?? ''}',
+      score: (json['pontuacao'] as num?)?.toInt() ?? 0,
+      justification: json['justificativa'] as String?,
+      evaluation: evaluation is Map
+          ? evaluation.map((k, v) => MapEntry('$k', v))
+          : null,
+    );
+  }
+}
