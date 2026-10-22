@@ -52,9 +52,16 @@ class SubscriptionProvider extends ChangeNotifier {
     errorMessage = null;
     notifyListeners();
     try {
+      final seen = <String>{};
+      final fetched = await _service.listForAdvisor();
       subscriptions
         ..clear()
-        ..addAll(await _service.listForAdvisor());
+        ..addAll(fetched.where((s) {
+          final student = s.studentId ?? s.studentUserId ?? s.studentName;
+          return seen.add(
+            student == null ? 'id:${s.id}' : '${s.projectId}:$student',
+          );
+        }));
     } on DioException catch (error) {
       errorMessage = ApiClient.instance.friendlyError(error);
     } catch (_) {

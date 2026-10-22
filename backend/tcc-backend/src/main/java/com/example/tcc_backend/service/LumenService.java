@@ -36,6 +36,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,6 +192,7 @@ public class LumenService {
     private final RestClient restClient;
     private final String apiKey;
     private final String model;
+    private final List<String> modelosReserva;
 
     public LumenService(InscricaoRepository inscricaoRepository,
                          ProjetoRepository projetoRepository,
@@ -202,6 +204,7 @@ public class LumenService {
                          @Value("${lumen.api.key:}") String apiKey,
                          @Value("${lumen.api.url:https://openrouter.ai/api/v1/chat/completions}") String apiUrl,
                          @Value("${lumen.model:}") String model,
+                         @Value("${lumen.model-fallbacks:}") String modelosReserva,
                          @Value("${lumen.timeout-ms:45000}") long timeoutMs) {
         this.inscricaoRepository = inscricaoRepository;
         this.projetoRepository = projetoRepository;
@@ -212,6 +215,11 @@ public class LumenService {
         this.objectMapper = objectMapper;
         this.apiKey = apiKey;
         this.model = model;
+        this.modelosReserva = Arrays.stream(modelosReserva.split(","))
+                .map(String::trim)
+                .filter(m -> !m.isEmpty() && !m.equals(model))
+                .distinct()
+                .toList();
 
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         Duration timeout = Duration.ofMillis(Math.max(1000, timeoutMs));
@@ -481,9 +489,25 @@ public class LumenService {
         return PromptInjectionGuard.sanitizar(valor, max).texto();
     }
 
+    /** Tenta o modelo principal e, se falhar (erro do provedor ou resposta vazia), cada modelo reserva em ordem. */
     private String callOpenRouter(String systemPrompt, String userPrompt) {
+        List<String> modelos = new ArrayList<>();
+        modelos.add(model);
+        modelos.addAll(modelosReserva);
+        ResponseStatusException ultimaFalha = null;
+        for (String modelo : modelos) {
+            try {
+                return callOpenRouter(modelo, systemPrompt, userPrompt);
+            } catch (ResponseStatusException ex) {
+                ultimaFalha = ex;
+            }
+        }
+        throw ultimaFalha;
+    }
+
+    private String callOpenRouter(String modelo, String systemPrompt, String userPrompt) {
         Map<String, Object> body = Map.of(
-                "model", model,
+                "model", modelo,
                 "messages", List.of(
                         Map.of("role", "system", "content", systemPrompt),
                         Map.of("role", "user", "content", userPrompt)),
@@ -505,7 +529,7 @@ public class LumenService {
         } catch (Exception ex) {
             String corpo = ex instanceof org.springframework.web.client.RestClientResponseException r
                     ? " corpo=" + StringUtils.truncate(r.getResponseBodyAsString(), 300) : "";
-            log.warn("Falha ao chamar Lumen AI (OpenRouter) modelo={}: {}{}", model, ex.getMessage(), corpo);
+            log.warn("Falha ao chamar Lumen AI (OpenRouter) modelo={}: {}{}", modelo, ex.getMessage(), corpo);
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI indisponivel no momento");
         }
 
@@ -517,7 +541,7 @@ public class LumenService {
             if (raciocinio != null && raciocinio.contains("{")) texto = raciocinio;
         }
         if (!StringUtils.hasText(texto)) {
-            log.warn("Lumen AI retornou resposta vazia.");
+            log.warn("Lumen AI retornou resposta vazia. modelo={}", modelo);
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Lumen AI retornou resposta vazia");
         }
         return texto;

@@ -62,7 +62,7 @@ class LumenAvaliacaoInscricaoTest {
         when(documentoRepository.findByUsuarioId(10)).thenReturn(List.of());
         service = new LumenService(inscricaoRepository, projetoRepository, mock(AlunoRepository.class), documentoRepository,
                 mock(DocumentoTextExtractor.class), mock(ProjectAccessPolicy.class), objectMapper,
-                "chave-teste", url, "modelo-teste", 5000);
+                "chave-teste", url, "modelo-teste", "", 5000);
     }
 
     @AfterEach

@@ -14,6 +14,7 @@ import '../../widgets/common/app_page_header.dart';
 import '../../widgets/common/app_snackbar.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/common/lumen_loading_dialog.dart';
 
 const _filters = <(String, String)>[
   ('todas', 'Todas'),
@@ -88,11 +89,19 @@ class _AdvisorSubscriptionsViewState extends State<AdvisorSubscriptionsView> {
       _selecting = false;
       _selected.clear();
     });
+    var dialogOpen = true;
+    LumenLoadingDialog.show(context).then((_) => dialogOpen = false);
     final ok = await provider.rank(projectId, ids: ids);
     if (!mounted) return;
+    if (dialogOpen) Navigator.of(context, rootNavigator: true).pop();
     if (ok) {
-      AppSnackbar.showSuccess(
-          context, 'Avaliação da Lumen concluída. Veja os resultados.');
+      final scored = provider.subscriptions
+          .where((s) => s.projectId == projectId && s.lumenScore != null)
+          .toList()
+        ..sort((a, b) => (b.lumenDisplayScore ?? -1)
+            .compareTo(a.lumenDisplayScore ?? -1));
+      AppSnackbar.showSuccess(context, 'Avaliação da Lumen concluída.');
+      if (scored.isNotEmpty) _showLumen(scored);
     } else {
       AppSnackbar.showError(
         context,

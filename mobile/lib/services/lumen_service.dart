@@ -31,13 +31,30 @@ class LumenService {
     String projectId, {
     List<String> ids = const [],
   }) async {
-    final response = await _dio.post<dynamic>(
-      ApiEndpoints.lumenRank(projectId),
-      data: ids.isEmpty
-          ? null
-          : {'inscricaoIds': ids.map((e) => int.tryParse(e) ?? e).toList()},
-      options: Options(receiveTimeout: const Duration(seconds: 120)),
-    );
+    Future<Response<dynamic>> post() => _dio.post<dynamic>(
+          ApiEndpoints.lumenRank(projectId),
+          data: ids.isEmpty
+              ? null
+              : {
+                  'inscricaoIds':
+                      ids.map((e) => int.tryParse(e) ?? e).toList(),
+                },
+          options: Options(receiveTimeout: const Duration(seconds: 120)),
+        );
+    // Sem resposta HTTP (o navegador mostra como erro de CORS) = o gateway
+    // derrubou a chamada, em geral o servidor acordando. O backend guarda as
+    // notas ja calculadas, entao repetir uma vez e seguro.
+    Response<dynamic> response;
+    try {
+      response = await post();
+    } on DioException catch (error) {
+      if (error.type != DioExceptionType.connectionError ||
+          error.response != null) {
+        rethrow;
+      }
+      await Future<void>.delayed(const Duration(seconds: 3));
+      response = await post();
+    }
     final json = parseObjectPayload(response.data);
     final items = json['ranking'];
     if (items is! List || items.isEmpty) {

@@ -78,8 +78,11 @@ tcc-mobile/
 Crie um arquivo `.env` na raiz do mobile com a URL da API:
 
 ```env
-API_URL=http://localhost:8080
+API_URL=https://collabresearch.onrender.com
 ```
+
+Para backend local use `http://localhost:8080` (emulador Android: `http://10.0.2.2:8080`).
+No plano gratuito/starter do Render a primeira requisição após ociosidade pode demorar (cold start).
 
 O arquivo e lido por `flutter_dotenv`.
 
