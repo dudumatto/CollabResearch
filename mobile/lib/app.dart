@@ -8,6 +8,7 @@ import 'providers/auth_provider.dart';
 import 'providers/academic_workspace_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/dashboard_provider.dart';
+import 'providers/lumen_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/project_provider.dart';
 import 'providers/research_activity_provider.dart';
@@ -49,6 +50,9 @@ class _TccMobileAppState extends State<TccMobileApp> {
         ),
         ChangeNotifierProvider<SubscriptionProvider>(
           create: (_) => SubscriptionProvider(),
+        ),
+        ChangeNotifierProvider<LumenProvider>(
+          create: (_) => LumenProvider(),
         ),
         ChangeNotifierProvider<ResearchActivityProvider>(
           create: (_) => ResearchActivityProvider(),

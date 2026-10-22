@@ -17,6 +17,7 @@ class ApiEndpoints {
   static const String users = '/api/usuarios';
   static const String advisor = '/api/orientador';
   static const String documents = '/api/documentos';
+  static const String lumenRecommend = '/api/lumen/recomendar-projetos';
 
   static String project(String id) => '$projects/$id';
   static String projectStatus(String id) => '${project(id)}/status';
