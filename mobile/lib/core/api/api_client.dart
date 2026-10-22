@@ -105,6 +105,10 @@ class ApiClient {
         error.type == DioExceptionType.receiveTimeout) {
       return 'Tempo limite excedido. Verifique sua conexao.';
     }
+    if (error.type == DioExceptionType.connectionError) {
+      return 'Sem resposta do servidor. Ele pode estar iniciando; tente '
+          'novamente em instantes.';
+    }
     return 'Nao foi possivel concluir a operacao.';
   }
 
