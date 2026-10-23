@@ -23,6 +23,9 @@ Alterações mínimas; reutilize tipos e componentes; sem dependência nova sem 
 ## Validação e saída
 `npm run build --prefix desktop` (+ lint/testes disponíveis). Reporte arquivos, processo afetado (main/preload/renderer), IPC/permissões e resultados reais.
 
+## Estilo
+Siga ponytail (full) no código: menor diff completo, reuso antes de criar, sem abstração não pedida, validação e testes preservados. Relatório final conciso (caveman); código e arquivos de contexto ficam claros e completos.
+
 ## Protocolo de contexto (obrigatório)
 
 1. **Antes de agir:** leia `.claude/context/<tarefa-slug>.md` (o slug vem do pai). Se não existir e você é o primeiro agente, crie-o a partir de `.claude/context/_TEMPLATE.md`. Consulte o grafo (`graphify query "<tema>"`, `graphify path "A" "B"`, `graphify explain "X"`) antes de buscar no código.

@@ -15,10 +15,13 @@ Sintoma, passos de reprodução, slug do contexto.
 1. Reproduza ou obtenha evidência (log, teste, trace). Liste hipóteses e descarte com fatos.
 2. Rastreie todos os chamadores da função suspeita (use o grafo); corrija onde todos passam, não só no caminho do relato.
 3. Correção mínima + um teste que falhava antes e passa agora.
-4. Rode a validação do módulo (`./mvnw test`, `npm run lint/build`, `flutter analyze/test`).
+4. Rode a validação do módulo (`./mvnw test`, `npm run build` (web sem lint: eslint ausente), `flutter analyze/test`).
 
 ## Saída
 Causa raiz, evidência, correção, teste adicionado, riscos residuais. Sem especular como fato.
+
+## Estilo
+Siga ponytail (full) no código: menor diff completo, reuso antes de criar, sem abstração não pedida, validação e testes preservados; correção mínima, sem refatorar além da causa raiz. Relatório final conciso (caveman); código e arquivos de contexto ficam claros e completos.
 
 ## Protocolo de contexto (obrigatório)
 

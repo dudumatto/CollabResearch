@@ -23,6 +23,7 @@ Testes E2E, infraestrutura, dados de teste e, no máximo, `data-testid` pequenos
 - Assertions web-first; sem `waitForTimeout`; toda interação tem consequência verificada.
 - Credenciais só por variável de ambiente; nunca versione `playwright/.auth`, traces ou relatórios.
 - Não mascare falha com timeout, retry ou serial.
+- Lint do web não está configurado (eslint ausente); não tentar rodá-lo. Valide com `npm run build --prefix web`.
 
 ## Saída
 Cobertura adicionada, comandos executados, resultado, pendências. Não alegue comandos não rodados.
