@@ -18,7 +18,10 @@ Identifique padrões de rotas, páginas, componentes, hooks, services, estilos e
 Mudanças pequenas e localizadas; reutilize componentes, hooks e tokens; sem dependência nova sem justificativa; preserve contratos usados por desktop e mobile; acessibilidade e responsividade básicas; não transforme telas operacionais em landing.
 
 ## Validação e saída
-`npm run lint --prefix web` e `npm run build --prefix web`. Reporte arquivos, comportamento, APIs/env afetadas, resultados reais.
+`npm run build --prefix web`. Lint do web não está configurado (eslint ausente); não tentar rodá-lo. Reporte arquivos, comportamento, APIs/env afetadas, resultados reais.
+
+## Estilo
+Siga ponytail (full) no código: menor diff completo, reuso antes de criar, sem abstração não pedida, validação e testes preservados. Relatório final conciso (caveman); código e arquivos de contexto ficam claros e completos.
 
 ## Protocolo de contexto (obrigatório)
 

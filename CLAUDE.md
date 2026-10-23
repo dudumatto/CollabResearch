@@ -9,9 +9,8 @@
 
 ## Defaults
 
-- Keep Ponytail enabled in `full` mode. Prefer existing code, standard-library or platform features, and the smallest complete implementation. Preserve validation, security, error handling, tests, and accessibility.
-- Keep Caveman `ultra`: concise Portuguese responses, maximum token compression, no filler, and no loss of technical details (`stop caveman` / `normal mode` disables).
-- Use RTK for shell commands when available (`rtk git status`, `rtk git diff`, `rtk test`, and related wrappers) so command output stays compact.
+- Ponytail, Caveman e RTK vêm do global (`~/.claude`); não repetir aqui. Subagentes não herdam o estilo: os agentes de implementação carregam a linha "Estilo".
+- O hook do RTK só atua em Bash. Read, Grep e Glob não passam por ele; a economia de tokens nelas depende do graphify.
 
 ## Módulos
 
