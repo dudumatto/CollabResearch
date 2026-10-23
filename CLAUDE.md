@@ -10,8 +10,40 @@
 ## Defaults
 
 - Keep Ponytail enabled in `full` mode. Prefer existing code, standard-library or platform features, and the smallest complete implementation. Preserve validation, security, error handling, tests, and accessibility.
-- Follow the repository's Caveman `ultra` guidance in `AGENTS.md`: concise Portuguese responses, maximum token compression, no filler, and no loss of technical details.
+- Keep Caveman `ultra`: concise Portuguese responses, maximum token compression, no filler, and no loss of technical details (`stop caveman` / `normal mode` disables).
 - Use RTK for shell commands when available (`rtk git status`, `rtk git diff`, `rtk test`, and related wrappers) so command output stays compact.
+
+## Módulos
+
+- `backend/tcc-backend` — Java 21 / Spring Boot / PostgreSQL (Flyway), `./mvnw test`
+- `web/` — React 18 / Vite / Tailwind, `npm run lint|build --prefix web`
+- `desktop/` — Electron + React, `npm run build --prefix desktop`
+- `mobile/` — Flutter/Dart, `flutter analyze` e `flutter test`
+
+Regras: identifique o módulo afetado; leia o código antes de editar; mudanças localizadas; não altere contratos entre clientes, API ou banco sem mapear o impacto; rode build/lint/testes do módulo e corrija até funcionar; sem commit, push, reset destrutivo ou clean sem autorização explícita. Entrega: lint/testes/build executados (ou impossibilidade reportada), contratos afetados informados, falhas reais não escondidas.
+
+## Agentes (`.claude/agents/`) e roteamento
+
+Skills em `.claude/skills/`; regra de UI em `.rules/anti-ai-ui.md`. Carregue só o necessário.
+
+| Agente | Modelo | Uso |
+|---|---|---|
+| `arquiteto` | opus | plano cross-módulo, cria o contexto da tarefa |
+| `backend-engineer` `web-engineer` `desktop-engineer` `flutter-engineer` | sonnet | implementação no módulo |
+| `bugfix` | opus | bug de causa raiz difícil (bug comum: engenheiro do módulo) |
+| `qa-reviewer` `release-engineer` `ui-reviewer` `playwright-e2e` | sonnet | revisão, release, UI, E2E |
+| `security-reviewer` | opus | auth/JWT/permissões/secrets/IPC + triagem do `semgrep-report.json` |
+| `visual-designer` | opus | direção visual antes de UI relevante |
+| `grafo` | haiku | `graphify update .` e registro no contexto |
+
+Roteamento: um módulo → engenheiro dele; API/banco/vários clientes → `arquiteto` primeiro; auth/secrets/dependências → `security-reviewer` depois; UI relevante → `visual-designer` → engenheiro → `ui-reviewer`; antes de entregar → `qa-reviewer`.
+
+## Contexto compartilhado de tarefa (vale para o agente principal e todos os agentes)
+
+- Cada tarefa tem `.claude/context/<tarefa-slug>.md` (modelo: `_TEMPLATE.md`; conteúdo ignorado pelo git). O primeiro agente a atuar cria o arquivo.
+- **Antes de agir:** ler esse arquivo e consultar o grafo.
+- **Ao terminar:** acrescentar seção `### <agente> — <data>` (fez, arquivos, decisões/riscos, falta). Nunca apagar o trabalho dos outros. Resumos, sem código colado.
+- **Grafo:** quem alterar código roda `graphify update .` ao finalizar (ou delega ao `grafo`) e registra no contexto. Se falhar, registra o erro e segue.
 
 ## Security
 

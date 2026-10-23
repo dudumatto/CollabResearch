@@ -1,5 +1,0 @@
-[features]
-# Compatibilidade: Codex atual usa `hooks`; versões antigas reconhecem
-# `codex_hooks`. Manter ambos limita esta configuração ao projeto.
-hooks = true
-codex_hooks = true

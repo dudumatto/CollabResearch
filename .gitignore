@@ -43,3 +43,7 @@ graphify-out/
 
 # Dump do banco gerado na migracao de regiao (contem dados de producao)
 scripts/migracao-regiao/dump/
+
+# Contexto temporário de tarefas dos agentes (template versionado)
+.claude/context/*
+!.claude/context/_TEMPLATE.md

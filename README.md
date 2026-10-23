@@ -272,7 +272,7 @@ CollabResearch/
 │   ├── tsconfig.json
 │   └── vite.config.ts
 ├── .github/workflows/            # CI/CD (planejado)
-├── AGENTS.md                     # Instruções para agentes de IA
+├── CLAUDE.md                     # Instruções para agentes de IA (agentes em .claude/agents/)
 └── README.md                     # Este arquivo
 ```
 

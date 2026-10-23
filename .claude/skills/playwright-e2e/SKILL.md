@@ -24,7 +24,7 @@ web/
 ├─ playwright/
 │  └─ .auth/                     # ignorado pelo Git
 └─ e2e/
-   ├─ AGENTS.md                  # regras locais resumidas
+   ├─ README.md                  # regras locais resumidas
    ├─ setup/
    │  └─ auth.setup.ts            # cria storageState de contas de teste
    ├─ auth/
