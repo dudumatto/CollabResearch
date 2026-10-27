@@ -23,9 +23,8 @@ Rode `./mvnw test` em `backend/tcc-backend` (e build quando aplicável). Reporte
 ## Estilo
 Siga ponytail (full) no código: menor diff completo, reuso antes de criar, sem abstração não pedida, validação e testes preservados. Relatório final conciso (caveman); código e arquivos de contexto ficam claros e completos.
 
-## Protocolo de contexto (obrigatório)
+## Quando parar
+Devolva ao pai, sem prosseguir, se: o contrato de API/banco ou outro módulo precisa mudar; ou 3 tentativas falharam no mesmo erro. Reporte o que tentou e o que falta.
 
-1. **Antes de agir:** leia `.claude/context/<tarefa-slug>.md` (o slug vem do pai). Se não existir e você é o primeiro agente, crie-o a partir de `.claude/context/_TEMPLATE.md`. Consulte o grafo (`graphify query "<tema>"`, `graphify path "A" "B"`, `graphify explain "X"`) antes de buscar no código.
-2. **Ao terminar:** ACRESCENTE ao final do arquivo uma seção `### <seu-nome> — <data>` com: o que fez, arquivos alterados, decisões e riscos, o que falta. Atualize a tabela de status. Nunca apague nem reescreva o trabalho dos outros. Seja enxuto: resumos, sem código colado.
-3. **Grafo:** se alterou código, rode `graphify update .` (ou delegue ao agente `grafo`) e registre no contexto "grafo: atualizado" ou o erro. Falha do comando não trava a tarefa: registre e continue.
-4. Não faça commit, merge ou push sem autorização explícita.
+## Contexto
+Siga o protocolo de contexto e grafo do `CLAUDE.md` (slug vem do pai). Sem commit, merge ou push sem autorização explícita.

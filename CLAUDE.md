@@ -39,10 +39,14 @@ Roteamento: um módulo → engenheiro dele; API/banco/vários clientes → `arqu
 
 ## Contexto compartilhado de tarefa (vale para o agente principal e todos os agentes)
 
-- Cada tarefa tem `.claude/context/<tarefa-slug>.md` (modelo: `_TEMPLATE.md`; conteúdo ignorado pelo git). O primeiro agente a atuar cria o arquivo.
-- **Antes de agir:** ler esse arquivo e consultar o grafo.
-- **Ao terminar:** acrescentar seção `### <agente> — <data>` (fez, arquivos, decisões/riscos, falta). Nunca apagar o trabalho dos outros. Resumos, sem código colado.
-- **Grafo:** quem alterar código roda `graphify update .` ao finalizar (ou delega ao `grafo`) e registra no contexto. Se falhar, registra o erro e segue.
+Este é o protocolo único; os agentes em `.claude/agents/` apenas o referenciam.
+
+- Cada tarefa tem `.claude/context/<tarefa-slug>.md` (modelo: `_TEMPLATE.md`; conteúdo ignorado pelo git). O slug vem do agente pai. O primeiro agente a atuar cria o arquivo a partir do modelo.
+- **Antes de agir:** ler esse arquivo e consultar o grafo (`graphify query|path|explain`) antes de buscar no código.
+- **Ao terminar:** acrescentar seção `### <agente> — <data>` (fez, arquivos, decisões/riscos, falta) e atualizar a tabela de status. Nunca apagar nem reescrever o trabalho dos outros. Resumos, sem código colado.
+- **Grafo:** quem alterar código roda `graphify update .` ao finalizar (ou delega ao `grafo`; leva ~2 min, prefira rodar em background) e registra "grafo: atualizado" ou o erro no contexto. Falha não trava a tarefa.
+- **Somente leitura:** `arquiteto`, `qa-reviewer`, `security-reviewer`, `ui-reviewer`, `release-engineer` e `visual-designer` só escrevem em `.claude/context/` (imposto por `.claude/hooks/context-only.js`).
+- Sem commit, merge ou push sem autorização explícita.
 
 ## Security
 
