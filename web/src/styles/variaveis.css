@@ -11,19 +11,36 @@
   --fonte-titulo: 'Nunito', sans-serif;
 
   /* ------------------------------------------
-     Tamanhos de fonte
+     Tamanhos de fonte (fluidos, mobile-first)
+     Mínimo = valor de sempre (celular e tablet até 768px ficam iguais).
+     De 768px a 1280px o texto cresce com a largura (vw) até +10% sobre o
+     rem; acima disso o crescimento vem da escala do html (theme.css:
+     100% → 112,5% em 1440px → 125% em 1920px → 150% em 2560px), que
+     também aumenta paddings, ícones, botões e cards em rem.
+     --fator-fonte vem da preferência de tamanho (Configurações).
   ------------------------------------------ */
-  --tamanho-minimo:    0.60rem;  /*  ~9.6px */
-  --tamanho-xs:        0.65rem;  /* ~10.4px */
-  --tamanho-pequeno:   0.72rem;  /* ~11.5px */
-  --tamanho-base:      0.80rem;  /* ~12.8px */
-  --tamanho-medio:     0.875rem; /*   14px  */
-  --tamanho-normal:    0.95rem;  /* ~15.2px */
-  --tamanho-grande:    1rem;     /*   16px  */
-  --tamanho-subtitulo: 1.1rem;   /* ~17.6px */
-  --tamanho-titulo:    1.2rem;   /* ~19.2px */
-  --tamanho-display:   1.4rem;   /* ~22.4px */
-  --tamanho-heroi:     1.6rem;   /* ~25.6px */
+  --fator-fonte: 1;
+  --tamanho-minimo:    clamp(calc(0.6rem * var(--fator-fonte)), calc((0.51rem + 0.1875vw) * var(--fator-fonte)), calc(0.66rem * var(--fator-fonte)));
+  --tamanho-xs:        clamp(calc(0.65rem * var(--fator-fonte)), calc((0.5525rem + 0.2031vw) * var(--fator-fonte)), calc(0.715rem * var(--fator-fonte)));
+  --tamanho-pequeno:   clamp(calc(0.72rem * var(--fator-fonte)), calc((0.612rem + 0.225vw) * var(--fator-fonte)), calc(0.792rem * var(--fator-fonte)));
+  --tamanho-base:      clamp(calc(0.8rem * var(--fator-fonte)), calc((0.68rem + 0.25vw) * var(--fator-fonte)), calc(0.88rem * var(--fator-fonte)));
+  --tamanho-medio:     clamp(calc(0.875rem * var(--fator-fonte)), calc((0.7438rem + 0.2734vw) * var(--fator-fonte)), calc(0.9625rem * var(--fator-fonte)));
+  --tamanho-normal:    clamp(calc(0.95rem * var(--fator-fonte)), calc((0.8075rem + 0.2969vw) * var(--fator-fonte)), calc(1.045rem * var(--fator-fonte)));
+  --tamanho-grande:    clamp(calc(1rem * var(--fator-fonte)), calc((0.85rem + 0.3125vw) * var(--fator-fonte)), calc(1.1rem * var(--fator-fonte)));
+  --tamanho-subtitulo: clamp(calc(1.1rem * var(--fator-fonte)), calc((0.935rem + 0.3438vw) * var(--fator-fonte)), calc(1.21rem * var(--fator-fonte)));
+  --tamanho-titulo:    clamp(calc(1.2rem * var(--fator-fonte)), calc((1.02rem + 0.375vw) * var(--fator-fonte)), calc(1.32rem * var(--fator-fonte)));
+  --tamanho-display:   clamp(calc(1.4rem * var(--fator-fonte)), calc((1.19rem + 0.4375vw) * var(--fator-fonte)), calc(1.54rem * var(--fator-fonte)));
+  --tamanho-heroi:     clamp(calc(1.6rem * var(--fator-fonte)), calc((1.36rem + 0.5vw) * var(--fator-fonte)), calc(1.76rem * var(--fator-fonte)));
+  --tamanho-metrica:   clamp(calc(2.1rem * var(--fator-fonte)), calc((1.785rem + 0.6563vw) * var(--fator-fonte)), calc(2.31rem * var(--fator-fonte)));
+
+  /* Papéis tipográficos: use estes nomes em código novo. */
+  --fonte-corpo:   var(--tamanho-medio);
+  --fonte-rotulo:  var(--tamanho-pequeno);
+  --fonte-h3:      var(--tamanho-grande);
+  --fonte-h2:      var(--tamanho-titulo);
+  --fonte-h1:      var(--tamanho-heroi);
+  --altura-linha-corpo: 1.5;
+  --altura-toque-minima: 2.75rem; /* 44px na escala base */
 
   /* ------------------------------------------
      Pesos de fonte
@@ -174,7 +191,8 @@
   /* ------------------------------------------
      Layout — largura da barra lateral
   ------------------------------------------ */
-  --largura-sidebar-interna:           12rem;
+  /* cresce na mesma curva de --tamanho-* para os rótulos não cortarem */
+  --largura-sidebar-interna:           clamp(12rem, 10.2rem + 3.75vw, 13.2rem);
   --largura-sidebar-recolhida-interna: 4rem;
   --largura-sidebar:          calc(var(--largura-sidebar-interna) + 2rem);
   --largura-sidebar-recolhida: calc(var(--largura-sidebar-recolhida-interna) + 2rem);
@@ -194,31 +212,11 @@
 }
 
 :root[data-font-size="small"] {
-  --tamanho-minimo:    0.56rem;
-  --tamanho-xs:        0.61rem;
-  --tamanho-pequeno:   0.68rem;
-  --tamanho-base:      0.76rem;
-  --tamanho-medio:     0.82rem;
-  --tamanho-normal:    0.9rem;
-  --tamanho-grande:    0.96rem;
-  --tamanho-subtitulo: 1.04rem;
-  --tamanho-titulo:    1.14rem;
-  --tamanho-display:   1.32rem;
-  --tamanho-heroi:     1.52rem;
+  --fator-fonte: 0.95;
 }
 
 :root[data-font-size="large"] {
-  --tamanho-minimo:    0.64rem;
-  --tamanho-xs:        0.7rem;
-  --tamanho-pequeno:   0.78rem;
-  --tamanho-base:      0.86rem;
-  --tamanho-medio:     0.94rem;
-  --tamanho-normal:    1.02rem;
-  --tamanho-grande:    1.08rem;
-  --tamanho-subtitulo: 1.18rem;
-  --tamanho-titulo:    1.3rem;
-  --tamanho-display:   1.52rem;
-  --tamanho-heroi:     1.72rem;
+  --fator-fonte: 1.075;
 }
 
 .dark {

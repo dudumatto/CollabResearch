@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { BellRinging, Check, Sparkle, X } from "@phosphor-icons/react";
+import { BellRinging, Check, X } from "@phosphor-icons/react";
+import { IaIcone } from "./ui/IaIcone";
 import "./LogoutConfirmModal.css";
 import "./LumenLoadingModal.css";
 
@@ -57,14 +58,14 @@ export function LumenLoadingModal({ open, onClose, tipo = "ranking" }) {
           </button>
         )}
 
-        <div className="lumen-loading__orb" aria-hidden="true">
+        <div className="lumen-loading__orb ia-gatilho" aria-hidden="true">
           <span className="lumen-loading__orb-ring" />
           <span className="lumen-loading__orb-fill" />
-          <Sparkle className="lumen-loading__orb-icon" size={30} weight="fill" />
+          <IaIcone className="lumen-loading__orb-icon" size={30} />
         </div>
 
-        <span className="lumen-loading__selo">
-          <Sparkle size={12} weight="fill" aria-hidden="true" /> Lumen IA
+        <span className="lumen-loading__selo ia-gatilho">
+          <IaIcone size={12} /> Lumen IA
         </span>
         <h2 id="lumen-loading-title" className="lumen-loading__titulo">
           {titulo}

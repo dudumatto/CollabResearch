@@ -105,7 +105,7 @@ export function Topbar({ onMenuClick, title, subtitle }) {
     <header className={`barra-topo ${mobileAberta ? "barra-topo--busca-aberta" : ""}`}>
       <div className="barra-topo__secao-esquerda">
         <button onClick={onMenuClick} className="barra-topo__botao-menu" aria-label="Abrir menu lateral">
-          <List size={20} className="barra-topo__botao-menu-icone" />
+          <List size="1.25rem" className="barra-topo__botao-menu-icone" />
         </button>
         <div className="barra-topo__area-titulo">
           <h1 className="barra-topo__titulo">{title}</h1>
@@ -125,11 +125,11 @@ export function Topbar({ onMenuClick, title, subtitle }) {
             aria-label="Buscar perfis"
             onClick={abrirBuscaMobile}
           >
-            <MagnifyingGlass size={20} className="barra-topo__busca-icone" aria-hidden="true" />
+            <MagnifyingGlass size="1.25rem" className="barra-topo__busca-icone" aria-hidden="true" />
           </button>
 
           <form className="barra-topo__busca" role="search" onSubmit={handleSearch}>
-            <MagnifyingGlass size={16} className="barra-topo__busca-icone" aria-hidden="true" />
+            <MagnifyingGlass size="1rem" className="barra-topo__busca-icone" aria-hidden="true" />
             <input
               ref={buscaRef}
               type="search"
@@ -157,7 +157,7 @@ export function Topbar({ onMenuClick, title, subtitle }) {
                   setAberta(false);
                 }}
               >
-                <X size={16} aria-hidden="true" />
+                <X size="1rem" aria-hidden="true" />
               </button>
             ) : (
               <kbd className="barra-topo__busca-atalho" aria-hidden="true">CTRL+K</kbd>
@@ -207,7 +207,7 @@ export function Topbar({ onMenuClick, title, subtitle }) {
           className="barra-topo__botao-notificacoes"
           aria-label="Notificações"
         >
-          <Bell size={20} className="barra-topo__icone-notificacoes" />
+          <Bell size="1.25rem" className="barra-topo__icone-notificacoes" />
           {unreadCount > 0 && (
             <span className="barra-topo__contador-notificacoes">{unreadCount}</span>
           )}

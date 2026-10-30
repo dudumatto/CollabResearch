@@ -1,0 +1,105 @@
+/* ============================================================
+   IaIcone.css — estrela de IA com varredura de gradiente Gemini
+   ============================================================ */
+
+.ia-icone {
+  /* família Gemini em versão mais saturada (as originais #4285F4, #9B72CB e
+     #D96570 ficavam apagadas no tamanho do ícone) */
+  --ia-azul: #2f6bff;
+  --ia-roxo: #a855f7;
+  --ia-rosa: #ff3d7f;
+  --ia-duracao: 1s;
+
+  /* tamanho por variável: classes de quem usa (ex.: sidebar recolhida com
+     width: 0) continuam podendo sobrescrever width/height */
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--ia-tamanho, 1em);
+  height: var(--ia-tamanho, 1em);
+  line-height: 0;
+}
+
+/* fill="currentColor" não aceita gradiente: a forma da estrela vira máscara e
+   o gradiente fica no background. As pontas da faixa são currentColor sólido,
+   então em repouso (posição 100%) o ícone fica exatamente como antes e a
+   varredura começa e termina sem salto de cor. */
+.ia-icone__forma {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* 135deg (canto superior esquerdo → inferior direito), na mesma diagonal
+     em que a posição anima: com 45deg a faixa corria paralela ao movimento,
+     o ícone parava no meio do gradiente e o hover não mudava nada. */
+  background-image: linear-gradient(
+    135deg,
+    currentColor 0%,
+    currentColor 22%,
+    var(--ia-roxo) 34%,
+    var(--ia-azul) 50%,
+    var(--ia-rosa) 58%,
+    var(--ia-roxo) 68%,
+    currentColor 78%,
+    currentColor 100%
+  );
+  background-size: 400% 400%;
+  background-position: 100% 100%;
+  -webkit-mask: var(--ia-mascara) center / contain no-repeat;
+  mask: var(--ia-mascara) center / contain no-repeat;
+  --ia-mascara: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z'/%3E%3C/svg%3E");
+}
+
+/* Peso "regular" (contorno), igual ao Sparkle sem weight. */
+.ia-icone--regular .ia-icone__forma {
+  --ia-mascara: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M197.58,129.06,146,110l-19-51.62a15.92,15.92,0,0,0-29.88,0L78,110l-51.62,19a15.92,15.92,0,0,0,0,29.88L78,178l19,51.62a15.92,15.92,0,0,0,29.88,0L146,178l51.62-19a15.92,15.92,0,0,0,0-29.88ZM137,164.22a8,8,0,0,0-4.74,4.74L112,223.85,91.78,169A8,8,0,0,0,87,164.22L32.15,144,87,123.78A8,8,0,0,0,91.78,119L112,64.15,132.22,119a8,8,0,0,0,4.74,4.74L191.85,144ZM144,40a8,8,0,0,1,8-8h16V16a8,8,0,0,1,16,0V32h16a8,8,0,0,1,0,16H184V64a8,8,0,0,1-16,0V48H152A8,8,0,0,1,144,40ZM248,88a8,8,0,0,1-8,8h-8v8a8,8,0,0,1-16,0V96h-8a8,8,0,0,1,0-16h8V72a8,8,0,0,1,16,0v8h8A8,8,0,0,1,248,88Z'/%3E%3C/svg%3E");
+}
+
+/* Gatilhos: o próprio ícone, o botão/link pai ou um contêiner marcado com
+   .ia-gatilho. Uma passada por entrada no estado. */
+.ia-icone:hover .ia-icone__forma,
+:is(a, button, [role="button"], .ia-gatilho):is(:hover, :focus-visible) .ia-icone__forma {
+  animation: ia-varrer var(--ia-duracao) ease-in-out;
+}
+
+/* Clique: troca o nome da animação para reiniciar a varredura, mais rápida e
+   com brilho (sem mexer em tamanho ou layout). */
+:is(a, button, [role="button"], .ia-gatilho):active .ia-icone__forma,
+.ia-icone:active .ia-icone__forma {
+  animation: ia-varrer-clique calc(var(--ia-duracao) * 0.7) ease-in-out;
+}
+
+:is(button, [role="button"]):disabled .ia-icone__forma {
+  animation: none;
+}
+
+@keyframes ia-varrer {
+  from { background-position: 100% 100%; }
+  to { background-position: 0% 0%; }
+}
+
+@keyframes ia-varrer-clique {
+  from {
+    background-position: 100% 100%;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: drop-shadow(0 0 0.25em rgba(66, 133, 244, 0.65));
+  }
+  to {
+    background-position: 0% 0%;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+/* Sem movimento: nada anima, só troca para o gradiente parado no meio. */
+@media (prefers-reduced-motion: reduce) {
+  .ia-icone:hover .ia-icone__forma,
+  :is(a, button, [role="button"], .ia-gatilho):is(:hover, :focus-visible, :active) .ia-icone__forma,
+  .ia-icone:active .ia-icone__forma {
+    animation: none !important;
+    background-position: 50% 50%;
+  }
+
+  :is(button, [role="button"]):disabled .ia-icone__forma {
+    background-position: 100% 100%;
+  }
+}

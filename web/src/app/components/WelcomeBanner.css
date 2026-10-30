@@ -103,6 +103,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--espaco-2);
+  min-height: var(--altura-toque-minima);
   padding: 0.4rem 0.7rem;
   border: 1px solid var(--dash-heroi-botao-borda);
   border-radius: var(--raio-pequeno);
