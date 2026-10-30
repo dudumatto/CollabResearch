@@ -1,4 +1,4 @@
-import { Sparkle } from "@phosphor-icons/react";
+import { IaIcone } from "./IaIcone";
 import "./LumenAIButton.css";
 
 export function LumenAIButton({ children, className = "", type = "button", ...props }) {
@@ -9,7 +9,7 @@ export function LumenAIButton({ children, className = "", type = "button", ...pr
         <span className="lumen-ai-btn__fill" />
       </span>
       <span className="lumen-ai-btn__content">
-        <Sparkle size={16} weight="fill" />
+        <IaIcone size={16} />
         {children}
       </span>
     </button>

@@ -1345,7 +1345,7 @@ html:not(.js) .stage__ui {
    LUMEN
    ============================================================ */
 .lumen {
-  --h: 860vh;
+  --h: 520vh;
   height: var(--h);
   background:
     radial-gradient(70% 50% at 50% 30vh, #0f2219 0%, transparent 70%),
@@ -2556,7 +2556,7 @@ html:not(.js) .stage__ui {
   }
 
   .lumen {
-    --h: 780vh;
+    --h: 500vh;
   }
   .lumen__intro {
     top: calc(var(--navh) + 4vh);

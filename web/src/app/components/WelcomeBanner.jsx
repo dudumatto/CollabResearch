@@ -28,13 +28,13 @@ export function WelcomeBanner({ name, role, institution, summary, primaryAction,
         <div className="banner-boas-vindas__acoes">
           {secondaryAction && (
             <button type="button" className="banner-boas-vindas__botao" onClick={secondaryAction.onClick}>
-              {secondaryAction.icon && <secondaryAction.icon size={14} aria-hidden="true" />}
+              {secondaryAction.icon && <secondaryAction.icon size="0.875rem" aria-hidden="true" />}
               {secondaryAction.label}
             </button>
           )}
           {primaryAction && (
             <button type="button" className="banner-boas-vindas__botao" onClick={primaryAction.onClick}>
-              {primaryAction.icon && <primaryAction.icon size={14} aria-hidden="true" />}
+              {primaryAction.icon && <primaryAction.icon size="0.875rem" aria-hidden="true" />}
               {primaryAction.label}
             </button>
           )}

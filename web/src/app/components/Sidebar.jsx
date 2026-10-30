@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
 import { NavLink } from "react-router";
-import { Sparkle, FolderOpen, SquaresFour, ChatCircleText, Bell, User, FileText, TrendUp, CaretLeft, Gear, Users, ClipboardText, GraduationCap, CalendarCheck, SignOut } from "@phosphor-icons/react";
+import { FolderOpen, SquaresFour, ChatCircleText, Bell, User, FileText, TrendUp, CaretLeft, Gear, Users, ClipboardText, GraduationCap, CalendarCheck, SignOut } from "@phosphor-icons/react";
 import { useAuth } from "../hooks/useAuth";
 import { useNotifications } from "../providers/NotificationsProvider";
 import { getInitials } from "../utils/formatters";
 import { prefetchRoute } from "../routes";
 import { LogoutConfirmModal } from "./LogoutConfirmModal";
+import { IaIcone } from "./ui/IaIcone";
 import "./Sidebar.css";
 
 // Itens agrupados por categoria. A primeira seção não tem rótulo (fica logo
@@ -104,13 +105,13 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
         {({ isActive }) => (
           <>
             <item.icon
-              size={18}
+              size="1.125rem"
               className={isActive ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo" : "barra-lateral__icone-nav"}
             />
             <span className={isActive ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo" : "barra-lateral__rotulo-nav"}>
               {item.label}
             </span>
-            {item.ia && <Sparkle size={16} weight="fill" className="barra-lateral__ia" aria-label="Recurso com IA" />}
+            {item.ia && <IaIcone size="1.25rem" className="barra-lateral__ia" label="Recurso com IA" />}
             {item.path === "/app/notifications" && unreadCount > 0 && (
               <span className="barra-lateral__contador">{unreadCount}</span>
             )}
@@ -174,7 +175,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             {({ isActive }) => (
               <>
                 <Gear
-                  size={18}
+                  size="1.125rem"
                   className={isActive ? "barra-lateral__icone-nav barra-lateral__icone-nav--ativo" : "barra-lateral__icone-nav"}
                 />
                 <span className={isActive ? "barra-lateral__rotulo-nav barra-lateral__rotulo-nav--ativo" : "barra-lateral__rotulo-nav"}>
@@ -189,7 +190,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
             className="barra-lateral__item-nav barra-lateral__item-nav--sair"
             onClick={() => setLogoutConfirmOpen(true)}
           >
-            <SignOut size={18} className="barra-lateral__icone-nav" />
+            <SignOut size="1.125rem" className="barra-lateral__icone-nav" />
             <span className="barra-lateral__rotulo-nav">Logout</span>
           </button>
 
@@ -236,7 +237,7 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
           aria-expanded={!collapsed}
         >
           <CaretLeft
-            size={14}
+            size="0.875rem"
             className={`barra-lateral__icone-recolher ${
               collapsed ? "barra-lateral__icone-recolher--invertido" : ""
             }`}

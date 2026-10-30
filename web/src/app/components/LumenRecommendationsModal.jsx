@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Sparkle, Info, X, ArrowRight } from "@phosphor-icons/react";
+import { Info, X, ArrowRight } from "@phosphor-icons/react";
+import { IaIcone } from "./ui/IaIcone";
 import "./LogoutConfirmModal.css";
 import "./LumenLoadingModal.css";
 import "./LumenRecommendationsModal.css";
@@ -34,13 +35,13 @@ export function LumenRecommendationsModal({ open, recomendacoes = [], aviso, onC
         </button>
 
         <header className="lumen-recs__cabecalho">
-          <div className="lumen-loading__orb lumen-recs__orb" aria-hidden="true">
+          <div className="lumen-loading__orb lumen-recs__orb ia-gatilho" aria-hidden="true">
             <span className="lumen-loading__orb-ring" />
             <span className="lumen-loading__orb-fill" />
-            <Sparkle className="lumen-recs__orb-icon" size={26} weight="fill" />
+            <IaIcone className="lumen-recs__orb-icon" size={26} />
           </div>
-          <span className="lumen-loading__selo">
-            <Sparkle size={12} weight="fill" aria-hidden="true" /> Lumen IA
+          <span className="lumen-loading__selo ia-gatilho">
+            <IaIcone size={12} /> Lumen IA
           </span>
           <h2 id="lumen-recomendacoes-titulo" className="lumen-loading__titulo">Projetos recomendados pela Lumen</h2>
           <p id="lumen-recomendacoes-descricao" className="lumen-loading__descricao lumen-recs__descricao">

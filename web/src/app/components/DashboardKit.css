@@ -58,7 +58,7 @@
   --dash-card-sombra-hover: 0 10px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   --dash-titulo: #f4f8f5;
   --dash-texto: rgba(244, 248, 245, 0.82);
-  --dash-mudo: rgba(244, 248, 245, 0.56);
+  --dash-mudo: rgba(244, 248, 245, 0.7);
   --dash-divisor: rgba(255, 255, 255, 0.1);
   --dash-realce: rgba(255, 255, 255, 0.05);
 
@@ -185,7 +185,9 @@
    metade, com fade; o rótulo "Ver mais" fica sobreposto a esse 4º item. */
 .dash-agenda-lista {
   position: relative;
-  height: 12.18rem;
+  /* acompanha o crescimento do texto (mesma curva de --tamanho-*) para
+     manter 3 prazos inteiros + o 4º cortado em qualquer largura */
+  height: clamp(12.18rem, 10.353rem + 3.8062vw, 13.398rem);
   overflow: hidden;
   flex: 0 0 auto;
 }
@@ -214,7 +216,7 @@
    excedem o limite exibido (ver DashListaCortada). */
 .dash-lista-fade {
   position: relative;
-  height: 12.47rem;
+  height: clamp(12.47rem, 10.5995rem + 3.8969vw, 13.717rem);
   /* Sangra até as bordas laterais do cartão (compensa o padding) para que o
      fade alcance toda a largura, como no Calendário. O recorte das linhas fica
      no .dash-lista-fade__clip, deixando o fade escapar por baixo até a base. */
@@ -356,9 +358,9 @@
   font-size: var(--tamanho-grande);
   font-weight: var(--peso-semi);
   letter-spacing: -0.01em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.3;
+  /* quebra em vez de cortar com reticências quando a coluna estreita */
+  overflow-wrap: anywhere;
 }
 
 .dash-card__seta {
@@ -390,7 +392,7 @@
   margin: auto 0 0;
   color: var(--dash-titulo);
   font-family: var(--fonte-titulo);
-  font-size: 2.1rem;
+  font-size: var(--tamanho-metrica);
   font-weight: var(--peso-negrito);
   line-height: 1;
   letter-spacing: -0.03em;
@@ -550,7 +552,7 @@
 .dash-agenda__data small {
   margin-top: 0.1rem;
   color: var(--dash-mudo);
-  font-size: 0.6rem;
+  font-size: var(--tamanho-minimo);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -734,7 +736,7 @@
 
 /* Cartões de Mensagens e Avaliações com a mesma altura, em colunas diferentes. */
 .dash-card--igual {
-  height: 12.5rem;
+  height: clamp(12.5rem, 10.625rem + 3.9063vw, 13.75rem);
 }
 
 .dash-card--igual .dash-card__corpo {
@@ -859,6 +861,7 @@
 }
 
 .dash-aval__nav button {
+  position: relative;
   display: grid;
   place-items: center;
   width: 1.5rem;
@@ -870,11 +873,26 @@
   cursor: pointer;
 }
 
+/* Área de toque de 44px sem mudar o desenho do botão (ver também
+   .dash-aval__ver e .dash-agenda-vermais). */
+.dash-aval__nav button::before,
+.dash-aval__ver::before,
+.dash-agenda-vermais::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, var(--altura-toque-minima));
+  height: max(100%, var(--altura-toque-minima));
+  transform: translate(-50%, -50%);
+}
+
 .dash-aval__nav button:hover {
   background: var(--dash-realce);
 }
 
 .dash-aval__ver {
+  position: relative;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -1039,24 +1057,11 @@
 
 /* ---- Wrapper do painel (fluxo natural, sem escala) ---- */
 .dash__ajuste {
-  /* o zoom é medido na hora: qualquer transition (inclusive a global de
-     reduced-motion) faria o valor calculado ficar defasado um frame */
-  transition: none !important;
   display: flex;
   flex-direction: column;
   gap: var(--espaco-3);
   width: 100%;
   min-width: 0;
-}
-
-/* Em telas >= 640px o painel ocupa exatamente a viewport; DashFit aplica `zoom`
-   para o conteúdo caber. Abaixo do zoom mínimo, rola. */
-@media (min-width: 640px) {
-  .dash:has(.dash__ajuste) {
-    height: calc(100vh - var(--altura-topbar) - var(--espaco-4));
-    min-height: 0;
-    overflow: hidden; /* DashFit libera a rolagem só se nem o zoom mínimo couber */
-  }
 }
 
 /* ---- Etapas pendentes ---- */

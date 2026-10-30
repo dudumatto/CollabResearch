@@ -1,92 +1,13 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { CaretLeft, CaretRight, CheckCircle, Warning } from "@phosphor-icons/react";
 import "./DashboardKit.css";
 
-/* Encaixa o painel na altura da viewport sem rolagem. Usa CSS `zoom` (não
-   `transform`): o navegador re-renderiza o texto na escala final, então fica
-   nítido, e o layout refaz o fluxo mantendo proporção e responsividade.
-   Nunca rola em telas >= 640px: MIN_ZOOM é só um piso de segurança da busca.
-   Sem suporte a zoom ou abaixo de 640px, fluxo natural com rolagem. */
-const MIN_ZOOM = 0.25;
-
-function useFitZoom() {
-  const ref = useRef(null);
-
-  useLayoutEffect(() => {
-    const el = ref.current;
-    const dash = el?.parentElement;
-    if (!el || !dash || !window.CSS?.supports?.("zoom", "1")) return undefined;
-
-    const mq = window.matchMedia("(min-width: 640px)");
-    let frame = 0;
-
-    const metrics = () => {
-      const cs = getComputedStyle(dash);
-      return dash.clientHeight - parseFloat(cs.paddingTop || "0") - parseFloat(cs.paddingBottom || "0");
-    };
-    const height = () => el.getBoundingClientRect().height;
-
-    // Solução determinística: sempre parte de zoom 1, então o mesmo tamanho de
-    // viewport dá o mesmo zoom (sem biestabilidade entre dois layouts).
-    const solve = () => {
-      frame = 0;
-      if (!mq.matches) {
-        el.style.zoom = "";
-        dash.style.overflowY = "";
-        return;
-      }
-      const available = metrics();
-      if (available <= 0) return;
-      const at = (z) => {
-        el.style.zoom = String(z);
-        return height();
-      };
-      // maior zoom que cabe: busca binária (a altura cresce com o zoom, mas dá saltos
-      // nos breakpoints, então iterar por proporção oscila; a busca sempre converge)
-      let z = 1;
-      if (at(1) > available) {
-        let lo = MIN_ZOOM;
-        let hi = 1;
-        while (hi - lo > 0.005) {
-          const mid = (lo + hi) / 2;
-          if (at(mid) <= available) lo = mid;
-          else hi = mid;
-        }
-        z = lo;
-      }
-      at(z);
-      dash.style.overflowY = "hidden";
-    };
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(solve);
-    };
-    // mudança só do conteúdo: re-resolve apenas se deixou de caber (nunca "sobe" o zoom)
-    const onContent = () => {
-      if (!mq.matches || frame) return;
-      const available = metrics();
-      if (height() > available && (parseFloat(el.style.zoom) || 1) > MIN_ZOOM) schedule();
-    };
-
-    solve();
-    const roDash = new ResizeObserver(schedule);
-    const roEl = new ResizeObserver(onContent);
-    roDash.observe(dash);
-    roEl.observe(el);
-    mq.addEventListener?.("change", schedule);
-    return () => {
-      roDash.disconnect();
-      roEl.disconnect();
-      mq.removeEventListener?.("change", schedule);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  return ref;
-}
-
+/* Wrapper do painel em fluxo natural. Antes aplicava CSS `zoom` < 1 para
+   caber na altura da viewport sem rolagem, o que encolhia texto, botões e
+   cards em monitores (ex.: zoom 0,68 em 1280px). Agora o painel cresce com a
+   escala tipográfica e rola quando precisa. */
 export function DashFit({ children }) {
-  const ref = useFitZoom();
-  return <div className="dash__ajuste" ref={ref}>{children}</div>;
+  return <div className="dash__ajuste">{children}</div>;
 }
 
 function CardHeader({ icon: Icon, tone, title, trailing }) {
@@ -94,7 +15,7 @@ function CardHeader({ icon: Icon, tone, title, trailing }) {
     <>
       {Icon && (
         <span className={`dash-card__selo dash-card__selo--${tone}`} aria-hidden="true">
-          <Icon size={16} />
+          <Icon size="1rem" />
         </span>
       )}
       <h3 className="dash-card__titulo">{title}</h3>
@@ -107,7 +28,7 @@ function CardHeader({ icon: Icon, tone, title, trailing }) {
    dentro de botão é HTML inválido. Quando há `onOpen`, só o cabeçalho é o
    controle que leva à listagem completa. */
 export function DashCard({ icon, tone = "verde", title, caption, onOpen, openLabel, children, className = "" }) {
-  const seta = onOpen ? <CaretRight size={18} className="dash-card__seta" aria-hidden="true" /> : null;
+  const seta = onOpen ? <CaretRight size="1.125rem" className="dash-card__seta" aria-hidden="true" /> : null;
 
   return (
     <section className={`dash-card ${className}`}>
@@ -145,7 +66,7 @@ export function DashMetric({ icon, tone = "verde", title, caption, value, onOpen
           icon={icon}
           tone={tone}
           title={title}
-          trailing={<CaretRight size={18} className="dash-card__seta" aria-hidden="true" />}
+          trailing={<CaretRight size="1.125rem" className="dash-card__seta" aria-hidden="true" />}
         />
       </span>
       {caption && <span className="dash-card__legenda">{caption}</span>}
@@ -279,7 +200,7 @@ export function DashPendentes({ items = [] }) {
     <ul className="dash-pendentes">
       {items.map((item) => (
         <li key={item.id} className="dash-pendentes__item">
-          <Warning size={24} weight="fill" className="dash-pendentes__icone" aria-hidden="true" />
+          <Warning size="1.5rem" weight="fill" className="dash-pendentes__icone" aria-hidden="true" />
           <span className="dash-linha__info">
             <span className="dash-pendentes__titulo">{item.title}</span>
             <span className="dash-pendentes__subtitulo">{item.subtitle}</span>
@@ -346,17 +267,17 @@ export function DashEvaluations({ items = [], onOpen }) {
           )}
           {onOpen && (
             <button type="button" className="dash-aval__ver" onClick={onOpen}>
-              Ver avaliação <CaretRight size={12} aria-hidden="true" />
+              Ver avaliação <CaretRight size="0.75rem" aria-hidden="true" />
             </button>
           )}
           {items.length > 1 && (
             <div className="dash-aval__nav">
               <button type="button" onClick={() => go(-1)} aria-label="Avaliação anterior">
-                <CaretLeft size={14} />
+                <CaretLeft size="0.875rem" />
               </button>
               <span aria-live="polite">{Math.min(index, items.length - 1) + 1}/{items.length}</span>
               <button type="button" onClick={() => go(1)} aria-label="Próxima avaliação">
-                <CaretRight size={14} />
+                <CaretRight size="0.875rem" />
               </button>
             </div>
           )}
@@ -370,7 +291,7 @@ export function DashEvaluations({ items = [], onOpen }) {
 export function DashEmpty({ children = "Nada pendente por aqui." }) {
   return (
     <p className="dash-vazio">
-      <CheckCircle size={16} aria-hidden="true" />
+      <CheckCircle size="1rem" aria-hidden="true" />
       {children}
     </p>
   );

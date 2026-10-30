@@ -328,8 +328,8 @@
 }
 
 .barra-lateral__icone-nav {
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
   display: block;
   flex-shrink: 0;
   color: inherit;
@@ -383,7 +383,7 @@
 .barra-lateral__ia {
   margin-left: auto;
   flex: 0 0 auto;
-  color: #8b7cf6;
+  color: #8b5cf6;
   transition: var(--sidebar-conteudo-entra);
 }
 

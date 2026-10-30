@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Tray, Check, X, FileText, CaretRight, User, Sparkle, Warning } from "@phosphor-icons/react";
+import { Tray, Check, X, FileText, CaretRight, User, Warning } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { useAsyncData } from "../hooks/useAsyncDataHook";
 import { advisorService } from "../services/advisorService";
@@ -16,6 +16,7 @@ import { LumenAIButton } from "../components/ui/LumenAIButton";
 import { LumenTooltip } from "../components/ui/LumenTooltip";
 import { useLumenAnalysis } from "../providers/LumenAnalysisProvider";
 import { Sk } from "../components/Skeleton";
+import { IaIcone } from "../components/ui/IaIcone";
 import "./AdvisorWorkspace.css";
 
 const FILTROS = [
@@ -510,7 +511,7 @@ export default function AdvisorApplicationsPage() {
                           setLumenModalAberto(true);
                         }}
                       >
-                        <Sparkle size={12} style={{ marginRight: 4, verticalAlign: "-1px" }} />
+                        <IaIcone size={12} weight="regular" style={{ marginRight: 4, verticalAlign: "-1px" }} />
                         Lumen: {rankingMap.get(app.id).pontuacao}/10
                       </button>
                     )}
@@ -521,7 +522,7 @@ export default function AdvisorApplicationsPage() {
                         disabled={lumenLoading}
                         onClick={() => analisarComLumen(app.projetoId, [app.id])}
                       >
-                        <Sparkle size={12} />
+                        <IaIcone size={12} weight="regular" />
                         {rankingMap.has(app.id) ? "Reavaliar" : "Avaliar"}
                       </button>
                     )}
@@ -669,8 +670,8 @@ export default function AdvisorApplicationsPage() {
         <div className="advisor-modal-overlay" role="dialog" aria-modal="true" aria-label="Resultado da análise Lumen">
           <div className="advisor-modal advisor-lumen">
             <div className="advisor-modal__cabecalho">
-              <div className="advisor-lumen__icone" aria-hidden="true">
-                <Sparkle size={22} weight="fill" />
+              <div className="advisor-lumen__icone ia-gatilho" aria-hidden="true">
+                <IaIcone size={22} />
               </div>
               <div className="advisor-modal__cabecalho-conteudo">
                 <h3 className="advisor-modal__titulo">

@@ -1,7 +1,6 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-size: 16px;
   --background: #f6f8f5;
   --foreground: #17251d;
   --card: #ffffff;
@@ -133,8 +132,23 @@
   * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
   */
 
+  /* Escala global por breakpoint (mobile-first): tudo em rem — texto,
+     botões, ícones, paddings, gaps, cards — cresce junto em telas grandes.
+     Em % para respeitar o tamanho de fonte escolhido no navegador. */
   html {
-    font-size: var(--font-size);
+    font-size: 100%;
+  }
+
+  @media (min-width: 1440px) {
+    html { font-size: 103.125%; }
+  }
+
+  @media (min-width: 1920px) {
+    html { font-size: 106.25%; }
+  }
+
+  @media (min-width: 2560px) {
+    html { font-size: 118.75%; }
   }
 
   body {
